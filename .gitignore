@@ -8,3 +8,6 @@ core
 .gdbinit
 # Meson build
 /builddir
+# dev
+/compile_commands.json
+/.cache/

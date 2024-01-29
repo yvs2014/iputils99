@@ -620,7 +620,7 @@ int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
 		 *    timed waiting (SO_RCVTIMEO). */
 		polling = 0;
 		recv_error = 0;
-		if (rts->opt_adaptive || rts->opt_flood_poll || next < SCHINT(rts->interval)) {
+		if (rts->opt_adaptive || rts->opt_flood_poll || next <= SCHINT(rts->interval)) {
 			int recv_expected = in_flight(rts);
 
 			/* If we are here, recvmsg() is unable to wait for
@@ -761,6 +761,8 @@ restamp:
 				goto restamp;
 			}
 		}
+		if (triptime > (MAXWAIT * 1000000))
+			triptime = MAXWAIT * 1000000;
 		if (!csfailed) {
 			rts->tsum += triptime;
 			rts->tsum2 += (double)((long long)triptime * (long long)triptime);
