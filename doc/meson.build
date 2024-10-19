@@ -40,7 +40,12 @@ if xsltproc.found()
 	xsltproc_works = true
 	foreach doc_target : doc_targets
 		xsl = 'http://docbook.sourceforge.net/release/xsl-ns/current/' + doc_target + '/docbook.xsl'
-		testrun = run_command([xsltproc, '--nonet', xsl])
+		xsl_cmd = [xsltproc, '--nonet', xsl]
+		if meson.version().version_compare('>=0.47')
+			testrun = run_command(xsl_cmd, check: false)
+		else
+			testrun = run_command(xsl_cmd)
+		endif
 		if testrun.returncode() != 0
 			xsltproc_works = false
 			message('WARNING: xsltproc: cannot process ' + xsl)

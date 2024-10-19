@@ -7,4 +7,4 @@
 # meson . builddir && ninja iputils-update-po -C builddir
 
 i18n = import('i18n')
-i18n.gettext(meson.project_name(), args: '--directory=' + meson.source_root())
+i18n.gettext(meson.project_name(), args: '--directory=' + meson.current_source_dir())

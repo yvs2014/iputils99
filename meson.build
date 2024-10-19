@@ -39,7 +39,12 @@ install_systemd_units = systemd.found() or get_option('INSTALL_SYSTEMD_UNITS')
 
 systemdunitdir = get_option('systemdunitdir')
 if systemdunitdir == '' and install_systemd_units
-	systemdunitdir = systemd.get_pkgconfig_variable('systemdsystemunitdir')
+	unitdir_var = 'systemdsystemunitdir'
+	if meson.version().version_compare('>=0.51')
+		systemdunitdir = systemd.get_variable(pkgconfig: unitdir_var)
+	else
+		systemdunitdir = systemd.get_pkgconfig_variable(unitdir_var)
+	endif
 endif
 
 setcap_arping = false
@@ -161,7 +166,11 @@ config_h = configure_file(
 setcap = find_program('setcap', '/usr/sbin/setcap', '/sbin/setcap', required : false)
 if cap_dep.found() and setcap.found()
 	perm_type = 'caps'
-	setcap_path = setcap.path()
+	if meson.version().version_compare('>=0.55')
+		setcap_path = setcap.full_path()
+	else
+		setcap_path = setcap.path()
+	endif
 else
 	perm_type = 'setuid'
 	setcap_path = '/dev/null'
