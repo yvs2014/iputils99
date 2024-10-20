@@ -26,76 +26,62 @@ else
   message('WARNING: ip binary not found => disable IPv6 tests')
 endif
 
-run_as_root = false
 id_cmd = ['id', '-u']
 if meson.version().version_compare('>=0.47')
   r = run_command(id_cmd, check: false)
 else
   r = run_command(id_cmd)
 endif
-if r.stdout().strip().to_int() == 0
-  message('running as root')
-  run_as_root = true
-else
-  message('running as normal user')
-endif
+run_as_root = r.stdout().strip().to_int() == 0
+message('running as ' + (run_as_root ? 'root' : 'normal user'))
 
 cmd = ping
-cmd_name = ['ping']
-args = ['-V']
+if meson.version().version_compare('>=0.54')
+  basename = [cmd.name()]
+else
+  basename = [cmd.path().split('/')[-1]]
+endif
 
-name = ' '.join(cmd_name + args)
-test(name, cmd, args: args)
-
+suite = 'base'
 foreach dst: [localhost] + localhost46
+  opts = ['-c', '1', dst]
   foreach switch: ipfamily
-	if switch == '-6' and dst == localhost
-		 continue # localhost [::1] is not mandatory
-	endif
-	fail = (switch == '-4' and dst == localhost6) or (switch == '-6' and dst == '127.0.0.1')
-	args = switch == '' ? ['-c1', dst] : [switch, '-c1', dst]
-	name = ' '.join(cmd_name + args)
-	test(name, cmd, args: args, should_fail: fail)
+    if switch == '-6' and dst == localhost
+      continue # localhost [::1] is not mandatory
+    endif
+    fail = (switch == '-4' and dst == localhost6) or (switch == '-6' and dst == '127.0.0.1')
+    args = switch == '' ? opts : [switch] + opts
+    name = ' '.join(basename + args)
+    test(name, cmd, args: args, suite: suite, should_fail: fail)
   endforeach
 endforeach
 
-ping_tests_opt = [
-  [ '-c1' ],
-  [ '-c5', '-i0.1' ],
-  [ '-c1', '-I', 'lo' ],
-  [ '-c1', '-w1' ],
-  [ '-c1', '-W1' ],
-  [ '-c1', '-W1.1' ],
+extra_suites = [ # list because no dictionaries before 0.47
+  ['timeouts', true, [
+    [ '-c', '5', '-i', '0.1' ],
+    [ '-c', '1', '-I', 'lo'  ],
+    [ '-c', '1', '-w', '1'   ],
+    [ '-c', '1', '-W', '1'   ],
+    [ '-c', '1', '-W', '1.1' ]]],
+  ['fail', false, [
+    [ '-c', '1.1'         ],
+    [ '-I', 'nonexisting' ],
+    [ '-w', '0.1'         ],
+    [ '-w', '0,1'         ]]],
+  ['root', run_as_root, [
+    [ '-c', '1', '-i', '0.001']]], # -c1 required to quit ping when running as root
 ]
-foreach dst : localhost46
-  foreach args : ping_tests_opt
-	args += [ dst ]
-	name = ' '.join(cmd_name + args)
-	test(name, cmd, args : args)
+
+foreach param: extra_suites
+  suite = param[0]
+  fail  = not param[1]
+  opts  = param[2]
+  foreach dst: localhost46
+    foreach args: opts
+      args += dst
+      name = ' '.join(basename + args)
+      test(name, cmd, args: args, suite: suite, should_fail: fail)
+    endforeach
   endforeach
 endforeach
 
-ping_tests_opt_fail = [
-  [ '-c1.1' ],
-  [ '-I', 'nonexisting' ],
-  [ '-w0.1' ],
-  [ '-w0,1' ],
-]
-foreach dst : localhost46
-  foreach args : ping_tests_opt_fail
-	args += [ dst ]
-	name = ' '.join(cmd_name + args)
-	test(name, cmd, args : args, should_fail : true)
-  endforeach
-endforeach
-
-ping_tests_user_fail = [
-  [ '-c1', '-i0.001' ], # -c1 required to quit ping when running as root
-]
-foreach dst : localhost46
-  foreach args : ping_tests_user_fail
-	args += [ dst ]
-	name = ' '.join(cmd_name + args)
-	test(name, cmd, args : args, should_fail : not run_as_root)
-  endforeach
-endforeach

@@ -1,17 +1,32 @@
 # Copyright (c) 2021 Petr Vorel <pvorel@suse.cz>
 
-if build_arping == true
-  subdir('arping')
+cmds = []
+if build_clockdiff
+  cmds += clockdiff
+endif
+if build_tracepath
+  cmds += tracepath
+endif
+if build_arping
+  cmds += arping
+endif
+if build_ping
+  cmds += ping
 endif
 
-if build_clockdiff == true
-  subdir('clockdiff')
-endif
+args = ['-V']
+suite = 'version'
+foreach cmd: cmds
+  if meson.version().version_compare('>=0.54')
+    basename = [cmd.name()]
+  else
+    basename = [cmd.path().split('/')[-1]]
+  endif
+  name = ' '.join(basename + args)
+  test(name, cmd, args: args, suite: suite)
+endforeach
 
-if build_ping == true
+if build_ping
   subdir('ping')
 endif
 
-if build_tracepath == true
-  subdir('tracepath')
-endif
