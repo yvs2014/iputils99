@@ -85,3 +85,15 @@ foreach param: extra_suites
   endforeach
 endforeach
 
+# ip4 in ip6 space
+suite = 'ip4map'
+valid = true
+args4in6 = [ '-c', '1', '-4']
+localhost4in6 = ['::ffff:127.0.0.1', '::ffff:7f00:1' ]
+foreach dst: localhost4in6
+  args = args4in6 + [dst]
+  fail  = not valid
+  name = ' '.join(basename + args)
+  test(name, cmd, args: args, suite: suite, should_fail: fail)
+endforeach
+

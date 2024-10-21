@@ -636,14 +636,6 @@ main(int argc, char **argv)
 	if (rts.tclass)
 		set_socket_option(&sock6, IPPROTO_IPV6, IPV6_TCLASS, &rts.tclass, sizeof(rts.tclass));
 
-	/* getaddrinfo fails to indicate a scopeid when not used in dual-stack mode.
-	 * Work around by always using dual-stack name resolution.
-	 *
-	 * https://github.com/iputils/iputils/issues/252
-	 */
-	int target_ai_family = hints.ai_family;
-	hints.ai_family = AF_UNSPEC;
-
 	unsigned char buf[sizeof(struct in6_addr)];
 	if (!strchr(target, '%') && sock6.socktype == SOCK_DGRAM &&
 		inet_pton(AF_INET6, target, buf) > 0 &&
@@ -663,16 +655,6 @@ main(int argc, char **argv)
 				   str_family(ai->ai_family),
 				   ai->ai_canonname ? ai->ai_canonname : "");
 
-		if (target_ai_family != AF_UNSPEC &&
-			target_ai_family != ai->ai_family) {
-			if (!ai->ai_next) {
-				/* An address was found, but not of the family we really want.
-				 * Throw the appropriate gai error.
-				 */
-				error(2, 0, "%s: %s", target, gai_strerror(EAI_ADDRFAMILY));
-			}
-			continue;
-		}
 		switch (ai->ai_family) {
 		case AF_INET:
 			ret_val = ping4_run(&rts, argc, argv, ai, &sock4);
