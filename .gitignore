@@ -9,5 +9,6 @@ core
 # Meson build
 /builddir
 # dev
-/compile_commands.json
+/_build/
 /.cache/
+/compile_commands.json

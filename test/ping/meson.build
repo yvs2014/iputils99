@@ -1,11 +1,11 @@
 # Copyright (c) 2021 Petr Vorel <pvorel@suse.cz>
 
-# GitHub CI does not have working IPv6
-# https://github.com/actions/virtual-environments/issues/668
+# local edition by @yvs
+
 ipfamily    = ['', '-4']
 localhost   = 'localhost'
 localhost4  = '127.0.0.1'
-localhost6  = 'ip6-localhost'
+localhost6  = '::1'
 localhost46 = [localhost4]
 ip = find_program('ip', required: false)
 ip6enabled = false
@@ -41,20 +41,22 @@ cmd = ping
 if meson.version().version_compare('>=0.54')
   basename = [cmd.name()]
 else
-  basename = [cmd.path().split('/')[-1]]
+  basename = [cmd.full_path().split('/')[-1]]
 endif
 
 suite = 'base'
 foreach dst: [localhost] + localhost46
   opts = ['-c', '1', dst]
   foreach switch: ipfamily
-    if switch == '-6' and dst == localhost
-      continue # localhost [::1] is not mandatory
+    if not (switch == '-6' and dst == localhost) # localhost [::1] is not mandatory
+      fail = (switch == '-4' and dst == localhost6) or (switch == '-6' and dst == '127.0.0.1')
+      args = switch == '' ? opts : [switch] + opts
+      name = ' '.join(basename + args)
+      if meson.version().version_compare('>=0.58')
+        name = name.replace(':', '_')
+      endif
+      test(name, cmd, args: args, suite: suite, should_fail: fail)
     endif
-    fail = (switch == '-4' and dst == localhost6) or (switch == '-6' and dst == '127.0.0.1')
-    args = switch == '' ? opts : [switch] + opts
-    name = ' '.join(basename + args)
-    test(name, cmd, args: args, suite: suite, should_fail: fail)
   endforeach
 endforeach
 
@@ -82,6 +84,9 @@ foreach param: extra_suites
     foreach args: opts
       args += dst
       name = ' '.join(basename + args)
+      if meson.version().version_compare('>=0.58')
+        name = name.replace(':', '_')
+      endif
       test(name, cmd, args: args, suite: suite, should_fail: fail)
     endforeach
   endforeach
@@ -91,8 +96,8 @@ endforeach
 if ip6enabled
   suite = 'ip4in6'
   fail  = false
-  af_4in6   = ['', '-4']
-  args_4in6 = [ '-c', '1']
+  af_4in6   = ['',  '-4']
+  args_4in6 = ['-c', '1']
   localhost_4in6 = ['::ffff:127.0.0.1', '::ffff:7f00:1' ]
   foreach af: af_4in6
     foreach dst: localhost_4in6

@@ -1,5 +1,7 @@
 # Copyright (c) 2021 Petr Vorel <pvorel@suse.cz>
 
+# local edition by @yvs
+
 cmds = []
 if build_clockdiff
   cmds += clockdiff
@@ -20,7 +22,7 @@ foreach cmd: cmds
   if meson.version().version_compare('>=0.54')
     basename = [cmd.name()]
   else
-    basename = [cmd.path().split('/')[-1]]
+    basename = [cmd.full_path().split('/')[-1]]
   endif
   name = ' '.join(basename + args)
   test(name, cmd, args: args, suite: suite)
