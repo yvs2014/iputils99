@@ -302,6 +302,19 @@ static int parsetos(char *str)
 	return (tos);
 }
 
+static inline int ip4in6(struct addrinfo *ai) {
+  struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *)ai->ai_addr;
+  int rc = IN6_IS_ADDR_V4MAPPED(&sa6->sin6_addr);
+  if (rc) {
+    struct sockaddr_in sa4 = { .sin_family = AF_INET,
+      .sin_addr.s_addr = ((uint32_t*)&sa6->sin6_addr)[3] };
+    memcpy(ai->ai_addr, &sa4, sizeof(sa4));
+    ai->ai_addrlen = sizeof(sa4);
+    ai->ai_family = AF_INET;
+  }
+  return rc;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -654,6 +667,10 @@ main(int argc, char **argv)
 			printf("ai->ai_family: %s, ai->ai_canonname: '%s'\n",
 				   str_family(ai->ai_family),
 				   ai->ai_canonname ? ai->ai_canonname : "");
+
+		if ((ai->ai_family == AF_INET6) && (hints.ai_family == AF_UNSPEC))
+			if (ip4in6(ai) && rts.opt_verbose)
+				error(0, 0, _("IPv4-Mapped-in-IPv6 address, using IPv4"));
 
 		switch (ai->ai_family) {
 		case AF_INET:

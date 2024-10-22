@@ -8,6 +8,7 @@ localhost4  = '127.0.0.1'
 localhost6  = 'ip6-localhost'
 localhost46 = [localhost4]
 ip = find_program('ip', required: false)
+ip6enabled = false
 if ip.found()
   ip6_cmd = [ip, '-6', 'address']
   if meson.version().version_compare('>=0.47')
@@ -15,7 +16,8 @@ if ip.found()
   else
     ip6_en = run_command(ip6_cmd)
   endif
-  if ip6_en.stdout().contains('::1')
+  ip6enabled = ip6_en.stdout().contains('::1')
+  if ip6enabled
     localhost46 += localhost6
     ipfamily    += '-6'
     message('IPv6 enabled')
@@ -85,15 +87,24 @@ foreach param: extra_suites
   endforeach
 endforeach
 
-# ip4 in ip6 space
-suite = 'ip4map'
-valid = true
-args4in6 = [ '-c', '1', '-4']
-localhost4in6 = ['::ffff:127.0.0.1', '::ffff:7f00:1' ]
-foreach dst: localhost4in6
-  args = args4in6 + [dst]
-  fail  = not valid
-  name = ' '.join(basename + args)
-  test(name, cmd, args: args, suite: suite, should_fail: fail)
-endforeach
+# test ip4 in ip6 space
+if ip6enabled
+  suite = 'ip4in6'
+  fail  = false
+  af_4in6   = ['', '-4']
+  args_4in6 = [ '-c', '1']
+  localhost_4in6 = ['::ffff:127.0.0.1', '::ffff:7f00:1' ]
+  foreach af: af_4in6
+    foreach dst: localhost_4in6
+      args  = af != '' ? [af] : []
+      args += args_4in6
+      args += dst
+      name = ' '.join(basename + args)
+      if meson.version().version_compare('>=0.58')
+        name = name.replace(':', '_')
+      endif
+      test(name, cmd, args: args, suite: suite, should_fail: fail)
+    endforeach
+  endforeach
+endif
 
