@@ -9,7 +9,9 @@
  * Authors:	Alexey Kuznetsov, <kuznet@ms2.inr.ac.ru>
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include <assert.h>
 #include <arpa/inet.h>
@@ -37,6 +39,10 @@
 #include <linux/types.h>
 
 #include "iputils_common.h"
+
+#if defined(USE_IDN) || defined(ENABLE_NLS)
+# include <locale.h>
+#endif
 
 #ifdef USE_IDN
 # define getnameinfo_flags	NI_IDN
@@ -521,8 +527,8 @@ int main(int argc, char **argv)
 		ctl.targetlen = ctl.ai->ai_addrlen;
 		break;
 	}
-	if (ctl.socket_fd < 0)
-		error(1, errno, "socket/connect");
+	if ((ctl.socket_fd < 0) || !ctl.ai)
+		error(1, errno, "socket/ai");
 
 	switch (ctl.ai->ai_family) {
 	case AF_INET6:

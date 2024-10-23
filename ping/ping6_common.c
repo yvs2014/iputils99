@@ -58,9 +58,13 @@
  *	with net_cap_raw enabled.
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include <stddef.h>
+#include <ctype.h>
+#include <errno.h>
 
 #include "iputils_common.h"
 #include "iputils_ni.h"

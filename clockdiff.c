@@ -49,9 +49,13 @@
  * number of messages sent in each measurement.
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
+#ifndef TSPTYPES
 #define TSPTYPES
+#endif
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -59,7 +63,6 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <linux/types.h>
-#include <math.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>

@@ -10,7 +10,9 @@
  * 		YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -35,6 +37,10 @@
 #ifdef HAVE_LIBCAP
 # include <sys/capability.h>
 # include <sys/prctl.h>
+#endif
+
+#if defined(USE_IDN) || defined(ENABLE_NLS)
+# include <locale.h>
 #endif
 
 #include "iputils_common.h"
@@ -823,6 +829,7 @@ static int event_loop(struct run_state *ctl)
 				exit_loop = 1;
 				break;
 			case POLLFD_SOCKET:
+				memset(&from, 0, sizeof(from));
 				if ((s =
 				     recvfrom(ctl->socketfd, packet, sizeof(packet), 0,
 					      (struct sockaddr *)&from, &addr_len)) < 0) {

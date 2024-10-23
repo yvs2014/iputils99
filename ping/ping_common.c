@@ -30,10 +30,19 @@
  * SUCH DAMAGE.
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
+
+#include <ctype.h>
+#include <errno.h>
 
 #include "iputils_common.h"
 #include "ping.h"
+
+#if defined(USE_IDN)
+# include <locale.h>
+#endif
 
 #ifndef HZ
 #define HZ sysconf(_SC_CLK_TCK)

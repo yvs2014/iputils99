@@ -1,6 +1,10 @@
 #ifndef IPUTILS_COMMON_H
 #define IPUTILS_COMMON_H
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <sys/time.h>
 
@@ -14,10 +18,6 @@
 # define iputils_attribute_format(t, n, m) __attribute__((__format__ (t, n, m)))
 #else
 # define iputils_attribute_format(t, n, m)
-#endif
-
-#if defined(USE_IDN) || defined(ENABLE_NLS)
-# include <locale.h>
 #endif
 
 #ifdef ENABLE_NLS

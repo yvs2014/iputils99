@@ -49,16 +49,21 @@
  *	net_cap_raw enabled.
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include "ping.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <ifaddrs.h>
 #include <math.h>
 #include <locale.h>
+
+#include "iputils_common.h"
 
 /* FIXME: global_rts will be removed in future */
 struct ping_rts *global_rts;

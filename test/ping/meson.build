@@ -47,10 +47,10 @@ endif
 suite = 'base'
 foreach dst: [localhost] + localhost46
   opts = ['-c', '1', dst]
-  foreach switch: ipfamily
-    if not (switch == '-6' and dst == localhost) # localhost [::1] is not mandatory
-      fail = (switch == '-4' and dst == localhost6) or (switch == '-6' and dst == '127.0.0.1')
-      args = switch == '' ? opts : [switch] + opts
+  foreach af: ipfamily
+    if not (af == '-6' and dst == localhost) # localhost [::1] is not mandatory
+      fail = (af == '-4' and dst == localhost6) or (af == '-6' and dst == '127.0.0.1')
+      args = af == '' ? opts : [af] + opts
       name = ' '.join(basename + args)
       if meson.version().version_compare('>=0.58')
         name = name.replace(':', '_')
@@ -98,7 +98,7 @@ if ip6enabled
   fail  = false
   af_4in6   = ['',  '-4']
   args_4in6 = ['-c', '1']
-  localhost_4in6 = ['::ffff:127.0.0.1', '::ffff:7f00:1' ]
+  localhost_4in6 = ['::ffff:127.0.0.1', '::ffff:7f00:1', '0:0:0:0:0:ffff:127.0.0.1' ]
   foreach af: af_4in6
     foreach dst: localhost_4in6
       args  = af != '' ? [af] : []

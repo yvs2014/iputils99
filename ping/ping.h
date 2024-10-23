@@ -1,7 +1,9 @@
 #ifndef IPUTILS_PING_H
 #define IPUTILS_PING_H
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,14 +20,11 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <sys/uio.h>
-#include <ctype.h>
-#include <errno.h>
 #include <string.h>
 #include <netdb.h>
 #include <setjmp.h>
 #include <asm/byteorder.h>
 #include <sched.h>
-#include <math.h>
 #include <netinet/ip.h>
 #include <netinet/ip6.h>
 #include <netinet/ip_icmp.h>
@@ -37,9 +36,6 @@
 # include <sys/prctl.h>
 # include <sys/capability.h>
 #endif
-
-#include "iputils_common.h"
-#include "iputils_ni.h"
 
 #ifdef USE_IDN
 # define getaddrinfo_flags (AI_CANONNAME | AI_IDN | AI_CANONIDN)
