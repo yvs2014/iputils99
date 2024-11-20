@@ -318,7 +318,7 @@ static inline void unmap_ai_sa4(struct addrinfo *ai) {
 	ai->ai_family = AF_INET;
 }
 
-static inline int ping6_unspec(const char *target, struct addrinfo *hints,
+static inline int ping6_unspec(const char *target, struct in6_addr *addr, struct addrinfo *hints,
 	struct ping_rts *rts, int argc, char **argv, struct socket_st *sock)
 {
 	struct addrinfo *result = NULL, unspec = *hints;
@@ -331,7 +331,7 @@ static inline int ping6_unspec(const char *target, struct addrinfo *hints,
 		if (ai->ai_family != AF_INET6)
 			continue;
 		struct sockaddr_in6 *sa = (struct sockaddr_in6 *)ai->ai_addr;
-		if (!sa || !sa->sin6_scope_id)
+		if (!sa || !sa->sin6_scope_id || memcmp(addr, &sa->sin6_addr, sizeof(struct in6_addr)))
 			continue;
 		rc = ping6_run(rts, argc, argv, ai, sock);
 		if (rc >= 0)
@@ -716,7 +716,7 @@ main(int argc, char **argv)
 			struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *)ai->ai_addr;
 			if (sa6 && IN6_IS_ADDR_LINKLOCAL(&sa6->sin6_addr) && !sa6->sin6_scope_id) {
 				// getaddrinfo() workaround
-				ret_val = ping6_unspec(target, &hints, &rts, argc, argv, &sock6);
+				ret_val = ping6_unspec(target, &sa6->sin6_addr, &hints, &rts, argc, argv, &sock6);
 				if (ret_val >= 0)
 					done = 1;
 			}
