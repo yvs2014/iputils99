@@ -318,6 +318,31 @@ static inline void unmap_ai_sa4(struct addrinfo *ai) {
 	ai->ai_family = AF_INET;
 }
 
+static inline int ping6_unspec(const char *target, struct addrinfo *hints,
+	struct ping_rts *rts, int argc, char **argv, struct socket_st *sock)
+{
+	struct addrinfo *result = NULL, unspec = *hints;
+	unspec.ai_family = AF_UNSPEC;
+	int rc = getaddrinfo(target, NULL, &unspec, &result);
+	if (rc)
+		error(2, 0, "%s: %s", target, gai_strerror(rc));
+	rc = -1;
+	for (struct addrinfo *ai = result; ai; ai = ai->ai_next) {
+		if (ai->ai_family != AF_INET6)
+			continue;
+		struct sockaddr_in6 *sa = (struct sockaddr_in6 *)ai->ai_addr;
+		if (!sa || !sa->sin6_scope_id)
+			continue;
+		rc = ping6_run(rts, argc, argv, ai, sock);
+		if (rc >= 0)
+			break;
+	}
+	if (result)
+		freeaddrinfo(result);
+	return rc;
+}
+
+
 int
 main(int argc, char **argv)
 {
@@ -686,9 +711,18 @@ main(int argc, char **argv)
 		case AF_INET:
 			ret_val = ping4_run(&rts, argc, argv, ai, &sock4);
 			break;
-		case AF_INET6:
-			ret_val = ping6_run(&rts, argc, argv, ai, &sock6);
-			break;
+		case AF_INET6: {
+			int done = 0;
+			struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *)ai->ai_addr;
+			if (sa6 && IN6_IS_ADDR_LINKLOCAL(&sa6->sin6_addr) && !sa6->sin6_scope_id) {
+				// getaddrinfo() workaround
+				ret_val = ping6_unspec(target, &hints, &rts, argc, argv, &sock6);
+				if (ret_val >= 0)
+					done = 1;
+			}
+			if (!done)
+				ret_val = ping6_run(&rts, argc, argv, ai, &sock6);
+			} break;
 		default:
 			error(2, 0, _("unknown protocol family: %d"), ai->ai_family);
 		}
