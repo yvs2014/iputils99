@@ -410,7 +410,8 @@ resend:
 		tokens += rts->interval;
 		return MIN_INTERVAL_MS;
 	} else {
-		if ((i = fset->receive_error_msg(rts, sock)) > 0) {
+		i = fset->receive_error_msg(rts, sock);
+		if (i > 0) {
 			/* An ICMP error arrived. In this case, we've received
 			 * an error from sendto(), but we've also received an
 			 * ICMP message, which means the packet did in fact
@@ -935,10 +936,8 @@ int finish(struct ping_rts *rts)
 		tmdev = llsqrt(tmvar);
 
 		printf(_("rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms"),
-		       (long)rts->tmin / 1000, (long)rts->tmin % 1000,
-		       (unsigned long)(tmavg / 1000), (long)(tmavg % 1000),
-		       (long)rts->tmax / 1000, (long)rts->tmax % 1000,
-		       (long)tmdev / 1000, (long)tmdev % 1000);
+		       rts->tmin / 1000, rts->tmin % 1000, (unsigned long)(tmavg / 1000), tmavg % 1000,
+		       rts->tmax / 1000, rts->tmax % 1000, (long)tmdev / 1000, (long)tmdev % 1000);
 		comma = ", ";
 	}
 	if (rts->pipesize > 1) {
@@ -973,9 +972,8 @@ void status(struct ping_rts *rts)
 		tavg = rts->tsum / (rts->nreceived + rts->nrepeats);
 
 		fprintf(stderr, _(", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"),
-			(long)rts->tmin / 1000, (long)rts->tmin % 1000,
-			tavg / 1000, tavg % 1000,
-			rts->rtt / 8000, (rts->rtt / 8) % 1000, (long)rts->tmax / 1000, (long)rts->tmax % 1000);
+			rts->tmin / 1000, rts->tmin % 1000, tavg / 1000, tavg % 1000,
+			rts->rtt / 8000, (rts->rtt / 8) % 1000, rts->tmax / 1000, rts->tmax % 1000);
 	}
 	fprintf(stderr, "\n");
 }

@@ -549,7 +549,7 @@ main(int argc, char **argv)
 			rts.opt_flood = 1;
 			/* avoid `getaddrinfo()` during flood */
 			rts.opt_numeric = 1;
-			setbuf(stdout, (char *)NULL);
+			setvbuf(stdout, NULL, _IONBF, 0);
 			break;
 		case 'p':
 			rts.opt_pingfilled = 1;
@@ -705,6 +705,7 @@ main(int argc, char **argv)
 				unmap_ai_sa4(ai);
 				error(0, 0, _("Warning: " V4IN6_WARNING));
 				break;
+			default: break;
 			}
 
 		switch (ai->ai_family) {
@@ -1059,7 +1060,8 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai,
 	if (rts->datalen >= (int)sizeof(struct timeval))	/* can we time transfer */
 		rts->timing = 1;
 	packlen = rts->datalen + MAXIPLEN + MAXICMPLEN;
-	if (!(packet = (unsigned char *)malloc((unsigned int)packlen)))
+	packet = malloc(packlen);
+	if (!packet)
 		error(2, errno, _("memory allocation failed"));
 
 	printf(_("PING %s (%s) "), rts->hostname, inet_ntoa(rts->whereto.sin_addr));

@@ -308,7 +308,8 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai,
 		rts->timing = 1;
 	}
 	packlen = rts->datalen + 8 + 4096 + 40 + 8; /* 4096 for rthdr */
-	if (!(packet = (unsigned char *)malloc((unsigned int)packlen)))
+	packet = malloc(packlen);
+	if (!packet)
 		error(2, errno, _("memory allocation failed"));
 
 	hold = 1;

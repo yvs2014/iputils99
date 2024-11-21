@@ -59,7 +59,6 @@
 
 #include <arpa/inet.h>
 #include <errno.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <linux/types.h>
@@ -219,7 +218,8 @@ static int measure_inner_loop(struct run_state *ctl, struct measure_vars *mv)
 		mv->tout.tv_nsec = (tmo - (tmo / 1000) * 1000) * 1000000;
 	}
 
-	if ((mv->count = ppoll(&p, 1, &mv->tout, NULL)) <= 0)
+	mv->count = ppoll(&p, 1, &mv->tout, NULL);
+	if (mv->count <= 0)
 		return BREAK;
 
 	clock_gettime(CLOCK_REALTIME, &mv->ts1);
@@ -562,9 +562,9 @@ int main(int argc, char **argv)
 	if (ctl.ip_opt_len) {
 		struct sockaddr_in myaddr = { 0 };
 		socklen_t addrlen = sizeof(myaddr);
-		uint8_t *rspace;
+		uint8_t *rspace = calloc(ctl.ip_opt_len, sizeof(uint8_t));
 
-		if ((rspace = calloc(ctl.ip_opt_len, sizeof(uint8_t))) == NULL)
+		if (rspace == NULL)
 			error(1, errno, "allocating %zu bytes failed",
 					ctl.ip_opt_len * sizeof(uint8_t));
 		rspace[0] = IPOPT_TIMESTAMP;

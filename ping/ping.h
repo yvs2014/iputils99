@@ -320,10 +320,8 @@ static inline void tssub(struct timespec *out, struct timespec *in)
 static inline void set_signal(int signo, void (*handler)(int))
 {
 	struct sigaction sa;
-
 	memset(&sa, 0, sizeof(sa));
-
-	sa.sa_handler = (void (*)(int))handler;
+	sa.sa_handler = handler;
 	sa.sa_flags = SA_RESTART;
 	sigaction(signo, &sa, NULL);
 }

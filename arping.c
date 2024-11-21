@@ -830,9 +830,9 @@ static int event_loop(struct run_state *ctl)
 				break;
 			case POLLFD_SOCKET:
 				memset(&from, 0, sizeof(from));
-				if ((s =
-				     recvfrom(ctl->socketfd, packet, sizeof(packet), 0,
-					      (struct sockaddr *)&from, &addr_len)) < 0) {
+				s = recvfrom(ctl->socketfd, packet, sizeof(packet), 0,
+					      (struct sockaddr *)&from, &addr_len);
+				if (s < 0) {
 					error(0, errno, "recvfrom");
 					if (errno == ENETDOWN)
 						rc = 2;
