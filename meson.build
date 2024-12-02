@@ -119,8 +119,8 @@ endif
 
 # Some systems need intl for gettext
 intl_dep = []
-gettext = get_option('USE_GETTEXT')
-if gettext
+i18_gettext = get_option('USE_GETTEXT')
+if i18_gettext
 	add_project_arguments(['-DGETTEXT_PACKAGE="iputils"'], language: 'c')
 	conf.set('ENABLE_NLS', 1, description: 'If set enable I18N')
 	conf.set_quoted('LOCALEDIR', localedir)
@@ -218,7 +218,7 @@ if build_arping
 		dependencies : [rt_dep, cap_dep, idn_dep, intl_dep],
 		link_with : [libcommon],
 		install: true)
-	if (setcap_arping)
+	if setcap_arping
 		meson.add_install_script('build-aux/setcap-setuid.sh',
 			bindir,
 			'arping',
@@ -236,6 +236,44 @@ if run_tests
 	subdir('test')
 endif
 
+
+# summary at the end
+#
+if meson.version().version_compare('>=0.53')
+	sections = [ # lists because no dictionaries prior to 0.47
+		['DOCUMENTATION', [
+['Manual pages', build_mans],
+['HTML manual',  build_html_mans],
+		]], ['APPLICATIONS', [
+['ping',         build_ping],
+['  cap/suid ping',       setcap_ping],
+['arping',       build_arping],
+['  cap/suid arping',     setcap_arping],
+['clockdiff',    build_clockdiff],
+['  cap/suid clockdiff ', setcap_clockdiff],
+['tracepath',    build_tracepath],
+		]], ['CONFIGURATION', [
+['Linux caps (libcap)', cap],
+['IDN (via libc)',      idn],
+['NI6 (libidn2)',       ni6],
+['I18N (gettext)',      i18_gettext],
+['Systemd',             install_systemd_units],
+['Tests',               run_tests],
+		]], ['DIRECTORIES', [
+['prefix',         prefix],
+['bindir',         bindir],
+['localedir',      localedir],
+['sbindir',        sbindir],
+['systemdunitdir', systemdunitdir],
+		]],
+	]
+	foreach part: sections
+		foreach kv: part[1]
+			summary(kv[0], kv[1], bool_yn: true, section: part[0])
+		endforeach
+	endforeach
+else
+
 output = '\n\nAPPLICATIONS (build)\n'
 output += 'man: ' + build_mans.to_string() + '\n'
 output += 'HTML man: ' + build_html_mans.to_string() + '\n'
@@ -251,7 +289,7 @@ output += '\nCONFIGURATION\n'
 output += 'Capability (with libcap): ' + cap.to_string() + '\n'
 output += 'IDN (via libc): ' + idn.to_string() + '\n'
 output += 'NI6 (with libidn2): ' + ni6.to_string() + '\n'
-output += 'I18N (with gettext): ' + gettext.to_string() + '\n'
+output += 'I18N (with gettext): ' + i18_gettext.to_string() + '\n'
 output += 'systemd: ' + install_systemd_units.to_string() + '\n'
 output += 'run tests: ' + run_tests.to_string() + '\n'
 
@@ -263,3 +301,5 @@ output += 'sbindir: ' + sbindir + '\n'
 output += 'systemdunitdir: ' + systemdunitdir + '\n'
 
 message(output)
+
+endif
