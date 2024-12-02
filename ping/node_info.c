@@ -38,6 +38,13 @@
 #include <ctype.h>
 #include <errno.h>
 
+#ifdef USE_IDN
+#include <netdb.h>
+#endif
+#ifdef USE_NI6_IDN
+#include <idn2.h>
+#endif
+
 #include "iputils_common.h"
 #include "iputils_ni.h"
 #include "md5.h"
@@ -230,22 +237,25 @@ static int niquery_set_subject_type(struct ping_ni *ni, int type)
 	return 0;
 }
 
+#if defined(USE_IDN) && defined(AI_IDN)
+# define AI_FLAGS (AI_CANONNAME | AI_IDN | AI_CANONIDN)
+#else
+# define AI_FLAGS AI_CANONNAME
+#endif
+
 static int niquery_option_subject_addr_handler(struct ping_ni *ni, int index, const char *arg)
 {
+	if (niquery_set_subject_type(ni, niquery_options[index].data) < 0)
+		return -1;
+	ni->subject_type = niquery_options[index].data;
+
 	struct addrinfo hints = {
 		.ai_family = AF_UNSPEC,
 		.ai_socktype = SOCK_DGRAM,
-		.ai_flags = getaddrinfo_flags
+		.ai_flags = AI_FLAGS,
 	};
-	struct addrinfo *result, *ai;
-	int ret_val;
-	int offset;
 
-	if (niquery_set_subject_type(ni, niquery_options[index].data) < 0)
-		return -1;
-
-	ni->subject_type = niquery_options[index].data;
-
+	int offset = 0;
 	switch (niquery_options[index].data) {
 	case IPUTILS_NI_ICMP6_SUBJ_IPV6:
 		ni->subject_len = sizeof(struct in6_addr);
@@ -258,17 +268,20 @@ static int niquery_option_subject_addr_handler(struct ping_ni *ni, int index, co
 		hints.ai_family = AF_INET;
 		break;
 	default:
-		/* should not happen. */
-		offset = -1;
-	}
-
-	ret_val = getaddrinfo(arg, 0, &hints, &result);
-	if (ret_val) {
-		error(0, 0, "%s: %s", arg, gai_strerror(ret_val));
+		/* should not happen */
+		error(0, 0, "%s: unknown IPUTILS_NI_ICMP6_SUBJ family(%d)", arg, niquery_options[index].data);
 		return -1;
 	}
 
-	for (ai = result; ai; ai = ai->ai_next) {
+	struct addrinfo *result = NULL;
+	{ int rc = getaddrinfo(arg, 0, &hints, &result);
+	  if (rc) {
+		error(0, 0, "%s: %s", arg, gai_strerror(rc));
+		return -1;
+	  }
+	}
+
+	for (struct addrinfo *ai = result; ai; ai = ai->ai_next) {
 		void *p = malloc(ni->subject_len);
 		if (!p)
 			continue;
@@ -282,7 +295,7 @@ static int niquery_option_subject_addr_handler(struct ping_ni *ni, int index, co
 	return 0;
 }
 
-#ifdef USE_IDN
+#ifdef USE_NI6_IDN
 # if IDN2_VERSION_NUMBER >= 0x02000000
 #  define IDN2_FLAGS IDN2_NONTRANSITIONAL
 # else
@@ -304,17 +317,14 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 	int dots, fqdn = niquery_options[index].data;
 	IPUTILS_MD5_CTX ctxt;
 	uint8_t digest[IPUTILS_MD5LENGTH];
-#ifdef USE_IDN
-	int rc;
-#endif
 
 	if (niquery_set_subject_type(ni, IPUTILS_NI_ICMP6_SUBJ_FQDN) < 0)
 		return -1;
 
-#ifdef USE_IDN
-	rc = idn2_lookup_ul(name, &idn, IDN2_FLAGS);
-	if (rc)
-		error(2, 0, _("IDN encoding error: %s"), idn2_strerror(rc));
+#ifdef USE_NI6_IDN
+	{ int rc = idn2_lookup_ul(name, &idn, IDN2_FLAGS);
+	  if (rc != IDN2_OK)
+		error(2, 0, _("IDN encoding error: %s"), idn2_strerror(rc)); }
 #else
 	idn = strdup(name);
 	if (!idn)

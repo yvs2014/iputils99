@@ -342,6 +342,18 @@ static inline int ping6_unspec(const char *target, struct in6_addr *addr, struct
 	return rc;
 }
 
+#ifdef USE_IDN
+#ifdef AI_IDN
+# define AI_FLAGS (AI_CANONNAME | AI_IDN | AI_CANONIDN)
+#else
+# define AI_FLAGS AI_CANONNAME
+#endif /* AI_IDN */
+#ifdef NI_IDN
+# define NI_FLAGS NI_IDN
+#else
+# define NI_FLAGS 0
+#endif /* NI_IDN */
+#endif /* USE_IDN */
 
 int
 main(int argc, char **argv)
@@ -350,7 +362,7 @@ main(int argc, char **argv)
 		.ai_family = AF_UNSPEC,
 		.ai_protocol = IPPROTO_UDP,
 		.ai_socktype = SOCK_DGRAM,
-		.ai_flags = getaddrinfo_flags
+		.ai_flags = AI_FLAGS,
 	};
 	struct addrinfo *result, *ai;
 	int ret_val;
@@ -788,7 +800,7 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai,
 	static const struct addrinfo hints = {
 		.ai_family = AF_INET,
 		.ai_protocol = IPPROTO_UDP,
-		.ai_flags = getaddrinfo_flags
+		.ai_flags = AI_FLAGS,
 	};
 	int hold, packlen;
 	unsigned char *packet;
@@ -1826,9 +1838,9 @@ char *_pr_addr(struct ping_rts *rts, void *sa, socklen_t salen, int resolve_name
 
 	rts->in_pr_addr = !setjmp(rts->pr_addr_jmp);
 
-	getnameinfo(sa, salen, address, sizeof address, NULL, 0, getnameinfo_flags | NI_NUMERICHOST);
+	getnameinfo(sa, salen, address, sizeof address, NULL, 0, NI_FLAGS | NI_NUMERICHOST);
 	if (!rts->exiting && resolve_name && (rts->opt_force_lookup || !rts->opt_numeric))
-		getnameinfo(sa, salen, name, sizeof name, NULL, 0, getnameinfo_flags);
+		getnameinfo(sa, salen, name, sizeof name, NULL, 0, NI_FLAGS);
 
 	if (*name && strncmp(name, address, NI_MAXHOST))
 		snprintf(buffer, sizeof buffer, "%s (%s)", name, address);

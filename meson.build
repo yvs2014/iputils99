@@ -80,7 +80,7 @@ if cc.compiles('''
 	}
 ''', name : 'struct icmp6_nodeinfo')
 	conf.set('HAVE_STRUCT_ICMP6_NODEINFO', 1,
-		description : 'Defined if struct icmp6_nodeinfo exists.')
+		description: 'Defined if struct icmp6_nodeinfo exists')
 endif
 
 if cc.compiles('''
@@ -93,7 +93,7 @@ if cc.compiles('''
 	}
 ''', name : 'struct tm time;')
 	conf.set('TIME_WITH_SYS_TIME', 1,
-		description : 'Defined if struct tm exists.')
+		description: 'Defined if struct tm exists')
 endif
 
 m_dep = cc.find_library('m')
@@ -105,38 +105,41 @@ else
 endif
 
 cap = get_option('USE_CAP')
-if cap == true
+if cap
 	cap_dep = cc.find_library('cap')
-	conf.set('HAVE_LIBCAP', 1,
-		description : 'Defined if libcap exists.')
+	conf.set('HAVE_LIBCAP', 1, description: 'Defined if libcap exists')
 else
 	cap_dep = dependency('disabler-appears-to-disable-executable-build', required : false)
 endif
 
-opt = get_option('ARPING_DEFAULT_DEVICE')
-if opt != ''
-	conf.set_quoted('DEFAULT_DEVICE', opt, description : 'arping default device.')
+arping_device = get_option('ARPING_DEFAULT_DEVICE')
+if arping_device != ''
+	conf.set_quoted('DEFAULT_DEVICE', arping_device, description: 'arping default device')
 endif
 
-# Some systems needs intl for gettext
+# Some systems need intl for gettext
 intl_dep = []
 gettext = get_option('USE_GETTEXT')
-if gettext == true
+if gettext
 	add_project_arguments(['-DGETTEXT_PACKAGE="iputils"'], language: 'c')
-
-	conf.set('ENABLE_NLS', 1, description : 'If set enable I18N.')
+	conf.set('ENABLE_NLS', 1, description: 'If set enable I18N')
 	conf.set_quoted('LOCALEDIR', localedir)
-	subdir ('po')
-	intl_dep += cc.find_library('intl', required : false)
+	subdir('po')
+	intl_dep += cc.find_library('intl', required: false)
 endif
 
 idn = get_option('USE_IDN')
-if idn == true
-	idn_dep = dependency('libidn2', required : false)
-	if idn_dep.found()
-		add_project_arguments('-DUSE_IDN', language : 'c')
-		conf.set('USE_IDN', 1,
-			description : 'If set use Internationalized Domain Name library.')
+ni6 = get_option('NI6_IDN')
+if idn  # use AI_IDN if available for getaddrinfo() queries
+	idn_dep = []
+	add_project_arguments('-DUSE_IDN', language: 'c')
+	conf.set('USE_IDN', 1, description: 'If set use IDN library')
+	if ni6 # it needs libidn2 explicitly for idn2_lookup_ul() lookups
+		idn_dep = dependency('libidn2', required: false)
+		if idn_dep.found()
+			add_project_arguments('-DUSE_NI6_IDN', language: 'c')
+			conf.set('USE_NI6_IDN', 1, description: 'If set use IDN support for IPv6 NI Queries')
+		endif
 	endif
 else
 	idn_dep = dependency('disabler-appears-to-disable-executable-build', required : false)
@@ -146,12 +149,10 @@ if host_machine.endian() == 'big'
 	conf.set('WORDS_BIGENDIAN', '1')
 endif
 
-foreach h : [
-	'error.h',
-]
+foreach h: ['error.h']
 	if cc.has_header(h)
 		conf.set('HAVE_' + h.to_upper().underscorify(), 1,
-			description : 'Define if ' + h + ' can be included.')
+			description: 'Define if ' + h + ' can be included')
 	endif
 endforeach
 
@@ -161,11 +162,9 @@ git_version_h = vcs_tag(
 	fallback : meson.project_version()
 )
 
-config_h = configure_file(
-	output : 'config.h',
-	configuration : conf)
+config_h = configure_file(output: 'config.h', configuration: conf)
 
-setcap = find_program('setcap', '/usr/sbin/setcap', '/sbin/setcap', required : false)
+setcap = find_program('setcap', '/usr/sbin/setcap', '/sbin/setcap', required: false)
 if cap_dep.found() and setcap.found()
 	perm_type = 'caps'
 	if meson.version().version_compare('>=0.55')
@@ -188,23 +187,23 @@ libcommon = static_library(
 	[common_sources, git_version_h],
 	install : false)
 
-if build_ping == true
+if build_ping
 	subdir ('ping')
 endif
 
-if build_tracepath == true
+if build_tracepath
 	tracepath = executable('tracepath', ['tracepath.c', git_version_h],
 		dependencies : [idn_dep, intl_dep],
 		link_with : [libcommon],
 		install: true)
 endif
 
-if build_clockdiff == true
+if build_clockdiff
 	clockdiff = executable('clockdiff', ['clockdiff.c', git_version_h],
 		dependencies : [cap_dep, intl_dep],
 		link_with : [libcommon],
 		install: true)
-	if (setcap_clockdiff)
+	if setcap_clockdiff
 		meson.add_install_script('build-aux/setcap-setuid.sh',
 			bindir,
 			'clockdiff',
@@ -214,7 +213,7 @@ if build_clockdiff == true
 	endif
 endif
 
-if build_arping == true
+if build_arping
 	arping = executable('arping', ['arping.c', git_version_h],
 		dependencies : [rt_dep, cap_dep, idn_dep, intl_dep],
 		link_with : [libcommon],
@@ -229,7 +228,7 @@ if build_arping == true
 	endif
 endif
 
-if build_mans == true or build_html_mans == true
+if build_mans or build_html_mans
 	subdir ('doc')
 endif
 
@@ -250,7 +249,8 @@ output += 'tracepath: ' + build_tracepath.to_string() + '\n'
 
 output += '\nCONFIGURATION\n'
 output += 'Capability (with libcap): ' + cap.to_string() + '\n'
-output += 'IDN (with libidn2): ' + idn.to_string() + '\n'
+output += 'IDN (via libc): ' + idn.to_string() + '\n'
+output += 'NI6 (with libidn2): ' + ni6.to_string() + '\n'
 output += 'I18N (with gettext): ' + gettext.to_string() + '\n'
 output += 'systemd: ' + install_systemd_units.to_string() + '\n'
 output += 'run tests: ' + run_tests.to_string() + '\n'

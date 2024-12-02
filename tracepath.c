@@ -44,10 +44,10 @@
 # include <locale.h>
 #endif
 
-#ifdef USE_IDN
-# define getnameinfo_flags	NI_IDN
+#if defined(USE_IDN) && defined(NI_IDN)
+# define NI_FLAGS	NI_IDN
 #else
-# define getnameinfo_flags	0
+# define NI_FLAGS	0
 #endif
 
 enum {
@@ -266,16 +266,14 @@ static int recverr(struct run_state *const ctl)
 		}
 
 		if (ctl->no_resolve || ctl->show_both) {
-			if (getnameinfo(sa, salen, abuf, sizeof(abuf), NULL, 0,
-					NI_NUMERICHOST))
+			if (getnameinfo(sa, salen, abuf, sizeof(abuf), NULL, 0, NI_NUMERICHOST))
 				strcpy(abuf, "???");
 		} else
 			abuf[0] = 0;
 
 		if (!ctl->no_resolve || ctl->show_both) {
 			fflush(stdout);
-			if (getnameinfo(sa, salen, hnamebuf, sizeof hnamebuf, NULL, 0,
-					getnameinfo_flags))
+			if (getnameinfo(sa, salen, hnamebuf, sizeof(hnamebuf), NULL, 0, NI_FLAGS))
 				strcpy(hnamebuf, "???");
 		} else
 			hnamebuf[0] = 0;

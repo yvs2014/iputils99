@@ -1,10 +1,10 @@
 # Copyright (c) Iputils Project, 2017-2021
 
-option('USE_CAP', type : 'boolean', value : true,
-	description : 'Capability support (with libcap)')
+option('USE_CAP', type: 'boolean', value: true,
+	description: 'Capability support (with libcap)')
 
-option('USE_IDN', type : 'boolean', value : true,
-	description : 'IDN support (with libidn2)')
+option('USE_IDN', type: 'boolean', value: true,
+	description: 'IDN support (via libc)')
 
 option('BUILD_ARPING', type : 'boolean', value : true,
         description : 'Build arping')
@@ -47,6 +47,9 @@ option('INSTALL_SYSTEMD_UNITS', type: 'boolean', value: false,
 
 option('USE_GETTEXT', type: 'boolean', value: true,
 	description: 'Enable I18N')
+
+option('NI6_IDN', type: 'boolean', value: false,
+	description: 'Look IDN up for IPv6 NI Queries')
 
 option('SKIP_TESTS', type: 'boolean', value: false,
 	description: 'Skip tests during build')

@@ -37,14 +37,6 @@
 # include <sys/capability.h>
 #endif
 
-#ifdef USE_IDN
-# define getaddrinfo_flags (AI_CANONNAME | AI_IDN | AI_CANONIDN)
-# define getnameinfo_flags NI_IDN
-#else
-# define getaddrinfo_flags (AI_CANONNAME)
-# define getnameinfo_flags 0
-#endif
-
 #include <ifaddrs.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
