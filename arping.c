@@ -953,7 +953,7 @@ int main(int argc, char **argv)
 		struct addrinfo hints = {
 			.ai_family = AF_INET,
 			.ai_socktype = SOCK_RAW,
-#ifdef USE_IDN
+#if defined(USE_IDN) && defined(AI_IDN)
 			.ai_flags = AI_IDN | AI_CANONIDN
 #endif
 		};

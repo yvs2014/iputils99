@@ -48,8 +48,5 @@ option('INSTALL_SYSTEMD_UNITS', type: 'boolean', value: false,
 option('USE_GETTEXT', type: 'boolean', value: true,
 	description: 'Enable I18N')
 
-option('NI6_IDN', type: 'boolean', value: false,
-	description: 'Look IDN up for IPv6 NI Queries')
-
 option('SKIP_TESTS', type: 'boolean', value: false,
 	description: 'Skip tests during build')

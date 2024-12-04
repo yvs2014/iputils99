@@ -399,7 +399,7 @@ main(int argc, char **argv)
 
 #if defined(USE_IDN) || defined(ENABLE_NLS)
 	setlocale(LC_ALL, "");
-#if defined(USE_IDN)
+#if defined(USE_IDN) && defined(AI_CANONIDN)
 	if (!strcmp(setlocale(LC_ALL, NULL), "C"))
 		hints.ai_flags &= ~ AI_CANONIDN;
 #endif

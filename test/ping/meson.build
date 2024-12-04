@@ -2,6 +2,15 @@
 
 # local edition by @yvs
 
+glibc_test = false
+if cc.has_header('features.h')
+  macrotest = '''#include <features.h>
+#if !defined(__GLIBC__) || defined(__UCLIBC__)
+#error "Not glibc"
+#endif'''
+  glibc_test = cc.compiles(macrotest, name: 'glibc test')
+endif
+
 ipfamily    = ['', '-4']
 localhost   = 'localhost'
 localhost4  = '127.0.0.1'
@@ -96,7 +105,10 @@ endforeach
 if ip6enabled
   suite = 'ip4in6'
   fail  = false
-  af_4in6   = ['',  '-4']
+  af_4in6   = ['']
+  if glibc_test
+    af_4in6 += '-4'
+  endif
   args_4in6 = ['-c', '1']
   localhost_4in6 = ['::ffff:127.0.0.1', '::ffff:7f00:1', '0:0:0:0:0:ffff:127.0.0.1' ]
   foreach af: af_4in6

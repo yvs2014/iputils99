@@ -429,9 +429,7 @@ int main(int argc, char **argv)
 		.ai_family = AF_UNSPEC,
 		.ai_socktype = SOCK_DGRAM,
 		.ai_protocol = IPPROTO_UDP,
-#ifdef USE_IDN
-		.ai_flags = AI_IDN | AI_CANONNAME,
-#endif
+		.ai_flags = AI_CANONNAME,
 	};
 	struct addrinfo *result;
 	int ch;
@@ -439,6 +437,10 @@ int main(int argc, char **argv)
 	int on;
 	char *p;
 	char pbuf[NI_MAXSERV];
+
+#if defined(USE_IDN) && defined(AI_IDN)
+	hints.ai_flags |= AI_IDN;
+#endif
 
 	atexit(close_stdout);
 #if defined(USE_IDN) || defined(ENABLE_NLS)

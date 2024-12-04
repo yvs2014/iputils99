@@ -39,10 +39,9 @@
 #include <errno.h>
 
 #ifdef USE_IDN
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <netdb.h>
-#endif
-#ifdef USE_NI6_IDN
-#include <idn2.h>
 #endif
 
 #include "iputils_common.h"
@@ -295,12 +294,8 @@ static int niquery_option_subject_addr_handler(struct ping_ni *ni, int index, co
 	return 0;
 }
 
-#ifdef USE_NI6_IDN
-# if IDN2_VERSION_NUMBER >= 0x02000000
-#  define IDN2_FLAGS IDN2_NONTRANSITIONAL
-# else
-#  define IDN2_FLAGS 0
-# endif
+#if defined(USE_IDN) && defined(HAVE___IDNA_TO_DNS_ENCODING)
+int __idna_to_dns_encoding (const char *name, char **result);
 #endif
 
 static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, const char *name)
@@ -321,10 +316,11 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 	if (niquery_set_subject_type(ni, IPUTILS_NI_ICMP6_SUBJ_FQDN) < 0)
 		return -1;
 
-#ifdef USE_NI6_IDN
-	{ int rc = idn2_lookup_ul(name, &idn, IDN2_FLAGS);
-	  if (rc != IDN2_OK)
-		error(2, 0, _("IDN encoding error: %s"), idn2_strerror(rc)); }
+#if defined(USE_IDN) && defined(HAVE___IDNA_TO_DNS_ENCODING)
+	{ // glibc: internal libidn2 lookup
+	  int rc = __idna_to_dns_encoding(name, &idn);
+	  if (rc)
+		error(2, 0, _("IDN encoding error: %s"), gai_strerror(rc)); }
 #else
 	idn = strdup(name);
 	if (!idn)

@@ -12,7 +12,6 @@ ping = executable('ping', [
 	include_directories : inc,
 	dependencies : [
 		cap_dep,
-		idn_dep,
 		intl_dep,
 		m_dep,
 		resolv_dep

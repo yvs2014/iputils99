@@ -58,17 +58,7 @@ if (not get_option('NO_SETCAP_OR_SUID'))
   setcap_ping = get_option('SETCAP_OR_SUID_PING')
 endif
 
-# Check functions.
-foreach f : '''
-	__fpending
-	getrandom
-	nanosleep
-'''.split()
-	if cc.has_function(f, args : '-D_GNU_SOURCE')
-		conf.set('HAVE_' + f.to_upper(), 1,
-			description : 'Define to 1 if you have the ' + f + ' function')
-	endif
-endforeach
+extra_funcs = ['getrandom', 'nanosleep', '__fpending']
 
 if cc.compiles('''
 	#include <sys/types.h>
@@ -78,9 +68,8 @@ if cc.compiles('''
 		struct icmp6_nodeinfo nodeinfo;
 		return 0;
 	}
-''', name : 'struct icmp6_nodeinfo')
-	conf.set('HAVE_STRUCT_ICMP6_NODEINFO', 1,
-		description: 'Defined if struct icmp6_nodeinfo exists')
+''', name: 'struct icmp6_nodeinfo')
+	conf.set('HAVE_STRUCT_ICMP6_NODEINFO', 1, description: 'Defined if struct icmp6_nodeinfo exists')
 endif
 
 if cc.compiles('''
@@ -91,9 +80,8 @@ if cc.compiles('''
 		struct tm time;
 		return 0;
 	}
-''', name : 'struct tm time;')
-	conf.set('TIME_WITH_SYS_TIME', 1,
-		description: 'Defined if struct tm exists')
+''', name: 'struct tm time;')
+	conf.set('TIME_WITH_SYS_TIME', 1, description: 'Defined if struct tm exists')
 endif
 
 m_dep = cc.find_library('m')
@@ -129,30 +117,28 @@ if i18_gettext
 endif
 
 idn = get_option('USE_IDN')
-ni6 = get_option('NI6_IDN')
-if idn  # use AI_IDN if available for getaddrinfo() queries
-	idn_dep = []
+if idn	# If available: use AI_IDN for getaddrinfo() queries
+	# and idna_to_dns_encoding() for nodeindo IDN
 	add_project_arguments('-DUSE_IDN', language: 'c')
-	conf.set('USE_IDN', 1, description: 'If set use IDN library')
-	if ni6 # it needs libidn2 explicitly for idn2_lookup_ul() lookups
-		idn_dep = dependency('libidn2', required: false)
-		if idn_dep.found()
-			add_project_arguments('-DUSE_NI6_IDN', language: 'c')
-			conf.set('USE_NI6_IDN', 1, description: 'If set use IDN support for IPv6 NI Queries')
-		endif
-	endif
-else
-	idn_dep = dependency('disabler-appears-to-disable-executable-build', required : false)
+	conf.set('USE_IDN', 1, description: 'If set use libc IDN support')
+	extra_funcs += '__idna_to_dns_encoding'
 endif
 
 if host_machine.endian() == 'big'
 	conf.set('WORDS_BIGENDIAN', '1')
 endif
 
+# Check functions availability
+foreach f: extra_funcs
+	if cc.has_function(f, args: '-D_GNU_SOURCE')
+		conf.set('HAVE_' + f.to_upper(), 1, description: 'Define to 1 if you have ' + f + ' function')
+	endif
+endforeach
+
+# Check headers availability
 foreach h: ['error.h']
 	if cc.has_header(h)
-		conf.set('HAVE_' + h.to_upper().underscorify(), 1,
-			description: 'Define if ' + h + ' can be included')
+		conf.set('HAVE_' + h.to_upper().underscorify(), 1, description: 'Define if ' + h + ' can be included')
 	endif
 endforeach
 
@@ -193,7 +179,7 @@ endif
 
 if build_tracepath
 	tracepath = executable('tracepath', ['tracepath.c', git_version_h],
-		dependencies : [idn_dep, intl_dep],
+		dependencies : [intl_dep],
 		link_with : [libcommon],
 		install: true)
 endif
@@ -215,7 +201,7 @@ endif
 
 if build_arping
 	arping = executable('arping', ['arping.c', git_version_h],
-		dependencies : [rt_dep, cap_dep, idn_dep, intl_dep],
+		dependencies : [rt_dep, cap_dep, intl_dep],
 		link_with : [libcommon],
 		install: true)
 	if setcap_arping
@@ -255,7 +241,6 @@ if meson.version().version_compare('>=0.53')
 		]], ['CONFIGURATION', [
 ['Linux caps (libcap)', cap],
 ['IDN (via libc)',      idn],
-['NI6 (libidn2)',       ni6],
 ['I18N (gettext)',      i18_gettext],
 ['Systemd',             install_systemd_units],
 ['Tests',               run_tests],
@@ -288,7 +273,6 @@ output += 'tracepath: ' + build_tracepath.to_string() + '\n'
 output += '\nCONFIGURATION\n'
 output += 'Capability (with libcap): ' + cap.to_string() + '\n'
 output += 'IDN (via libc): ' + idn.to_string() + '\n'
-output += 'NI6 (with libidn2): ' + ni6.to_string() + '\n'
 output += 'I18N (with gettext): ' + i18_gettext.to_string() + '\n'
 output += 'systemd: ' + install_systemd_units.to_string() + '\n'
 output += 'run tests: ' + run_tests.to_string() + '\n'
