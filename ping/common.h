@@ -30,7 +30,6 @@
 #include <resolv.h>
 
 #ifdef HAVE_LIBCAP
-# include <sys/prctl.h>
 # include <sys/capability.h>
 #endif
 
@@ -290,25 +289,24 @@ static inline void acknowledge(struct ping_rts *rts, uint16_t seq)
 	}
 }
 
-extern void limit_capabilities(struct ping_rts *rts);
-static int enable_capability_raw(void);
-static int disable_capability_raw(void);
-static int enable_capability_admin(void);
-static int disable_capability_admin(void);
+void limit_capabilities(struct ping_rts *rts);
 #ifdef HAVE_LIBCAP
-extern int modify_capability(cap_value_t, cap_flag_value_t);
-static inline int enable_capability_raw(void)		{ return modify_capability(CAP_NET_RAW,   CAP_SET);   }
-static inline int disable_capability_raw(void)		{ return modify_capability(CAP_NET_RAW,   CAP_CLEAR); }
-static inline int enable_capability_admin(void)		{ return modify_capability(CAP_NET_ADMIN, CAP_SET);   }
-static inline int disable_capability_admin(void)	{ return modify_capability(CAP_NET_ADMIN, CAP_CLEAR); }
+# include <sys/capability.h>
+int modify_capability(cap_value_t, cap_flag_value_t);
+#define  ENABLE_CAPABILITY_RAW   modify_capability(CAP_NET_RAW,   CAP_SET)
+#define DISABLE_CAPABILITY_RAW   modify_capability(CAP_NET_RAW,   CAP_CLEAR)
+#define  ENABLE_CAPABILITY_ADMIN modify_capability(CAP_NET_ADMIN, CAP_SET)
+#define DISABLE_CAPABILITY_ADMIN modify_capability(CAP_NET_ADMIN, CAP_CLEAR)
 #else
-extern int modify_capability(int);
-static inline int enable_capability_raw(void)		{ return modify_capability(1); }
-static inline int disable_capability_raw(void)		{ return modify_capability(0); }
-static inline int enable_capability_admin(void)		{ return modify_capability(1); }
-static inline int disable_capability_admin(void)	{ return modify_capability(0); }
+int modify_capability(int);
+#define  ENABLE_SUID modify_capability(1)
+#define DISABLE_SUID modify_capability(0)
+#define  ENABLE_CAPABILITY_RAW    ENABLE_SUID
+#define DISABLE_CAPABILITY_RAW   DISABLE_SUID
+#define  ENABLE_CAPABILITY_ADMIN  ENABLE_SUID
+#define DISABLE_CAPABILITY_ADMIN DISABLE_SUID
 #endif
-extern void drop_capabilities(void);
+void drop_capabilities(void);
 
 char *pr_addr(struct ping_rts *rts, void *sa, socklen_t salen);
 char *pr_raw_addr(struct ping_rts *rts, void *sa, socklen_t salen);
@@ -364,6 +362,5 @@ struct ni_hdr {
 #define ni_cksum	ni_u.icmp6_cksum
 #define ni_qtype	ni_u.icmp6_data16[0]
 #define ni_flags	ni_u.icmp6_data16[1]
-
 
 #endif

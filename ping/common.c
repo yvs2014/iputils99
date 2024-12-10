@@ -47,7 +47,9 @@
 #define HZ sysconf(_SC_CLK_TCK)
 #endif
 
-#ifndef HAVE_LIBCAP
+#ifdef HAVE_LIBCAP
+# include <sys/prctl.h>
+#else
 static uid_t euid;
 #endif
 
@@ -104,8 +106,7 @@ void usage(void) {
 	exit(2);
 }
 
-void limit_capabilities(struct ping_rts *rts)
-{
+void limit_capabilities(struct ping_rts *rts) {
 #ifdef HAVE_LIBCAP
 	cap_t cap_cur_p;
 	cap_t cap_p;
@@ -146,8 +147,7 @@ void limit_capabilities(struct ping_rts *rts)
 }
 
 #ifdef HAVE_LIBCAP
-int modify_capability(cap_value_t cap, cap_flag_value_t on)
-{
+int modify_capability(cap_value_t cap, cap_flag_value_t on) {
 	cap_t cap_p = cap_get_proc();
 	cap_flag_value_t cap_ok;
 	int rc = -1;
@@ -181,19 +181,15 @@ out:
 	return rc;
 }
 #else
-int modify_capability(int on)
-{
-	if (seteuid(on ? euid : getuid())) {
+int modify_capability(int on) {
+	int rc = seteuid(on ? euid : getuid());
+	if (rc)
 		error(0, errno, "seteuid");
-		return -1;
-	}
-
-	return 0;
+	return rc;
 }
 #endif
 
-void drop_capabilities(void)
-{
+void drop_capabilities(void) {
 #ifdef HAVE_LIBCAP
 	cap_t cap = cap_init();
 	if (cap_set_proc(cap) < 0)
@@ -459,10 +455,10 @@ void sock_setmark(struct ping_rts *rts, int fd) {
 #ifdef SO_MARK
 	if (!rts->opt_mark)
 		return;
-	enable_capability_admin();
+	ENABLE_CAPABILITY_ADMIN;
 	int ret = setsockopt(fd, SOL_SOCKET, SO_MARK, &(rts->mark), sizeof(rts->mark));
 	int errno_save = errno;
-	disable_capability_admin();
+	DISABLE_CAPABILITY_ADMIN;
 	if (ret == -1) {
 		error(0, errno_save, _("WARNING: failed to set mark: %u"), rts->mark);
 		if (errno_save == EPERM)
@@ -978,3 +974,4 @@ char *str_interval(int interval)
 
 	return buf;
 }
+

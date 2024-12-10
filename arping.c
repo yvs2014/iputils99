@@ -150,8 +150,7 @@ static void usage(void)
 }
 
 #ifdef HAVE_LIBCAP
-static void limit_capabilities(struct run_state *ctl)
-{
+static void arping_limit_capabilities(struct run_state *ctl) {
 	cap_t cap_p;
 
 	cap_p = cap_get_proc();
@@ -185,8 +184,7 @@ static void limit_capabilities(struct run_state *ctl)
 	cap_free(cap_p);
 }
 
-static int modify_capability_raw(struct run_state *ctl, int on)
-{
+static int arping_modify_capability_raw(struct run_state *ctl, int on) {
 	cap_t cap_p;
 
 	if (ctl->cap_raw != CAP_SET)
@@ -205,8 +203,7 @@ static int modify_capability_raw(struct run_state *ctl, int on)
 	return 0;
 }
 
-static void drop_capabilities(void)
-{
+static void arping_drop_capabilities(void) {
 	cap_t cap_p = cap_init();
 
 	if (!cap_p)
@@ -218,33 +215,28 @@ static void drop_capabilities(void)
 	cap_free(cap_p);
 }
 #else	/* HAVE_LIBCAP */
-static void limit_capabilities(struct run_state *ctl)
-{
+static inline void arping_limit_capabilities(struct run_state *ctl) {
 	ctl->euid = geteuid();
 }
 
-static int modify_capability_raw(struct run_state *ctl, int on)
-{
+static int arping_modify_capability_raw(struct run_state *ctl, int on) {
 	if (setuid(on ? ctl->euid : getuid()))
 		error(-1, errno, "setuid");
 	return 0;
 }
 
-static void drop_capabilities(void)
-{
+static inline void arping_drop_capabilities(void) {
 	if (setuid(getuid()) < 0)
 		error(-1, errno, "setuid");
 }
 #endif	/* HAVE_LIBCAP */
 
-static inline int enable_capability_raw(struct run_state *ctl)
-{
-	return modify_capability_raw(ctl, 1);
+static inline int arping_enable_capability_raw(struct run_state *ctl) {
+	return arping_modify_capability_raw(ctl, 1);
 }
 
-static inline int disable_capability_raw(struct run_state *ctl)
-{
-	return modify_capability_raw(ctl, 0);
+static inline int arping_disable_capability_raw(struct run_state *ctl) {
+	return arping_modify_capability_raw(ctl, 0);
 }
 
 static int send_pack(struct run_state *ctl)
@@ -873,7 +865,7 @@ int main(int argc, char **argv)
 	int ch;
 
 	atexit(close_stdout);
-	limit_capabilities(&ctl);
+	arping_limit_capabilities(&ctl);
 #if defined(USE_IDN) || defined(ENABLE_NLS)
 	setlocale(LC_ALL, "");
 #ifdef ENABLE_NLS
@@ -934,11 +926,11 @@ int main(int argc, char **argv)
 	if (argc != 1)
 		usage();
 
-	enable_capability_raw(&ctl);
+	arping_enable_capability_raw(&ctl);
 	ctl.socketfd = socket(PF_PACKET, SOCK_DGRAM, 0);
 	if (ctl.socketfd < 0)
 		error(2, errno, "socket");
-	disable_capability_raw(&ctl);
+	arping_disable_capability_raw(&ctl);
 
 	ctl.target = *argv;
 
@@ -991,13 +983,11 @@ int main(int argc, char **argv)
 		if (probe_fd < 0)
 			error(2, errno, "socket");
 		if (ctl.device.name) {
-			enable_capability_raw(&ctl);
-
+			arping_enable_capability_raw(&ctl);
 			if (setsockopt(probe_fd, SOL_SOCKET, SO_BINDTODEVICE, ctl.device.name,
 				       strlen(ctl.device.name) + 1) == -1)
 				error(0, errno, _("WARNING: interface is ignored"));
-
-			disable_capability_raw(&ctl);
+			arping_disable_capability_raw(&ctl);
 		}
 		memset(&saddr, 0, sizeof(saddr));
 		saddr.sin_family = AF_INET;
@@ -1054,7 +1044,7 @@ int main(int argc, char **argv)
 	if (!ctl.source && !ctl.gsrc.s_addr && !ctl.dad)
 		error(2, errno, _("no source address in not-DAD mode"));
 
-	drop_capabilities();
+	arping_drop_capabilities();
 
 	return event_loop(&ctl);
 }

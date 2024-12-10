@@ -173,7 +173,7 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai,
 			if (IN6_IS_ADDR_LINKLOCAL(&rts->firsthop.sin6_addr) ||
 			    IN6_IS_ADDR_MC_LINKLOCAL(&rts->firsthop.sin6_addr))
 				rts->firsthop.sin6_scope_id = iface;
-			enable_capability_raw();
+			ENABLE_CAPABILITY_RAW;
 #ifdef IPV6_RECVPKTINFO
 			if (setsockopt(probe_fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof ipi) == -1 ||
 			    setsockopt(sock->fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof ipi) == -1) {
@@ -184,7 +184,7 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai,
 			    setsockopt(sock->fd, SOL_SOCKET, SO_BINDTODEVICE, rts->device, strlen(rts->device) + 1) == -1) {
 				error(2, errno, "setsockopt(SO_BINDTODEVICE) %s", rts->device);
 			}
-			disable_capability_raw();
+			DISABLE_CAPABILITY_RAW;
 		}
 
 		if (rts->tclass &&
@@ -252,12 +252,11 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai,
 		ipi->ipi6_ifindex = if_name2index(rts->device);
 
 		if (rts->opt_strictsource) {
-			enable_capability_raw();
+			ENABLE_CAPABILITY_RAW;
 			rc = setsockopt(sock->fd, SOL_SOCKET, SO_BINDTODEVICE,
 					rts->device, strlen(rts->device) + 1);
 			errno_save = errno;
-			disable_capability_raw();
-
+			DISABLE_CAPABILITY_RAW;
 			if (rc == -1)
 				error(2, errno_save, "SO_BINDTODEVICE %s", rts->device);
 		}

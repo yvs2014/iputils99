@@ -600,37 +600,29 @@ main(int argc, char **argv)
 		free(outpack_fill);
 	}
 
-	/* Create sockets */
-	enable_capability_raw();
-
-	/*
-	 * Current Linux kernel 6.0 doesn't support on SOCK_DGRAM setting
-	 * ident == 0
-	 */
+	/* Current Linux kernel 6.0 doesn't support on SOCK_DGRAM setting ident == 0 */
 	if (!rts.ident) {
 		if (rts.opt_verbose)
 			error(0, 0, _("WARNING: ident 0 => forcing raw socket"));
-
 		hints.ai_socktype = SOCK_RAW;
 	}
 
+	/* Create sockets */
+	ENABLE_CAPABILITY_RAW;
 	if (hints.ai_family != AF_INET6) {
 		create_socket(&rts, &sock4, AF_INET, hints.ai_socktype, IPPROTO_ICMP,
 			      hints.ai_family == AF_INET);
 	}
-
 	if (hints.ai_family != AF_INET) {
 		create_socket(&rts, &sock6, AF_INET6, hints.ai_socktype, IPPROTO_ICMPV6, sock4.fd == -1);
-
-		/* This may not be needed if both protocol versions always had the same value, but
-		 * since I don't know that, it's better to be safe than sorry. */
+		/* This may not be needed if both protocol versions always had the same value,
+		 * but since I don't know that, it's better to be safe than sorry */
 		rts.pmtudisc = rts.pmtudisc == IP_PMTUDISC_DO	? IPV6_PMTUDISC_DO   :
 			       rts.pmtudisc == IP_PMTUDISC_DONT ? IPV6_PMTUDISC_DONT :
 			       rts.pmtudisc == IP_PMTUDISC_WANT ? IPV6_PMTUDISC_WANT :
 			       rts.pmtudisc == IP_PMTUDISC_PROBE? IPV6_PMTUDISC_PROBE: rts.pmtudisc;
 	}
-
-	disable_capability_raw();
+	DISABLE_CAPABILITY_RAW;
 
 	/* Limit address family on single-protocol systems */
 	if (hints.ai_family == AF_UNSPEC) {
@@ -735,11 +727,11 @@ static void bind_to_device(struct ping_rts *rts, int fd, in_addr_t addr)
 	int rc;
 	int errno_save;
 
-	enable_capability_raw();
+	ENABLE_CAPABILITY_RAW;
 	rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, rts->device,
 			strlen(rts->device) + 1);
 	errno_save = errno;
-	disable_capability_raw();
+	DISABLE_CAPABILITY_RAW;
 
 	if (rc != -1)
 		return;
