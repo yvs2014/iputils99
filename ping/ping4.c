@@ -54,15 +54,16 @@
 
 #include "iputils_common.h"
 #include "common.h"
-#include "ping4_func.h"
+#include "ping4.h"
 #include "ping4_aux.h"
+#include "ping4_func.h"
 
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-//#include <netinet/ip_icmp.h>
+#include <netinet/ip_icmp.h>
 
 #ifndef ICMP_FILTER
 #define ICMP_FILTER	1
@@ -84,7 +85,7 @@ struct icmp_filter {
  */
 // func_set:send_probe
 static int ping4_send_probe(struct ping_rts *rts, socket_st *sock, void *packet,
-		     unsigned packet_size __attribute__((__unused__)))
+		unsigned packet_size __attribute__((__unused__)))
 {
 	struct icmphdr *icp;
 	int cc;
@@ -231,8 +232,7 @@ out:
  */
 // func_set:parse_reply
 static int ping4_parse_reply(struct ping_rts *rts, struct socket_st *sock,
-		      struct msghdr *msg, int cc, void *addr,
-		      struct timeval *tv)
+	struct msghdr *msg, int cc, void *addr, struct timeval *tv)
 {
 	struct sockaddr_in *from = addr;
 	uint8_t *buf = msg->msg_iov->iov_base;

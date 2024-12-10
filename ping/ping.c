@@ -52,6 +52,7 @@
 #include "iputils_common.h"
 #include "common.h"
 #include "ping4.h"
+#include "ping6.h"
 #include "extra.h"
 
 #include <stdlib.h>

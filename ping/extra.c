@@ -3,7 +3,7 @@
 // -- fixups: ip4-in-ip6-space, ip6-link-local-scope
 
 #include "extra.h"
-#include "ping6_common.h"
+#include "ping6.h"
 
 #include <string.h>
 #ifdef HAVE_ERROR_H

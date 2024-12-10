@@ -1003,3 +1003,9 @@ char *sprint_addr_common(struct ping_rts *rts, void *sa, socklen_t salen, int re
 	return buffer;
 }
 
+int ntohsp(uint16_t *p) {
+	uint16_t v;
+	memcpy(&v, p, sizeof(v));
+	return ntohs(v);
+}
+

@@ -302,7 +302,6 @@ char *sprint_addr_common(struct ping_rts *rts, void *sa, socklen_t salen, int re
 #define SPRINT_RAW_ADDR(rts, sastruct, salen) sprint_addr_common((rts), (sastruct), (salen), 0)
 
 char *str_interval(int interval);
-
 int is_ours(struct ping_rts *rts, socket_st *sock, uint16_t id);
 int pinger(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock);
 void sock_setbufs(struct ping_rts *rts, socket_st *sock, int alloc);
@@ -317,20 +316,9 @@ int gather_statistics(struct ping_rts *rts, uint8_t *icmph, int icmplen,
 			     int wrong_source);
 void print_timestamp(struct ping_rts *rts);
 void fill_packet(struct ping_rts *rts, char *patp, unsigned char *packet, size_t packet_size);
+int ntohsp(uint16_t *p);
 
 void usage(void);
-
-/* IPv6 */
-
-int ping6_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai,
-	      socket_st *sock);
-void ping6_usage(unsigned from_ping);
-
-int ping6_send_probe(struct ping_rts *rts, socket_st *sockets, void *packet, unsigned packet_size);
-int ping6_receive_error_msg(struct ping_rts *rts, socket_st *sockets);
-int ping6_parse_reply(struct ping_rts *rts, socket_st *, struct msghdr *msg, int cc, void *addr, struct timeval *);
-void ping6_install_filter(struct ping_rts *rts, socket_st *sockets);
-int ntohsp(uint16_t *p);
 
 /* IPv6 node information query */
 
