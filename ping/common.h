@@ -1,15 +1,13 @@
 #ifndef PING_COMMON_H
 #define PING_COMMON_H
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
-#include <signal.h>
 #include <poll.h>
 #include <sys/param.h>
 #include <sys/socket.h>
@@ -20,7 +18,6 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <sys/uio.h>
-#include <string.h>
 #include <netdb.h>
 #include <setjmp.h>
 #include <asm/byteorder.h>
@@ -281,58 +278,6 @@ static inline void write_stdout(const char *str, size_t len)
 	} while (len > o || cc < 0);
 }
 
-/*
- * tvsub --
- *	Subtract 2 timeval structs:  out = out - in.  Out is assumed to
- * be >= in.
- */
-static inline void tvsub(struct timeval *out, struct timeval *in)
-{
-	if ((out->tv_usec -= in->tv_usec) < 0) {
-		--out->tv_sec;
-		out->tv_usec += 1000000;
-	}
-	out->tv_sec -= in->tv_sec;
-}
-
-/*
- * tssub --
- *	Subtract 2 timespec structs:  out = out - in.  Out is assumed to
- * be >= in.
- */
-static inline void tssub(struct timespec *out, struct timespec *in)
-{
-	if ((out->tv_nsec -= in->tv_nsec) < 0) {
-		--out->tv_sec;
-		out->tv_nsec += 1000000000;
-	}
-	out->tv_sec -= in->tv_sec;
-}
-
-static inline void set_signal(int signo, void (*handler)(int))
-{
-	struct sigaction sa;
-	memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = handler;
-	sa.sa_flags = SA_RESTART;
-	sigaction(signo, &sa, NULL);
-}
-
-extern int __schedule_exit(int next);
-
-static inline int schedule_exit(struct ping_rts *rts, int next)
-{
-	if (rts->npackets && rts->ntransmitted >= rts->npackets && !rts->deadline)
-		next = __schedule_exit(next);
-	return next;
-}
-
-static inline int in_flight(struct ping_rts *rts)
-{
-	uint16_t diff = (uint16_t)rts->ntransmitted - rts->acked;
-	return (diff <= 0x7FFF) ? diff : rts->ntransmitted - rts->nreceived - rts->nerrors;
-}
-
 static inline void acknowledge(struct ping_rts *rts, uint16_t seq)
 {
 	uint16_t diff = (uint16_t)rts->ntransmitted - seq;
@@ -345,15 +290,6 @@ static inline void acknowledge(struct ping_rts *rts, uint16_t seq)
 	}
 }
 
-static inline void advance_ntransmitted(struct ping_rts *rts)
-{
-	rts->ntransmitted++;
-	/* Invalidate acked, if 16 bit seq overflows. */
-	if ((uint16_t)rts->ntransmitted - rts->acked > 0x7FFF)
-		rts->acked = (uint16_t)rts->ntransmitted + 1;
-}
-
-extern void usage(void) __attribute__((noreturn));
 extern void limit_capabilities(struct ping_rts *rts);
 static int enable_capability_raw(void);
 static int disable_capability_raw(void);
@@ -379,22 +315,21 @@ char *pr_raw_addr(struct ping_rts *rts, void *sa, socklen_t salen);
 char *str_interval(int interval);
 
 int is_ours(struct ping_rts *rts, socket_st *sock, uint16_t id);
-extern int pinger(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock);
-extern void sock_setbufs(struct ping_rts *rts, socket_st *, int alloc);
-extern void sock_setmark(struct ping_rts *rts, int fd);
-extern void setup(struct ping_rts *rts, socket_st *);
-extern int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st*,
-		     uint8_t *packet, int packlen);
-extern int finish(struct ping_rts *rts);
-extern void status(struct ping_rts *rts);
-extern void common_options(int ch);
-extern int gather_statistics(struct ping_rts *rts, uint8_t *icmph, int icmplen,
+int pinger(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock);
+void sock_setbufs(struct ping_rts *rts, socket_st *sock, int alloc);
+void sock_setmark(struct ping_rts *rts, int fd);
+void setup(struct ping_rts *rts, socket_st *sock);
+int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
+	uint8_t *packet, int packlen);
+int gather_statistics(struct ping_rts *rts, uint8_t *icmph, int icmplen,
 			     int cc, uint16_t seq, int hops,
 			     int csfailed, struct timeval *tv, char *from,
 			     void (*pr_reply)(uint8_t *ptr, int cc), int multicast,
 			     int wrong_source);
-extern void print_timestamp(struct ping_rts *rts);
-void fill(struct ping_rts *rts, char *patp, unsigned char *packet, size_t packet_size);
+void print_timestamp(struct ping_rts *rts);
+void fill_packet(struct ping_rts *rts, char *patp, unsigned char *packet, size_t packet_size);
+
+void usage(void);
 
 /* IPv6 */
 
@@ -429,5 +364,6 @@ struct ni_hdr {
 #define ni_cksum	ni_u.icmp6_cksum
 #define ni_qtype	ni_u.icmp6_data16[0]
 #define ni_flags	ni_u.icmp6_data16[1]
+
 
 #endif

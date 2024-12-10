@@ -30,15 +30,14 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#include "common.h"
+#include "iputils_common.h"
 
+#include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include <errno.h>
-
-#include "iputils_common.h"
-#include "common.h"
+#include <signal.h>
 
 #if defined(USE_IDN)
 # include <locale.h>
@@ -52,8 +51,7 @@
 static uid_t euid;
 #endif
 
-void usage(void)
-{
+void usage(void) {
 	fprintf(stderr, _(
 		"\nUsage\n"
 		"  ping [options] <destination>\n"
@@ -207,45 +205,37 @@ void drop_capabilities(void)
 #endif
 }
 
-/* Fills all the outpack, excluding ICMP header, but _including_
- * timestamp area with supplied pattern.
+/*
+ * Fills all the outpack, excluding ICMP header,
+ * but _including_ timestamp area with supplied pattern
  */
-void fill(struct ping_rts *rts, char *patp, unsigned char *packet, size_t packet_size)
-{
-	int ii, jj;
-	unsigned int pat[16];
-	char *cp;
-	unsigned char *bp = packet + 8;
-
+void fill_packet(struct ping_rts *rts, char *patp, unsigned char *packet, size_t packet_size) {
 #ifdef USE_IDN
 	setlocale(LC_ALL, "C");
 #endif
-
-	for (cp = patp; *cp; cp++) {
+	for (char *cp = patp; *cp; cp++) {
 		if (!isxdigit(*cp))
 			error(2, 0, _("patterns must be specified as hex digits: %s"), cp);
 	}
-	ii = sscanf(patp,
+	unsigned int pat[16];
+	int items = sscanf(patp,
 		    "%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x",
 		    &pat[0], &pat[1], &pat[2], &pat[3], &pat[4], &pat[5],
 		    &pat[6], &pat[7], &pat[8], &pat[9], &pat[10], &pat[11],
 		    &pat[12], &pat[13], &pat[14], &pat[15]);
-
-	if (ii > 0) {
-		size_t kk;
-		size_t max = packet_size < (size_t)ii + 8 ? 0 : packet_size - (size_t)ii + 8;
-
-		for (kk = 0; kk <= max; kk += ii)
-			for (jj = 0; jj < ii; ++jj)
-				bp[jj + kk] = pat[jj];
+	unsigned char *bp = packet + 8;
+	if (items > 0) {
+		size_t max = (packet_size < ((size_t)items + 8)) ? 0 : (packet_size - (size_t)items + 8);
+		for (size_t i = 0; i <= max; i += items)
+			for (int j = 0; j < items; ++j)
+				bp[i + j] = pat[j];
 	}
 	if (!rts->opt_quiet) {
 		printf(_("PATTERN: 0x"));
-		for (jj = 0; jj < ii; ++jj)
-			printf("%02x", bp[jj] & 0xFF);
+		for (int i = 0; i < items; i++)
+			printf("%02x", bp[i] & 0xFF);
 		printf("\n");
 	}
-
 #ifdef USE_IDN
 	setlocale(LC_ALL, "");
 #endif
@@ -263,28 +253,22 @@ static void sigstatus(int signo __attribute__((__unused__)))
 	global_rts->status_snapshot = 1;
 }
 
-int __schedule_exit(int next)
-{
+static int schedule_exit(int next) {
 	static unsigned long waittime;
-	struct itimerval it;
-
 	if (waittime)
 		return next;
-
 	if (global_rts->nreceived) {
 		waittime = 2 * global_rts->tmax;
 		if (waittime < 1000 * (unsigned long)global_rts->interval)
 			waittime = 1000 * global_rts->interval;
 	} else
 		waittime = global_rts->lingertime * 1000;
-
 	if (next < 0 || (unsigned long)next < waittime / 1000)
 		next = waittime / 1000;
-
-	it.it_interval.tv_sec = 0;
-	it.it_interval.tv_usec = 0;
-	it.it_value.tv_sec = waittime / 1000000;
-	it.it_value.tv_usec = waittime % 1000000;
+	struct itimerval it = {
+		.it_interval = {0},
+		.it_value = { .tv_sec = waittime / 1000000, .tv_usec = waittime % 1000000 }
+	};
 	setitimer(ITIMER_REAL, &it, NULL);
 	return next;
 }
@@ -298,17 +282,26 @@ static inline void update_interval(struct ping_rts *rts)
 		rts->interval = MIN_USER_INTERVAL_MS;
 }
 
-/*
- * Print timestamp
- */
-void print_timestamp(struct ping_rts *rts)
-{
+/* Print timestamp */
+void print_timestamp(struct ping_rts *rts) {
 	if (rts->opt_ptimeofday) {
 		struct timeval tv;
 		gettimeofday(&tv, NULL);
 		printf("[%lu.%06lu] ",
 		       (unsigned long)tv.tv_sec, (unsigned long)tv.tv_usec);
 	}
+}
+
+static inline int in_flight(struct ping_rts *rts) {
+	uint16_t diff = (uint16_t)rts->ntransmitted - rts->acked;
+	return (diff <= 0x7FFF) ? diff : rts->ntransmitted - rts->nreceived - rts->nerrors;
+}
+
+static inline void advance_ntransmitted(struct ping_rts *rts) {
+	rts->ntransmitted++;
+	/* Invalidate acked, if 16 bit seq overflows */
+	if ((uint16_t)rts->ntransmitted - rts->acked > 0x7FFF)
+	rts->acked = (uint16_t)rts->ntransmitted + 1;
 }
 
 /*
@@ -319,8 +312,7 @@ void print_timestamp(struct ping_rts *rts)
  * of the data portion are used to hold a UNIX "timeval" struct in VAX
  * byte-order, to compute the round-trip time.
  */
-int pinger(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock)
-{
+int pinger(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock) {
 	static int oom_count;
 	static int tokens;
 	int i;
@@ -444,58 +436,56 @@ hard_local_error:
 	return SCHINT(rts->interval);
 }
 
-/* Set socket buffers, "alloc" is an estimate of memory taken by single packet. */
-
-void sock_setbufs(struct ping_rts *rts, socket_st *sock, int alloc)
-{
+/* Set socket buffers, "alloc" is an estimate of memory taken by single packet */
+#define MAXHOLD 65536
+void sock_setbufs(struct ping_rts *rts, socket_st *sock, int alloc) {
 	int rcvbuf, hold;
 	socklen_t tmplen = sizeof(hold);
-
 	if (!rts->sndbuf)
 		rts->sndbuf = alloc;
 	setsockopt(sock->fd, SOL_SOCKET, SO_SNDBUF, (char *)&rts->sndbuf, sizeof(rts->sndbuf));
-
 	rcvbuf = hold = alloc * rts->preload;
-	if (hold < 65536)
-		hold = 65536;
+	if (hold < MAXHOLD)
+		hold = MAXHOLD;
 	setsockopt(sock->fd, SOL_SOCKET, SO_RCVBUF, (char *)&hold, sizeof(hold));
 	if (getsockopt(sock->fd, SOL_SOCKET, SO_RCVBUF, (char *)&hold, &tmplen) == 0) {
 		if (hold < rcvbuf)
 			error(0, 0, _("WARNING: probably, rcvbuf is not enough to hold preload"));
 	}
 }
+#undef MAXHOLD
 
-void sock_setmark(struct ping_rts *rts, int fd)
-{
+void sock_setmark(struct ping_rts *rts, int fd) {
 #ifdef SO_MARK
-	int ret;
-	int errno_save;
-
 	if (!rts->opt_mark)
 		return;
-
 	enable_capability_admin();
-	ret = setsockopt(fd, SOL_SOCKET, SO_MARK, &(rts->mark), sizeof(rts->mark));
-	errno_save = errno;
+	int ret = setsockopt(fd, SOL_SOCKET, SO_MARK, &(rts->mark), sizeof(rts->mark));
+	int errno_save = errno;
 	disable_capability_admin();
-
 	if (ret == -1) {
 		error(0, errno_save, _("WARNING: failed to set mark: %u"), rts->mark);
-
 		if (errno_save == EPERM)
 			error(0, 0, _("=> missing cap_net_admin+p or cap_net_raw+p (since Linux 5.17) capability?"));
-
 		rts->opt_mark = 0;
 	}
 #else
-		error(0, errno_save, _("WARNING: SO_MARK not supported"));
+	error(0, errno_save, _("WARNING: SO_MARK not supported"));
 #endif
 }
 
-/* Protocol independent setup and parameter checks. */
 
-void setup(struct ping_rts *rts, socket_st *sock)
-{
+static inline void set_signal(int signo, void (*handler)(int)) {
+	struct sigaction sa;
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = handler;
+	sa.sa_flags = SA_RESTART;
+	sigaction(signo, &sa, NULL);
+}
+
+
+/* Protocol independent setup and parameter checks. */
+void setup(struct ping_rts *rts, socket_st *sock) {
 	int hold;
 	struct timeval tv;
 	sigset_t sset;
@@ -557,7 +547,7 @@ void setup(struct ping_rts *rts, socket_st *sock)
 	if (sock->socktype == SOCK_RAW && rts->ident == -1)
 		rts->ident = htons(getpid() & 0xFFFF);
 
-	set_signal(SIGINT, sigexit);
+	set_signal(SIGINT,  sigexit);
 	set_signal(SIGALRM, sigexit);
 	set_signal(SIGQUIT, sigstatus);
 
@@ -586,6 +576,102 @@ void setup(struct ping_rts *rts, socket_st *sock)
 	}
 }
 
+
+static long llsqrt(long long a) {
+	long long prev = LLONG_MAX;
+	long long x = a;
+	if (x > 0) {
+		while (x < prev) {
+			prev = x;
+			x = (x + (a / x)) / 2;
+		}
+	}
+	return (long)x;
+}
+
+
+/* Print out statistics, and give up */
+int finish(struct ping_rts *rts) {
+	struct timespec tv = rts->cur_time;
+	timespecsub(&tv, &rts->start_time, &tv);
+
+	putchar('\n');
+	fflush(stdout);
+	printf(_("--- %s ping statistics ---\n"), rts->hostname);
+	printf(_("%ld packets transmitted, "), rts->ntransmitted);
+	printf(_("%ld received"), rts->nreceived);
+	if (rts->nrepeats)
+		printf(_(", +%ld duplicates"), rts->nrepeats);
+	if (rts->nchecksum)
+		printf(_(", +%ld corrupted"), rts->nchecksum);
+	if (rts->nerrors)
+		printf(_(", +%ld errors"), rts->nerrors);
+
+	if (rts->ntransmitted) {
+#ifdef USE_IDN
+		setlocale(LC_ALL, "C");
+#endif
+		printf(_(", %g%% packet loss"),
+		       (float)((((long long)(rts->ntransmitted - rts->nreceived)) * 100.0) / rts->ntransmitted));
+		printf(_(", time %ldms"), 1000 * tv.tv_sec + (tv.tv_nsec + 500000) / 1000000);
+	}
+
+	putchar('\n');
+
+	char *comma = "";
+	if (rts->nreceived && rts->timing) {
+		double tmdev;
+		long total = rts->nreceived + rts->nrepeats;
+		long tmavg = rts->tsum / total;
+		long long tmvar;
+
+		if (rts->tsum < INT_MAX)
+			/* This slightly clumsy computation order is important to avoid
+			 * integer rounding errors for small ping times. */
+			tmvar = (rts->tsum2 - ((rts->tsum * rts->tsum) / total)) / total;
+		else
+			tmvar = (rts->tsum2 / total) - (tmavg * tmavg);
+
+		tmdev = llsqrt(tmvar);
+
+		printf(_("rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms"),
+		       rts->tmin / 1000, rts->tmin % 1000, (unsigned long)(tmavg / 1000), tmavg % 1000,
+		       rts->tmax / 1000, rts->tmax % 1000, (long)tmdev / 1000, (long)tmdev % 1000);
+		comma = ", ";
+	}
+	if (rts->pipesize > 1) {
+		printf(_("%spipe %d"), comma, rts->pipesize);
+		comma = ", ";
+	}
+
+	if (rts->nreceived && (!rts->interval || rts->opt_flood || rts->opt_adaptive) && rts->ntransmitted > 1) {
+		int ipg = (1000000 * (long long)tv.tv_sec + tv.tv_nsec / 1000) / (rts->ntransmitted - 1);
+
+		printf(_("%sipg/ewma %d.%03d/%d.%03d ms"),
+		       comma, ipg / 1000, ipg % 1000, rts->rtt / 8000, (rts->rtt / 8) % 1000);
+	}
+	putchar('\n');
+	return (!rts->nreceived || (rts->deadline && rts->nreceived < rts->npackets));
+}
+
+
+static void fin_status(struct ping_rts *rts) {
+	int loss = 0;
+	rts->status_snapshot = 0;
+	if (rts->ntransmitted)
+		loss = (((long long)(rts->ntransmitted - rts->nreceived)) * 100) / rts->ntransmitted;
+	fprintf(stderr, "\r");
+	fprintf(stderr, _("%ld/%ld packets, %d%% loss"), rts->nreceived, rts->ntransmitted, loss);
+	if (rts->nreceived && rts->timing) {
+		long tavg = rts->tsum / (rts->nreceived + rts->nrepeats);
+		fprintf(stderr, _(", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"),
+			rts->tmin / 1000, rts->tmin % 1000, tavg / 1000, tavg % 1000,
+			rts->rtt / 8000, (rts->rtt / 8) % 1000, rts->tmax / 1000, rts->tmax % 1000);
+	}
+	fprintf(stderr, "\n");
+}
+
+
 int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
 	      uint8_t *packet, int packlen)
 {
@@ -610,12 +696,12 @@ int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
 			break;
 		/* Check for and do special actions. */
 		if (rts->status_snapshot)
-			status(rts);
+			fin_status(rts);
 
 		/* Send probes scheduled to this time. */
 		do {
 			next = pinger(rts, fset, sock);
-			next = schedule_exit(rts, next);
+			next = schedule_exit(next);
 		} while (next <= 0);
 
 		/* "next" is time to send next probe, if positive.
@@ -760,7 +846,7 @@ int gather_statistics(struct ping_rts *rts, uint8_t *icmph, int icmplen,
 		memcpy(&tmp_tv, ptr, sizeof(tmp_tv));
 
 restamp:
-		tvsub(tv, &tmp_tv);
+		timersub(tv, &tmp_tv, tv);
 		triptime = tv->tv_sec * 1000000 + tv->tv_usec;
 		if (triptime < 0) {
 			error(0, 0, _("Warning: time of day goes back (%ldus), taking countermeasures"), triptime);
@@ -871,112 +957,6 @@ restamp:
 	return 0;
 }
 
-static long llsqrt(long long a)
-{
-	long long prev = LLONG_MAX;
-	long long x = a;
-
-	if (x > 0) {
-		while (x < prev) {
-			prev = x;
-			x = (x + (a / x)) / 2;
-		}
-	}
-
-	return (long)x;
-}
-
-/*
- * finish --
- *	Print out statistics, and give up.
- */
-int finish(struct ping_rts *rts)
-{
-	struct timespec tv = rts->cur_time;
-	char *comma = "";
-
-	tssub(&tv, &rts->start_time);
-
-	putchar('\n');
-	fflush(stdout);
-	printf(_("--- %s ping statistics ---\n"), rts->hostname);
-	printf(_("%ld packets transmitted, "), rts->ntransmitted);
-	printf(_("%ld received"), rts->nreceived);
-	if (rts->nrepeats)
-		printf(_(", +%ld duplicates"), rts->nrepeats);
-	if (rts->nchecksum)
-		printf(_(", +%ld corrupted"), rts->nchecksum);
-	if (rts->nerrors)
-		printf(_(", +%ld errors"), rts->nerrors);
-
-	if (rts->ntransmitted) {
-#ifdef USE_IDN
-		setlocale(LC_ALL, "C");
-#endif
-		printf(_(", %g%% packet loss"),
-		       (float)((((long long)(rts->ntransmitted - rts->nreceived)) * 100.0) / rts->ntransmitted));
-		printf(_(", time %ldms"), 1000 * tv.tv_sec + (tv.tv_nsec + 500000) / 1000000);
-	}
-
-	putchar('\n');
-
-	if (rts->nreceived && rts->timing) {
-		double tmdev;
-		long total = rts->nreceived + rts->nrepeats;
-		long tmavg = rts->tsum / total;
-		long long tmvar;
-
-		if (rts->tsum < INT_MAX)
-			/* This slightly clumsy computation order is important to avoid
-			 * integer rounding errors for small ping times. */
-			tmvar = (rts->tsum2 - ((rts->tsum * rts->tsum) / total)) / total;
-		else
-			tmvar = (rts->tsum2 / total) - (tmavg * tmavg);
-
-		tmdev = llsqrt(tmvar);
-
-		printf(_("rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms"),
-		       rts->tmin / 1000, rts->tmin % 1000, (unsigned long)(tmavg / 1000), tmavg % 1000,
-		       rts->tmax / 1000, rts->tmax % 1000, (long)tmdev / 1000, (long)tmdev % 1000);
-		comma = ", ";
-	}
-	if (rts->pipesize > 1) {
-		printf(_("%spipe %d"), comma, rts->pipesize);
-		comma = ", ";
-	}
-
-	if (rts->nreceived && (!rts->interval || rts->opt_flood || rts->opt_adaptive) && rts->ntransmitted > 1) {
-		int ipg = (1000000 * (long long)tv.tv_sec + tv.tv_nsec / 1000) / (rts->ntransmitted - 1);
-
-		printf(_("%sipg/ewma %d.%03d/%d.%03d ms"),
-		       comma, ipg / 1000, ipg % 1000, rts->rtt / 8000, (rts->rtt / 8) % 1000);
-	}
-	putchar('\n');
-	return (!rts->nreceived || (rts->deadline && rts->nreceived < rts->npackets));
-}
-
-void status(struct ping_rts *rts)
-{
-	int loss = 0;
-	long tavg = 0;
-
-	rts->status_snapshot = 0;
-
-	if (rts->ntransmitted)
-		loss = (((long long)(rts->ntransmitted - rts->nreceived)) * 100) / rts->ntransmitted;
-
-	fprintf(stderr, "\r");
-	fprintf(stderr, _("%ld/%ld packets, %d%% loss"), rts->nreceived, rts->ntransmitted, loss);
-
-	if (rts->nreceived && rts->timing) {
-		tavg = rts->tsum / (rts->nreceived + rts->nrepeats);
-
-		fprintf(stderr, _(", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"),
-			rts->tmin / 1000, rts->tmin % 1000, tavg / 1000, tavg % 1000,
-			rts->rtt / 8000, (rts->rtt / 8) % 1000, rts->tmax / 1000, rts->tmax % 1000);
-	}
-	fprintf(stderr, "\n");
-}
 
 inline int is_ours(struct ping_rts *rts, socket_st * sock, uint16_t id)
 {

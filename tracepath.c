@@ -9,9 +9,7 @@
  * Authors:	Alexey Kuznetsov, <kuznet@ms2.inr.ac.ru>
  */
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#include "iputils_common.h"
 
 #include <assert.h>
 #include <arpa/inet.h>
@@ -37,8 +35,6 @@
 #include <linux/icmp.h>
 #include <linux/icmpv6.h>
 #include <linux/types.h>
-
-#include "iputils_common.h"
 
 #if defined(USE_IDN) || defined(ENABLE_NLS)
 # include <locale.h>
@@ -286,7 +282,6 @@ static int recverr(struct run_state *const ctl)
 
 	if (retts) {
 		struct timespec res;
-
 		timespecsub(&ts, retts, &res);
 		printf(_("%3ld.%03ldms "), res.tv_sec * 1000 + res.tv_nsec / 1000000,
 					   (res.tv_nsec % 1000000) / 1000);

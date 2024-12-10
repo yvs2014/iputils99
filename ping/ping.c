@@ -53,6 +53,7 @@
 #include "common.h"
 #include "aux.h"
 
+#include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
 #include <netinet/ip.h>
@@ -595,7 +596,7 @@ main(int argc, char **argv)
 	if (!rts.outpack)
 		error(2, errno, _("memory allocation failed"));
 	if (outpack_fill) {
-		fill(&rts, outpack_fill, rts.outpack, rts.datalen);
+		fill_packet(&rts, outpack_fill, rts.outpack, rts.datalen);
 		free(outpack_fill);
 	}
 

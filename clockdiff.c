@@ -49,9 +49,7 @@
  * number of messages sent in each measurement.
  */
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#include "iputils_common.h"
 
 #ifndef TSPTYPES
 #define TSPTYPES
@@ -81,8 +79,6 @@
 #ifdef HAVE_LIBCAP
 # include <sys/capability.h>
 #endif
-
-#include "iputils_common.h"
 
 enum {
 	RANGE = 1,		/* best expected round-trip time, ms */
@@ -469,8 +465,7 @@ static void usage(int exit_status)
 	exit(exit_status);
 }
 
-static void parse_opts(struct run_state *ctl, int argc, char **argv)
-{
+static void parse_opts(struct run_state *ctl, int argc, char **argv) {
 	static const struct option longopts[] = {
 		{"time-format", required_argument, NULL, 'T'},
 		{"version", no_argument, NULL, 'V'},
@@ -478,7 +473,6 @@ static void parse_opts(struct run_state *ctl, int argc, char **argv)
 		{NULL, 0, NULL, 0}
 	};
 	int c;
-
 	while ((c = getopt_long(argc, argv, "o1T:IVh", longopts, NULL)) != -1)
 		switch (c) {
 		case 'o':
@@ -493,7 +487,7 @@ static void parse_opts(struct run_state *ctl, int argc, char **argv)
 			else if (!strcmp(optarg, "ctime"))
 				ctl->time_format = time_format_ctime;
 			else
-				error(1, 0, "invalid time-format argument: %s",
+				error(1, 0, "Invalid time-format argument: %s",
 				      optarg);
 			break;
 		case 'I':
@@ -507,11 +501,19 @@ static void parse_opts(struct run_state *ctl, int argc, char **argv)
 			usage(0);
 			abort();
 		default:
-			printf("Try '%s --help' for more information.\n",
-			       program_invocation_short_name);
+			printf("Try '%s --help' for more information\n",
+#ifdef HAVE_GETPROGNAME
+				getprogname()
+#elif  HAVE_PROGRAM_INVOCATION_SHORT_NAME
+				program_invocation_short_name
+#else
+				""
+#endif
+			);
 			exit(1);
 		}
 }
+
 
 int main(int argc, char **argv)
 {

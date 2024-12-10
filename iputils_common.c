@@ -1,7 +1,5 @@
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#include "iputils_common.h"
 
 #include <errno.h>
 #include <stdarg.h>
@@ -19,11 +17,15 @@
 #ifdef HAVE_ERROR_H
 # include <error.h>
 #else
-void error(int status, int errnum, const char *format, ...)
-{
+void error(int status, int errnum, const char *format, ...) {
 	va_list ap;
-
-	fprintf(stderr, "%s: ", program_invocation_short_name);
+	fprintf(stderr, "%s: ",
+#ifdef HAVE_GETPROGNAME
+		getprogname()
+#elif  HAVE_PROGRAM_INVOCATION_SHORT_NAME
+		program_invocation_short_name
+#endif
+	);
 	va_start(ap, format);
 	vfprintf(stderr, format, ap);
 	va_end(ap);
@@ -154,16 +156,31 @@ void iputils_srand(void)
 	}
 }
 
-void timespecsub(struct timespec *a, struct timespec *b, struct timespec *res)
-{
-	res->tv_sec = a->tv_sec - b->tv_sec;
-	res->tv_nsec = a->tv_nsec - b->tv_nsec;
 
+#ifndef timespecsub
+/* Subtract timespec structs:  res = a - b */
+void timespecsub(struct timespec *a, struct timespec *b, struct timespec *res) {
+	res->tv_sec  = a->tv_sec   - b->tv_sec;
+	res->tv_nsec = a->tv_nsec  - b->tv_nsec;
 	if (res->tv_nsec < 0) {
 		res->tv_sec--;
 		res->tv_nsec += 1000000000L;
 	}
 }
+#endif
+
+#ifndef timersub
+/* Subtract timeval structs:  res = a - b */
+void timersub(struct timeval *a, struct timeval *b, struct timeval *res) {
+	res->tv_sec  = a->tv_sec  - b->tv_sec;
+	res->tv_usec = a->tv_usec - b->tv_usec;
+	if (res->tv_usec < 0) {
+		res->tv_sec--;
+		res->tv_usec += 1000000;
+	}
+}
+#endif
+
 
 void print_config(void)
 {

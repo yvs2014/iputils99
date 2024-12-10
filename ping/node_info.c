@@ -30,11 +30,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#include "iputils_common.h"
+#include "iputils_ni.h"
+#include "common.h"
+#include "md5.h"
 
 #include <stddef.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
 
@@ -43,11 +45,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #endif
-
-#include "iputils_common.h"
-#include "iputils_ni.h"
-#include "common.h"
-#include "md5.h"
 
 struct niquery_option {
 	char *name;

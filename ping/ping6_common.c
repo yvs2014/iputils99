@@ -62,14 +62,15 @@
 #define _GNU_SOURCE
 #endif
 
-#include <stddef.h>
-#include <ctype.h>
-#include <errno.h>
-
 #include "iputils_common.h"
 #include "iputils_ni.h"
 #include "common.h"
 #include "ipv6.h"
+
+#include <stdlib.h>
+#include <stddef.h>
+#include <ctype.h>
+#include <errno.h>
 
 #ifndef IPV6_FLOWLABEL_MGR
 # define IPV6_FLOWLABEL_MGR 32
@@ -111,7 +112,6 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai,
 	int hold, packlen;
 	size_t i;
 	unsigned char *packet;
-	char *target;
 	struct icmp6_filter filter;
 	int err;
 	static uint32_t scope_id = 0;
@@ -126,6 +126,7 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai,
 		}
 	}
 
+	char *target = NULL;
 	if (argc > 1) {
 		usage();
 	} else if (argc == 1) {

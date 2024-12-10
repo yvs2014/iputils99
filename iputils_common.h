@@ -6,6 +6,7 @@
 #endif
 
 #include <stdio.h>
+#include <time.h>
 #include <sys/time.h>
 
 #define ARRAY_SIZE(arr) \
@@ -60,8 +61,13 @@ extern long strtol_or_err(char const *const str, char const *const errmesg,
 extern unsigned long strtoul_or_err(char const *const str, char const *const errmesg,
 			  const unsigned long min, const unsigned long max);
 extern void iputils_srand(void);
-extern void timespecsub(struct timespec *a, struct timespec *b,
-			struct timespec *res);
 void print_config(void);
 
-#endif /* IPUTILS_COMMON_H */
+#ifndef timespecsub
+void timespecsub(struct timespec *a, struct timespec *b, struct timespec *res);
+#endif
+#ifndef timersub
+void timersub(struct timeval *a, struct timeval *b, struct timeval *res);
+#endif
+
+#endif

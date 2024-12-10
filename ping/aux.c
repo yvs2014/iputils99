@@ -3,14 +3,14 @@
 // -- fixups: ip4-in-ip6-space, ip6-link-local-scope
 
 #include "aux.h"
+#include "ping6_common.h"
 
 #include <string.h>
 #ifdef HAVE_ERROR_H
-# include <error.h>
+#include <error.h>
 #else
-# include "iputils_common.h"
+#include "iputils_common.h"
 #endif
-
 
 void unmap_ai_sa4(struct addrinfo *ai) {
 	if (!ai || !ai->ai_addr)

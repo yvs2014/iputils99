@@ -10,9 +10,7 @@
  * 		YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
  */
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#include "iputils_common.h"
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -42,8 +40,6 @@
 #if defined(USE_IDN) || defined(ENABLE_NLS)
 # include <locale.h>
 #endif
-
-#include "iputils_common.h"
 
 /*
  * As of July 2021 AX.25 PID values are not currently defined in any
