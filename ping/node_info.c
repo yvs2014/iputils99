@@ -233,12 +233,6 @@ static int niquery_set_subject_type(struct ping_ni *ni, int type)
 	return 0;
 }
 
-#if defined(USE_IDN) && defined(AI_IDN)
-# define AI_FLAGS (AI_CANONNAME | AI_IDN | AI_CANONIDN)
-#else
-# define AI_FLAGS AI_CANONNAME
-#endif
-
 static int niquery_option_subject_addr_handler(struct ping_ni *ni, int index, const char *arg)
 {
 	if (niquery_set_subject_type(ni, niquery_options[index].data) < 0)

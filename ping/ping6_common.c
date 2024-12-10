@@ -399,14 +399,17 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai,
 			error(2, errno, _("can't send flowinfo"));
 	}
 
-	printf(_("PING %s (%s) "), rts->hostname, pr_raw_addr(rts, &rts->whereto6, sizeof rts->whereto6));
+	printf(_("PING %s (%s) "), rts->hostname,
+		SPRINT_RAW_ADDR(rts, &rts->whereto6, sizeof(rts->whereto6)));
 	if (rts->flowlabel)
 		printf(_(", flow 0x%05x, "), (unsigned)ntohl(rts->flowlabel));
 	if (rts->device || rts->opt_strictsource) {
 		int saved_opt_numeric = rts->opt_numeric;
 
 		rts->opt_numeric = 1;
-		printf(_("from %s %s: "), pr_addr(rts, &rts->source6, sizeof rts->source6), rts->device ? rts->device : "");
+		printf(_("from %s %s: "),
+			SPRINT_RES_ADDR(rts, &rts->source6, sizeof(rts->source6)),
+			rts->device ? rts->device : "");
 		rts->opt_numeric = saved_opt_numeric;
 	}
 	printf(_("%zu data bytes\n"), rts->datalen);
@@ -572,7 +575,9 @@ int ping6_receive_error_msg(struct ping_rts *rts, socket_st *sock)
 			write_stdout("\bE", 2);
 		} else {
 			print_timestamp(rts);
-			printf(_("From %s icmp_seq=%u "), pr_addr(rts, sin6, sizeof *sin6), ntohs(icmph.icmp6_seq));
+			printf(_("From %s icmp_seq=%u "),
+				SPRINT_RES_ADDR(rts, sin6, sizeof(*sin6)),
+				ntohs(icmph.icmp6_seq));
 			print_icmp(e->ee_type, e->ee_code, e->ee_info);
 			putchar('\n');
 			fflush(stdout);
@@ -674,10 +679,8 @@ int ping6_send_probe(struct ping_rts *rts, socket_st *sock, void *packet, unsign
 	return (cc == len ? 0 : cc);
 }
 
-void pr_echo_reply(uint8_t *_icmph, int cc __attribute__((__unused__)))
-{
+void print6_echo_reply(uint8_t *_icmph, int cc __attribute__((__unused__))) {
 	struct icmp6_hdr *icmph = (struct icmp6_hdr *)_icmph;
-
 	printf(_(" icmp_seq=%u"), ntohs(icmph->icmp6_seq));
 }
 
@@ -870,9 +873,9 @@ int ping6_parse_reply(struct ping_rts *rts, socket_st *sock,
 			wrong_source = 1;
 
 		if (gather_statistics(rts, (uint8_t *)icmph, sizeof(*icmph), cc,
-				      ntohs(icmph->icmp6_seq),
-				      hops, 0, tv, pr_addr(rts, from, sizeof *from),
-				      pr_echo_reply,
+				      ntohs(icmph->icmp6_seq), hops, 0, tv,
+				      SPRINT_RES_ADDR(rts, from, sizeof(*from)),
+				      print6_echo_reply,
 				      rts->multicast, wrong_source)) {
 			fflush(stdout);
 			return 0;
@@ -883,8 +886,8 @@ int ping6_parse_reply(struct ping_rts *rts, socket_st *sock,
 		if (seq < 0)
 			return 1;
 		if (gather_statistics(rts, (uint8_t *)icmph, sizeof(*icmph), cc,
-				      seq,
-				      hops, 0, tv, pr_addr(rts, from, sizeof *from),
+				      seq, hops, 0, tv,
+				      SPRINT_RES_ADDR(rts, from, sizeof(*from)),
 				      pr_niquery_reply,
 				      rts->multicast, 0))
 			return 0;
@@ -924,7 +927,7 @@ int ping6_parse_reply(struct ping_rts *rts, socket_st *sock,
 		if (!rts->opt_verbose || rts->uid)
 			return 1;
 		print_timestamp(rts);
-		printf(_("From %s: "), pr_addr(rts, from, sizeof *from));
+		printf(_("From %s: "), SPRINT_RES_ADDR(rts, from, sizeof(*from)));
 		print_icmp(icmph->icmp6_type, icmph->icmp6_code, ntohl(icmph->icmp6_mtu));
 	}
 

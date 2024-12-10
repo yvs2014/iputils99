@@ -954,24 +954,52 @@ restamp:
 }
 
 
-inline int is_ours(struct ping_rts *rts, socket_st * sock, uint16_t id)
-{
+inline int is_ours(struct ping_rts *rts, socket_st * sock, uint16_t id) {
 	return sock->socktype == SOCK_DGRAM || id == rts->ident;
 }
 
-char *str_interval(int interval)
-{
+char *str_interval(int interval) {
 	static char buf[14];
-
 	/*
 	 * Avoid messing with locales and floating point due the different decimal
 	 * point depending on locales.
 	 */
+	int rc = -1;
 	if (interval % 1000)
-		snprintf(buf, sizeof(buf), "%1i.%03i", interval/1000, interval%1000);
+		rc = snprintf(buf, sizeof(buf), "%1i.%03i", interval/1000, interval%1000);
 	else
-		snprintf(buf, sizeof(buf), "%i", interval/1000);
-
+		rc = snprintf(buf, sizeof(buf), "%i", interval/1000);
+	if (rc < 0)
+		buf[0] = 0;
 	return buf;
+}
+
+/* Return an ascii host address optionally with a hostname */
+char *sprint_addr_common(struct ping_rts *rts, void *sa, socklen_t salen, int resolve_name) {
+	static char buffer[4096] = "";
+	static struct sockaddr_storage last_sa = {0};
+	static socklen_t last_salen = 0;
+	if (salen == last_salen && !memcmp(sa, &last_sa, salen))
+		return buffer;
+	memcpy(&last_sa, sa, (last_salen = salen));
+	rts->in_pr_addr = !setjmp(rts->pr_addr_jmp);
+
+	char address[NI_MAXHOST] = "";
+	getnameinfo(sa, salen, address, sizeof address, NULL, 0, NI_FLAGS | NI_NUMERICHOST);
+
+	char name[NI_MAXHOST] = "";
+	if (!rts->exiting && resolve_name && (rts->opt_force_lookup || !rts->opt_numeric))
+		getnameinfo(sa, salen, name, sizeof name, NULL, 0, NI_FLAGS);
+
+	int rc = -1;
+	if (*name && strncmp(name, address, NI_MAXHOST))
+		rc = snprintf(buffer, sizeof(buffer), "%s (%s)", name, address);
+	else
+		rc = snprintf(buffer, sizeof(buffer), "%s", address);
+	if (rc < 0)
+		buffer[0] = 0;
+
+	rts->in_pr_addr = 0;
+	return buffer;
 }
 

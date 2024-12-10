@@ -1,5 +1,5 @@
-#ifndef PING_PING6_COMMON_H
-#define PING_PING6_COMMON_H
+#ifndef PING6_COMMON_H
+#define PING6_COMMON_H
 
 #include "common.h"
 

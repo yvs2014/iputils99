@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <netdb.h>
 
 #define ARRAY_SIZE(arr) \
   (sizeof(arr) / sizeof((arr)[0]) + \
@@ -47,6 +49,19 @@
 #ifndef IPV6_PMTUDISC_PROBE
 # define IPV6_PMTUDISC_PROBE	3
 #endif
+
+#ifdef USE_IDN
+#ifdef AI_IDN
+# define AI_FLAGS (AI_CANONNAME | AI_IDN | AI_CANONIDN)
+#else
+# define AI_FLAGS AI_CANONNAME
+#endif /* AI_IDN */
+#ifdef NI_IDN
+# define NI_FLAGS NI_IDN
+#else
+# define NI_FLAGS 0
+#endif /* NI_IDN */
+#endif /* USE_IDN */
 
 #ifdef HAVE_ERROR_H
 # include <error.h>

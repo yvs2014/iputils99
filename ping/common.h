@@ -9,16 +9,18 @@
 #include <unistd.h>
 #include <time.h>
 #include <poll.h>
+#ifdef HAVE_LIBCAP
+# include <sys/capability.h>
+#endif
 #include <sys/param.h>
+#include <sys/types.h>
 #include <sys/socket.h>
-#include <linux/types.h>
-#include <linux/sockios.h>
+#include <netdb.h>
 #include <sys/file.h>
 #include <sys/time.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <sys/uio.h>
-#include <netdb.h>
 #include <setjmp.h>
 #include <asm/byteorder.h>
 #include <sched.h>
@@ -26,17 +28,13 @@
 #include <netinet/ip6.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/icmp6.h>
-#include <linux/filter.h>
 #include <resolv.h>
-
-#ifdef HAVE_LIBCAP
-# include <sys/capability.h>
-#endif
-
 #include <ifaddrs.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <linux/types.h>
+#include <linux/sockios.h>
+#include <linux/filter.h>
 #include <linux/errqueue.h>
 #include <linux/in6.h>
 
@@ -53,7 +51,6 @@
 #define IDENTIFIER_MAX	0xFFFF		/* max unsigned 2-byte value */
 
 #define SCHINT(a)	(((a) <= MIN_INTERVAL_MS) ? MIN_INTERVAL_MS : (a))
-
 
 #ifndef MSG_CONFIRM
 #define MSG_CONFIRM 0
@@ -101,12 +98,6 @@ typedef struct socket_st {
 } socket_st;
 
 struct ping_rts;
-
-int ping4_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai, socket_st *sock);
-int ping4_send_probe(struct ping_rts *rts, socket_st *, void *packet, unsigned packet_size);
-int ping4_receive_error_msg(struct ping_rts *, socket_st *);
-int ping4_parse_reply(struct ping_rts *, socket_st *, struct msghdr *msg, int cc, void *addr, struct timeval *);
-void ping4_install_filter(struct ping_rts *rts, socket_st *);
 
 typedef struct ping_func_set_st {
 	int (*send_probe)(struct ping_rts *rts, socket_st *, void *packet, unsigned packet_size);
@@ -180,8 +171,6 @@ struct ping_rts {
 	uint16_t acked;
 	int pipesize;
 
-	ping_func_set_st ping4_func_set;
-	ping_func_set_st ping6_func_set;
 	uint32_t tclass;
 	uint32_t flowlabel;
 	struct sockaddr_in6 source6;
@@ -308,8 +297,10 @@ int modify_capability(int);
 #endif
 void drop_capabilities(void);
 
-char *pr_addr(struct ping_rts *rts, void *sa, socklen_t salen);
-char *pr_raw_addr(struct ping_rts *rts, void *sa, socklen_t salen);
+char *sprint_addr_common(struct ping_rts *rts, void *sa, socklen_t salen, int resolve_name);
+#define SPRINT_RES_ADDR(rts, sastruct, salen) sprint_addr_common((rts), (sastruct), (salen), 1)
+#define SPRINT_RAW_ADDR(rts, sastruct, salen) sprint_addr_common((rts), (sastruct), (salen), 0)
+
 char *str_interval(int interval);
 
 int is_ours(struct ping_rts *rts, socket_st *sock, uint16_t id);

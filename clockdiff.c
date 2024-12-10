@@ -159,8 +159,7 @@ static inline int addcarry(int sum)
 	return sum;
 }
 
-static int in_cksum(unsigned short *addr, int len)
-{
+static int clockdiff_in_cksum(unsigned short *addr, int len) {
 	union word {
 		char c[2];
 		unsigned short s;
@@ -404,7 +403,7 @@ static int measure(struct run_state *ctl)
 		clock_gettime(CLOCK_REALTIME, &mv.ts1);
 		*(uint32_t *) (oicp + 1) =
 		    htonl((mv.ts1.tv_sec % (24 * 60 * 60)) * 1000 + mv.ts1.tv_nsec / 1000000);
-		oicp->checksum = in_cksum((unsigned short *)oicp, sizeof(*oicp) + 12);
+		oicp->checksum = clockdiff_in_cksum((unsigned short *)oicp, sizeof(*oicp) + 12);
 
 		mv.count = sendto(ctl->sock_raw, (char *)opacket, sizeof(*oicp) + 12, 0,
 			       (struct sockaddr *)&ctl->server, sizeof(struct sockaddr_in));

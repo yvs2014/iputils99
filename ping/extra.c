@@ -2,7 +2,7 @@
 // local additions by yvs@
 // -- fixups: ip4-in-ip6-space, ip6-link-local-scope
 
-#include "aux.h"
+#include "extra.h"
 #include "ping6_common.h"
 
 #include <string.h>

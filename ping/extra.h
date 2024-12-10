@@ -1,13 +1,5 @@
-#ifndef PING_AUX_H
-#define PING_AUX_H
-
-#ifndef _DEFAULT_SOURCE
-#define _DEFAULT_SOURCE
-#endif
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
+#ifndef PING_EXTRA_H
+#define PING_EXTRA_H
 
 #include "common.h"
 
