@@ -38,7 +38,7 @@
 #include <errno.h>
 
 #include "iputils_common.h"
-#include "ping.h"
+#include "common.h"
 
 #if defined(USE_IDN)
 # include <locale.h>

@@ -46,8 +46,8 @@
 
 #include "iputils_common.h"
 #include "iputils_ni.h"
+#include "common.h"
 #include "md5.h"
-#include "ping.h"
 
 struct niquery_option {
 	char *name;

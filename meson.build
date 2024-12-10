@@ -58,7 +58,10 @@ if (not get_option('NO_SETCAP_OR_SUID'))
   setcap_ping = get_option('SETCAP_OR_SUID_PING')
 endif
 
-extra_funcs = ['getrandom', 'nanosleep', '__fpending']
+extra_funcs = [
+	'getprogname', 'program_invocation_short_name',
+	'getrandom', 'nanosleep', '__fpending',
+]
 
 if cc.compiles('''
 	#include <sys/types.h>
@@ -85,7 +88,8 @@ if cc.compiles('''
 endif
 
 m_dep = cc.find_library('m')
-resolv_dep = cc.find_library('resolv')
+resolv_dep = cc.find_library('resolv', required: false)
+
 if cc.has_function('clock_gettime')
 	rt_dep = cc.find_library('disabler-appears-to-disable-executable-build', required : false)
 else
@@ -118,7 +122,7 @@ endif
 
 idn = get_option('USE_IDN')
 if idn	# If available: use AI_IDN for getaddrinfo() queries
-	# and idna_to_dns_encoding() for nodeindo IDN
+	# and idna_to_dns_encoding() for nodeinfo IDN
 	add_project_arguments('-DUSE_IDN', language: 'c')
 	conf.set('USE_IDN', 1, description: 'If set use libc IDN support')
 	extra_funcs += '__idna_to_dns_encoding'
@@ -143,9 +147,9 @@ foreach h: ['error.h']
 endforeach
 
 git_version_h = vcs_tag(
-	input : 'git-version.h.meson',
-	output : 'git-version.h',
-	fallback : meson.project_version()
+	input:    'git-version.h.meson',
+	output:   'git-version.h',
+	fallback: meson.project_version()
 )
 
 config_h = configure_file(output: 'config.h', configuration: conf)
@@ -163,54 +167,35 @@ else
 	setcap_path = '/dev/null'
 endif
 
-############################################################
-common_sources = files(
-	'iputils_common.h', 'iputils_common.c',
-	'md5.h', 'md5.c'
-)
-libcommon = static_library(
-	'common',
-	[common_sources, git_version_h],
-	install : false)
+
+# build stage
+#
+common_sources = files('iputils_common.c') + [git_version_h]
 
 if build_ping
 	subdir ('ping')
 endif
 
 if build_tracepath
-	tracepath = executable('tracepath', ['tracepath.c', git_version_h],
-		dependencies : [intl_dep],
-		link_with : [libcommon],
-		install: true)
+	tracepath = executable('tracepath', common_sources + ['tracepath.c'],
+		dependencies: [cap_dep, intl_dep], install: true)
 endif
 
 if build_clockdiff
-	clockdiff = executable('clockdiff', ['clockdiff.c', git_version_h],
-		dependencies : [cap_dep, intl_dep],
-		link_with : [libcommon],
-		install: true)
+	clockdiff = executable('clockdiff', common_sources + ['clockdiff.c'],
+		dependencies: [cap_dep, intl_dep], install: true)
 	if setcap_clockdiff
 		meson.add_install_script('build-aux/setcap-setuid.sh',
-			bindir,
-			'clockdiff',
-			perm_type,
-			setcap_path
-		)
+			bindir, 'clockdiff', perm_type, setcap_path)
 	endif
 endif
 
 if build_arping
-	arping = executable('arping', ['arping.c', git_version_h],
-		dependencies : [rt_dep, cap_dep, intl_dep],
-		link_with : [libcommon],
-		install: true)
+	arping = executable('arping', common_sources + ['arping.c'],
+		dependencies: [rt_dep, cap_dep, intl_dep], install: true)
 	if setcap_arping
 		meson.add_install_script('build-aux/setcap-setuid.sh',
-			bindir,
-			'arping',
-			perm_type,
-			setcap_path
-		)
+			bindir, 'arping', perm_type, setcap_path)
 	endif
 endif
 
@@ -254,7 +239,9 @@ if meson.version().version_compare('>=0.53')
 	]
 	foreach part: sections
 		foreach kv: part[1]
-			summary(kv[0], kv[1], bool_yn: true, section: part[0])
+			if '@0@'.format(kv[1]) != ''
+				summary(kv[0], kv[1], bool_yn: true, section: part[0])
+			endif
 		endforeach
 	endforeach
 else

@@ -68,8 +68,8 @@
 
 #include "iputils_common.h"
 #include "iputils_ni.h"
+#include "common.h"
 #include "ipv6.h"
-#include "ping.h"
 
 #ifndef IPV6_FLOWLABEL_MGR
 # define IPV6_FLOWLABEL_MGR 32

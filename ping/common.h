@@ -1,5 +1,5 @@
-#ifndef IPUTILS_PING_H
-#define IPUTILS_PING_H
+#ifndef PING_COMMON_H
+#define PING_COMMON_H
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -203,7 +203,7 @@ struct ping_rts {
 	int broadcast_pings;
 	struct sockaddr_in source;
 
-	/* Used only in ping_common.c */
+	/* Used only in common.c */
 	int screen_width;
 #ifdef HAVE_LIBCAP
 	cap_value_t cap_raw;
@@ -430,4 +430,4 @@ struct ni_hdr {
 #define ni_qtype	ni_u.icmp6_data16[0]
 #define ni_flags	ni_u.icmp6_data16[1]
 
-#endif /* IPUTILS_PING_H */
+#endif
