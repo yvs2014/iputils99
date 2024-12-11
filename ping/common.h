@@ -1,82 +1,36 @@
 #ifndef PING_COMMON_H
 #define PING_COMMON_H
 
-#ifndef _DEFAULT_SOURCE
-#define _DEFAULT_SOURCE
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
 #endif
 
-#include <stdio.h>
-#include <unistd.h>
-#include <time.h>
-#include <poll.h>
+#include <stdint.h>
+#include <limits.h>
+#include <netdb.h>
+#include <setjmp.h>
 #ifdef HAVE_LIBCAP
 # include <sys/capability.h>
 #endif
-#include <sys/param.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <sys/file.h>
-#include <sys/time.h>
-#include <sys/ioctl.h>
-#include <net/if.h>
-#include <sys/uio.h>
-#include <setjmp.h>
-#include <asm/byteorder.h>
-#include <sched.h>
-#include <netinet/ip.h>
-#include <netinet/ip6.h>
-#include <netinet/ip_icmp.h>
-#include <netinet/icmp6.h>
-#include <resolv.h>
-#include <ifaddrs.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <linux/types.h>
-#include <linux/sockios.h>
-#include <linux/filter.h>
-#include <linux/errqueue.h>
-#include <linux/in6.h>
+
+#include "node_info.h"
 
 #ifndef SCOPE_DELIMITER
+/* defined in netdb.h */
 # define SCOPE_DELIMITER '%'
 #endif
 
-#define	DEFDATALEN	(64 - 8)	/* default data length */
-
-#define	MAXWAIT		10		/* max seconds to wait for response */
-#define MIN_INTERVAL_MS	10		/* Minimal interpacket gap */
-#define MIN_USER_INTERVAL_MS	2		/* Minimal allowed interval for non-root for single host ping */
-#define MIN_MULTICAST_USER_INTERVAL_MS	1000	/* Minimal allowed interval for non-root for broadcast/multicast ping */
-#define IDENTIFIER_MAX	0xFFFF		/* max unsigned 2-byte value */
-
-#define SCHINT(a)	(((a) <= MIN_INTERVAL_MS) ? MIN_INTERVAL_MS : (a))
-
-#ifndef MSG_CONFIRM
-#define MSG_CONFIRM 0
-#endif
-
-/* RFC 4443 addition not yet available in libc headers */
-#ifndef ICMP6_DST_UNREACH_POLICYFAIL
-#define ICMP6_DST_UNREACH_POLICYFAIL 5
-#endif
-
-/* RFC 4443 addition not yet available in libc headers */
-#ifndef ICMP6_DST_UNREACH_REJECTROUTE
-#define ICMP6_DST_UNREACH_REJECTROUTE 6
-#endif
+#define MAXWAIT			10	/* Max seconds to wait for response */
+#define MIN_MCAST_INTERVAL_MS	1000	/* Minimal allowed interval for non-root for broadcast/multicast ping */
 
 /*
- * MAX_DUP_CHK is the number of bits in received table, i.e. the maximum
- * number of received sequence numbers we can keep track of.
+ * MAX_DUP_CHK is the number of bits in received table
+ * i.e. the maximum number of received sequence numbers we can keep track of
  */
 #define	MAX_DUP_CHK	0x10000
 
 #if defined(__WORDSIZE) && __WORDSIZE == 64
-# define USE_BITMAP64
-#endif
-
-#ifdef USE_BITMAP64
+/* WORDSIZE defined via limits.h */
 typedef uint64_t	bitmap_t;
 # define BITMAP_SHIFT	6
 #else
@@ -97,34 +51,7 @@ typedef struct socket_st {
 	int socktype;
 } socket_st;
 
-struct ping_rts;
-
-typedef struct ping_func_set_st {
-	int (*send_probe)(struct ping_rts *rts, socket_st *, void *packet, unsigned packet_size);
-	int (*receive_error_msg)(struct ping_rts *rts, socket_st *sock);
-	int (*parse_reply)(struct ping_rts *rts, socket_st *, struct msghdr *msg, int len, void *addr, struct timeval *);
-	void (*install_filter)(struct ping_rts *rts, socket_st *);
-} ping_func_set_st;
-
-/* Node Information query */
-struct ping_ni {
-	int query;
-	int flag;
-	void *subject;
-	int subject_len;
-	int subject_type;
-	char *group;
-#if PING6_NONCE_MEMORY
-	uint8_t *nonce_ptr;
-#else
-	struct {
-		struct timeval tv;
-		pid_t pid;
-	} nonce_secret;
-#endif
-};
-
-/*ping runtime state */
+/* ping runtime state */
 struct ping_rts {
 	unsigned int mark;
 	unsigned char *outpack;
@@ -229,54 +156,17 @@ struct ping_rts {
 		opt_verbose:1,
 		opt_connect_sk:1;
 };
-/* FIXME: global_rts will be removed in future */
-extern struct ping_rts *global_rts;
 
-#define	A(bit)	(rts->rcvd_tbl.bitmap[(bit) >> BITMAP_SHIFT])	/* identify word in array */
-#define	B(bit)	(((bitmap_t)1) << ((bit) & ((1 << BITMAP_SHIFT) - 1)))	/* identify bit in word */
+typedef struct ping_func_set_st {
+	int (*send_probe)(struct ping_rts *rts, socket_st *, void *packet, unsigned packet_size);
+	int (*receive_error)(struct ping_rts *rts, socket_st *sock);
+	int (*parse_reply)(struct ping_rts *rts, socket_st *sock,
+		struct msghdr *msg, int len, void *addr, struct timeval *tv);
+	void (*install_filter)(struct ping_rts *rts, socket_st *);
+} ping_func_set_st;
 
-static inline void rcvd_set(struct ping_rts *rts, uint16_t seq)
-{
-	unsigned bit = seq % MAX_DUP_CHK;
-	A(bit) |= B(bit);
-}
-
-static inline void rcvd_clear(struct ping_rts *rts, uint16_t seq)
-{
-	unsigned bit = seq % MAX_DUP_CHK;
-	A(bit) &= ~B(bit);
-}
-
-static inline bitmap_t rcvd_test(struct ping_rts *rts, uint16_t seq)
-{
-	unsigned bit = seq % MAX_DUP_CHK;
-	return A(bit) & B(bit);
-}
-
-/*
- * Write to stdout
- */
-static inline void write_stdout(const char *str, size_t len)
-{
-	size_t o = 0;
-	ssize_t cc;
-	do {
-		cc = write(STDOUT_FILENO, str + o, len - o);
-		o += cc;
-	} while (len > o || cc < 0);
-}
-
-static inline void acknowledge(struct ping_rts *rts, uint16_t seq)
-{
-	uint16_t diff = (uint16_t)rts->ntransmitted - seq;
-	if (diff <= 0x7FFF) {
-		if ((int)diff + 1 > rts->pipesize)
-			rts->pipesize = (int)diff + 1;
-		if ((int16_t)(seq - rts->acked) > 0 ||
-		    (uint16_t)rts->ntransmitted - rts->acked > 0x7FFF)
-			rts->acked = seq;
-	}
-}
+void rcvd_clear(struct ping_rts *rts, uint16_t seq);
+void acknowledge(struct ping_rts *rts, uint16_t seq);
 
 void limit_capabilities(struct ping_rts *rts);
 #ifdef HAVE_LIBCAP
@@ -303,43 +193,20 @@ char *sprint_addr_common(struct ping_rts *rts, void *sa, socklen_t salen, int re
 
 char *str_interval(int interval);
 int is_ours(struct ping_rts *rts, socket_st *sock, uint16_t id);
-int pinger(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock);
 void sock_setbufs(struct ping_rts *rts, socket_st *sock, int alloc);
 void sock_setmark(struct ping_rts *rts, int fd);
-void setup(struct ping_rts *rts, socket_st *sock);
+void ping_setup(struct ping_rts *rts, socket_st *sock);
 int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
 	uint8_t *packet, int packlen);
-int gather_statistics(struct ping_rts *rts, uint8_t *icmph, int icmplen,
-			     int cc, uint16_t seq, int hops,
-			     int csfailed, struct timeval *tv, char *from,
-			     void (*pr_reply)(uint8_t *ptr, int cc), int multicast,
-			     int wrong_source);
+int gather_stats(struct ping_rts *rts, uint8_t *icmph, int icmplen, int cc,
+	uint16_t seq, int hops, int csfailed, struct timeval *tv, char *from,
+	void (*print_reply)(uint8_t *icmph, int cc), int multicast,
+	int wrong_source);
+void fill_packet(struct ping_rts *rts, char *patp,
+	unsigned char *packet, size_t packet_size);
 void print_timestamp(struct ping_rts *rts);
-void fill_packet(struct ping_rts *rts, char *patp, unsigned char *packet, size_t packet_size);
+
 int ntohsp(uint16_t *p);
-
 void usage(void);
-
-/* IPv6 node information query */
-
-int niquery_is_enabled(struct ping_ni *ni);
-void niquery_init_nonce(struct ping_ni *ni);
-int niquery_option_handler(struct ping_ni *ni, const char *opt_arg);
-int niquery_is_subject_valid(struct ping_ni *ni);
-int niquery_check_nonce(struct ping_ni *ni, uint8_t *nonce);
-void niquery_fill_nonce(struct ping_ni *ni, uint16_t seq, uint8_t *nonce);
-
-#define NI_NONCE_SIZE			8
-
-struct ni_hdr {
-	struct icmp6_hdr		ni_u;
-	uint8_t				ni_nonce[NI_NONCE_SIZE];
-};
-
-#define ni_type		ni_u.icmp6_type
-#define ni_code		ni_u.icmp6_code
-#define ni_cksum	ni_u.icmp6_cksum
-#define ni_qtype	ni_u.icmp6_data16[0]
-#define ni_flags	ni_u.icmp6_data16[1]
 
 #endif

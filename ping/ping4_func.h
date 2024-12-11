@@ -2,6 +2,7 @@
 #define PING4_FUNC_H
 
 #include "common.h"
+#include <netinet/ip_icmp.h>
 
 unsigned short in_cksum(const unsigned short *addr, int len, unsigned short csum);
 void print4_icmph(struct ping_rts *rts, uint8_t type, uint8_t code,

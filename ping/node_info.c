@@ -34,11 +34,16 @@
 #include "iputils_ni.h"
 #include "common.h"
 #include "md5.h"
+#include "node_info.h"
 
 #include <stddef.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <resolv.h>
+#include <net/if.h>
 
 #ifdef USE_IDN
 #include <sys/types.h>

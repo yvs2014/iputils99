@@ -33,11 +33,16 @@
 #include "common.h"
 #include "iputils_common.h"
 
+#include <limits.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
 #include <signal.h>
+#include <sched.h>
+#include <sys/ioctl.h>
+#include <poll.h>
 
 #if defined(USE_IDN)
 # include <locale.h>
@@ -52,6 +57,29 @@
 #else
 static uid_t euid;
 #endif
+
+#include <linux/sockios.h>
+
+#define MIN_USER_INTERVAL_MS	2	// Minimal allowed interval for non-root for single host ping
+#define MIN_INTERVAL_MS		10	// Minimal interpacket gap
+#define SCHINT(a)	(((a) <= MIN_INTERVAL_MS) ? MIN_INTERVAL_MS : (a))
+
+#define	BITMAP_ARR(bit)	(rts->rcvd_tbl.bitmap[(bit) >> BITMAP_SHIFT])		// Identify word in array
+#define	BITMAP_BIT(bit)	(((bitmap_t)1) << ((bit) & ((1 << BITMAP_SHIFT) - 1)))	// Identify bit in word
+
+static inline bitmap_t rcvd_test(struct ping_rts *rts, uint16_t seq) {
+	unsigned bit = seq % MAX_DUP_CHK;
+	return BITMAP_ARR(bit) & BITMAP_BIT(bit);
+}
+static inline void rcvd_set(struct ping_rts *rts, uint16_t seq) {
+	unsigned bit = seq % MAX_DUP_CHK;
+	BITMAP_ARR(bit) |= BITMAP_BIT(bit);
+}
+
+inline void rcvd_clear(struct ping_rts *rts, uint16_t seq) {
+	unsigned bit = seq % MAX_DUP_CHK;
+	BITMAP_ARR(bit) &= ~BITMAP_BIT(bit);
+}
 
 void usage(void) {
 	fprintf(stderr, _(
@@ -237,15 +265,16 @@ void fill_packet(struct ping_rts *rts, char *patp, unsigned char *packet, size_t
 #endif
 }
 
-static void sigexit(int signo __attribute__((__unused__)))
-{
+/* FIXME: global_rts will be removed in future */
+extern struct ping_rts *global_rts;
+
+static void sig_exit(int signo __attribute__((__unused__))) {
 	global_rts->exiting = 1;
 	if (global_rts->in_pr_addr)
 		longjmp(global_rts->pr_addr_jmp, 0);
 }
 
-static void sigstatus(int signo __attribute__((__unused__)))
-{
+static void sig_status(int signo __attribute__((__unused__))) {
 	global_rts->status_snapshot = 1;
 }
 
@@ -308,7 +337,7 @@ static inline void advance_ntransmitted(struct ping_rts *rts) {
  * of the data portion are used to hold a UNIX "timeval" struct in VAX
  * byte-order, to compute the round-trip time.
  */
-int pinger(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock) {
+static int pinger(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock) {
 	static int oom_count;
 	static int tokens;
 	int i;
@@ -364,7 +393,7 @@ resend:
 			 * high preload or pipe size is very confusing. */
 			if ((rts->preload < rts->screen_width && rts->pipesize < rts->screen_width) ||
 			    in_flight(rts) < rts->screen_width)
-				write_stdout(".", 1);
+				write(STDOUT_FILENO, ".", 1);
 		}
 		return rts->interval - tokens;
 	}
@@ -398,7 +427,7 @@ resend:
 		tokens += rts->interval;
 		return MIN_INTERVAL_MS;
 	} else {
-		i = fset->receive_error_msg(rts, sock);
+		i = fset->receive_error(rts, sock);
 		if (i > 0) {
 			/* An ICMP error arrived. In this case, we've received
 			 * an error from sendto(), but we've also received an
@@ -424,7 +453,7 @@ hard_local_error:
 
 	if (i == 0 && !rts->opt_quiet) {
 		if (rts->opt_flood)
-			write_stdout("E", 1);
+			write(STDOUT_FILENO, "E", 1);
 		else
 			error(0, errno, "sendmsg");
 	}
@@ -472,16 +501,15 @@ void sock_setmark(struct ping_rts *rts, int fd) {
 
 
 static inline void set_signal(int signo, void (*handler)(int)) {
-	struct sigaction sa;
-	memset(&sa, 0, sizeof(sa));
+	struct sigaction sa = {0};
 	sa.sa_handler = handler;
 	sa.sa_flags = SA_RESTART;
 	sigaction(signo, &sa, NULL);
 }
 
 
-/* Protocol independent setup and parameter checks. */
-void setup(struct ping_rts *rts, socket_st *sock) {
+/* Protocol independent setup and parameter checks */
+void ping_setup(struct ping_rts *rts, socket_st *sock) {
 	int hold;
 	struct timeval tv;
 	sigset_t sset;
@@ -524,8 +552,8 @@ void setup(struct ping_rts *rts, socket_st *sock) {
 	}
 	setsockopt(sock->fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof(tv));
 
-	/* Set RCVTIMEO to "interval". Note, it is just an optimization
-	 * allowing to avoid redundant poll(). */
+	/* Set RCVTIMEO to "interval"
+	 * Note, it is just an optimization allowing to avoid redundant poll() */
 	tv.tv_sec = SCHINT(rts->interval) / 1000;
 	tv.tv_usec = 1000 * (SCHINT(rts->interval) % 1000);
 	if (setsockopt(sock->fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv)))
@@ -534,7 +562,6 @@ void setup(struct ping_rts *rts, socket_st *sock) {
 	if (!rts->opt_pingfilled) {
 		size_t i;
 		unsigned char *p = rts->outpack + 8;
-
 		/* Do not forget about case of small datalen, fill timestamp area too! */
 		for (i = 0; i < rts->datalen; ++i)
 			*p++ = i;
@@ -543,9 +570,9 @@ void setup(struct ping_rts *rts, socket_st *sock) {
 	if (sock->socktype == SOCK_RAW && rts->ident == -1)
 		rts->ident = htons(getpid() & 0xFFFF);
 
-	set_signal(SIGINT,  sigexit);
-	set_signal(SIGALRM, sigexit);
-	set_signal(SIGQUIT, sigstatus);
+	set_signal(SIGINT,  sig_exit);
+	set_signal(SIGALRM, sig_exit);
+	set_signal(SIGQUIT, sig_status);
 
 	sigemptyset(&sset);
 	sigprocmask(SIG_SETMASK, &sset, NULL);
@@ -774,7 +801,7 @@ int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
 				    errno == EINTR)
 					break;
 				recv_error = 0;
-				if (!fset->receive_error_msg(rts, sock)) {
+				if (!fset->receive_error(rts, sock)) {
 					if (errno) {
 						error(0, errno, "recvmsg");
 						break;
@@ -823,11 +850,10 @@ int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
 	return finish(rts);
 }
 
-int gather_statistics(struct ping_rts *rts, uint8_t *icmph, int icmplen,
-		      int cc, uint16_t seq, int hops,
-		      int csfailed, struct timeval *tv, char *from,
-		      void (*pr_reply)(uint8_t *icmph, int cc), int multicast,
-		      int wrong_source)
+int gather_stats(struct ping_rts *rts, uint8_t *icmph, int icmplen, int cc,
+	uint16_t seq, int hops, int csfailed, struct timeval *tv, char *from,
+	void (*print_reply)(uint8_t *icmph, int cc), int multicast,
+	int wrong_source)
 {
 	int dupflag = 0;
 	long triptime = 0;
@@ -889,9 +915,9 @@ restamp:
 
 	if (rts->opt_flood) {
 		if (!csfailed)
-			write_stdout("\b \b", 3);
+			write(STDOUT_FILENO, "\b \b", 3);
 		else
-			write_stdout("\bC", 2);
+			write(STDOUT_FILENO, "\bC", 2);
 	} else {
 		size_t i;
 		uint8_t *cp, *dp;
@@ -899,8 +925,8 @@ restamp:
 		print_timestamp(rts);
 		printf(_("%d bytes from %s:"), cc, from);
 
-		if (pr_reply)
-			pr_reply(icmph, cc);
+		if (print_reply)
+			print_reply(icmph, cc);
 
 		if (rts->opt_verbose && rts->ident != -1)
 			printf(_(" ident=%d"), ntohs(rts->ident));
@@ -1007,5 +1033,16 @@ int ntohsp(uint16_t *p) {
 	uint16_t v;
 	memcpy(&v, p, sizeof(v));
 	return ntohs(v);
+}
+
+inline void acknowledge(struct ping_rts *rts, uint16_t seq) {
+	uint16_t diff = (uint16_t)rts->ntransmitted - seq;
+	if (diff <= 0x7FFF) {
+		if ((int)diff + 1 > rts->pipesize)
+			rts->pipesize = (int)diff + 1;
+		if ((int16_t)(seq - rts->acked) > 0 ||
+		    (uint16_t)rts->ntransmitted - rts->acked > 0x7FFF)
+			rts->acked = seq;
+	}
 }
 

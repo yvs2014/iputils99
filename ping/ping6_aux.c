@@ -54,6 +54,7 @@
 
 #include "iputils_common.h"
 #include "iputils_ni.h"
+#include "node_info.h"
 #include "ping6_aux.h"
 
 #include <net/if.h>

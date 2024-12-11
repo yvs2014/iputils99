@@ -68,9 +68,17 @@
 #include "ping6.h"
 #include "ping6_aux.h"
 #include "ping6_func.h"
+#include "node_info.h"
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <errno.h>
+#include <ifaddrs.h>
+
+#include <netinet/ip6.h>
+#include <linux/in6.h>
+#include <linux/filter.h>
+#include <linux/errqueue.h>
 
 #ifndef IPV6_FLOWLABEL_MGR
 # define IPV6_FLOWLABEL_MGR 32
@@ -119,7 +127,7 @@ static int ping6_send_probe(struct ping_rts *rts, socket_st *sock, void *packet,
 }
 
 
-static int ping6_receive_error_msg(struct ping_rts *rts, socket_st *sock) {
+static int ping6_receive_error(struct ping_rts *rts, socket_st *sock) {
 	ssize_t res;
 	char cbuf[512];
 	struct iovec iov;
@@ -164,7 +172,7 @@ static int ping6_receive_error_msg(struct ping_rts *rts, socket_st *sock) {
 		if (rts->opt_quiet)
 			goto out;
 		if (rts->opt_flood)
-			write_stdout("E", 1);
+			write(STDOUT_FILENO, "E", 1);
 		else if (e->ee_errno != EMSGSIZE)
 			error(0, e->ee_errno, _("local error"));
 		else
@@ -187,7 +195,7 @@ static int ping6_receive_error_msg(struct ping_rts *rts, socket_st *sock) {
 		if (rts->opt_quiet)
 			goto out;
 		if (rts->opt_flood) {
-			write_stdout("\bE", 2);
+			write(STDOUT_FILENO, "\bE", 2);
 		} else {
 			print_timestamp(rts);
 			printf(_("From %s icmp_seq=%u "),
@@ -248,16 +256,14 @@ static int ping6_parse_reply(struct ping_rts *rts, socket_st *sock,
 	if (icmph->icmp6_type == ICMP6_ECHO_REPLY) {
 		if (!is_ours(rts, sock, icmph->icmp6_id))
 			return 1;
-
 		if (!rts->multicast && !rts->subnet_router_anycast &&
 		    memcmp(&from->sin6_addr.s6_addr, &rts->whereto6.sin6_addr.s6_addr, 16))
 			wrong_source = 1;
-
-		if (gather_statistics(rts, (uint8_t *)icmph, sizeof(*icmph), cc,
-				      ntohs(icmph->icmp6_seq), hops, 0, tv,
-				      SPRINT_RES_ADDR(rts, from, sizeof(*from)),
-				      print6_echo_reply,
-				      rts->multicast, wrong_source)) {
+		if (gather_stats(rts, (uint8_t *)icmph, sizeof(*icmph), cc,
+			ntohs(icmph->icmp6_seq), hops, 0, tv,
+			SPRINT_RES_ADDR(rts, from, sizeof(*from)),
+			print6_echo_reply, rts->multicast, wrong_source))
+		{
 			fflush(stdout);
 			return 0;
 		}
@@ -266,11 +272,10 @@ static int ping6_parse_reply(struct ping_rts *rts, socket_st *sock,
 		int seq = niquery_check_nonce(&rts->ni, nih->ni_nonce);
 		if (seq < 0)
 			return 1;
-		if (gather_statistics(rts, (uint8_t *)icmph, sizeof(*icmph), cc,
-				      seq, hops, 0, tv,
-				      SPRINT_RES_ADDR(rts, from, sizeof(*from)),
-				      pr_niquery_reply,
-				      rts->multicast, 0))
+		if (gather_stats(rts, (uint8_t *)icmph, sizeof(*icmph), cc,
+			seq, hops, 0, tv,
+			SPRINT_RES_ADDR(rts, from, sizeof(*from)),
+			pr_niquery_reply, rts->multicast, 0))
 			return 0;
 	} else {
 		int nexthdr;
@@ -353,9 +358,9 @@ void ping6_install_filter(struct ping_rts *rts, socket_st *sock) {
 /* return >= 0: exit with this code, < 0: go on to next addrinfo result */
 int ping6_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai, socket_st *sock) {
 	static ping_func_set_st ping6_func_set = {
-		.send_probe = ping6_send_probe,
-		.receive_error_msg = ping6_receive_error_msg,
-		.parse_reply = ping6_parse_reply,
+		.send_probe     = ping6_send_probe,
+		.receive_error  = ping6_receive_error,
+		.parse_reply    = ping6_parse_reply,
 		.install_filter = ping6_install_filter,
 	};
 
@@ -516,10 +521,10 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai, 
 		rts->multicast = 1;
 
 		if (rts->uid) {
-			if (rts->interval < MIN_MULTICAST_USER_INTERVAL_MS)
+			if (rts->interval < MIN_MCAST_INTERVAL_MS)
 				error(2, 0, _("minimal interval for multicast ping for user must be >= %d ms, use -i %s (or higher)"),
-					  MIN_MULTICAST_USER_INTERVAL_MS,
-					  str_interval(MIN_MULTICAST_USER_INTERVAL_MS));
+					  MIN_MCAST_INTERVAL_MS,
+					  str_interval(MIN_MCAST_INTERVAL_MS));
 
 			if (rts->pmtudisc >= 0 && rts->pmtudisc != IPV6_PMTUDISC_DO)
 				error(2, 0, _("multicast ping does not fragment"));
@@ -664,8 +669,7 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai, 
 	}
 	printf(_("%zu data bytes\n"), rts->datalen);
 
-	setup(rts, sock);
-
+	ping_setup(rts, sock);
 	drop_capabilities();
 
 	hold = main_loop(rts, &ping6_func_set, sock, packet, packlen);

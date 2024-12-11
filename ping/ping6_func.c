@@ -56,9 +56,24 @@
 #include "iputils_ni.h"
 #include "common.h"
 #include "ping6_func.h"
+#include "node_info.h"
 
 #include <ctype.h>
 #include <errno.h>
+#include <arpa/inet.h>
+#include <netinet/icmp6.h>
+#include <resolv.h>
+
+/* RFC 4443 addition not yet available in libc headers */
+#ifndef ICMP6_DST_UNREACH_POLICYFAIL
+#define ICMP6_DST_UNREACH_POLICYFAIL 5
+#endif
+
+/* RFC 4443 addition not yet available in libc headers */
+#ifndef ICMP6_DST_UNREACH_REJECTROUTE
+#define ICMP6_DST_UNREACH_REJECTROUTE 6
+#endif
+
 
 int print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
 	switch (type) {

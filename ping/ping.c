@@ -54,25 +54,38 @@
 #include "ping4.h"
 #include "ping6.h"
 #include "extra.h"
+#include "node_info.h"
 
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <limits.h>
 #include <assert.h>
 #include <errno.h>
+#include <math.h>
+#include <locale.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <ifaddrs.h>
-#include <math.h>
-#include <locale.h>
+
+#include <linux/in6.h>
+
+#ifndef MSG_CONFIRM
+/* defined via netinet/in.h */
+#define MSG_CONFIRM 0
+#endif
+
+#define	DEFDATALEN	(64 - 8)	// default data length
+#define IDENTIFIER_MAX	0xFFFF		// max unsigned 2-byte value
+#define V4IN6_WARNING	"Embedded IPv4 Address"
+#define CASE_TYPE(x)	case x: return #x;
 
 /* FIXME: global_rts will be removed in future */
 struct ping_rts *global_rts;
 
-#define V4IN6_WARNING "Embedded IPv4 Address"
-
-#define CASE_TYPE(x) case x: return #x;
-
-static char *str_family(int family)
-{
+static char *str_family(int family) {
 	switch (family) {
 		CASE_TYPE(AF_UNSPEC)
 		CASE_TYPE(AF_INET)
@@ -80,24 +93,21 @@ static char *str_family(int family)
 	default:
 		error(2, 0, _("unknown protocol family: %d"), family);
 	}
-
 	return "";
 }
 
-static char *str_socktype(int socktype)
-{
+static char *str_socktype(int socktype) {
 	if (!socktype)
 		return "0";
-
 	switch (socktype) {
 		CASE_TYPE(SOCK_DGRAM)
 		CASE_TYPE(SOCK_RAW)
 	default:
 		error(2, 0, _("unknown sock type: %d"), socktype);
 	}
-
 	return "";
 }
+
 
 static void create_socket(struct ping_rts *rts, socket_st *sock, int family,
 			  int socktype, int protocol, int requisite)
@@ -186,6 +196,7 @@ static void create_socket(struct ping_rts *rts, socket_st *sock, int family,
 	}
 }
 
+
 static void set_socket_option(socket_st *sock, int level, int optname,
 			      const void *optval, socklen_t olen)
 {
@@ -194,6 +205,7 @@ static void set_socket_option(socket_st *sock, int level, int optname,
 	if (setsockopt(sock->fd, level, optname, optval, olen) == -1)
 		error(2, errno, "setsockopt");
 }
+
 
 /* Much like strtod(3), but will fails if str is not valid number. */
 static double ping_strtod(const char *str, const char *err_msg)
@@ -237,8 +249,8 @@ static double ping_strtod(const char *str, const char *err_msg)
 	return 0.0;
 }
 
-static int parseflow(char *str)
-{
+
+static int parseflow(char *str) {
 	const char *cp;
 	unsigned long val;
 	char *ep;
@@ -261,9 +273,9 @@ static int parseflow(char *str)
 	return (val);
 }
 
+
 /* Set Type of Service (TOS) and other Quality of Service relating bits */
-static int parsetos(char *str)
-{
+static int parsetos(char *str) {
 	const char *cp;
 	int tos;
 	char *ep;
@@ -284,6 +296,7 @@ static int parsetos(char *str)
 		error(2, 0, _("the decimal value of TOS bits must be in range 0-255: %d"), tos);
 	return (tos);
 }
+
 
 int main(int argc, char **argv) {
 	struct addrinfo hints = {

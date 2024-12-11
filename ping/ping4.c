@@ -59,11 +59,19 @@
 #include "ping4_func.h"
 
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <ifaddrs.h>
 #include <netinet/ip_icmp.h>
+
+#include <linux/filter.h>
+#include <linux/errqueue.h>
 
 #ifndef ICMP_FILTER
 #define ICMP_FILTER	1
@@ -128,8 +136,8 @@ static int ping4_send_probe(struct ping_rts *rts, socket_st *sock, void *packet,
 }
 
 
-// func_set:receive_error_msg
-static int ping4_receive_error_msg(struct ping_rts *rts, socket_st *sock) {
+// func_set:receive_error
+static int ping4_receive_error(struct ping_rts *rts, socket_st *sock) {
 	ssize_t res;
 	char cbuf[512];
 	struct iovec iov;
@@ -174,7 +182,7 @@ static int ping4_receive_error_msg(struct ping_rts *rts, socket_st *sock) {
 		if (rts->opt_quiet)
 			goto out;
 		if (rts->opt_flood)
-			write_stdout("E", 1);
+			write(STDOUT_FILENO, "E", 1);
 		else if (e->ee_errno != EMSGSIZE)
 			error(0, 0, _("local error: %s"), strerror(e->ee_errno));
 		else
@@ -209,7 +217,7 @@ static int ping4_receive_error_msg(struct ping_rts *rts, socket_st *sock) {
 		if (rts->opt_quiet)
 			goto out;
 		if (rts->opt_flood) {
-			write_stdout("\bE", 2);
+			write(STDOUT_FILENO, "\bE", 2);
 		} else {
 			print_timestamp(rts);
 			printf(_("From %s icmp_seq=%u "), SPRINT_RES_ADDR(rts, sin, sizeof(*sin)),
@@ -291,10 +299,10 @@ static int ping4_parse_reply(struct ping_rts *rts, struct socket_st *sock,
 		if (!rts->broadcast_pings && !rts->multicast &&
 		    from->sin_addr.s_addr != rts->whereto.sin_addr.s_addr)
 			wrong_source = 1;
-		if (gather_statistics(rts, (uint8_t *)icp, sizeof(*icp), cc,
-			      ntohs(icp->un.echo.sequence), reply_ttl, 0, tv,
-			      SPRINT_RES_ADDR(rts, from, sizeof(*from)),
-			      print4_echo_reply, rts->multicast, wrong_source))
+		if (gather_stats(rts, (uint8_t *)icp, sizeof(*icp), cc,
+			ntohs(icp->un.echo.sequence), reply_ttl, 0, tv,
+			SPRINT_RES_ADDR(rts, from, sizeof(*from)),
+			print4_echo_reply, rts->multicast, wrong_source))
 		{
 			fflush(stdout);
 			return 0;
@@ -345,10 +353,7 @@ static int ping4_parse_reply(struct ping_rts *rts, struct socket_st *sock,
 			break;
 		}
 		if (rts->opt_flood && !(rts->opt_verbose || rts->opt_quiet)) {
-			if (!csfailed)
-				write_stdout("!E", 2);
-			else
-				write_stdout("!EC", 3);
+			write(STDOUT_FILENO, "!EC", csfailed ? 3 : 2);
 			return 0;
 		}
 		if (!rts->opt_verbose || rts->uid)
@@ -414,9 +419,9 @@ static void ping4_install_filter(struct ping_rts *rts, socket_st *sock) {
 /* return >= 0: exit with this code, < 0: go on to next addrinfo result */
 int ping4_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai, socket_st *sock) {
 	static ping_func_set_st ping4_func_set = {
-		.send_probe = ping4_send_probe,
-		.receive_error_msg = ping4_receive_error_msg,
-		.parse_reply = ping4_parse_reply,
+		.send_probe     = ping4_send_probe,
+		.receive_error  = ping4_receive_error,
+		.parse_reply    = ping4_parse_reply,
 		.install_filter = ping4_install_filter,
 	};
 	static const struct addrinfo hints = {
@@ -567,11 +572,10 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai, 
 		rts->multicast = 1;
 
 		if (rts->uid) {
-			if (rts->interval < MIN_MULTICAST_USER_INTERVAL_MS)
+			if (rts->interval < MIN_MCAST_INTERVAL_MS)
 				error(2, 0, _("minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or higher)"),
-					  MIN_MULTICAST_USER_INTERVAL_MS,
-					  str_interval(MIN_MULTICAST_USER_INTERVAL_MS));
-
+					  MIN_MCAST_INTERVAL_MS,
+					  str_interval(MIN_MCAST_INTERVAL_MS));
 			if (rts->pmtudisc >= 0 && rts->pmtudisc != IP_PMTUDISC_DO)
 				error(2, 0, _("broadcast ping does not fragment"));
 		}
@@ -703,7 +707,7 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai, 
 		printf(_("from %s %s: "), inet_ntoa(rts->source.sin_addr), rts->device ? rts->device : "");
 	printf(_("%zu(%zu) bytes of data.\n"), rts->datalen, rts->datalen + 8 + rts->optlen + 20);
 
-	setup(rts, sock);
+	ping_setup(rts, sock);
 	if (rts->opt_connect_sk &&
 	    connect(sock->fd, (struct sockaddr *)&dst, sizeof(dst)) == -1)
 		error(2, errno, "connect failed");

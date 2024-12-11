@@ -59,6 +59,7 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <net/if.h>
 
 static int iface_name2index(struct ping_rts *rts, int fd) {
 	struct ifreq ifr = {0};
