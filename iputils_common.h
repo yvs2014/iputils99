@@ -5,23 +5,10 @@
 #define _GNU_SOURCE
 #endif
 
-#include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <netdb.h>
-
-#define ARRAY_SIZE(arr) \
-  (sizeof(arr) / sizeof((arr)[0]) + \
-   sizeof(__typeof__(int[1 - 2 * \
-	  !!__builtin_types_compatible_p(__typeof__(arr), \
-					 __typeof__(&arr[0]))])) * 0)
-
-#ifdef __GNUC__
-# define iputils_attribute_format(t, n, m) __attribute__((__format__ (t, n, m)))
-#else
-# define iputils_attribute_format(t, n, m)
-#endif
 
 #ifdef ENABLE_NLS
 # include <libintl.h>
@@ -66,16 +53,14 @@
 #ifdef HAVE_ERROR_H
 # include <error.h>
 #else
-extern void error(int status, int errnum, const char *format, ...);
+void error(int status, int errnum, const char *format, ...);
 #endif
 
-extern int close_stream(FILE *stream);
-extern void close_stdout(void);
-extern long strtol_or_err(char const *const str, char const *const errmesg,
-			  const long min, const long max);
-extern unsigned long strtoul_or_err(char const *const str, char const *const errmesg,
-			  const unsigned long min, const unsigned long max);
-extern void iputils_srand(void);
+void close_stdout(void);
+long strtol_or_err(char const *const str, char const *const errmesg,
+	const long min, const long max);
+unsigned long strtoul_or_err(char const *const str, char const *const errmesg,
+	const unsigned long min, const unsigned long max);
 void print_config(void);
 
 #ifndef timespecsub

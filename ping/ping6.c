@@ -70,6 +70,7 @@
 #include "ping6_func.h"
 #include "node_info.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>

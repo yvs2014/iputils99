@@ -7,6 +7,7 @@ project('iputils', 'c',
 		'c_std=c99',
 		'warning_level=3',
 		'localstatedir=var',
+#		'b_sanitize=address,undefined', # use for testing
 	],
 	meson_version : '>=0.40',
 	version : '20240117') # keep in sync with: git describe | awk -F- '{print $1}'
@@ -128,6 +129,14 @@ if idn	# If available: use AI_IDN for getaddrinfo() queries
 	extra_funcs += '__idna_to_dns_encoding'
 endif
 
+if build_ping
+	ping_extra = files('md5.c')
+	if get_option('PING6_NONCE_MEMORY')
+		ping_extra += files('iputils_ni_aux.c')
+		conf.set('PING6_NONCE_MEMORY', 1, description: 'Define to use ping6 NodeInfo with nonce memory')
+	endif
+endif
+
 if host_machine.endian() == 'big'
 	conf.set('WORDS_BIGENDIAN', '1')
 endif
@@ -135,7 +144,7 @@ endif
 # Check functions availability
 foreach f: extra_funcs
 	if cc.has_function(f, args: '-D_GNU_SOURCE')
-		conf.set('HAVE_' + f.to_upper(), 1, description: 'Define to 1 if you have ' + f + ' function')
+		conf.set('HAVE_' + f.to_upper(), 1, description: 'Define if you have ' + f + ' function')
 	endif
 endforeach
 
@@ -173,7 +182,7 @@ endif
 common_sources = files('iputils_common.c') + [git_version_h]
 
 if build_ping
-	subdir ('ping')
+	subdir('ping')
 endif
 
 if build_tracepath

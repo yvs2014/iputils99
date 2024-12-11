@@ -58,6 +58,7 @@
 #include "ping6_func.h"
 #include "node_info.h"
 
+#include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
 #include <arpa/inet.h>

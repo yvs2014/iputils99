@@ -33,12 +33,13 @@
 #include "common.h"
 #include "iputils_common.h"
 
-#include <limits.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h>
 #include <signal.h>
 #include <sched.h>
 #include <sys/ioctl.h>
@@ -253,12 +254,12 @@ void fill_packet(struct ping_rts *rts, char *patp, unsigned char *packet, size_t
 		for (size_t i = 0; i <= max; i += items)
 			for (int j = 0; j < items; ++j)
 				bp[i + j] = pat[j];
-	}
-	if (!rts->opt_quiet) {
-		printf(_("PATTERN: 0x"));
-		for (int i = 0; i < items; i++)
-			printf("%02x", bp[i] & 0xFF);
-		printf("\n");
+		if (!rts->opt_quiet) {
+			printf(_("PATTERN: 0x"));
+			for (int j = 0; j < items; j++)
+				printf("%02x", bp[j] & 0xFF);
+			printf("\n");
+		}
 	}
 #ifdef USE_IDN
 	setlocale(LC_ALL, "");
@@ -560,10 +561,9 @@ void ping_setup(struct ping_rts *rts, socket_st *sock) {
 		rts->opt_flood_poll = 1;
 
 	if (!rts->opt_pingfilled) {
-		size_t i;
 		unsigned char *p = rts->outpack + 8;
 		/* Do not forget about case of small datalen, fill timestamp area too! */
-		for (i = 0; i < rts->datalen; ++i)
+		for (size_t i = 0; i < rts->datalen; ++i)
 			*p++ = i;
 	}
 

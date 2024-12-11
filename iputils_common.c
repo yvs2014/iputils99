@@ -38,15 +38,13 @@ void error(int status, int errnum, const char *format, ...) {
 }
 #endif
 
-int close_stream(FILE *stream)
-{
+static int close_stream(FILE *stream) {
 	const int flush_status = fflush(stream);
 #ifdef HAVE___FPENDING
 	const int some_pending = (__fpending(stream) != 0);
 #endif
 	const int prev_fail = (ferror(stream) != 0);
 	const int fclose_fail = (fclose(stream) != 0);
-
 	if (flush_status ||
 	    prev_fail || (fclose_fail && (
 #ifdef HAVE___FPENDING
@@ -60,21 +58,17 @@ int close_stream(FILE *stream)
 	return 0;
 }
 
-void close_stdout(void)
-{
-	if (close_stream(stdout) != 0 && !(errno == EPIPE)) {
-		if (errno)
-			error(0, errno, "write error");
-		else
-			error(0, 0, "write error");
+void close_stdout(void) {
+	if (close_stream(stdout) && (errno != EPIPE)) {
+		error(0, errno, "write error");
 		_exit(EXIT_FAILURE);
 	}
-	if (close_stream(stderr) != 0)
+	if (close_stream(stderr))
 		_exit(EXIT_FAILURE);
 }
 
 long strtol_or_err(char const *const str, char const *const errmesg,
-		   const long min, const long max)
+		const long min, const long max)
 {
 	long num;
 	char *end = NULL;
@@ -95,7 +89,7 @@ long strtol_or_err(char const *const str, char const *const errmesg,
 }
 
 unsigned long strtoul_or_err(char const *const str, char const *const errmesg,
-		   const unsigned long min, const unsigned long max)
+		const unsigned long min, const unsigned long max)
 {
 	unsigned long num;
 	char *end = NULL;
@@ -114,48 +108,6 @@ unsigned long strtoul_or_err(char const *const str, char const *const errmesg,
 	error(EXIT_FAILURE, errno, "%s: '%s'", errmesg, str);
 	abort();
 }
-
-static unsigned int iputil_srand_fallback(void)
-{
-	struct timespec ts;
-
-	clock_gettime(CLOCK_REALTIME, &ts);
-	return ((getpid() << 16) ^ getuid() ^ ts.tv_sec ^ ts.tv_nsec);
-}
-
-void iputils_srand(void)
-{
-	unsigned int i;
-
-#if HAVE_GETRANDOM
-	ssize_t ret;
-
-	do {
-		errno = 0;
-		ret = getrandom(&i, sizeof(i), GRND_NONBLOCK);
-		switch (errno) {
-		case 0:
-			break;
-		case EINTR:
-			continue;
-		default:
-			i = iputil_srand_fallback();
-			goto done;
-		}
-	} while (ret != sizeof(i));
- done:
-#else
-	i = iputil_srand_fallback();
-#endif
-	srand(i);
-	/* Consume up to 31 random numbers */
-	i = rand() & 0x1F;
-	while (0 < i) {
-		rand();
-		i--;
-	}
-}
-
 
 #ifndef timespecsub
 /* Subtract timespec structs:  res = a - b */
@@ -181,53 +133,44 @@ void timersub(struct timeval *a, struct timeval *b, struct timeval *res) {
 }
 #endif
 
-
-void print_config(void)
-{
+void print_config(void) {
 	printf(
-
 	"libcap: "
 #ifdef HAVE_LIBCAP
 	"yes"
 #else
 	"no"
 #endif
-
 	", IDN: "
 #ifdef USE_IDN
 	"yes"
 #else
 	"no"
 #endif
-
 	", NLS: "
 #ifdef ENABLE_NLS
 	"yes"
 #else
 	"no"
 #endif
-
 	", error.h: "
 #ifdef HAVE_ERROR_H
 	"yes"
 #else
 	"no"
 #endif
-
 	", getrandom(): "
 #ifdef HAVE_GETRANDOM
 	"yes"
 #else
 	"no"
 #endif
-
 	", __fpending(): "
 #ifdef HAVE___FPENDING
 	"yes"
 #else
 	"no"
 #endif
-
 	"\n");
 }
 

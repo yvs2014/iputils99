@@ -50,3 +50,7 @@ option('USE_GETTEXT', type: 'boolean', value: true,
 
 option('SKIP_TESTS', type: 'boolean', value: false,
 	description: 'Skip tests during build')
+
+option('PING6_NONCE_MEMORY', type: 'boolean', value: false,
+	description: 'PING6 NodeInfo nonce memory')
+

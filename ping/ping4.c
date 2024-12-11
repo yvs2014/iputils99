@@ -58,6 +58,7 @@
 #include "ping4_aux.h"
 #include "ping4_func.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>

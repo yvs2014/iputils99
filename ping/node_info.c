@@ -32,10 +32,12 @@
 
 #include "iputils_common.h"
 #include "iputils_ni.h"
+#include "iputils_ni_aux.h"
 #include "common.h"
 #include "md5.h"
 #include "node_info.h"
 
+#include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
