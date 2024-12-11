@@ -67,7 +67,6 @@
 #include "common.h"
 #include "ping6.h"
 #include "ping6_aux.h"
-#include "ping6_func.h"
 #include "node_info.h"
 
 #include <stdio.h>

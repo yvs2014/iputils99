@@ -1,8 +1,7 @@
 #ifndef IPUTILS_NI_H
 #define IPUTILS_NI_H
-/*
- * Shared network information definitions.
- */
+
+/* Shared network information definitions */
 #include <asm/byteorder.h>
 
 #define IPUTILS_NI_ICMP6_QUERY		139

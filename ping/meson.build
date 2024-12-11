@@ -3,14 +3,12 @@
 ping_src = common_sources
 ping_src += 'ping.c'
 ping_src += 'ping_aux.c'
-ping_src += 'common.c'
-ping_src += 'extra.c'
 ping_src += 'ping4.c'
 ping_src += 'ping4_aux.c'
-ping_src += 'ping4_func.c'
 ping_src += 'ping6.c'
 ping_src += 'ping6_aux.c'
-ping_src += 'ping6_func.c'
+ping_src += 'common.c'
+ping_src += 'extra.c'
 ping_src += 'node_info.c'
 ping_src += ping_extra
 

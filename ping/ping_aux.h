@@ -1,7 +1,6 @@
 #ifndef PING_AUX_H
 #define PING_AUX_H
 
-//#include "common.h"
 char *str_family(int family);
 char *str_socktype(int socktype);
 double ping_strtod(const char *str, const char *err_msg);

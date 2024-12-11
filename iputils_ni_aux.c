@@ -1,4 +1,4 @@
-// part of iputils_common.c is used in node_info.c only
+// part of iputils_common.c that used in node_info.c only
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE

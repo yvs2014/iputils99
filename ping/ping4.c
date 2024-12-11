@@ -56,7 +56,6 @@
 #include "common.h"
 #include "ping4.h"
 #include "ping4_aux.h"
-#include "ping4_func.h"
 
 #include <stdio.h>
 #include <stdlib.h>
