@@ -12,6 +12,9 @@ ping_src += 'extra.c'
 ping_src += 'node_info.c'
 ping_src += ping_extra
 
+m_dep = cc.find_library('m')
+resolv_dep = cc.find_library('resolv', required: false)
+
 ping = executable('ping', ping_src,
 	include_directories: include_directories('..'),
 	dependencies: [cap_dep, intl_dep, m_dep, resolv_dep],

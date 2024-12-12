@@ -88,11 +88,8 @@ if cc.compiles('''
 	conf.set('TIME_WITH_SYS_TIME', 1, description: 'Defined if struct tm exists')
 endif
 
-m_dep = cc.find_library('m')
-resolv_dep = cc.find_library('resolv', required: false)
-
 if cc.has_function('clock_gettime')
-	rt_dep = cc.find_library('disabler-appears-to-disable-executable-build', required : false)
+	rt_dep = cc.find_library('disabler-appears-to-disable-executable-build', required: false)
 else
 	rt_dep = cc.find_library('rt')
 endif
@@ -102,7 +99,7 @@ if cap
 	cap_dep = cc.find_library('cap')
 	conf.set('HAVE_LIBCAP', 1, description: 'Defined if libcap exists')
 else
-	cap_dep = dependency('disabler-appears-to-disable-executable-build', required : false)
+	cap_dep = dependency('disabler-appears-to-disable-executable-build', required: false)
 endif
 
 arping_device = get_option('ARPING_DEFAULT_DEVICE')

@@ -1097,7 +1097,7 @@ msgstr "로컬 오류: 메시지가 너무 김, mtu=%u"
 
 #: ping/ping.c:1617
 #, c-format
-msgid "packet too short (%d bytes) from %s"
+msgid "packet too short (%zd bytes) from %s"
 msgstr "패킷이 너무 짧음(%d 바이트) (%s에서)"
 
 #: ping/ping.c:1696
@@ -1285,7 +1285,7 @@ msgstr "경고: 시간을 (%ldus)로 되돌리고, 대책을 강구합니다"
 
 #: ping/ping_common.c:799
 #, c-format
-msgid "%d bytes from %s:"
+msgid "%zd bytes from %s:"
 msgstr "%d 바이트 (%s에서):"
 
 #: ping/ping_common.c:805

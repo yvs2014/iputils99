@@ -465,8 +465,9 @@ void print4_icmph(struct ping_rts *rts, uint8_t type, uint8_t code,
 	}
 }
 
-void print4_echo_reply(uint8_t *_icp, int len __attribute__((__unused__))) {
-	struct icmphdr *icp = (struct icmphdr *)_icp;
-	printf(_(" icmp_seq=%u"), ntohs(icp->un.echo.sequence));
+void print4_echo_reply(const uint8_t *hdr, size_t len) {
+	if (len >= sizeof(struct icmphdr))
+		printf(_(" icmp_seq=%u"),
+			ntohs(((struct icmphdr *)hdr)->un.echo.sequence));
 }
 

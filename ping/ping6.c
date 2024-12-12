@@ -127,6 +127,7 @@ static int ping6_send_probe(struct ping_rts *rts, socket_st *sock, void *packet,
 }
 
 
+// func_set:receive_error
 static int ping6_receive_error(struct ping_rts *rts, socket_st *sock) {
 	ssize_t res;
 	char cbuf[512];
@@ -219,8 +220,9 @@ out:
  * which arrive ('tis only fair).  This permits multiple copies of this
  * program to be run without having intermingled output (or statistics!).
  */
+// func_set:parse_reply
 static int ping6_parse_reply(struct ping_rts *rts, socket_st *sock,
-	struct msghdr *msg, int cc, void *addr, struct timeval *tv)
+	struct msghdr *msg, size_t received, void *addr, const struct timeval *at)
 {
 	struct sockaddr_in6 *from = addr;
 	uint8_t *buf = msg->msg_iov->iov_base;
@@ -247,9 +249,9 @@ static int ping6_parse_reply(struct ping_rts *rts, socket_st *sock,
 	/* Now the ICMP part */
 
 	icmph = (struct icmp6_hdr *)buf;
-	if (cc < 8) {
+	if (received < 8) {
 		if (rts->opt_verbose)
-			error(0, 0, _("packet too short: %d bytes"), cc);
+			error(0, 0, _("packet too short: %zd bytes"), received);
 		return 1;
 	}
 
@@ -259,8 +261,8 @@ static int ping6_parse_reply(struct ping_rts *rts, socket_st *sock,
 		if (!rts->multicast && !rts->subnet_router_anycast &&
 		    memcmp(&from->sin6_addr.s6_addr, &rts->whereto6.sin6_addr.s6_addr, 16))
 			wrong_source = 1;
-		if (gather_stats(rts, (uint8_t *)icmph, sizeof(*icmph), cc,
-			ntohs(icmph->icmp6_seq), hops, 0, tv,
+		if (gather_stats(rts, (uint8_t *)icmph, sizeof(*icmph), received,
+			ntohs(icmph->icmp6_seq), hops, 0, at,
 			SPRINT_RES_ADDR(rts, from, sizeof(*from)),
 			print6_echo_reply, rts->multicast, wrong_source))
 		{
@@ -272,10 +274,10 @@ static int ping6_parse_reply(struct ping_rts *rts, socket_st *sock,
 		int seq = niquery_check_nonce(&rts->ni, nih->ni_nonce);
 		if (seq < 0)
 			return 1;
-		if (gather_stats(rts, (uint8_t *)icmph, sizeof(*icmph), cc,
-			seq, hops, 0, tv,
+		if (gather_stats(rts, (uint8_t *)icmph, sizeof(*icmph), received,
+			seq, hops, 0, at,
 			SPRINT_RES_ADDR(rts, from, sizeof(*from)),
-			pr_niquery_reply, rts->multicast, 0))
+			print6_ni_reply, rts->multicast, 0))
 			return 0;
 	} else {
 		int nexthdr;
@@ -289,7 +291,7 @@ static int ping6_parse_reply(struct ping_rts *rts, socket_st *sock,
 		 * using RECVRERR. :-)
 		 */
 
-		if (cc < (int)(8 + sizeof(struct ip6_hdr) + 8))
+		if (received < (8 + sizeof(struct ip6_hdr) + 8))
 			return 1;
 
 		if (memcmp(&iph1->ip6_dst, &rts->whereto6.sin6_addr, 16))
@@ -330,6 +332,7 @@ static int ping6_parse_reply(struct ping_rts *rts, socket_st *sock,
 }
 
 
+// func_set:install_filter
 void ping6_install_filter(struct ping_rts *rts, socket_st *sock) {
 	static int once;
 	static struct sock_filter insns[] = {

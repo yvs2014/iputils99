@@ -239,14 +239,14 @@ out:
  * program to be run without having intermingled output (or statistics!).
  */
 // func_set:parse_reply
-static int ping4_parse_reply(struct ping_rts *rts, struct socket_st *sock,
-	struct msghdr *msg, int cc, void *addr, struct timeval *tv)
+static int ping4_parse_reply(struct ping_rts *rts, socket_st *sock,
+	struct msghdr *msg, size_t received, void *addr, const struct timeval *at)
 {
 	struct sockaddr_in *from = addr;
 	uint8_t *buf = msg->msg_iov->iov_base;
 	struct icmphdr *icp;
 	struct iphdr *ip;
-	int hlen;
+	size_t hlen;
 	int csfailed;
 	struct cmsghdr *cmsgh;
 	int reply_ttl;
@@ -258,9 +258,9 @@ static int ping4_parse_reply(struct ping_rts *rts, struct socket_st *sock,
 	ip = (struct iphdr *)buf;
 	if (sock->socktype == SOCK_RAW) {
 		hlen = ip->ihl * 4;
-		if (cc < hlen + 8 || ip->ihl < 5) {
+		if ((received < (hlen + 8)) || (ip->ihl < 5)) {
 			if (rts->opt_verbose)
-				error(0, 0, _("packet too short (%d bytes) from %s"), cc,
+				error(0, 0, _("packet too short (%zd bytes) from %s"), received,
 					SPRINT_RES_ADDR(rts, from, sizeof(*from)));
 			return 1;
 		}
@@ -288,19 +288,18 @@ static int ping4_parse_reply(struct ping_rts *rts, struct socket_st *sock,
 	}
 
 	/* Now the ICMP part */
-	cc -= hlen;
+	received -= hlen;
 	icp = (struct icmphdr *)(buf + hlen);
-	csfailed = in_cksum((unsigned short *)icp, cc, 0);
+	csfailed = in_cksum((unsigned short *)icp, received, 0);
 
 	if (icp->type == ICMP_ECHOREPLY) {
 		if (!is_ours(rts, sock, icp->un.echo.id))
-			return 1;			/* 'Twas not our ECHO */
-
+			return 1;	/* 'Twas not our ECHO */
 		if (!rts->broadcast_pings && !rts->multicast &&
 		    from->sin_addr.s_addr != rts->whereto.sin_addr.s_addr)
 			wrong_source = 1;
-		if (gather_stats(rts, (uint8_t *)icp, sizeof(*icp), cc,
-			ntohs(icp->un.echo.sequence), reply_ttl, 0, tv,
+		if (gather_stats(rts, (uint8_t *)icp, sizeof(*icp), received,
+			ntohs(icp->un.echo.sequence), reply_ttl, 0, at,
 			SPRINT_RES_ADDR(rts, from, sizeof(*from)),
 			print4_echo_reply, rts->multicast, wrong_source))
 		{
@@ -308,8 +307,7 @@ static int ping4_parse_reply(struct ping_rts *rts, struct socket_st *sock,
 			return 0;
 		}
 	} else {
-		/* We fall here when a redirect or source quench arrived. */
-
+		/* We fall here when a redirect or source quench arrived */
 		switch (icp->type) {
 		case ICMP_ECHO:
 			/* MUST NOT */
@@ -324,8 +322,8 @@ static int ping4_parse_reply(struct ping_rts *rts, struct socket_st *sock,
 				struct icmphdr *icp1 = (struct icmphdr *)
 						((unsigned char *)iph + iph->ihl * 4);
 				int error_pkt;
-				if (cc < (int)(8 + sizeof(struct iphdr) + 8) ||
-				    cc < 8 + iph->ihl * 4 + 8)
+				size_t minhl = 8 + iph->ihl * 4 + 8;
+				if ((received < (8 + sizeof(struct iphdr) + 8)) || (received < minhl))
 					return 1;
 				if (icp1->type != ICMP_ECHO ||
 				    iph->daddr != rts->whereto.sin_addr.s_addr ||

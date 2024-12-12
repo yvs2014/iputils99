@@ -1096,7 +1096,7 @@ msgstr "paikallinen virhe: viesti liian pitkä; mtu=%u"
 
 #: ping/ping.c:1617
 #, c-format
-msgid "packet too short (%d bytes) from %s"
+msgid "packet too short (%zd bytes) from %s"
 msgstr "paketti liian lyhyt (%d tavua) %s:sta"
 
 #: ping/ping.c:1696
@@ -1284,7 +1284,7 @@ msgstr "Varoitus: vuorokaudenaika palautuu (%ldus); ryhdytään vastatoimiin"
 
 #: ping/ping_common.c:799
 #, c-format
-msgid "%d bytes from %s:"
+msgid "%zd bytes from %s:"
 msgstr "%d tavua %s:sta:"
 
 #: ping/ping_common.c:805

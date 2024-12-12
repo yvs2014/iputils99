@@ -1104,7 +1104,7 @@ msgstr "ლოკალური შეცდომა: შეტყობინ
 
 #: ping/ping.c:1617
 #, c-format
-msgid "packet too short (%d bytes) from %s"
+msgid "packet too short (%zd bytes) from %s"
 msgstr "პაკეტი ძალიან მოკლეა (%d ბაიტი). გამომგზავნი:%s"
 
 #: ping/ping.c:1696
@@ -1304,7 +1304,7 @@ msgstr "გაფრთხილება: დრო უკან დაბრ�
 
 #: ping/ping_common.c:799
 #, c-format
-msgid "%d bytes from %s:"
+msgid "%zd bytes from %s:"
 msgstr "%d ბაიტი %s-დან:"
 
 #: ping/ping_common.c:805

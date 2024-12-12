@@ -64,10 +64,10 @@ unsigned long strtoul_or_err(char const *const str, char const *const errmesg,
 void print_config(void);
 
 #ifndef timespecsub
-void timespecsub(struct timespec *a, struct timespec *b, struct timespec *res);
+void timespecsub(const struct timespec *a, const struct timespec *b, struct timespec *res);
 #endif
 #ifndef timersub
-void timersub(struct timeval *a, struct timeval *b, struct timeval *res);
+void timersub(const struct timeval *a, const struct timeval *b, struct timeval *res);
 #endif
 
 #endif

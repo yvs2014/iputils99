@@ -161,7 +161,7 @@ typedef struct ping_func_set_st {
 	int (*send_probe)(struct ping_rts *rts, socket_st *, void *packet, unsigned packet_size);
 	int (*receive_error)(struct ping_rts *rts, socket_st *sock);
 	int (*parse_reply)(struct ping_rts *rts, socket_st *sock,
-		struct msghdr *msg, int len, void *addr, struct timeval *tv);
+		struct msghdr *msg, size_t received, void *addr, const struct timeval *at);
 	void (*install_filter)(struct ping_rts *rts, socket_st *);
 } ping_func_set_st;
 
@@ -198,9 +198,9 @@ void sock_setmark(struct ping_rts *rts, int fd);
 void ping_setup(struct ping_rts *rts, socket_st *sock);
 int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
 	uint8_t *packet, int packlen);
-int gather_stats(struct ping_rts *rts, uint8_t *icmph, int icmplen, int cc,
-	uint16_t seq, int hops, int csfailed, struct timeval *tv, char *from,
-	void (*print_reply)(uint8_t *icmph, int cc), int multicast,
+int gather_stats(struct ping_rts *rts, uint8_t *icmph, int icmplen, size_t received,
+	uint16_t seq, int hops, int csfailed, const struct timeval *tv, char *from,
+	void (*print_reply)(const uint8_t *hdr, size_t len), int multicast,
 	int wrong_source);
 void fill_packet(struct ping_rts *rts, char *patp,
 	unsigned char *packet, size_t packet_size);

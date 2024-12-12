@@ -293,8 +293,7 @@ static int send_pack(struct run_state *ctl)
 	return err;
 }
 
-static int finish(struct run_state *ctl)
-{
+static int finish(const struct run_state *ctl) {
 	if (!ctl->quiet) {
 		printf(_("Sent %d probes (%d broadcast(s))\n"), ctl->sent, ctl->brd_sent);
 		printf(_("Received %d response(s)"), ctl->received);

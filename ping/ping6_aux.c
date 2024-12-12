@@ -198,9 +198,10 @@ int print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
 	return 0;
 }
 
-void print6_echo_reply(uint8_t *_icmph, int cc __attribute__((__unused__))) {
-	struct icmp6_hdr *icmph = (struct icmp6_hdr *)_icmph;
-	printf(_(" icmp_seq=%u"), ntohs(icmph->icmp6_seq));
+void print6_echo_reply(const uint8_t *hdr, size_t len) {
+	if (len >= sizeof(struct icmp6_hdr))
+		printf(_(" icmp_seq=%u"),
+			ntohs(((struct icmp6_hdr *)hdr)->icmp6_seq));
 }
 
 static void putchar_safe(char c) {
@@ -211,26 +212,23 @@ static void putchar_safe(char c) {
 }
 
 
-static void pr_niquery_reply_name(struct ni_hdr *nih, int len) {
-	uint8_t *h = (uint8_t *)(nih + 1);
-	uint8_t *p = h + 4;
-	uint8_t *end = (uint8_t *)nih + len;
+static void pr_niquery_reply_name(const struct ni_hdr *hdr, size_t len) {
+	const uint8_t *h = (uint8_t *)(hdr + 1);
+	const uint8_t *p = h + 4;
+	const uint8_t *end = (uint8_t *)hdr + len;
 	int continued = 0;
 	char buf[1024];
 	int ret;
 
-	len -= sizeof(struct ni_hdr) + 4;
-
-	if (len < 0) {
+	size_t shift = sizeof(struct ni_hdr) + 4;
+	if (len < shift) {
 		printf(_(" parse error (too short)"));
 		return;
 	}
+	len -= shift;
 	while (p < end) {
 		int fqdn = 1;
-		size_t i;
-
 		memset(buf, 0xff, sizeof(buf));
-
 		if (continued)
 			putchar(',');
 
@@ -241,74 +239,70 @@ static void pr_niquery_reply_name(struct ni_hdr *nih, int len) {
 		}
 		if (p + ret < end && *(p + ret) == '\0')
 			fqdn = 0;
-
 		putchar(' ');
-		for (i = 0; i < strlen(buf); i++)
+
+		for (size_t i = 0; i < strlen(buf); i++)
 			putchar_safe(buf[i]);
 		if (fqdn)
 			putchar('.');
 
 		p += ret + !fqdn;
-
 		continued = 1;
 	}
 }
 
 
-static void pr_niquery_reply_addr(struct ni_hdr *nih, int len) {
-	uint8_t *h = (uint8_t *)(nih + 1);
-	uint8_t *p;
-	uint8_t *end = (uint8_t *)nih + len;
-	int af;
-	int aflen;
-	int continued = 0;
-	int truncated;
-	char buf[1024];
-
+static void pr_niquery_reply_addr(const struct ni_hdr *nih, size_t len) {
+	int af, truncated;
+	size_t addrlen;
 	switch (ntohs(nih->ni_qtype)) {
 	case IPUTILS_NI_QTYPE_IPV4ADDR:
 		af = AF_INET;
-		aflen = sizeof(struct in_addr);
+		addrlen = sizeof(struct in_addr);
 		truncated = nih->ni_flags & IPUTILS_NI_IPV6_FLAG_TRUNCATE;
 		break;
 	case IPUTILS_NI_QTYPE_IPV6ADDR:
 		af = AF_INET6;
-		aflen = sizeof(struct in6_addr);
+		addrlen = sizeof(struct in6_addr);
 		truncated = nih->ni_flags & IPUTILS_NI_IPV4_FLAG_TRUNCATE;
 		break;
 	default:
 		/* should not happen */
-		af = aflen = truncated = 0;
+		af = addrlen = truncated = 0;
 	}
-	p = h;
-	if (len < 0) {
+
+	size_t afaddr_len = sizeof(uint32_t) + addrlen;
+	if (len < afaddr_len) {
 		printf(_(" parse error (too short)"));
 		return;
 	}
 
+	char buf[1024];
+	int comma = 0;
+	const uint8_t *p = (uint8_t *)(nih + 1);
+	const uint8_t *end = (uint8_t *)nih + len;
 	while (p < end) {
-		if (continued)
-			putchar(',');
-
-		if (p + sizeof(uint32_t) + aflen > end) {
+		if ((p + afaddr_len) > end) {
 			printf(_(" parse error (truncated)"));
 			break;
 		}
+		if (comma)
+			putchar(',');
 		if (!inet_ntop(af, p + sizeof(uint32_t), buf, sizeof(buf)))
 			printf(_(" unexpected error in inet_ntop(%s)"),
 			       strerror(errno));
 		else
 			printf(" %s", buf);
-		p += sizeof(uint32_t) + aflen;
-
-		continued = 1;
+		p += afaddr_len;
+		if (!comma)
+			comma = 1;
 	}
 	if (truncated)
 		printf(_(" (truncated)"));
 }
 
-void pr_niquery_reply(uint8_t *_nih, int len) {
-	struct ni_hdr *nih = (struct ni_hdr *)_nih;
+void print6_ni_reply(const uint8_t *hdr, size_t len) {
+	const struct ni_hdr *nih = (struct ni_hdr *)hdr;
 	switch (nih->ni_code) {
 	case IPUTILS_NI_ICMP6_SUCCESS:
 		switch (ntohs(nih->ni_qtype)) {

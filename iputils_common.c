@@ -111,7 +111,7 @@ unsigned long strtoul_or_err(char const *const str, char const *const errmesg,
 
 #ifndef timespecsub
 /* Subtract timespec structs:  res = a - b */
-void timespecsub(struct timespec *a, struct timespec *b, struct timespec *res) {
+void timespecsub(const struct timespec *a, const struct timespec *b, struct timespec *res) {
 	res->tv_sec  = a->tv_sec   - b->tv_sec;
 	res->tv_nsec = a->tv_nsec  - b->tv_nsec;
 	if (res->tv_nsec < 0) {
