@@ -67,44 +67,36 @@ void close_stdout(void) {
 		_exit(EXIT_FAILURE);
 }
 
-long strtol_or_err(char const *const str, char const *const errmesg,
-		const long min, const long max)
-{
-	long num;
-	char *end = NULL;
-
+long strtol_or_err(const char *str, const char *errmesg, long min, long max) {
 	errno = 0;
-	if (str == NULL || *str == '\0')
-		goto err;
-	num = strtol(str, &end, 10);
-	if (errno || str == end || (end && *end))
-		goto err;
-	if (num < min || max < num)
-		error(EXIT_FAILURE, 0, "%s: '%s': out of range: %ld <= value <= %ld",
-		      errmesg, str,  min, max);
-	return num;
- err:
+	if (str && *str) {
+		char *end = NULL;
+		long num = strtol(str, &end, 10);
+		if (!(errno || (str == end) || (end && *end))) {
+			if ((min <= num) && (num <= max))
+				return num;
+			error(EXIT_FAILURE, 0, "%s: '%s': out of range: %ld <= value <= %ld",
+				errmesg, str,  min, max);
+		}
+	}
 	error(EXIT_FAILURE, errno, "%s: '%s'", errmesg, str);
 	abort();
 }
 
-unsigned long strtoul_or_err(char const *const str, char const *const errmesg,
-		const unsigned long min, const unsigned long max)
+unsigned long strtoul_or_err(const char *str, const char *errmesg,
+	unsigned long min, unsigned long max)
 {
-	unsigned long num;
-	char *end = NULL;
-
 	errno = 0;
-	if (str == NULL || *str == '\0')
-		goto err;
-	num = strtoul(str, &end, 10);
-	if (errno || str == end || (end && *end))
-		goto err;
-	if (num < min || max < num)
-		error(EXIT_FAILURE, 0, "%s: '%s': out of range: %lu <= value <= %lu",
-		      errmesg, str, min, max);
-	return num;
- err:
+	if (str && *str) {
+		char *end = NULL;
+		unsigned long num = strtoul(str, &end, 10);
+		if (!(errno || (str == end) || (end && *end))) {
+			if ((min <= num) && (num <= max))
+				return num;
+			error(EXIT_FAILURE, 0, "%s: '%s': out of range: %lu <= value <= %lu",
+			      errmesg, str, min, max);
+		}
+	}
 	error(EXIT_FAILURE, errno, "%s: '%s'", errmesg, str);
 	abort();
 }
@@ -133,44 +125,23 @@ void timersub(struct timeval *a, struct timeval *b, struct timeval *res) {
 }
 #endif
 
-void print_config(void) {
-	printf(
-	"libcap: "
+inline void print_config(void) {
+	printf("%cCAP %cIDN %cNLS\n",
 #ifdef HAVE_LIBCAP
-	"yes"
+	'+',
 #else
-	"no"
+	'-',
 #endif
-	", IDN: "
 #ifdef USE_IDN
-	"yes"
+	'+',
 #else
-	"no"
+	'-',
 #endif
-	", NLS: "
 #ifdef ENABLE_NLS
-	"yes"
+	'+'
 #else
-	"no"
+	'-'
 #endif
-	", error.h: "
-#ifdef HAVE_ERROR_H
-	"yes"
-#else
-	"no"
-#endif
-	", getrandom(): "
-#ifdef HAVE_GETRANDOM
-	"yes"
-#else
-	"no"
-#endif
-	", __fpending(): "
-#ifdef HAVE___FPENDING
-	"yes"
-#else
-	"no"
-#endif
-	"\n");
+	);
 }
 

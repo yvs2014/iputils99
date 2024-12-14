@@ -70,7 +70,7 @@ static uid_t euid;
 #define	BITMAP_ARR(bit)	(rts->rcvd_tbl.bitmap[(bit) >> BITMAP_SHIFT])		// Identify word in array
 #define	BITMAP_BIT(bit)	(((bitmap_t)1) << ((bit) & ((1 << BITMAP_SHIFT) - 1)))	// Identify bit in word
 
-static inline bitmap_t rcvd_test(struct ping_rts *rts, uint16_t seq) {
+static inline bitmap_t rcvd_test(const struct ping_rts *rts, uint16_t seq) {
 	unsigned bit = seq % MAX_DUP_CHK;
 	return BITMAP_ARR(bit) & BITMAP_BIT(bit);
 }
@@ -137,78 +137,65 @@ void usage(void) {
 	exit(2);
 }
 
-void limit_capabilities(struct ping_rts *rts) {
+uid_t limit_capabilities(const struct ping_rts *rts) {
 #ifdef HAVE_LIBCAP
-	cap_t cap_cur_p;
-	cap_t cap_p;
-	cap_flag_value_t cap_ok;
-
-	cap_cur_p = cap_get_proc();
-	if (!cap_cur_p)
+	// set proc
+	cap_t proc = cap_get_proc();
+	if (!proc)
 		error(-1, errno, "cap_get_proc");
-	cap_p = cap_init();
-	if (!cap_p)
+	// set caps
+	cap_t cap = cap_init();
+	if (!cap)
 		error(-1, errno, "cap_init");
-	cap_ok = CAP_CLEAR;
-	cap_get_flag(cap_cur_p, CAP_NET_ADMIN, CAP_PERMITTED, &cap_ok);
-	if (cap_ok != CAP_CLEAR)
-		cap_set_flag(cap_p, CAP_PERMITTED, 1, &rts->cap_admin, CAP_SET);
-	cap_ok = CAP_CLEAR;
-	cap_get_flag(cap_cur_p, CAP_NET_RAW, CAP_PERMITTED, &cap_ok);
-	if (cap_ok != CAP_CLEAR)
-		cap_set_flag(cap_p, CAP_PERMITTED, 1, &rts->cap_raw, CAP_SET);
-	if (cap_set_proc(cap_p) < 0)
+	// set flags
+	cap_flag_value_t flag = CAP_CLEAR;
+	cap_get_flag(proc, CAP_NET_ADMIN, CAP_PERMITTED, &flag);
+	if (flag != CAP_CLEAR)
+		cap_set_flag(cap, CAP_PERMITTED, 1, &rts->cap_admin, CAP_SET);
+	flag = CAP_CLEAR;
+	cap_get_flag(proc, CAP_NET_RAW, CAP_PERMITTED, &flag);
+	if (flag != CAP_CLEAR)
+		cap_set_flag(cap, CAP_PERMITTED, 1, &rts->cap_raw,   CAP_SET);
+	if (cap_set_proc(cap) < 0)
 		error(-1, errno, "cap_set_proc");
+	cap_free(cap);
+	cap_free(proc);
+	// set state
 	if (prctl(PR_SET_KEEPCAPS, 1) < 0)
 		error(-1, errno, "prctl");
 	if (setuid(getuid()) < 0)
 		error(-1, errno, "setuid");
 	if (prctl(PR_SET_KEEPCAPS, 0) < 0)
 		error(-1, errno, "prctl");
-	cap_free(cap_p);
-	cap_free(cap_cur_p);
 #else
 	euid = geteuid();
 #endif
-	rts->uid = getuid();
+	uid_t uid = getuid();
 #ifndef HAVE_LIBCAP
-	if (seteuid(rts->uid))
+	if (seteuid(uid))
 		error(-1, errno, "setuid");
 #endif
+	return uid;
 }
 
 #ifdef HAVE_LIBCAP
 int modify_capability(cap_value_t cap, cap_flag_value_t on) {
-	cap_t cap_p = cap_get_proc();
-	cap_flag_value_t cap_ok;
 	int rc = -1;
-
-	if (!cap_p) {
-		error(0, errno, "cap_get_proc");
-		goto out;
-	}
-
-	cap_ok = CAP_CLEAR;
-	cap_get_flag(cap_p, cap, CAP_PERMITTED, &cap_ok);
-	if (cap_ok == CAP_CLEAR) {
-		rc = on ? -1 : 0;
-		goto out;
-	}
-
-	cap_set_flag(cap_p, CAP_EFFECTIVE, 1, &cap, on);
-
-	if (cap_set_proc(cap_p) < 0) {
-		error(0, errno, "cap_set_proc");
-		goto out;
-	}
-
-	cap_free(cap_p);
-	cap_p = NULL;
-
-	rc = 0;
-out:
-	if (cap_p)
+	cap_t cap_p = cap_get_proc();
+	if (cap_p) {
+		cap_flag_value_t cap_ok = CAP_CLEAR;
+		cap_get_flag(cap_p, cap, CAP_PERMITTED, &cap_ok);
+		if (cap_ok != CAP_CLEAR) {
+			cap_set_flag(cap_p, CAP_EFFECTIVE, 1, &cap, on);
+			if (cap_set_proc(cap_p) < 0)
+				error(0, errno, "cap_set_proc");
+			else
+				rc = 0;
+		} else
+			rc = on ? -1 : 0;
 		cap_free(cap_p);
+	} else
+		error(0, errno, "cap_get_proc");
 	return rc;
 }
 #else
@@ -236,11 +223,11 @@ void drop_capabilities(void) {
  * Fills all the outpack, excluding ICMP header,
  * but _including_ timestamp area with supplied pattern
  */
-void fill_packet(struct ping_rts *rts, char *patp, unsigned char *packet, size_t packet_size) {
+void fill_packet(int quiet, const char *patp, unsigned char *packet, size_t packet_size) {
 #ifdef USE_IDN
 	setlocale(LC_ALL, "C");
 #endif
-	for (char *cp = patp; *cp; cp++) {
+	for (const char *cp = patp; *cp; cp++) {
 		if (!isxdigit(*cp))
 			error(2, 0, _("patterns must be specified as hex digits: %s"), cp);
 	}
@@ -256,7 +243,7 @@ void fill_packet(struct ping_rts *rts, char *patp, unsigned char *packet, size_t
 		for (size_t i = 0; i <= max; i += items)
 			for (int j = 0; j < items; ++j)
 				bp[i + j] = pat[j];
-		if (!rts->opt_quiet) {
+		if (!quiet) {
 			printf(_("PATTERN: 0x"));
 			for (int j = 0; j < items; j++)
 				printf("%02x", bp[j] & 0xFF);
@@ -268,17 +255,27 @@ void fill_packet(struct ping_rts *rts, char *patp, unsigned char *packet, size_t
 #endif
 }
 
-/* FIXME: global_rts will be removed in future */
-extern struct ping_rts *global_rts;
+/* a bit clearer, but in fact it's the same as with global_rts */
+static volatile int exiting;
+static volatile int snapshot;
+static volatile int in_print_addr;
+static jmp_buf label_in_print_addr;
 
-static void sig_exit(int signo __attribute__((__unused__))) {
-	global_rts->exiting = 1;
-	if (global_rts->in_pr_addr)
-		longjmp(global_rts->pr_addr_jmp, 0);
-}
-
-static void sig_status(int signo __attribute__((__unused__))) {
-	global_rts->status_snapshot = 1;
+static void sig_handler(int signo) {
+	switch (signo) {
+		case SIGINT:
+		case SIGALRM:
+			if (!exiting)
+				exiting = 1;
+			if (in_print_addr)
+				longjmp(label_in_print_addr, 0);
+			break;
+		case SIGQUIT:
+			if (!snapshot)
+				snapshot = 1;
+			break;
+		default: break;
+	}
 }
 
 static int schedule_exit(const struct ping_rts *rts, int next) {
@@ -302,32 +299,32 @@ static int schedule_exit(const struct ping_rts *rts, int next) {
 	return next;
 }
 
-static inline void update_interval(struct ping_rts *rts) {
-	int est = rts->rtt ? (rts->rtt / 8) : (rts->interval * 1000);
-	rts->interval = (est + rts->rtt_addend + 500) / 1000;
-	if (rts->uid && (rts->interval < MIN_USER_INTERVAL_MS))
-		rts->interval = MIN_USER_INTERVAL_MS;
+static inline int get_interval(const struct ping_rts *rts) {
+	int interval = rts->interval;
+	int est = rts->rtt ? (rts->rtt / 8) : (interval * 1000);
+	interval = (est + rts->rtt_addend + 500) / 1000;
+	if (rts->uid && (interval < MIN_USER_INTERVAL_MS))
+		interval = MIN_USER_INTERVAL_MS;
+	return interval;
 }
 
 /* Print timestamp */
-void print_timestamp(struct ping_rts *rts) {
-	if (rts->opt_ptimeofday) {
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
-		printf("[%lu.%06lu] ",
-		       (unsigned long)tv.tv_sec, (unsigned long)tv.tv_usec);
-	}
+void print_timestamp(void) {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	printf("[%lu.%06lu] ",
+	       (unsigned long)tv.tv_sec, (unsigned long)tv.tv_usec);
 }
 
-static inline int in_flight(struct ping_rts *rts) {
-	uint16_t diff = (uint16_t)rts->ntransmitted - rts->acked;
-	return (diff <= 0x7FFF) ? diff : rts->ntransmitted - rts->nreceived - rts->nerrors;
+static inline int in_flight(const struct ping_rts *rts) {
+	uint16_t diff = rts->ntransmitted - rts->acked;
+	return (diff <= 0x7FFF) ? diff : (rts->ntransmitted - rts->nreceived - rts->nerrors);
 }
 
 static inline void advance_ntransmitted(struct ping_rts *rts) {
 	rts->ntransmitted++;
 	/* Invalidate acked, if 16 bit seq overflows */
-	if ((uint16_t)rts->ntransmitted - rts->acked > 0x7FFF)
+	if (((uint16_t)rts->ntransmitted - rts->acked) > 0x7FFF)
 	rts->acked = (uint16_t)rts->ntransmitted + 1;
 }
 
@@ -339,25 +336,22 @@ static inline void advance_ntransmitted(struct ping_rts *rts) {
  * of the data portion are used to hold a UNIX "timeval" struct in VAX
  * byte-order, to compute the round-trip time.
  */
-static int pinger(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock) {
+static int pinger(struct ping_rts *rts, const ping_func_set_st *fset, const socket_st *sock) {
 	static int oom_count;
 	static int tokens;
-	int i;
 
-	/* Have we already sent enough? If we have, return an arbitrary positive value. */
-	if (rts->exiting || (rts->npackets && rts->ntransmitted >= rts->npackets && !rts->deadline))
+	/* Have we already sent enough? If we have, return an arbitrary positive value */
+	if (exiting || (rts->npackets && rts->ntransmitted >= rts->npackets && !rts->deadline))
 		return 1000;
 
 	/* Check that packets < rate*time + preload */
-	if (rts->cur_time.tv_sec == 0 && rts->cur_time.tv_nsec == 0) {
+	if ((rts->cur_time.tv_sec == 0) && (rts->cur_time.tv_nsec == 0)) {
 		clock_gettime(CLOCK_MONOTONIC_RAW, &rts->cur_time);
 		tokens = rts->interval * (rts->preload - 1);
 	} else {
-		long ntokens, tmp;
-		struct timespec tv;
-
+		struct timespec tv = {0};
 		clock_gettime(CLOCK_MONOTONIC_RAW, &tv);
-		ntokens = (tv.tv_sec - rts->cur_time.tv_sec) * 1000 +
+		long ntokens = (tv.tv_sec - rts->cur_time.tv_sec) * 1000 +
 			  (tv.tv_nsec - rts->cur_time.tv_nsec) / 1000000;
 		if (!rts->interval) {
 			/* Case of unlimited flood is special;
@@ -366,7 +360,7 @@ static int pinger(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock)
 				return MIN_INTERVAL_MS - ntokens;
 		}
 		ntokens += tokens;
-		tmp = (long)rts->interval * (long)rts->preload;
+		long tmp = (long)rts->interval * rts->preload;
 		if (tmp < ntokens)
 			ntokens = tmp;
 		if (ntokens < rts->interval)
@@ -378,15 +372,15 @@ static int pinger(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock)
 
 	if (rts->opt_outstanding) {
 		if (rts->ntransmitted > 0 && !rcvd_test(rts, rts->ntransmitted)) {
-			print_timestamp(rts);
+			PRINT_TIMESTAMP;
 			printf(_("no answer yet for icmp_seq=%lu\n"), (rts->ntransmitted % MAX_DUP_CHK));
 			fflush(stdout);
 		}
 	}
 
+	int i;
 resend:
-	i = fset->send_probe(rts, sock, rts->outpack, sizeof(rts->outpack));
-
+	i = fset->send_probe(rts, sock->fd, rts->outpack, sizeof(rts->outpack));
 	if (i == 0) {
 		oom_count = 0;
 		advance_ntransmitted(rts);
@@ -412,7 +406,7 @@ resend:
 		/* Slowdown. This works only in adaptive mode (option -A) */
 		rts->rtt_addend += (rts->rtt < 8 * 50000 ? rts->rtt / 8 : 50000);
 		if (rts->opt_adaptive)
-			update_interval(rts);
+			rts->interval = get_interval(rts);
 		nores_interval = SCHINT(rts->interval / 2);
 		if (nores_interval > 500)
 			nores_interval = 500;
@@ -450,10 +444,9 @@ resend:
 	}
 
 hard_local_error:
-	/* Hard local error. Pretend we sent packet. */
+	/* Pretend we sent packet */
 	advance_ntransmitted(rts);
-
-	if (i == 0 && !rts->opt_quiet) {
+	if (!i && !rts->opt_quiet) {
 		if (rts->opt_flood)
 			write(STDOUT_FILENO, "E", 1);
 		else
@@ -465,29 +458,29 @@ hard_local_error:
 
 /* Set socket buffers, "alloc" is an estimate of memory taken by single packet */
 #define MAXHOLD 65536
-void sock_setbufs(struct ping_rts *rts, socket_st *sock, int alloc) {
+void sock_setbufs(struct ping_rts *rts, int sockfd, int alloc) {
 	int rcvbuf, hold;
 	socklen_t tmplen = sizeof(hold);
 	if (!rts->sndbuf)
 		rts->sndbuf = alloc;
-	setsockopt(sock->fd, SOL_SOCKET, SO_SNDBUF, (char *)&rts->sndbuf, sizeof(rts->sndbuf));
+	setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &rts->sndbuf, sizeof(rts->sndbuf));
 	rcvbuf = hold = alloc * rts->preload;
 	if (hold < MAXHOLD)
 		hold = MAXHOLD;
-	setsockopt(sock->fd, SOL_SOCKET, SO_RCVBUF, (char *)&hold, sizeof(hold));
-	if (getsockopt(sock->fd, SOL_SOCKET, SO_RCVBUF, (char *)&hold, &tmplen) == 0) {
+	setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &hold, sizeof(hold));
+	if (getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &hold, &tmplen) == 0) {
 		if (hold < rcvbuf)
 			error(0, 0, _("WARNING: probably, rcvbuf is not enough to hold preload"));
 	}
 }
 #undef MAXHOLD
 
-void sock_setmark(struct ping_rts *rts, int fd) {
+void sock_setmark(struct ping_rts *rts, int sockfd) {
 #ifdef SO_MARK
 	if (!rts->opt_mark)
 		return;
 	ENABLE_CAPABILITY_ADMIN;
-	int ret = setsockopt(fd, SOL_SOCKET, SO_MARK, &(rts->mark), sizeof(rts->mark));
+	int ret = setsockopt(sockfd, SOL_SOCKET, SO_MARK, &rts->mark, sizeof(rts->mark));
 	int errno_save = errno;
 	DISABLE_CAPABILITY_ADMIN;
 	if (ret == -1) {
@@ -502,19 +495,13 @@ void sock_setmark(struct ping_rts *rts, int fd) {
 }
 
 
-static inline void set_signal(int signo, void (*handler)(int)) {
-	struct sigaction sa = { .sa_handler = handler, .sa_flags = SA_RESTART };
-	sigaction(signo, &sa, NULL);
-}
-
-
 /* Protocol independent setup and parameter checks */
-void ping_setup(struct ping_rts *rts, socket_st *sock) {
+void ping_setup(struct ping_rts *rts, const socket_st *sock) {
 	if (rts->opt_flood && !rts->opt_interval)
 		rts->interval = 0;
 
 	// interval restrictions
-	if (rts->uid && rts->interval < MIN_USER_INTERVAL_MS)
+	if (rts->uid && (rts->interval < MIN_USER_INTERVAL_MS))
 		error(2, 0, _("cannot flood, minimal interval for user must be >= %d ms, use -i %s (or higher)"),
 			  MIN_USER_INTERVAL_MS, str_interval(MIN_USER_INTERVAL_MS));
 	if (rts->interval >= INT_MAX / rts->preload)
@@ -567,16 +554,17 @@ void ping_setup(struct ping_rts *rts, socket_st *sock) {
 			*p++ = i;
 	}
 
-	if ((sock->socktype == SOCK_RAW) && (rts->ident == -1))
+	if ((sock->socktype == SOCK_RAW) && !rts->ident)
 		rts->ident = htons(getpid() & 0xFFFF);
 
 	{ // signals
-	  set_signal(SIGINT,  sig_exit);
-	  set_signal(SIGALRM, sig_exit);
-	  set_signal(SIGQUIT, sig_status);
-	  sigset_t sset;
-	  sigemptyset(&sset);
-	  sigprocmask(SIG_SETMASK, &sset, NULL);
+	  struct sigaction sa = { .sa_handler = sig_handler, .sa_flags = SA_RESTART };
+	  sigaction(SIGINT,  &sa, NULL);
+	  sigaction(SIGQUIT, &sa, NULL);
+	  sigaction(SIGALRM, &sa, NULL);
+	  sigset_t set;
+	  sigemptyset(&set);
+	  sigprocmask(SIG_SETMASK, &set, NULL);
 	}
 
 	clock_gettime(CLOCK_MONOTONIC_RAW, &rts->start_time);
@@ -653,11 +641,14 @@ static int finish(const struct ping_rts *rts) {
 }
 
 
-static void fin_status(struct ping_rts *rts) {
-	int loss = 0;
-	rts->status_snapshot = 0;
-	if (rts->ntransmitted)
-		loss = (((long long)(rts->ntransmitted - rts->nreceived)) * 100) / rts->ntransmitted;
+static void fin_status(const struct ping_rts *rts) {
+	static int in_fin_status;
+	if (in_fin_status)
+		return;
+	in_fin_status = 1;
+	int loss = rts->ntransmitted ?
+		loss = (100ll * (rts->ntransmitted - rts->nreceived)) / rts->ntransmitted
+		: 0;
 	fprintf(stderr, "\r");
 	fprintf(stderr, _("%ld/%ld packets, %d%% loss"), rts->nreceived, rts->ntransmitted, loss);
 	if (rts->nreceived && rts->timing) {
@@ -667,11 +658,12 @@ static void fin_status(struct ping_rts *rts) {
 			rts->rtt / 8000, (rts->rtt / 8) % 1000, rts->tmax / 1000, rts->tmax % 1000);
 	}
 	fprintf(stderr, "\n");
+	in_fin_status = 0;
 }
 
 
-int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
-	      uint8_t *packet, int packlen)
+int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
+		const socket_st *sock, uint8_t *packet, int packlen)
 {
 	char addrbuf[128];
 	char ans_data[4096];
@@ -685,15 +677,17 @@ int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
 
 	for (;;) {
 		/* Check exit conditions. */
-		if (rts->exiting)
+		if (exiting) // SIGINT, SIGALRM
 			break;
 		if (rts->npackets && rts->nreceived + rts->nerrors >= rts->npackets)
 			break;
 		if (rts->deadline && rts->nerrors)
 			break;
 		/* Check for and do special actions. */
-		if (rts->status_snapshot)
+		if (snapshot) { // SIGQUIT
 			fin_status(rts);
+			snapshot = 0;
+		}
 
 		/* Send probes scheduled to this time. */
 		do {
@@ -802,15 +796,16 @@ int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
 					recv_timep = &recv_time;
 				}
 				assert(received >= 0); // be sure in ssize_t to size_t conversion at one place
-				not_ours = fset->parse_reply(rts, sock, &msg, received, addrbuf, recv_timep);
+				not_ours = fset->parse_reply(
+					rts, sock->socktype, &msg, received, addrbuf, recv_timep);
 			}
 
-			/* See? ... someone runs another ping on this host. */
-			if (not_ours && sock->socktype == SOCK_RAW)
-				fset->install_filter(rts, sock);
+			/* See? ... someone runs another ping on this host */
+			if (not_ours && (sock->socktype == SOCK_RAW))
+				fset->install_filter(rts->ident, sock->fd);
 
-			/* If nothing is in flight, "break" returns us to pinger. */
-			if (in_flight(rts) == 0)
+			/* If nothing is in flight, "break" returns us to pinger */
+			if (!in_flight(rts))
 				break;
 
 			/* Otherwise, try to recvmsg() again. recvmsg()
@@ -822,14 +817,13 @@ int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
 	return finish(rts);
 }
 
-int gather_stats(struct ping_rts *rts, uint8_t *icmph, int icmplen, size_t received,
-	uint16_t seq, int hops, int csfailed, const struct timeval *tv, char *from,
-	void (*print_reply)(const uint8_t *hdr, size_t len), int multicast,
-	int wrong_source)
+int gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t received,
+	uint16_t seq, int hops, int csfailed, const struct timeval *tv, const char *from,
+	void (*print_reply)(const uint8_t *hdr, size_t len), int multicast, int wrong_source)
 {
 	int dupflag = 0;
 	long triptime = 0;
-	uint8_t *ptr = icmph + icmplen;
+	const uint8_t *ptr = icmph + icmplen;
 
 	++rts->nreceived;
 	if (!csfailed)
@@ -866,7 +860,7 @@ restamp:
 			else
 				rts->rtt += triptime - rts->rtt / 8;
 			if (rts->opt_adaptive)
-				update_interval(rts);
+				rts->interval = get_interval(rts);
 		}
 	}
 
@@ -892,25 +886,20 @@ restamp:
 		else
 			write(STDOUT_FILENO, "\bC", 2);
 	} else {
-		size_t i;
-		uint8_t *cp, *dp;
-
-		print_timestamp(rts);
+		PRINT_TIMESTAMP;
 		printf(_("%zd bytes from %s:"), received, from);
 
 		if (print_reply)
 			print_reply(icmph, received);
-
-		if (rts->opt_verbose && rts->ident != -1)
+		if (rts->opt_verbose && rts->ident)
 			printf(_(" ident=%d"), ntohs(rts->ident));
-
 		if (hops >= 0)
 			printf(_(" ttl=%d"), hops);
-
 		if (received < (rts->datalen + 8)) {
 			printf(_(" (truncated)\n"));
 			return 1;
 		}
+
 		if (rts->timing) {
 			if (triptime >= 100000 - 50)
 				printf(_(" time=%ld ms"), (triptime + 500) / 1000);
@@ -924,7 +913,6 @@ restamp:
 				printf(_(" time=%ld.%03ld ms"), triptime / 1000,
 				       triptime % 1000);
 		}
-
 		if (dupflag && (!multicast || rts->opt_verbose))
 			printf(_(" (DUP!)"));
 		if (csfailed)
@@ -933,9 +921,9 @@ restamp:
 			printf(_(" (DIFFERENT ADDRESS!)"));
 
 		/* check the data */
-		cp = ((unsigned char *)ptr) + sizeof(struct timeval);
-		dp = &rts->outpack[8 + sizeof(struct timeval)];
-		for (i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp, ++dp) {
+		uint8_t *cp = ((unsigned char *)ptr) + sizeof(struct timeval);
+		uint8_t *dp = &rts->outpack[8 + sizeof(struct timeval)];
+		for (size_t i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp, ++dp) {
 			if (*cp != *dp) {
 				printf(_("\nwrong data byte #%zu should be 0x%x but was 0x%x"),
 				       i, *dp, *cp);
@@ -953,41 +941,38 @@ restamp:
 }
 
 
-inline int is_ours(struct ping_rts *rts, socket_st * sock, uint16_t id) {
-	return sock->socktype == SOCK_DGRAM || id == rts->ident;
-}
-
-char *str_interval(int interval) {
+const char *str_interval(int interval) {
 	static char buf[14];
 	/*
 	 * Avoid messing with locales and floating point due the different decimal
 	 * point depending on locales.
 	 */
 	int rc = -1;
-	if (interval % 1000)
-		rc = snprintf(buf, sizeof(buf), "%1i.%03i", interval/1000, interval%1000);
+	int ms = interval / 1000;
+	int us = interval % 1000;
+	if (us)
+		rc = snprintf(buf, sizeof(buf), "%1i.%03i", ms, us);
 	else
-		rc = snprintf(buf, sizeof(buf), "%i", interval/1000);
+		rc = snprintf(buf, sizeof(buf), "%i", ms);
 	if (rc < 0)
 		buf[0] = 0;
 	return buf;
 }
 
 /* Return an ascii host address optionally with a hostname */
-char *sprint_addr_common(struct ping_rts *rts, void *sa, socklen_t salen, int resolve_name) {
+const char *sprint_addr_common(const struct ping_rts *rts, const void *sa, socklen_t salen, int resolve_name) {
 	static char buffer[4096] = "";
 	static struct sockaddr_storage last_sa = {0};
 	static socklen_t last_salen = 0;
-	if (salen == last_salen && !memcmp(sa, &last_sa, salen))
+	if ((salen == last_salen) && !memcmp(sa, &last_sa, salen))
 		return buffer;
 	memcpy(&last_sa, sa, (last_salen = salen));
-	rts->in_pr_addr = !setjmp(rts->pr_addr_jmp);
-
+	in_print_addr = !setjmp(label_in_print_addr);
 	char address[NI_MAXHOST] = "";
 	getnameinfo(sa, salen, address, sizeof address, NULL, 0, NI_FLAGS | NI_NUMERICHOST);
 
 	char name[NI_MAXHOST] = "";
-	if (!rts->exiting && resolve_name && (rts->opt_force_lookup || !rts->opt_numeric))
+	if (!exiting && resolve_name && (rts->opt_force_lookup || !rts->opt_numeric))
 		getnameinfo(sa, salen, name, sizeof name, NULL, 0, NI_FLAGS);
 
 	int rc = -1;
@@ -998,14 +983,8 @@ char *sprint_addr_common(struct ping_rts *rts, void *sa, socklen_t salen, int re
 	if (rc < 0)
 		buffer[0] = 0;
 
-	rts->in_pr_addr = 0;
+	in_print_addr = 0;
 	return buffer;
-}
-
-int ntohsp(uint16_t *p) {
-	uint16_t v;
-	memcpy(&v, p, sizeof(v));
-	return ntohs(v);
 }
 
 inline void acknowledge(struct ping_rts *rts, uint16_t seq) {

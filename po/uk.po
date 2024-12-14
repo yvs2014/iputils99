@@ -1425,7 +1425,7 @@ msgstr "%sканал %d"
 #: ping/ping_common.c:934
 #, c-format
 msgid "%sipg/ewma %d.%03d/%d.%03d ms"
-msgstr "%sipg/ewma %d.%03d/%d.%03d мс"
+msgstr "%sIPG/EWMA %d.%03d/%d.%03d мс"
 
 #: ping/ping_common.c:952
 #, c-format
@@ -1435,7 +1435,7 @@ msgstr "%ld з %ld пакетів, втрачено %d%%"
 #: ping/ping_common.c:957
 #, c-format
 msgid ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
-msgstr ", мін/сер/ewma/макс = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld мс"
+msgstr ", мін/сер/EWMA/макс = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld мс"
 
 #: tracepath.c:218
 #, c-format

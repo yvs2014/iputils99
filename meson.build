@@ -127,9 +127,8 @@ if idn	# If available: use AI_IDN for getaddrinfo() queries
 endif
 
 if build_ping
-	ping_extra = files('md5.c')
+	ping_extra = files('iputils_ni_aux.c', 'md5.c')
 	if get_option('PING6_NONCE_MEMORY')
-		ping_extra += files('iputils_ni_aux.c')
 		conf.set('PING6_NONCE_MEMORY', 1, description: 'Define to use ping6 NodeInfo with nonce memory')
 	endif
 endif

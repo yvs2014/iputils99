@@ -23,8 +23,8 @@ void unmap_ai_sa4(struct addrinfo *ai) {
 	ai->ai_family = AF_INET;
 }
 
-int ping6_unspec(const char *target, struct in6_addr *addr, struct addrinfo *hints,
-	struct ping_rts *rts, int argc, char **argv, struct socket_st *sock)
+int ping6_unspec(const char *target, const struct in6_addr *addr, const struct addrinfo *hints,
+	struct ping_rts *rts, int argc, char **argv, const struct socket_st *sock)
 {
 	if (!target || !addr || !hints)
 		return -1;

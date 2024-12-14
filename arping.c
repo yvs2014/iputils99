@@ -109,14 +109,11 @@ static const cap_value_t caps[] = { CAP_NET_RAW };
  * above.  After this comment all you can find is functions.
  */
 
-__attribute__((const)) static inline size_t sll_len(const size_t halen)
+static inline size_t sll_len(size_t halen)
 {
-	const struct sockaddr_ll unused;
-	const size_t len = offsetof(struct sockaddr_ll, sll_addr) + halen;
-
-	if (len < sizeof(unused))
-		return sizeof(unused);
-	return len;
+	size_t len = offsetof(struct sockaddr_ll, sll_addr) + halen;
+	return (len < sizeof(struct sockaddr_ll)) ?
+		sizeof(struct sockaddr_ll) : len;
 }
 
 static void usage(void)

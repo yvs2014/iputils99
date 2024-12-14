@@ -97,7 +97,7 @@ unsigned short in_cksum(const unsigned short *addr, int len, unsigned short csum
 	return (answer);
 }
 
-static int iface_name2index(struct ping_rts *rts, int fd) {
+static int iface_name2index(const struct ping_rts *rts, int fd) {
 	struct ifreq ifr = {0};
 	strncpy(ifr.ifr_name, rts->device, IFNAMSIZ - 1);
 	if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0)
@@ -105,33 +105,29 @@ static int iface_name2index(struct ping_rts *rts, int fd) {
 	return ifr.ifr_ifindex;
 }
 
-void bind_to_device(struct ping_rts *rts, int fd, in_addr_t addr) {
+void bind_to_device(const struct ping_rts *rts, int fd, in_addr_t addr) {
 	ENABLE_CAPABILITY_RAW;
 	int rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, rts->device,
-			strlen(rts->device) + 1);
+		strlen(rts->device) + 1);
 	int errno_save = errno;
 	DISABLE_CAPABILITY_RAW;
-	if (rc != -1)
-		return;
-	if (IN_MULTICAST(ntohl(addr))) {
-		struct ip_mreqn imr = {0};
-		imr.imr_ifindex = iface_name2index(rts, fd);
-		if (setsockopt(fd, SOL_IP, IP_MULTICAST_IF, &imr, sizeof(imr)) == -1)
-			error(2, errno, "IP_MULTICAST_IF");
-	} else {
-		error(2, errno_save, "SO_BINDTODEVICE %s", rts->device);
+	if (rc < 0) {
+		if (IN_MULTICAST(ntohl(addr))) {
+			struct ip_mreqn imr = { .imr_ifindex = iface_name2index(rts, fd) };
+			if (setsockopt(fd, SOL_IP, IP_MULTICAST_IF, &imr, sizeof(imr)) < 0)
+				error(2, errno, "IP_MULTICAST_IF");
+		} else {
+			error(2, errno_save, "SO_BINDTODEVICE %s", rts->device);
+		}
 	}
 }
 
-void print4_ip_options(struct ping_rts *rts, unsigned char *cp, int hlen) {
-	int i, j;
-	int olen, totlen;
-	unsigned char *optptr;
+void print4_ip_options(const struct ping_rts *rts, const unsigned char *cp, int hlen) {
 	static int old_rrlen;
 	static char old_rr[MAX_IPOPTLEN];
 
-	totlen = hlen - sizeof(struct iphdr);
-	optptr = cp;
+	int totlen = hlen - sizeof(struct iphdr);
+	const unsigned char *optptr = cp;
 
 	while (totlen > 0) {
 		if (*optptr == IPOPT_EOL)
@@ -143,15 +139,15 @@ void print4_ip_options(struct ping_rts *rts, unsigned char *cp, int hlen) {
 			continue;
 		}
 		cp = optptr;
-		olen = optptr[1];
-		if (olen < 2 || olen > totlen)
+		int olen = optptr[1];
+		if ((olen < 2) || (olen > totlen))
 			break;
 
 		switch (*cp) {
 		case IPOPT_SSRR:
-		case IPOPT_LSRR:
-			printf(_("\n%cSRR: "), *cp == IPOPT_SSRR ? 'S' : 'L');
-			j = *++cp;
+		case IPOPT_LSRR: {
+			printf(_("\n%cSRR: "), (*cp == IPOPT_SSRR) ? 'S' : 'L');
+			int j = *++cp;
 			cp++;
 			if (j > IPOPT_MINOFF) {
 				for (;;) {
@@ -175,10 +171,11 @@ void print4_ip_options(struct ping_rts *rts, unsigned char *cp, int hlen) {
 						break;
 				}
 			}
+		}
 			break;
-		case IPOPT_RR:
-			j = *++cp;		/* get length */
-			i = *++cp;		/* and pointer */
+		case IPOPT_RR: {
+			int j = *++cp;		/* get length */
+			int i = *++cp;		/* and pointer */
 			if (i > j)
 				i = j;
 			i -= IPOPT_MINOFF;
@@ -214,12 +211,13 @@ void print4_ip_options(struct ping_rts *rts, unsigned char *cp, int hlen) {
 				if (i <= 0)
 					break;
 			}
+		}
 			break;
 		case IPOPT_TS: {
 			int stdtime = 0, nonstdtime = 0;
 			uint8_t flags;
-			j = *++cp;		/* get length */
-			i = *++cp;		/* and pointer */
+			int j = *++cp;		/* get length */
+			int i = *++cp;		/* and pointer */
 			if (i > j)
 				i = j;
 			i -= 5;
@@ -288,13 +286,7 @@ void print4_ip_options(struct ping_rts *rts, unsigned char *cp, int hlen) {
 
 
 /* Print an IP header with options */
-static void print4_iph(struct ping_rts *rts, struct iphdr *ip) {
-	int hlen;
-	unsigned char *cp;
-
-	hlen = ip->ihl << 2;
-	cp = (unsigned char *)ip + 20;		/* point to options */
-
+static void print4_iph(const struct ping_rts *rts, const struct iphdr *ip) {
 	printf(_("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n"));
 	printf(_(" %1x  %1x  %02x %04x %04x"),
 	       ip->version, ip->ihl, ip->tos, ip->tot_len, ip->id);
@@ -304,13 +296,15 @@ static void print4_iph(struct ping_rts *rts, struct iphdr *ip) {
 	printf(" %s ", inet_ntoa(*(struct in_addr *)&ip->saddr));
 	printf(" %s ", inet_ntoa(*(struct in_addr *)&ip->daddr));
 	printf("\n");
+	int hlen = ip->ihl << 2;
+	const unsigned char *cp = (unsigned char *)ip + 20;	/* point to options */
 	print4_ip_options(rts, cp, hlen);
 }
 
 
 /* Print a descriptive string about an ICMP header */
-void print4_icmph(struct ping_rts *rts, uint8_t type, uint8_t code,
-	uint32_t info, struct icmphdr *icp)
+void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
+	uint32_t info, const struct icmphdr *icp)
 {
 	switch (type) {
 	case ICMP_ECHOREPLY:
@@ -397,14 +391,11 @@ void print4_icmph(struct ping_rts *rts, uint8_t type, uint8_t code,
 			printf(_("Redirect, Bad Code: %d"), code);
 			break;
 		}
-		{
-			struct sockaddr_in sin = {
-				.sin_family = AF_INET,
-				.sin_addr =  {
-					icp ? icp->un.gateway : htonl(info)
-				}
-			};
-			printf(_("(New nexthop: %s)\n"), SPRINT_RES_ADDR(rts, &sin, sizeof(sin)));
+		{ struct sockaddr_in sin = {
+			.sin_family = AF_INET,
+			.sin_addr   = { .s_addr = icp ? icp->un.gateway : htonl(info) },
+		  };
+		  printf(_("(New nexthop: %s)\n"), SPRINT_RES_ADDR(rts, &sin, sizeof(sin)));
 		}
 		if (icp && rts->opt_verbose)
 			print4_iph(rts, (struct iphdr *)(icp + 1));
@@ -468,6 +459,6 @@ void print4_icmph(struct ping_rts *rts, uint8_t type, uint8_t code,
 void print4_echo_reply(const uint8_t *hdr, size_t len) {
 	if (len >= sizeof(struct icmphdr))
 		printf(_(" icmp_seq=%u"),
-			ntohs(((struct icmphdr *)hdr)->un.echo.sequence));
+			ntohs(((const struct icmphdr *)hdr)->un.echo.sequence));
 }
 

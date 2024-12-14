@@ -6,6 +6,7 @@
 #endif
 
 #include <stdint.h>
+#include <unistd.h>
 #include <limits.h>
 #include <netdb.h>
 #include <setjmp.h>
@@ -61,7 +62,7 @@ struct ping_rts {
 	size_t datalen;
 	char *hostname;
 	uid_t uid;
-	int ident;			/* process id to identify our packets */
+	uint16_t ident;			/* process id to identify our packets */
 
 	int sndbuf;
 	int ttl;
@@ -77,15 +78,10 @@ struct ping_rts {
 	int deadline;			/* time to die */
 	int lingertime;
 	struct timespec start_time, cur_time;
-	volatile int exiting;
-	volatile int status_snapshot;
 	int confirm;
 	int confirm_flag;
 	char *device;
 	int pmtudisc;
-
-	volatile int in_pr_addr;	/* pr_addr() is executing */
-	jmp_buf pr_addr_jmp;
 
 	/* timing */
 	int timing;			/* flag to do timing */
@@ -158,17 +154,18 @@ struct ping_rts {
 };
 
 typedef struct ping_func_set_st {
-	int (*send_probe)(struct ping_rts *rts, socket_st *, void *packet, unsigned packet_size);
-	int (*receive_error)(struct ping_rts *rts, socket_st *sock);
-	int (*parse_reply)(struct ping_rts *rts, socket_st *sock,
+	ssize_t (*send_probe)(struct ping_rts *rts, int sockfd,
+		void *packet, unsigned packet_size);
+	int (*receive_error)(struct ping_rts *rts, const socket_st *sock);
+	int (*parse_reply)(struct ping_rts *rts, int socktype,
 		struct msghdr *msg, size_t received, void *addr, const struct timeval *at);
-	void (*install_filter)(struct ping_rts *rts, socket_st *);
+	void (*install_filter)(uint16_t ident, int sockfd);
 } ping_func_set_st;
 
 void rcvd_clear(struct ping_rts *rts, uint16_t seq);
 void acknowledge(struct ping_rts *rts, uint16_t seq);
 
-void limit_capabilities(struct ping_rts *rts);
+uid_t limit_capabilities(const struct ping_rts *rts);
 #ifdef HAVE_LIBCAP
 # include <sys/capability.h>
 int modify_capability(cap_value_t, cap_flag_value_t);
@@ -187,26 +184,27 @@ int modify_capability(int);
 #endif
 void drop_capabilities(void);
 
-char *sprint_addr_common(struct ping_rts *rts, void *sa, socklen_t salen, int resolve_name);
+const char *sprint_addr_common(const struct ping_rts *rts, const void *sa,
+	socklen_t salen, int resolve_name);
 #define SPRINT_RES_ADDR(rts, sastruct, salen) sprint_addr_common((rts), (sastruct), (salen), 1)
 #define SPRINT_RAW_ADDR(rts, sastruct, salen) sprint_addr_common((rts), (sastruct), (salen), 0)
 
-char *str_interval(int interval);
-int is_ours(struct ping_rts *rts, socket_st *sock, uint16_t id);
-void sock_setbufs(struct ping_rts *rts, socket_st *sock, int alloc);
-void sock_setmark(struct ping_rts *rts, int fd);
-void ping_setup(struct ping_rts *rts, socket_st *sock);
-int main_loop(struct ping_rts *rts, ping_func_set_st *fset, socket_st *sock,
-	uint8_t *packet, int packlen);
-int gather_stats(struct ping_rts *rts, uint8_t *icmph, int icmplen, size_t received,
-	uint16_t seq, int hops, int csfailed, const struct timeval *tv, char *from,
-	void (*print_reply)(const uint8_t *hdr, size_t len), int multicast,
-	int wrong_source);
-void fill_packet(struct ping_rts *rts, char *patp,
-	unsigned char *packet, size_t packet_size);
-void print_timestamp(struct ping_rts *rts);
+void print_timestamp(void);
+#define PRINT_TIMESTAMP do { if (rts->opt_ptimeofday) print_timestamp(); } while(0)
 
-int ntohsp(uint16_t *p);
+#define IS_OURS(rts, socktype, test_id) (((socktype) == SOCK_DGRAM) || ((test_id) == (rts)->ident))
+
+const char *str_interval(int interval);
+void sock_setbufs(struct ping_rts *rts, int sockfd, int alloc);
+void sock_setmark(struct ping_rts *rts, int sockfd);
+void ping_setup(struct ping_rts *rts, const socket_st *sock);
+int main_loop(struct ping_rts *rts, const ping_func_set_st *fset, const socket_st *sock,
+	uint8_t *packet, int packlen);
+int gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t received,
+	uint16_t seq, int hops, int csfailed, const struct timeval *tv, const char *from,
+	void (*print_reply)(const uint8_t *hdr, size_t len), int multicast, int wrong_source);
+void fill_packet(int quiet, const char *patp, unsigned char *packet, size_t packet_size);
+
 void usage(void);
 
 #endif

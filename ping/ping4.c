@@ -92,19 +92,15 @@ struct icmp_filter {
  * byte-order, to compute the round-trip time.
  */
 // func_set:send_probe
-static int ping4_send_probe(struct ping_rts *rts, socket_st *sock, void *packet,
-		unsigned packet_size __attribute__((__unused__)))
+static ssize_t ping4_send_probe(struct ping_rts *rts, int sockfd,
+		void *packet, unsigned packet_size __attribute__((__unused__)))
 {
-	struct icmphdr *icp;
-	int cc;
-	int i;
-
-	icp = (struct icmphdr *)packet;
+	struct icmphdr *icp = (struct icmphdr *)packet;
 	icp->type = ICMP_ECHO;
 	icp->code = 0;
 	icp->checksum = 0;
 	icp->un.echo.sequence = htons(rts->ntransmitted + 1);
-	icp->un.echo.id = rts->ident;			/* ID */
+	icp->un.echo.id = rts->ident;
 
 	rcvd_clear(rts, rts->ntransmitted + 1);
 
@@ -118,10 +114,9 @@ static int ping4_send_probe(struct ping_rts *rts, socket_st *sock, void *packet,
 		}
 	}
 
-	cc = rts->datalen + 8;			/* skips ICMP portion */
-
+	ssize_t len = rts->datalen + 8;	/* skips ICMP portion */
 	/* compute ICMP checksum here */
-	icp->checksum = in_cksum((unsigned short *)icp, cc, 0);
+	icp->checksum = in_cksum((unsigned short *)icp, len, 0);
 
 	if (rts->timing && !rts->opt_latency) {
 		struct timeval tmp_tv;
@@ -130,50 +125,43 @@ static int ping4_send_probe(struct ping_rts *rts, socket_st *sock, void *packet,
 		icp->checksum = in_cksum((unsigned short *)&tmp_tv, sizeof(tmp_tv), ~icp->checksum);
 	}
 
-	i = sendto(sock->fd, icp, cc, 0, (struct sockaddr *)&rts->whereto, sizeof(rts->whereto));
-
-	return (cc == i ? 0 : i);
+	ssize_t rc = sendto(sockfd, icp, len, 0, (struct sockaddr *)&rts->whereto, sizeof(rts->whereto));
+	return (rc == len) ? 0 : rc;
 }
 
 
 // func_set:receive_error
-static int ping4_receive_error(struct ping_rts *rts, socket_st *sock) {
-	ssize_t res;
-	char cbuf[512];
-	struct iovec iov;
-	struct msghdr msg;
-	struct cmsghdr *cmsgh;
-	struct sock_extended_err *e;
-	struct icmphdr icmph;
-	struct sockaddr_in target;
-	int net_errors = 0;
-	int local_errors = 0;
+static int ping4_receive_error(struct ping_rts *rts, const socket_st *sock) {
 	int saved_errno = errno;
 
-	iov.iov_base = &icmph;
-	iov.iov_len = sizeof(icmph);
-	msg.msg_name = (void *)&target;
-	msg.msg_namelen = sizeof(target);
-	msg.msg_iov = &iov;
-	msg.msg_iovlen = 1;
-	msg.msg_flags = 0;
-	msg.msg_control = cbuf;
-	msg.msg_controllen = sizeof(cbuf);
+	struct icmphdr icmph = {0};
+	struct iovec iov = { .iov_base = &icmph, .iov_len = sizeof(icmph) };
 
-	res = recvmsg(sock->fd, &msg, MSG_ERRQUEUE | MSG_DONTWAIT);
+	char cbuf[512];
+	struct sockaddr_in target = {0};
+	struct msghdr msg = {
+		.msg_name       = (void *)&target,
+		.msg_namelen    = sizeof(target),
+		.msg_iov        = &iov,
+		.msg_iovlen     = 1,
+		.msg_flags      = 0,
+		.msg_control    = cbuf,
+		.msg_controllen = sizeof(cbuf),
+	};
+
+	int net_errors = 0;
+	int local_errors = 0;
+	ssize_t res = recvmsg(sock->fd, &msg, MSG_ERRQUEUE | MSG_DONTWAIT);
 	if (res < 0) {
 		if (errno == EAGAIN || errno == EINTR)
 			local_errors++;
 		goto out;
 	}
 
-	e = NULL;
-	for (cmsgh = CMSG_FIRSTHDR(&msg); cmsgh; cmsgh = CMSG_NXTHDR(&msg, cmsgh)) {
-		if (cmsgh->cmsg_level == SOL_IP) {
-			if (cmsgh->cmsg_type == IP_RECVERR)
-				e = (struct sock_extended_err *)CMSG_DATA(cmsgh);
-		}
-	}
+	struct sock_extended_err *e = NULL;
+	for (struct cmsghdr *m = CMSG_FIRSTHDR(&msg); m; m = CMSG_NXTHDR(&msg, m))
+		if ((m->cmsg_level == SOL_IP) && (m->cmsg_type == IP_RECVERR))
+			e = (struct sock_extended_err *)CMSG_DATA(m);
 	if (e == NULL)
 		abort();
 
@@ -194,7 +182,7 @@ static int ping4_receive_error(struct ping_rts *rts, socket_st *sock) {
 		if (res < (ssize_t) sizeof(icmph) ||
 		    target.sin_addr.s_addr != rts->whereto.sin_addr.s_addr ||
 		    icmph.type != ICMP_ECHO ||
-		    !is_ours(rts, sock, icmph.un.echo.id)) {
+		    !IS_OURS(rts, sock->socktype, icmph.un.echo.id)) {
 			/* Not our error, not an error at all. Clear. */
 			saved_errno = 0;
 			goto out;
@@ -214,16 +202,16 @@ static int ping4_receive_error(struct ping_rts *rts, socket_st *sock) {
 		}
 		net_errors++;
 		rts->nerrors++;
-		if (rts->opt_quiet)
-			goto out;
-		if (rts->opt_flood) {
-			write(STDOUT_FILENO, "\bE", 2);
-		} else {
-			print_timestamp(rts);
-			printf(_("From %s icmp_seq=%u "), SPRINT_RES_ADDR(rts, sin, sizeof(*sin)),
-				ntohs(icmph.un.echo.sequence));
-			print4_icmph(rts, e->ee_type, e->ee_code, e->ee_info, NULL);
-			fflush(stdout);
+		if (!rts->opt_quiet) {
+			if (rts->opt_flood) {
+				write(STDOUT_FILENO, "\bE", 2);
+			} else {
+				PRINT_TIMESTAMP;
+				printf(_("From %s icmp_seq=%u "), SPRINT_RES_ADDR(rts, sin, sizeof(*sin)),
+					ntohs(icmph.un.echo.sequence));
+				print4_icmph(rts, e->ee_type, e->ee_code, e->ee_info, NULL);
+				fflush(stdout);
+			}
 		}
 	}
 
@@ -232,6 +220,7 @@ out:
 	return net_errors ? net_errors : -local_errors;
 }
 
+
 /*
  *	Print out the packet, if it came from us.  This logic is necessary
  * because ALL readers of the ICMP socket get a copy of ALL ICMP packets
@@ -239,7 +228,7 @@ out:
  * program to be run without having intermingled output (or statistics!).
  */
 // func_set:parse_reply
-static int ping4_parse_reply(struct ping_rts *rts, socket_st *sock,
+static int ping4_parse_reply(struct ping_rts *rts, int socktype,
 	struct msghdr *msg, size_t received, void *addr, const struct timeval *at)
 {
 	struct sockaddr_in *from = addr;
@@ -256,7 +245,7 @@ static int ping4_parse_reply(struct ping_rts *rts, socket_st *sock,
 
 	/* Check the IP header */
 	ip = (struct iphdr *)buf;
-	if (sock->socktype == SOCK_RAW) {
+	if (socktype == SOCK_RAW) {
 		hlen = ip->ihl * 4;
 		if ((received < (hlen + 8)) || (ip->ihl < 5)) {
 			if (rts->opt_verbose)
@@ -293,7 +282,7 @@ static int ping4_parse_reply(struct ping_rts *rts, socket_st *sock,
 	csfailed = in_cksum((unsigned short *)icp, received, 0);
 
 	if (icp->type == ICMP_ECHOREPLY) {
-		if (!is_ours(rts, sock, icp->un.echo.id))
+		if (!IS_OURS(rts, socktype, icp->un.echo.id))
 			return 1;	/* 'Twas not our ECHO */
 		if (!rts->broadcast_pings && !rts->multicast &&
 		    from->sin_addr.s_addr != rts->whereto.sin_addr.s_addr)
@@ -327,7 +316,7 @@ static int ping4_parse_reply(struct ping_rts *rts, socket_st *sock,
 					return 1;
 				if (icp1->type != ICMP_ECHO ||
 				    iph->daddr != rts->whereto.sin_addr.s_addr ||
-				    !is_ours(rts, sock, icp1->un.echo.id))
+				    !IS_OURS(rts, socktype, icp1->un.echo.id))
 					return 1;
 				error_pkt = (icp->type != ICMP_REDIRECT &&
 					     icp->type != ICMP_SOURCE_QUENCH);
@@ -337,7 +326,7 @@ static int ping4_parse_reply(struct ping_rts *rts, socket_st *sock,
 				}
 				if (rts->opt_quiet || rts->opt_flood)
 					return 1;
-				print_timestamp(rts);
+				PRINT_TIMESTAMP;
 				printf(_("From %s: icmp_seq=%u "),
 					SPRINT_RES_ADDR(rts, from, sizeof(*from)),
 					ntohs(icp1->un.echo.sequence));
@@ -385,37 +374,36 @@ static int ping4_parse_reply(struct ping_rts *rts, socket_st *sock,
 
 
 // func_set:install_filter
-static void ping4_install_filter(struct ping_rts *rts, socket_st *sock) {
-	static int once;
+static void ping4_install_filter(uint16_t ident, int sockfd) {
 	static struct sock_filter insns[] = {
-		BPF_STMT(BPF_LDX | BPF_B   | BPF_MSH, 0),	/* Skip IP header due BSD, see ping6. */
+		BPF_STMT(BPF_LDX | BPF_B   | BPF_MSH, 0),	/* Skip IP header due BSD, see ping6 */
 		BPF_STMT(BPF_LD  | BPF_H   | BPF_IND, 4),	/* Load icmp echo ident */
 		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, 0xAAAA, 0, 1), /* Ours? */
-		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Yes, it passes. */
+		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Yes, it passes */
 		BPF_STMT(BPF_LD  | BPF_B   | BPF_IND, 0),	/* Load icmp type */
 		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, ICMP_ECHOREPLY, 1, 0), /* Echo? */
 		BPF_STMT(BPF_RET | BPF_K, 0xFFFFFFF),		/* No. It passes. */
-		BPF_STMT(BPF_RET | BPF_K, 0)			/* Echo with wrong ident. Reject. */
+		BPF_STMT(BPF_RET | BPF_K, 0)			/* Reject echo with wrong ident */
 	};
 	static struct sock_fprog filter = {
-		sizeof insns / sizeof(insns[0]),
-		insns
+		.len    = sizeof(insns) / sizeof(insns[0]),
+		.filter = insns,
 	};
-
-	if (once)
+	static int filter4_once;
+	if (filter4_once)
 		return;
-	once = 1;
-
-	/* Patch bpflet for current identifier. */
-	insns[2] = (struct sock_filter)BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, htons(rts->ident), 0, 1);
-
-	if (setsockopt(sock->fd, SOL_SOCKET, SO_ATTACH_FILTER, &filter, sizeof(filter)))
+	filter4_once = 1;
+	/* Patch bpflet for current identifier */
+	insns[2] = (struct sock_filter)BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, htons(ident), 0, 1);
+	if (setsockopt(sockfd, SOL_SOCKET, SO_ATTACH_FILTER, &filter, sizeof(filter)))
 		error(0, errno, _("WARNING: failed to install socket filter"));
 }
 
 
 /* return >= 0: exit with this code, < 0: go on to next addrinfo result */
-int ping4_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai, socket_st *sock) {
+int ping4_run(struct ping_rts *rts, int argc, char **argv,
+		struct addrinfo *ai, const socket_st *sock)
+{
 	static ping_func_set_st ping4_func_set = {
 		.send_probe     = ping4_send_probe,
 		.receive_error  = ping4_receive_error,
@@ -587,7 +575,7 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai, 
 			error(2, errno, "IP_MTU_DISCOVER");
 	}
 
-	int set_ident = rts->ident > 0 && sock->socktype == SOCK_DGRAM;
+	int set_ident = (rts->ident > 0) && (sock->socktype == SOCK_DGRAM);
 	if (set_ident)
 		rts->source.sin_port = rts->ident;
 
@@ -672,7 +660,7 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv, struct addrinfo *ai, 
 	 * Actually, for small datalen's it depends on kernel side a lot. */
 	hold = rts->datalen + 8;
 	hold += ((hold + 511) / 512) * (rts->optlen + 20 + 16 + 64 + 160);
-	sock_setbufs(rts, sock, hold);
+	sock_setbufs(rts, sock->fd, hold);
 
 	if (rts->broadcast_pings) {
 		if (setsockopt(sock->fd, SOL_SOCKET, SO_BROADCAST, &rts->broadcast_pings,

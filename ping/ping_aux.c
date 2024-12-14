@@ -53,6 +53,7 @@
 // ping.c auxiliary functions
 
 #include "iputils_common.h"
+#include "ping_aux.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -115,11 +116,13 @@ double ping_strtod(const char *str, const char *err_msg) {
 	return 0.;
 }
 
-int parse_flow(const char *str) {
+#define DX_SHIFT(str) (((str)[0] == '0') && (((str)[1] == 'x') || ((str)[1] == 'X')) ? 2 : 0)
+
+unsigned parse_flow(const char *str) {
 	/* handle both hex and decimal values */
 	char *ep = NULL;
-	int ox = (str[0] == '0') && ((str[1] == 'x' || str[1] == 'X')) ? 2 : 0;
-	unsigned long val = strtoul(str + ox, &ep, ox ? 16 : 10);
+	int dx = DX_SHIFT(str);
+	unsigned val = strtoul(str + dx, &ep, dx ? 16 : 10);
 	/* doesn't look like decimal or hex, eh? */
 	if (ep && *ep)
 		error(2, 0, _("bad value for flowinfo: %s"), str);
@@ -132,8 +135,8 @@ int parse_flow(const char *str) {
 int parse_tos(const char *str) {
 	/* handle both hex and decimal values */
 	char *ep = NULL;
-	int ox = (str[0] == '0') && ((str[1] == 'x' || str[1] == 'X')) ? 2 : 0;
-	int tos = (int)strtol(str + ox, &ep, ox ? 16 : 10);
+	int dx = DX_SHIFT(str);
+	int tos = strtol(str + dx, &ep, dx ? 16 : 10);
 	/* doesn't look like decimal or hex, eh? */
 	if (ep && *ep)
 		error(2, 0, _("bad TOS value: %s"), str);
@@ -141,4 +144,6 @@ int parse_tos(const char *str) {
 		error(2, 0, _("the decimal value of TOS bits must be in range 0-255: %d"), tos);
 	return tos;
 }
+
+#undef DX_SHIFT
 

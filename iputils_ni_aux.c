@@ -4,14 +4,21 @@
 #define _GNU_SOURCE
 #endif
 
-#include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
+#include <arpa/inet.h>
+#ifdef PING6_NONCE_MEMORY
+#include <stdlib.h>
 #include <errno.h>
 #include <time.h>
+#endif
 #ifdef HAVE_GETRANDOM
 #include <sys/random.h>
 #endif
 
+#include "iputils_ni_aux.h"
+
+#ifdef PING6_NONCE_MEMORY
 static unsigned srand_fallback(void) {
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME, &ts);
@@ -46,5 +53,12 @@ void iputils_srand(void) {
 		rand();
 		i--;
 	}
+}
+#endif
+
+int ntohsp(const uint16_t *p) {
+	uint16_t v;
+	memcpy(&v, p, sizeof(v));
+	return ntohs(v);
 }
 

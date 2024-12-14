@@ -84,10 +84,7 @@
 #define IDENTIFIER_MAX	0xFFFF		// max unsigned 2-byte value
 #define V4IN6_WARNING	"Embedded IPv4 Address"
 
-/* FIXME: global_rts will be removed in future */
-struct ping_rts *global_rts;
-
-static void create_socket(struct ping_rts *rts, socket_st *sock, int family,
+static void create_socket(int verbose, socket_st *sock, int family,
 		int socktype, int protocol, int requisite)
 {
 	assert(sock->fd < 0);
@@ -150,7 +147,7 @@ static void create_socket(struct ping_rts *rts, socket_st *sock, int family,
 		sock->fd = socket(family, SOCK_RAW, protocol);
 	sock->socktype = socktype;
 	if (sock->fd < 0) { // failed to create socket
-		if (requisite || rts->opt_verbose) {
+		if (requisite || verbose) {
 			error(0, 0, "socktype: %s", str_socktype(socktype));
 			error(0, errno, "socket");
 		}
@@ -166,8 +163,10 @@ static void create_socket(struct ping_rts *rts, socket_st *sock, int family,
 void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *rts) {
 	if ((argc <= 0) || !hints || !rts)
 		return;
+	const char *optstr =
+		"46?aAbBc:CdDe:fF:hHi:I:l:Lm:M:nN:Op:qQ:rRs:S:t:T:UvVw:W:";
 	int ch;
-	while ((ch = getopt(argc, argv, "h?" "4bRT:" "6F:N:" "aABc:CdDe:fHi:I:l:Lm:M:nOp:qQ:rs:S:t:UvVw:W:")) != EOF) {
+	while ((ch = getopt(argc, argv, optstr)) != EOF) {
 		switch(ch) {
 		/* IPv4 specific options */
 		case '4':
@@ -179,8 +178,8 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 			rts->broadcast_pings = 1;
 			break;
 		case 'e':
-			rts->ident = htons(strtoul_or_err(optarg, _("invalid argument"),
-							 0, IDENTIFIER_MAX));
+			rts->ident = htons(strtoul_or_err(optarg,
+				_("invalid argument"), 0, IDENTIFIER_MAX));
 			break;
 		case 'R':
 			if (rts->opt_timestamp)
@@ -308,7 +307,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 		case 'p':
 			if (rts->outpack && (rts->datalen > 0) && optarg) {
 				rts->opt_pingfilled = 1;
-				fill_packet(rts, optarg, rts->outpack, rts->datalen);
+				fill_packet(rts->opt_quiet, optarg, rts->outpack, rts->datalen);
 			}
 			break;
 		case 'q':
@@ -389,7 +388,6 @@ int main(int argc, char **argv) {
 		.tmin = LONG_MAX,
 		.pipesize = -1,
 		.datalen = DEFDATALEN,
-		.ident = -1,
 		.screen_width = INT_MAX,
 #ifdef HAVE_LIBCAP
 		.cap_raw = CAP_NET_RAW,
@@ -405,11 +403,8 @@ int main(int argc, char **argv) {
 	if (!rts.outpack)
 		error(2, errno, _("memory allocation failed"));
 
-	/* FIXME: global_rts will be removed in future */
-	global_rts = &rts;
-
 	atexit(close_stdout);
-	limit_capabilities(&rts);
+	rts.uid = limit_capabilities(&rts);
 
 #if defined(USE_IDN) || defined(ENABLE_NLS)
 	setlocale(LC_ALL, "");
@@ -418,8 +413,8 @@ int main(int argc, char **argv) {
 		hints.ai_flags &= ~ AI_CANONIDN;
 #endif
 #ifdef ENABLE_NLS
-	bindtextdomain (PACKAGE_NAME, LOCALEDIR);
-	textdomain (PACKAGE_NAME);
+	bindtextdomain(PACKAGE_NAME, LOCALEDIR);
+	textdomain(PACKAGE_NAME);
 #endif
 #endif
 
@@ -446,11 +441,11 @@ int main(int argc, char **argv) {
 	/* Create sockets */
 	ENABLE_CAPABILITY_RAW;
 	if (hints.ai_family != AF_INET6) {
-		create_socket(&rts, &sock4, AF_INET, hints.ai_socktype, IPPROTO_ICMP,
+		create_socket(rts.opt_verbose, &sock4, AF_INET, hints.ai_socktype, IPPROTO_ICMP,
 			      hints.ai_family == AF_INET);
 	}
 	if (hints.ai_family != AF_INET) {
-		create_socket(&rts, &sock6, AF_INET6, hints.ai_socktype, IPPROTO_ICMPV6, sock4.fd < 0);
+		create_socket(rts.opt_verbose, &sock6, AF_INET6, hints.ai_socktype, IPPROTO_ICMPV6, sock4.fd < 0);
 		/* This may not be needed if both protocol versions always had the same value,
 		 * but since I don't know that, it's better to be safe than sorry */
 		rts.pmtudisc = rts.pmtudisc == IP_PMTUDISC_DO	? IPV6_PMTUDISC_DO   :

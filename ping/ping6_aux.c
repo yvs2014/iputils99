@@ -83,7 +83,7 @@ unsigned int if_name2index(const char *ifname) {
 	return i;
 }
 
-int build_niquery(struct ping_rts *rts, uint8_t *_nih,
+ssize_t build_niquery(struct ping_rts *rts, uint8_t *_nih,
 		unsigned packet_size __attribute__((__unused__)))
 {
 	struct ni_hdr *nih = (struct ni_hdr *)_nih;
@@ -105,18 +105,16 @@ int build_niquery(struct ping_rts *rts, uint8_t *_nih,
  * of the data portion are used to hold a UNIX "timeval" struct in VAX
  * byte-order, to compute the round-trip time.
  */
-int build_echo(struct ping_rts *rts, uint8_t *_icmph,
-		unsigned packet_size __attribute__((__unused__)))
-{
+ssize_t build_echo(const struct ping_rts *rts, uint8_t *hdr) {
 	struct icmp6_hdr *icmph;
-	icmph = (struct icmp6_hdr *)_icmph;
+	icmph = (struct icmp6_hdr *)hdr;
 	icmph->icmp6_type  = ICMP6_ECHO_REQUEST;
 	icmph->icmp6_code  = 0;
 	icmph->icmp6_cksum = 0;
 	icmph->icmp6_seq   = htons(rts->ntransmitted + 1);
 	icmph->icmp6_id    = rts->ident;
 	if (rts->timing)
-		gettimeofday((struct timeval *)&_icmph[8], NULL);
+		gettimeofday((struct timeval *)(hdr + 8), NULL);
 	return (rts->datalen + 8);	/* skips ICMP portion */
 }
 
@@ -212,10 +210,10 @@ static void putchar_safe(char c) {
 }
 
 
-static void pr_niquery_reply_name(const struct ni_hdr *hdr, size_t len) {
-	const uint8_t *h = (uint8_t *)(hdr + 1);
+static void print_ni_name(const struct ni_hdr *hdr, size_t len) {
+	const uint8_t *h = (const uint8_t *)(hdr + 1);
 	const uint8_t *p = h + 4;
-	const uint8_t *end = (uint8_t *)hdr + len;
+	const uint8_t *end = (const uint8_t *)hdr + len;
 	int continued = 0;
 	char buf[1024];
 	int ret;
@@ -237,7 +235,7 @@ static void pr_niquery_reply_name(const struct ni_hdr *hdr, size_t len) {
 			printf(_(" parse error (truncated)"));
 			break;
 		}
-		if (p + ret < end && *(p + ret) == '\0')
+		if (((p + ret) < end) && (*(p + ret) == '\0'))
 			fqdn = 0;
 		putchar(' ');
 
@@ -252,7 +250,7 @@ static void pr_niquery_reply_name(const struct ni_hdr *hdr, size_t len) {
 }
 
 
-static void pr_niquery_reply_addr(const struct ni_hdr *nih, size_t len) {
+static void print_ni_addr(const struct ni_hdr *nih, size_t len) {
 	int af, truncated;
 	size_t addrlen;
 	switch (ntohs(nih->ni_qtype)) {
@@ -279,8 +277,8 @@ static void pr_niquery_reply_addr(const struct ni_hdr *nih, size_t len) {
 
 	char buf[1024];
 	int comma = 0;
-	const uint8_t *p = (uint8_t *)(nih + 1);
-	const uint8_t *end = (uint8_t *)nih + len;
+	const uint8_t *p = (const uint8_t *)(nih + 1);
+	const uint8_t *end = (const uint8_t *)nih + len;
 	while (p < end) {
 		if ((p + afaddr_len) > end) {
 			printf(_(" parse error (truncated)"));
@@ -302,16 +300,16 @@ static void pr_niquery_reply_addr(const struct ni_hdr *nih, size_t len) {
 }
 
 void print6_ni_reply(const uint8_t *hdr, size_t len) {
-	const struct ni_hdr *nih = (struct ni_hdr *)hdr;
+	const struct ni_hdr *nih = (const struct ni_hdr *)hdr;
 	switch (nih->ni_code) {
 	case IPUTILS_NI_ICMP6_SUCCESS:
 		switch (ntohs(nih->ni_qtype)) {
 		case IPUTILS_NI_QTYPE_DNSNAME:
-			pr_niquery_reply_name(nih, len);
+			print_ni_name(nih, len);
 			break;
 		case IPUTILS_NI_QTYPE_IPV4ADDR:
 		case IPUTILS_NI_QTYPE_IPV6ADDR:
-			pr_niquery_reply_addr(nih, len);
+			print_ni_addr(nih, len);
 			break;
 		default:
 			printf(_(" unknown qtype(0x%02x)"), ntohs(nih->ni_qtype));
@@ -326,6 +324,6 @@ void print6_ni_reply(const uint8_t *hdr, size_t len) {
 	default:
 		printf(_(" unknown code(%02x)"), ntohs(nih->ni_code));
 	}
-	printf(_("; seq=%u;"), ntohsp((uint16_t *)nih->ni_nonce));
+	printf(_("; seq=%u;"), ntohs(*(uint16_t *)nih->ni_nonce));
 }
 
