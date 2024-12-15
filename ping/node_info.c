@@ -33,7 +33,9 @@
 #include "iputils_common.h"
 #include "iputils_ni.h"
 #include "iputils_ni_aux.h"
+#ifdef PING6_NONCE_MEMORY
 #include "common.h"
+#endif
 #include "md5.h"
 #include "node_info.h"
 

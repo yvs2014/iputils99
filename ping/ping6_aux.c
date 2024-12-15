@@ -76,11 +76,11 @@
 #define ICMP6_DST_UNREACH_REJECTROUTE 6
 #endif
 
-unsigned int if_name2index(const char *ifname) {
-	unsigned int i = if_nametoindex(ifname);
-	if (!i)
+unsigned if6_name2index(const char *ifname) {
+	unsigned rc = if_nametoindex(ifname);
+	if (!rc)
 		error(2, 0, _("unknown iface: %s"), ifname);
-	return i;
+	return rc;
 }
 
 ssize_t build_niquery(struct ping_rts *rts, uint8_t *_nih,
@@ -112,13 +112,13 @@ ssize_t build_echo(const struct ping_rts *rts, uint8_t *hdr) {
 	icmph->icmp6_code  = 0;
 	icmph->icmp6_cksum = 0;
 	icmph->icmp6_seq   = htons(rts->ntransmitted + 1);
-	icmph->icmp6_id    = rts->ident;
+	icmph->icmp6_id    = rts->ident16;
 	if (rts->timing)
 		gettimeofday((struct timeval *)(hdr + 8), NULL);
 	return (rts->datalen + 8);	/* skips ICMP portion */
 }
 
-int print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
+void print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
 	switch (type) {
 	case ICMP6_DST_UNREACH:
 		printf(_("Destination unreachable: "));
@@ -193,7 +193,6 @@ int print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
 	default:
 		printf(_("unknown icmp type: %u"), type);
 	}
-	return 0;
 }
 
 void print6_echo_reply(const uint8_t *hdr, size_t len) {

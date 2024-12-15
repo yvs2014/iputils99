@@ -131,6 +131,7 @@ if build_ping
 	if get_option('PING6_NONCE_MEMORY')
 		conf.set('PING6_NONCE_MEMORY', 1, description: 'Define to use ping6 NodeInfo with nonce memory')
 	endif
+	extra_funcs += 'arc4random_uniform'
 endif
 
 if host_machine.endian() == 'big'
@@ -229,7 +230,7 @@ if meson.version().version_compare('>=0.53')
 ['  cap/suid clockdiff ', setcap_clockdiff],
 ['tracepath',    build_tracepath],
 		]], ['CONFIGURATION', [
-['Linux caps (libcap)', cap],
+['Caps  (libcap)', cap],
 ['IDN (via libc)',      idn],
 ['I18N (gettext)',      i18_gettext],
 ['Systemd',             install_systemd_units],

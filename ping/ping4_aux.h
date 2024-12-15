@@ -5,7 +5,6 @@
 #include <netinet/ip_icmp.h>
 
 unsigned short in_cksum(const unsigned short *addr, int len, unsigned short csum);
-void bind_to_device(const struct ping_rts *rts, int fd, in_addr_t addr);
 
 void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
 	uint32_t info, const struct icmphdr *icp);

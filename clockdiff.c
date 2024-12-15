@@ -353,14 +353,11 @@ static int measure(struct run_state *ctl)
 	ctl->measure_delta1 = HOSTDOWN;
 
 	/* empties the icmp input queue */
- empty:
-	if (ppoll(&p, 1, &mv.tout, NULL)) {
+	while (ppoll(&p, 1, &mv.tout, NULL)) {
 		mv.length = sizeof(struct sockaddr_in);
-		mv.cc = recvfrom(ctl->sock_raw, (char *)mv.packet, PACKET_IN, 0,
-			      NULL, &mv.length);
+		mv.cc = recvfrom(ctl->sock_raw, mv.packet, PACKET_IN, 0, NULL, &mv.length);
 		if (mv.cc < 0)
 			return -1;
-		goto empty;
 	}
 
 	/*

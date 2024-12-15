@@ -43,6 +43,7 @@
 #include <signal.h>
 #include <sched.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
 #include <poll.h>
 #include <math.h>
 #include <assert.h>
@@ -256,9 +257,9 @@ void fill_packet(int quiet, const char *patp, unsigned char *packet, size_t pack
 }
 
 /* a bit clearer, but in fact it's the same as with global_rts */
-static volatile int exiting;
-static volatile int snapshot;
-static volatile int in_print_addr;
+static volatile bool exiting;
+static volatile bool snapshot;
+static volatile bool in_print_addr;
 static jmp_buf label_in_print_addr;
 
 static void sig_handler(int signo) {
@@ -266,13 +267,13 @@ static void sig_handler(int signo) {
 		case SIGINT:
 		case SIGALRM:
 			if (!exiting)
-				exiting = 1;
+				exiting = true;
 			if (in_print_addr)
 				longjmp(label_in_print_addr, 0);
 			break;
 		case SIGQUIT:
 			if (!snapshot)
-				snapshot = 1;
+				snapshot = true;
 			break;
 		default: break;
 	}
@@ -370,84 +371,88 @@ static int pinger(struct ping_rts *rts, const ping_func_set_st *fset, const sock
 		tokens = ntokens - rts->interval;
 	}
 
-	if (rts->opt_outstanding) {
-		if (rts->ntransmitted > 0 && !rcvd_test(rts, rts->ntransmitted)) {
+	if (rts->opt.outstanding) {
+		if ((rts->ntransmitted > 0) && !rcvd_test(rts, rts->ntransmitted)) {
 			PRINT_TIMESTAMP;
 			printf(_("no answer yet for icmp_seq=%lu\n"), (rts->ntransmitted % MAX_DUP_CHK));
 			fflush(stdout);
 		}
 	}
 
-	int i;
-resend:
-	i = fset->send_probe(rts, sock->fd, rts->outpack, sizeof(rts->outpack));
-	if (i == 0) {
-		oom_count = 0;
-		advance_ntransmitted(rts);
-		if (!rts->opt_quiet && rts->opt_flood) {
-			/* Very silly, but without this output with
-			 * high preload or pipe size is very confusing. */
-			if ((rts->preload < rts->screen_width && rts->pipesize < rts->screen_width) ||
-			    in_flight(rts) < rts->screen_width)
-				write(STDOUT_FILENO, ".", 1);
+	int rc;
+	int hard_local_error = 0;
+	do {
+		rc = fset->send_probe(rts, sock->fd, rts->outpack, sizeof(rts->outpack));
+		if (rc == 0) {	// No error
+			oom_count = 0;
+			advance_ntransmitted(rts);
+			if (!rts->opt.quiet && rts->opt.flood) {
+				/* Very silly, but without this output with
+				 * high preload or pipe size is very confusing */
+#define PRELOAD_OKAY  (rts->preload   < rts->screen_width)
+#define PIPESIZE_OKAY (rts->pipesize  < rts->screen_width)
+#define INFLIGHT_OKAY (in_flight(rts) < rts->screen_width)
+				if ((PRELOAD_OKAY && PIPESIZE_OKAY) || INFLIGHT_OKAY)
+					write(STDOUT_FILENO, ".", 1);
+			}
+			return (rts->interval - tokens);
 		}
-		return rts->interval - tokens;
-	}
-
-	/* And handle various errors... */
-	if (i > 0) {
-		/* Apparently, it is some fatal bug. */
-		abort();
-	} else if (errno == ENOBUFS || errno == ENOMEM) {
-		int nores_interval;
-
-		/* Device queue overflow or OOM. Packet is not sent. */
-		tokens = 0;
-		/* Slowdown. This works only in adaptive mode (option -A) */
-		rts->rtt_addend += (rts->rtt < 8 * 50000 ? rts->rtt / 8 : 50000);
-		if (rts->opt_adaptive)
-			rts->interval = get_interval(rts);
-		nores_interval = SCHINT(rts->interval / 2);
-		if (nores_interval > 500)
-			nores_interval = 500;
-		oom_count++;
-		if (oom_count * nores_interval < rts->lingertime)
-			return nores_interval;
-		i = 0;
-		/* Fall to hard error. It is to avoid complete deadlock
-		 * on stuck output device even when dealine was not requested.
-		 * Expected timings are screwed up in any case, but we will
-		 * exit some day. :-) */
-	} else if (errno == EAGAIN) {
-		/* Socket buffer is full. */
-		tokens += rts->interval;
-		return MIN_INTERVAL_MS;
-	} else {
-		i = fset->receive_error(rts, sock);
-		if (i > 0) {
-			/* An ICMP error arrived. In this case, we've received
-			 * an error from sendto(), but we've also received an
-			 * ICMP message, which means the packet did in fact
-			 * send in some capacity. So, in this odd case, report
-			 * the more specific errno as the error, and treat this
-			 * as a hard local error. */
-			i = 0;
-			goto hard_local_error;
+		if (rc > 0)	// Apparently, it is some fatal bug
+			abort();
+		// rc < 0
+		switch (errno) {
+		case ENOBUFS:
+		case ENOMEM: {
+			/* Device queue overflow or OOM. Packet is not sent */
+			tokens = 0;
+			/* Slowdown. This works only in adaptive mode (option -A) */
+			rts->rtt_addend += (rts->rtt < 8 * 50000 ? rts->rtt / 8 : 50000);
+			if (rts->opt.adaptive)
+				rts->interval = get_interval(rts);
+			int nores_interval = SCHINT(rts->interval / 2);
+			if (nores_interval > 500)
+				nores_interval = 500;
+			oom_count++;
+			if ((oom_count * nores_interval) < rts->lingertime)
+				return nores_interval;
+			rc = 0;
+			/* Fall to hard error. It is to avoid complete deadlock
+			 * on stuck output device even when dealine was not requested.
+			 * Expected timings are screwed up in any case, but we will
+			 * exit some day. :-) */
+			hard_local_error = 1;
 		}
-		/* Compatibility with old linuces. */
-		if (i == 0 && rts->confirm_flag && errno == EINVAL) {
-			rts->confirm_flag = 0;
-			errno = 0;
+			break;
+		case EAGAIN:
+			/* Socket buffer is full */
+			tokens += rts->interval;
+			return MIN_INTERVAL_MS;
+			break;
+		default:
+			/* Proceed a received error */
+			rc = fset->receive_error(rts, sock);
+			if (rc > 0) {
+				/* An ICMP error arrived. In this case, we've received
+				 * an error from sendto(), but we've also received an
+				 * ICMP message, which means the packet did in fact
+				 * send in some capacity. So, in this odd case, report
+				 * the more specific errno as the error, and treat this
+				 * as a hard local error. */
+				rc = 0;
+				hard_local_error = 1;
+			} else if ((rc == 0) && rts->confirm_flag && (errno == EINVAL)) {
+				/* Compatibility with old linuces */
+				rts->confirm_flag = 0;
+				errno = 0;
+			}
+			break;
 		}
-		if (!errno)
-			goto resend;
-	}
+	} while (!errno && !hard_local_error);
 
-hard_local_error:
 	/* Pretend we sent packet */
 	advance_ntransmitted(rts);
-	if (!i && !rts->opt_quiet) {
-		if (rts->opt_flood)
+	if (!rc && !rts->opt.quiet) {
+		if (rts->opt.flood)
 			write(STDOUT_FILENO, "E", 1);
 		else
 			error(0, errno, "sendmsg");
@@ -477,7 +482,7 @@ void sock_setbufs(struct ping_rts *rts, int sockfd, int alloc) {
 
 void sock_setmark(struct ping_rts *rts, int sockfd) {
 #ifdef SO_MARK
-	if (!rts->opt_mark)
+	if (!rts->opt.mark)
 		return;
 	ENABLE_CAPABILITY_ADMIN;
 	int ret = setsockopt(sockfd, SOL_SOCKET, SO_MARK, &rts->mark, sizeof(rts->mark));
@@ -487,7 +492,7 @@ void sock_setmark(struct ping_rts *rts, int sockfd) {
 		error(0, errno_save, _("WARNING: failed to set mark: %u"), rts->mark);
 		if (errno_save == EPERM)
 			error(0, 0, _("=> missing cap_net_admin+p or cap_net_raw+p (since Linux 5.17) capability?"));
-		rts->opt_mark = 0;
+		rts->opt.mark = false;
 	}
 #else
 	error(0, errno_save, _("WARNING: SO_MARK not supported"));
@@ -497,7 +502,7 @@ void sock_setmark(struct ping_rts *rts, int sockfd) {
 
 /* Protocol independent setup and parameter checks */
 void ping_setup(struct ping_rts *rts, const socket_st *sock) {
-	if (rts->opt_flood && !rts->opt_interval)
+	if (rts->opt.flood && !rts->opt.interval)
 		rts->interval = 0;
 
 	// interval restrictions
@@ -508,16 +513,16 @@ void ping_setup(struct ping_rts *rts, const socket_st *sock) {
 		error(2, 0, _("illegal preload and/or interval: %d"), rts->interval);
 
 	// socket options
-	if (rts->opt_so_debug) {
+	if (rts->opt.so_debug) {
 		int opt = 1;
 		setsockopt(sock->fd, SOL_SOCKET, SO_DEBUG, &opt, sizeof(opt));
 	}
-	if (rts->opt_so_dontroute) {
+	if (rts->opt.so_dontroute) {
 		int opt = 1;
 		setsockopt(sock->fd, SOL_SOCKET, SO_DONTROUTE, &opt, sizeof(opt));
 	}
 #ifdef SO_TIMESTAMP
-	if (!rts->opt_latency) {
+	if (!rts->opt.latency) {
 		int opt = 1;
 		if (setsockopt(sock->fd, SOL_SOCKET, SO_TIMESTAMP, &opt, sizeof(opt)))
 			error(0, 0, _("Warning: no SO_TIMESTAMP support, falling back to SIOCGSTAMP"));
@@ -544,18 +549,15 @@ void ping_setup(struct ping_rts *rts, const socket_st *sock) {
 		.tv_usec = 1000 * (SCHINT(rts->interval) % 1000),
 	  };
 	  if (setsockopt(sock->fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)))
-		rts->opt_flood_poll = 1;
+		rts->opt.flood_poll = true;
 	}
 
-	if (!rts->opt_pingfilled) {
+	if (!rts->opt.pingfilled) {
 		unsigned char *p = rts->outpack + 8;
 		/* Do not forget about case of small datalen, fill timestamp area too! */
 		for (size_t i = 0; i < rts->datalen; ++i)
 			*p++ = i;
 	}
-
-	if ((sock->socktype == SOCK_RAW) && !rts->ident)
-		rts->ident = htons(getpid() & 0xFFFF);
 
 	{ // signals
 	  struct sigaction sa = { .sa_handler = sig_handler, .sa_flags = SA_RESTART };
@@ -631,7 +633,8 @@ static int finish(const struct ping_rts *rts) {
 		comma = ", ";
 	}
 
-	if (rts->nreceived && (!rts->interval || rts->opt_flood || rts->opt_adaptive) && rts->ntransmitted > 1) {
+	if ((!rts->interval || rts->opt.flood || rts->opt.adaptive)
+			&& rts->nreceived && (rts->ntransmitted > 1)) {
 		int ipg = (1000000 * (long long)tv.tv_sec + tv.tv_nsec / 1000) / (rts->ntransmitted - 1);
 		printf(_("%sipg/ewma %d.%03d/%d.%03d ms"),
 		       comma, ipg / 1000, ipg % 1000, rts->rtt / 8000, (rts->rtt / 8) % 1000);
@@ -686,7 +689,7 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 		/* Check for and do special actions. */
 		if (snapshot) { // SIGQUIT
 			fin_status(rts);
-			snapshot = 0;
+			snapshot = false;
 		}
 
 		/* Send probes scheduled to this time. */
@@ -708,7 +711,7 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 		 *    timed waiting (SO_RCVTIMEO). */
 		polling = 0;
 		recv_error = 0;
-		if (rts->opt_adaptive || rts->opt_flood_poll || next <= SCHINT(rts->interval)) {
+		if (rts->opt.adaptive || rts->opt.flood_poll || (next <= SCHINT(rts->interval))) {
 			int recv_expected = in_flight(rts);
 
 			/* If we are here, recvmsg() is unable to wait for
@@ -730,7 +733,7 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 			}
 
 			if (!polling &&
-			    (rts->opt_adaptive || rts->opt_flood_poll || rts->interval)) {
+			    (rts->opt.adaptive || rts->opt.flood_poll || rts->interval)) {
 				struct pollfd pset;
 				pset.fd = sock->fd;
 				pset.events = POLLIN;
@@ -781,28 +784,27 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 #ifdef SO_TIMESTAMP
 				struct cmsghdr *c;
 				for (c = CMSG_FIRSTHDR(&msg); c; c = CMSG_NXTHDR(&msg, c)) {
-					if (c->cmsg_level != SOL_SOCKET ||
-					    c->cmsg_type != SO_TIMESTAMP)
+					if ((c->cmsg_level != SOL_SOCKET  ) ||
+					    (c->cmsg_type  != SO_TIMESTAMP))
 						continue;
 					if (c->cmsg_len < CMSG_LEN(sizeof(struct timeval)))
 						continue;
 					recv_timep = (struct timeval *)CMSG_DATA(c);
 				}
 #endif
-				if (rts->opt_latency || recv_timep == NULL) {
-					if (rts->opt_latency ||
+				if (rts->opt.latency || !recv_timep) {
+					if (rts->opt.latency ||
 					    ioctl(sock->fd, SIOCGSTAMP, &recv_time))
 						gettimeofday(&recv_time, NULL);
 					recv_timep = &recv_time;
 				}
 				assert(received >= 0); // be sure in ssize_t to size_t conversion at one place
-				not_ours = fset->parse_reply(
-					rts, sock->socktype, &msg, received, addrbuf, recv_timep);
+				not_ours = fset->parse_reply(rts, sock->raw, &msg, received, addrbuf, recv_timep);
 			}
 
 			/* See? ... someone runs another ping on this host */
-			if (not_ours && (sock->socktype == SOCK_RAW))
-				fset->install_filter(rts->ident, sock->fd);
+			if (not_ours && sock->raw)
+				fset->install_filter(rts->ident16, sock->fd);
 
 			/* If nothing is in flight, "break" returns us to pinger */
 			if (!in_flight(rts))
@@ -819,33 +821,33 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 
 int gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t received,
 	uint16_t seq, int hops, int csfailed, const struct timeval *tv, const char *from,
-	void (*print_reply)(const uint8_t *hdr, size_t len), int multicast, int wrong_source)
+	void (*print_reply)(const uint8_t *hdr, size_t len), bool multicast, bool wrong_source)
 {
-	int dupflag = 0;
-	long triptime = 0;
-	const uint8_t *ptr = icmph + icmplen;
-
 	++rts->nreceived;
 	if (!csfailed)
 		acknowledge(rts, seq);
+
+	const uint8_t *ptr = icmph + icmplen;
+	long triptime = 0;
 
 	if (rts->timing && (received >= (8 + sizeof(struct timeval)))) {
 		struct timeval peer;
 		memcpy(&peer, ptr, sizeof(peer));
 		struct timeval at;
 		memcpy(&at,    tv, sizeof(at));
-restamp:
-		timersub(&at, &peer, &at);
-		triptime = at.tv_sec * 1000000 + at.tv_usec;
-		if (triptime < 0) {
+		do {
+			timersub(&at, &peer, &at);
+			triptime = at.tv_sec * 1000000 + at.tv_usec;
+			if (triptime >= 0)
+				break;
 			error(0, 0, _("Warning: time of day goes back (%ldus), taking countermeasures"), triptime);
-			triptime = 0;
-			if (!rts->opt_latency) {
-				gettimeofday(&at, NULL);
-				rts->opt_latency = 1;
-				goto restamp;
+			if (rts->opt.latency) {
+				triptime = 0;
+				break;
 			}
-		}
+			rts->opt.latency = true;
+			gettimeofday(&at, NULL);
+		} while (1);
 		if (triptime > (MAXWAIT * 1000000))
 			triptime = MAXWAIT * 1000000;
 		if (!csfailed) {
@@ -859,28 +861,27 @@ restamp:
 				rts->rtt = triptime * 8;
 			else
 				rts->rtt += triptime - rts->rtt / 8;
-			if (rts->opt_adaptive)
+			if (rts->opt.adaptive)
 				rts->interval = get_interval(rts);
 		}
 	}
 
+	bool dupflag = false;
 	if (csfailed) {
 		++rts->nchecksum;
 		--rts->nreceived;
 	} else if (rcvd_test(rts, seq)) {
 		++rts->nrepeats;
 		--rts->nreceived;
-		dupflag = 1;
-	} else {
+		dupflag = false;
+	} else
 		rcvd_set(rts, seq);
-		dupflag = 0;
-	}
 	rts->confirm = rts->confirm_flag;
 
-	if (rts->opt_quiet)
+	if (rts->opt.quiet)
 		return 1;
 
-	if (rts->opt_flood) {
+	if (rts->opt.flood) {
 		if (!csfailed)
 			write(STDOUT_FILENO, "\b \b", 3);
 		else
@@ -891,8 +892,8 @@ restamp:
 
 		if (print_reply)
 			print_reply(icmph, received);
-		if (rts->opt_verbose && rts->ident)
-			printf(_(" ident=%d"), ntohs(rts->ident));
+		if (rts->opt.verbose)
+			printf(_(" ident=%u"), ntohs(rts->ident16));
 		if (hops >= 0)
 			printf(_(" ttl=%d"), hops);
 		if (received < (rts->datalen + 8)) {
@@ -901,19 +902,19 @@ restamp:
 		}
 
 		if (rts->timing) {
-			if (triptime >= 100000 - 50)
-				printf(_(" time=%ld ms"), (triptime + 500) / 1000);
-			else if (triptime >= 10000 - 5)
-				printf(_(" time=%ld.%01ld ms"), (triptime + 50) / 1000,
+			if      (triptime >= (100000 - 50))
+				printf(_(" time=%ld ms"),       (triptime + 500) / 1000);
+			else if (triptime >= ( 10000 -  5))
+				printf(_(" time=%ld.%01ld ms"), (triptime +  50) / 1000,
 				       ((triptime + 50) % 1000) / 100);
-			else if (triptime >= 1000)
-				printf(_(" time=%ld.%02ld ms"), (triptime + 5) / 1000,
-				       ((triptime + 5) % 1000) / 10);
+			else if (triptime >= (  1000     ))
+				printf(_(" time=%ld.%02ld ms"), (triptime +   5) / 1000,
+				       ((triptime +  5) % 1000) /  10);
 			else
 				printf(_(" time=%ld.%03ld ms"), triptime / 1000,
 				       triptime % 1000);
 		}
-		if (dupflag && (!multicast || rts->opt_verbose))
+		if (dupflag && (!multicast || rts->opt.verbose))
 			printf(_(" (DUP!)"));
 		if (csfailed)
 			printf(_(" (BAD CHECKSUM!)"));
@@ -921,13 +922,13 @@ restamp:
 			printf(_(" (DIFFERENT ADDRESS!)"));
 
 		/* check the data */
-		uint8_t *cp = ((unsigned char *)ptr) + sizeof(struct timeval);
-		uint8_t *dp = &rts->outpack[8 + sizeof(struct timeval)];
+		const uint8_t *cp = ptr + sizeof(struct timeval);
+		const uint8_t *dp = &rts->outpack[8 + sizeof(struct timeval)];
 		for (size_t i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp, ++dp) {
 			if (*cp != *dp) {
 				printf(_("\nwrong data byte #%zu should be 0x%x but was 0x%x"),
 				       i, *dp, *cp);
-				cp = (unsigned char *)ptr + sizeof(struct timeval);
+				cp = ptr + sizeof(struct timeval);
 				for (i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp) {
 					if ((i % 32) == sizeof(struct timeval))
 						printf("\n#%zu\t", i);
@@ -960,19 +961,22 @@ const char *str_interval(int interval) {
 }
 
 /* Return an ascii host address optionally with a hostname */
-const char *sprint_addr_common(const struct ping_rts *rts, const void *sa, socklen_t salen, int resolve_name) {
+const char *sprint_addr_common(const struct ping_rts *rts, const void *sa,
+		socklen_t salen, int resolve_name)
+{
 	static char buffer[4096] = "";
 	static struct sockaddr_storage last_sa = {0};
 	static socklen_t last_salen = 0;
 	if ((salen == last_salen) && !memcmp(sa, &last_sa, salen))
 		return buffer;
-	memcpy(&last_sa, sa, (last_salen = salen));
+	memcpy(&last_sa, sa, salen);
+	last_salen = salen;
 	in_print_addr = !setjmp(label_in_print_addr);
 	char address[NI_MAXHOST] = "";
 	getnameinfo(sa, salen, address, sizeof address, NULL, 0, NI_FLAGS | NI_NUMERICHOST);
 
 	char name[NI_MAXHOST] = "";
-	if (!exiting && resolve_name && (rts->opt_force_lookup || !rts->opt_numeric))
+	if (!exiting && resolve_name && (rts->opt.force_lookup || !rts->opt.numeric))
 		getnameinfo(sa, salen, name, sizeof name, NULL, 0, NI_FLAGS);
 
 	int rc = -1;
@@ -983,7 +987,7 @@ const char *sprint_addr_common(const struct ping_rts *rts, const void *sa, sockl
 	if (rc < 0)
 		buffer[0] = 0;
 
-	in_print_addr = 0;
+	in_print_addr = false;
 	return buffer;
 }
 

@@ -32,24 +32,20 @@ void iputils_srand(void) {
 	do {
 		errno = 0;
 		ret = getrandom(&i, sizeof(i), GRND_NONBLOCK);
-		switch (errno) {
-		case 0:
-			break;
-		case EINTR:
-			continue;
-		default:
+		if (errno) {
+			if (errno == EINTR)
+				continue;
 			i = srand_fallback();
-			goto done;
+			break;
 		}
 	} while (ret != sizeof(i));
- done:
 #else
 	i = srand_fallback();
 #endif
 	srand(i);
 	/* Consume up to 31 random numbers */
 	i = rand() & 0x1F;
-	while (0 < i) {
+	while (i > 0) {
 		rand();
 		i--;
 	}

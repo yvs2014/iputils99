@@ -57,8 +57,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
-#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <net/if.h>
@@ -73,16 +71,15 @@
 #endif
 
 unsigned short in_cksum(const unsigned short *addr, int len, unsigned short csum) {
-	int nleft = len;
-	const unsigned short *w = addr;
-	unsigned short answer;
-	int sum = csum;
 	/*
 	 *  Our algorithm is simple, using a 32 bit accumulator (sum),
 	 *  we add sequential 16 bit words to it, and at the end, fold
 	 *  back all the carry bits from the top 16 bits into the lower
 	 *  16 bits.
 	 */
+	const unsigned short *w = addr;
+	int nleft = len;
+	int sum   = csum;
 	while (nleft > 1) {
 		sum += *w++;
 		nleft -= 2;
@@ -91,35 +88,10 @@ unsigned short in_cksum(const unsigned short *addr, int len, unsigned short csum
 	if (nleft == 1)
 		sum += ODDBYTE(*(unsigned char *)w); /* le16toh() may be unavailable on old systems */
 	/* add back carry outs from top 16 bits to low 16 bits */
-	sum  = (sum >> 16) + (sum & 0xffff);	/* add hi 16 to low 16 */
+	sum  = (sum >> 16) + (sum & USHRT_MAX);	/* add hi 16 to low 16 */
 	sum += (sum >> 16);			/* add carry */
-	answer = ~sum;				/* truncate to 16 bits */
-	return (answer);
-}
-
-static int iface_name2index(const struct ping_rts *rts, int fd) {
-	struct ifreq ifr = {0};
-	strncpy(ifr.ifr_name, rts->device, IFNAMSIZ - 1);
-	if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0)
-		error(2, 0, _("unknown iface: %s"), rts->device);
-	return ifr.ifr_ifindex;
-}
-
-void bind_to_device(const struct ping_rts *rts, int fd, in_addr_t addr) {
-	ENABLE_CAPABILITY_RAW;
-	int rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, rts->device,
-		strlen(rts->device) + 1);
-	int errno_save = errno;
-	DISABLE_CAPABILITY_RAW;
-	if (rc < 0) {
-		if (IN_MULTICAST(ntohl(addr))) {
-			struct ip_mreqn imr = { .imr_ifindex = iface_name2index(rts, fd) };
-			if (setsockopt(fd, SOL_IP, IP_MULTICAST_IF, &imr, sizeof(imr)) < 0)
-				error(2, errno, "IP_MULTICAST_IF");
-		} else {
-			error(2, errno_save, "SO_BINDTODEVICE %s", rts->device);
-		}
-	}
+	unsigned short answer = ~sum;		/* truncate to 16 bits */
+	return answer;
 }
 
 void print4_ip_options(const struct ping_rts *rts, const unsigned char *cp, int hlen) {
@@ -183,7 +155,7 @@ void print4_ip_options(const struct ping_rts *rts, const unsigned char *cp, int 
 				break;
 			if (i == old_rrlen
 			    && !memcmp(cp, old_rr, i)
-			    && !rts->opt_flood) {
+			    && !rts->opt.flood) {
 				printf(_("\t(same route)"));
 				break;
 			}
@@ -365,12 +337,12 @@ void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
 			printf(_("Dest Unreachable, Bad Code: %d\n"), code);
 			break;
 		}
-		if (icp && rts->opt_verbose)
+		if (icp && rts->opt.verbose)
 			print4_iph(rts, (struct iphdr *)(icp + 1));
 		break;
 	case ICMP_SOURCE_QUENCH:
 		printf(_("Source Quench\n"));
-		if (icp && rts->opt_verbose)
+		if (icp && rts->opt.verbose)
 			print4_iph(rts, (struct iphdr *)(icp + 1));
 		break;
 	case ICMP_REDIRECT:
@@ -397,7 +369,7 @@ void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
 		  };
 		  printf(_("(New nexthop: %s)\n"), SPRINT_RES_ADDR(rts, &sin, sizeof(sin)));
 		}
-		if (icp && rts->opt_verbose)
+		if (icp && rts->opt.verbose)
 			print4_iph(rts, (struct iphdr *)(icp + 1));
 		break;
 	case ICMP_ECHO:
@@ -416,13 +388,13 @@ void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
 			printf(_("Time exceeded, Bad Code: %d\n"), code);
 			break;
 		}
-		if (icp && rts->opt_verbose)
+		if (icp && rts->opt.verbose)
 			print4_iph(rts, (struct iphdr *)(icp + 1));
 		break;
 	case ICMP_PARAMETERPROB:
 		printf(_("Parameter problem: pointer = %u\n"),
 			icp ? (ntohl(icp->un.gateway) >> 24) : info);
-		if (icp && rts->opt_verbose)
+		if (icp && rts->opt.verbose)
 			print4_iph(rts, (struct iphdr *)(icp + 1));
 		break;
 	case ICMP_TIMESTAMP:

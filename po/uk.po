@@ -363,8 +363,7 @@ msgstr "невідповідність областей між вузлами"
 #, c-format
 msgid "Warning: source address might be selected on device other than: %s"
 msgstr ""
-"Попередження: адресу джерела могло бути вибрано на пристрої, відмінному від "
-"%s"
+"Попередження: адресу джерела можливо вибрано на пристрої відмінному від: %s"
 
 #: ping/ping6_common.c:267
 #, c-format
@@ -682,17 +681,16 @@ msgstr "помилкове значення TOS: %s"
 
 #: ping/ping.c:300
 #, c-format
-msgid "the decimal value of TOS bits must be in range 0-255: %d"
-msgstr ""
-"десяткове значення бітів TOS має належати до діапазону від 0 до 255: %d"
+msgid "the decimal value of TOS bits must be in range 0-255: %lu"
+msgstr "значення TOS має належати до діапазону від 0 до 255: %lu"
 
 #: ping/ping.c:371 ping/ping.c:402
 msgid "only one -4 or -6 option may be specified"
-msgstr "можна вказувати лише один із параметрів — -4 або -6"
+msgstr "можна вказувати лише один із параметрів (-4 або -6)"
 
 #: ping/ping.c:383 ping/ping.c:388
 msgid "only one of -T or -R may be used"
-msgstr "можна вказувати лише один із параметрів — -T або -R"
+msgstr "можна вказувати лише один із параметрів (-T або -R)"
 
 #: ping/ping.c:397
 #, c-format

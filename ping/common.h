@@ -5,6 +5,7 @@
 #define _GNU_SOURCE
 #endif
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <limits.h>
@@ -49,24 +50,54 @@ struct rcvd_table {
 
 typedef struct socket_st {
 	int fd;
-	int socktype;
+	bool raw;
 } socket_st;
+
+typedef struct ping_bool_opts {
+	bool adaptive;
+	bool audible;
+	bool flood;
+	bool flood_poll;
+	bool flowinfo;
+	bool force_lookup;
+	bool interval;
+	bool latency;
+	bool mark;
+	bool noloop;
+	bool numeric;
+	bool outstanding;
+	bool pingfilled;
+	bool ptimeofday;
+	bool quiet;
+	bool rroute;
+	bool so_debug;
+	bool so_dontroute;
+	bool sourceroute;
+	bool strictsource;
+	bool timestamp;
+	bool ttl;
+	bool verbose;
+	bool connect_sk;
+	bool broadcast;
+} ping_bool_opts;
 
 /* ping runtime state */
 struct ping_rts {
 	unsigned int mark;
 	unsigned char *outpack;
-
+	//
 	struct rcvd_table rcvd_tbl;
-
+	//
 	size_t datalen;
 	char *hostname;
 	uid_t uid;
-	uint16_t ident;			/* process id to identify our packets */
-
+	uint16_t ident16;		/* id to identify our packets */
+	int custom_ident;		/* -e option */
+	bool ip6;			/* true for IPv6 pings */
+	//
 	int sndbuf;
 	int ttl;
-
+	//
 	long npackets;			/* max packets to transmit */
 	long nreceived;			/* # of packets we got back */
 	long nrepeats;			/* number of duplicates */
@@ -82,9 +113,9 @@ struct ping_rts {
 	int confirm_flag;
 	char *device;
 	int pmtudisc;
-
-	/* timing */
-	int timing;			/* flag to do timing */
+	//
+	// timing
+	bool timing;			/* flag to do timing */
 	long tmin;			/* minimum round trip time */
 	long tmax;			/* maximum round trip time */
 	double tsum;			/* sum of all times, for doing average */
@@ -93,71 +124,42 @@ struct ping_rts {
 	int rtt_addend;
 	uint16_t acked;
 	int pipesize;
-
-	uint32_t tclass;
+	//
+	struct sockaddr_storage source;
+	struct sockaddr_storage whereto;	/* who to ping */
+	struct sockaddr_storage firsthop;
 	uint32_t flowlabel;
-	struct sockaddr_in6 source6;
-	struct sockaddr_in6 whereto6;
-	struct sockaddr_in6 firsthop6;
-	int multicast;
-
+	uint8_t qos;				/* TOS/TCLASS */
+	uint8_t ipt_flg;			/* IP option: timestamp flags */
+	bool multicast;
+	//
 	/* Used only in ping.c */
-	int ts_type;
 	int nroute;
 	uint32_t route[10];
-	struct sockaddr_in whereto;	/* who to ping */
 	int optlen;
-	int settos;			/* Set TOS, Precedence or other QOS options */
-	int broadcast_pings;
-	struct sockaddr_in source;
-
+	//
 	/* Used only in common.c */
 	int screen_width;
 #ifdef HAVE_LIBCAP
 	cap_value_t cap_raw;
 	cap_value_t cap_admin;
 #endif
-
+	//
 	/* Used only in ping6_common.c */
 	int subnet_router_anycast; /* Subnet-Router anycast (RFC 4291) */
-	struct sockaddr_in6 firsthop;
 	unsigned char cmsgbuf[4096];
 	size_t cmsglen;
 	struct ping_ni ni;
-
-	/* boolean option bits */
-	unsigned int
-		opt_adaptive:1,
-		opt_audible:1,
-		opt_flood:1,
-		opt_flood_poll:1,
-		opt_flowinfo:1,
-		opt_force_lookup:1,
-		opt_interval:1,
-		opt_latency:1,
-		opt_mark:1,
-		opt_noloop:1,
-		opt_numeric:1,
-		opt_outstanding:1,
-		opt_pingfilled:1,
-		opt_ptimeofday:1,
-		opt_quiet:1,
-		opt_rroute:1,
-		opt_so_debug:1,
-		opt_so_dontroute:1,
-		opt_sourceroute:1,
-		opt_strictsource:1,
-		opt_timestamp:1,
-		opt_ttl:1,
-		opt_verbose:1,
-		opt_connect_sk:1;
+	//
+	// boolean options
+	struct ping_bool_opts opt;
 };
 
 typedef struct ping_func_set_st {
 	ssize_t (*send_probe)(struct ping_rts *rts, int sockfd,
 		void *packet, unsigned packet_size);
 	int (*receive_error)(struct ping_rts *rts, const socket_st *sock);
-	int (*parse_reply)(struct ping_rts *rts, int socktype,
+	int (*parse_reply)(struct ping_rts *rts, bool rawsock,
 		struct msghdr *msg, size_t received, void *addr, const struct timeval *at);
 	void (*install_filter)(uint16_t ident, int sockfd);
 } ping_func_set_st;
@@ -190,9 +192,9 @@ const char *sprint_addr_common(const struct ping_rts *rts, const void *sa,
 #define SPRINT_RAW_ADDR(rts, sastruct, salen) sprint_addr_common((rts), (sastruct), (salen), 0)
 
 void print_timestamp(void);
-#define PRINT_TIMESTAMP do { if (rts->opt_ptimeofday) print_timestamp(); } while(0)
+#define PRINT_TIMESTAMP do { if (rts->opt.ptimeofday) print_timestamp(); } while(0)
 
-#define IS_OURS(rts, socktype, test_id) (((socktype) == SOCK_DGRAM) || ((test_id) == (rts)->ident))
+#define IS_OURS(rts, rawsock, rcvd_id) (!(rawsock) || ((rcvd_id) == (rts)->ident16))
 
 const char *str_interval(int interval);
 void sock_setbufs(struct ping_rts *rts, int sockfd, int alloc);
@@ -202,7 +204,7 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset, const socket_s
 	uint8_t *packet, int packlen);
 int gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t received,
 	uint16_t seq, int hops, int csfailed, const struct timeval *tv, const char *from,
-	void (*print_reply)(const uint8_t *hdr, size_t len), int multicast, int wrong_source);
+	void (*print_reply)(const uint8_t *hdr, size_t len), bool multicast, bool wrong_source);
 void fill_packet(int quiet, const char *patp, unsigned char *packet, size_t packet_size);
 
 void usage(void);

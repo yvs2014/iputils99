@@ -63,11 +63,12 @@
 
 #include "iputils_common.h"
 #include "iputils_ni.h"
+#include "node_info.h"
 #include "ipv6.h"
 #include "common.h"
-#include "ping6.h"
+#include "ping_aux.h"
 #include "ping6_aux.h"
-#include "node_info.h"
+#include "ping6.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -98,12 +99,12 @@ static ssize_t ping6_send_probe(struct ping_rts *rts, int sockfd,
 	ssize_t sent = 0;
 	if (rts->cmsglen == 0) {
 		sent = sendto(sockfd, (char *)packet, len, rts->confirm,
-			    (struct sockaddr *)&rts->whereto6,
+			    (struct sockaddr *)&rts->whereto,
 			    sizeof(struct sockaddr_in6));
 	} else {
 		struct iovec iov = { .iov_len = len, .iov_base = packet };
 		struct msghdr mhdr = {
-			.msg_name       = &rts->whereto6,
+			.msg_name       = &rts->whereto,
 			.msg_namelen    = sizeof(struct sockaddr_in6),
 			.msg_iov        = &iov,
 			.msg_iovlen     = 1,
@@ -116,82 +117,74 @@ static ssize_t ping6_send_probe(struct ping_rts *rts, int sockfd,
 	return (sent == len) ? 0 : sent;
 }
 
+// func_set:receive_error:print_addr_seq
+static inline void ping6_print_addr_seq(struct ping_rts *rts, uint16_t seq,
+	const struct sock_extended_err *ee, socklen_t salen)
+{
+	rts->nerrors++;
+	if (rts->opt.quiet)
+		return;
+	if (rts->opt.flood)
+		write(STDOUT_FILENO, "\bE", 2);
+	else {
+		PRINT_TIMESTAMP;
+		const void *sa = ee + 1;
+		printf(_("From %s icmp_seq=%u "), SPRINT_RES_ADDR(rts, sa, salen), seq);
+		print6_icmp(ee->ee_type, ee->ee_code, ee->ee_info);
+		putchar('\n');
+		fflush(stdout);
+	}
+}
 
 // func_set:receive_error
 static int ping6_receive_error(struct ping_rts *rts, const socket_st *sock) {
 	int saved_errno = errno;
-
+	//
+	char cbuf[512];
 	struct icmp6_hdr icmph = {0};
 	struct iovec iov = { .iov_base = &icmph, .iov_len = sizeof(icmph) };
-
-	char cbuf[512];
 	struct sockaddr_in6 target = {0};
 	struct msghdr msg = {
-		.msg_name       = (void *)&target,
+		.msg_name       = &target,
 		.msg_namelen    = sizeof(target),
 		.msg_iov        = &iov,
 		.msg_iovlen     = 1,
 		.msg_control    = cbuf,
 		.msg_controllen = sizeof(cbuf),
 	};
-
+	//
 	int net_errors = 0;
 	int local_errors = 0;
 	ssize_t res = recvmsg(sock->fd, &msg, MSG_ERRQUEUE | MSG_DONTWAIT);
 	if (res < 0) {
 		if (errno == EAGAIN || errno == EINTR)
 			local_errors++;
-		goto out;
-	}
-
-	struct sock_extended_err *e = NULL;
-	for (struct cmsghdr *m = CMSG_FIRSTHDR(&msg); m; m = CMSG_NXTHDR(&msg, m))
-		if ((m->cmsg_level == IPPROTO_IPV6) && (m->cmsg_type == IPV6_RECVERR))
-			e = (struct sock_extended_err *)CMSG_DATA(m);
-	if (e == NULL)
-		abort();
-
-	if (e->ee_origin == SO_EE_ORIGIN_LOCAL) {
-		local_errors++;
-		if (rts->opt_quiet)
-			goto out;
-		if (rts->opt_flood)
-			write(STDOUT_FILENO, "E", 1);
-		else if (e->ee_errno != EMSGSIZE)
-			error(0, e->ee_errno, _("local error"));
-		else
-			error(0, 0, _("local error: message too long, mtu: %u"), e->ee_info);
-		rts->nerrors++;
-	} else if (e->ee_origin == SO_EE_ORIGIN_ICMP6) {
-		struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)(e + 1);
-
-		if ((size_t)res < sizeof(icmph) ||
-		    memcmp(&target.sin6_addr, &rts->whereto6.sin6_addr, 16) ||
-		    icmph.icmp6_type != ICMP6_ECHO_REQUEST ||
-		    !IS_OURS(rts, sock->socktype, icmph.icmp6_id)) {
-			/* Not our error, not an error at all. Clear. */
-			saved_errno = 0;
-			goto out;
-		}
-
-		net_errors++;
-		rts->nerrors++;
-		if (rts->opt_quiet)
-			goto out;
-		if (rts->opt_flood) {
-			write(STDOUT_FILENO, "\bE", 2);
-		} else {
-			PRINT_TIMESTAMP;
-			printf(_("From %s icmp_seq=%u "),
-				SPRINT_RES_ADDR(rts, sin6, sizeof(*sin6)),
-				ntohs(icmph.icmp6_seq));
-			print6_icmp(e->ee_type, e->ee_code, e->ee_info);
-			putchar('\n');
-			fflush(stdout);
+	} else {
+		struct sock_extended_err *ee = NULL;
+		for (struct cmsghdr *m = CMSG_FIRSTHDR(&msg); m; m = CMSG_NXTHDR(&msg, m))
+			if ((m->cmsg_level == IPPROTO_IPV6) && (m->cmsg_type == IPV6_RECVERR))
+				ee = (struct sock_extended_err *)CMSG_DATA(m);
+		if (!ee)
+			abort();
+		if (ee->ee_origin == SO_EE_ORIGIN_LOCAL) {
+			local_errors++;
+			if (!rts->opt.quiet)
+				print_local_ee(rts, ee);
+		} else if (ee->ee_origin == SO_EE_ORIGIN_ICMP6) {
+			struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&rts->whereto;
+			if ((res < (ssize_t)sizeof(icmph))                  ||
+			    memcmp(&target.sin6_addr, &sin6->sin6_addr, 16) ||
+			    (icmph.icmp6_type != ICMP6_ECHO_REQUEST)        ||
+			    !IS_OURS(rts, sock->raw, icmph.icmp6_id))
+				/* Not our error, not an error at all, clear */
+				saved_errno = 0;
+			else {
+				net_errors++;
+				ping6_print_addr_seq(rts, ntohs(icmph.icmp6_seq),
+					ee, sizeof(struct sockaddr_in6));
+			}
 		}
 	}
-
-out:
 	errno = saved_errno;
 	return net_errors ? net_errors : -local_errors;
 }
@@ -204,7 +197,7 @@ out:
  * program to be run without having intermingled output (or statistics!).
  */
 // func_set:parse_reply
-static int ping6_parse_reply(struct ping_rts *rts, int socktype,
+static int ping6_parse_reply(struct ping_rts *rts, bool rawsock,
 	struct msghdr *msg, size_t received, void *addr, const struct timeval *at)
 {
 	struct sockaddr_in6 *from = addr;
@@ -212,7 +205,7 @@ static int ping6_parse_reply(struct ping_rts *rts, int socktype,
 	struct cmsghdr *c;
 	struct icmp6_hdr *icmph;
 	int hops = -1;
-	int wrong_source = 0;
+	bool wrong_source = false;
 
 	for (c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c)) {
 		if (c->cmsg_level != IPPROTO_IPV6)
@@ -233,17 +226,18 @@ static int ping6_parse_reply(struct ping_rts *rts, int socktype,
 
 	icmph = (struct icmp6_hdr *)buf;
 	if (received < 8) {
-		if (rts->opt_verbose)
+		if (rts->opt.verbose)
 			error(0, 0, _("packet too short: %zd bytes"), received);
 		return 1;
 	}
 
+	struct sockaddr_in6 *whereto = (struct sockaddr_in6 *)&rts->whereto;
 	if (icmph->icmp6_type == ICMP6_ECHO_REPLY) {
-		if (!IS_OURS(rts, socktype, icmph->icmp6_id))
+		if (!IS_OURS(rts, rawsock, icmph->icmp6_id))
 			return 1;
 		if (!rts->multicast && !rts->subnet_router_anycast &&
-		    memcmp(&from->sin6_addr.s6_addr, &rts->whereto6.sin6_addr.s6_addr, 16))
-			wrong_source = 1;
+		    memcmp(&from->sin6_addr.s6_addr, &whereto->sin6_addr.s6_addr, 16))
+			wrong_source = true;
 		if (gather_stats(rts, (uint8_t *)icmph, sizeof(*icmph), received,
 			ntohs(icmph->icmp6_seq), hops, 0, at,
 			SPRINT_RES_ADDR(rts, from, sizeof(*from)),
@@ -260,7 +254,7 @@ static int ping6_parse_reply(struct ping_rts *rts, int socktype,
 		if (gather_stats(rts, (uint8_t *)icmph, sizeof(*icmph), received,
 			seq, hops, 0, at,
 			SPRINT_RES_ADDR(rts, from, sizeof(*from)),
-			print6_ni_reply, rts->multicast, 0))
+			print6_ni_reply, rts->multicast, false))
 			return 0;
 	} else {
 		int nexthdr;
@@ -277,7 +271,7 @@ static int ping6_parse_reply(struct ping_rts *rts, int socktype,
 		if (received < (8 + sizeof(struct ip6_hdr) + 8))
 			return 1;
 
-		if (memcmp(&iph1->ip6_dst, &rts->whereto6.sin6_addr, 16))
+		if (memcmp(&iph1->ip6_dst, &whereto->sin6_addr, sizeof(whereto->sin6_addr)))
 			return 1;
 
 		nexthdr = iph1->ip6_nxt;
@@ -288,26 +282,26 @@ static int ping6_parse_reply(struct ping_rts *rts, int socktype,
 		}
 		if (nexthdr == IPPROTO_ICMPV6) {
 			if (icmph1->icmp6_type != ICMP6_ECHO_REQUEST ||
-			    !IS_OURS(rts, socktype, icmph1->icmp6_id))
+			    !IS_OURS(rts, rawsock, icmph1->icmp6_id))
 				return 1;
 			acknowledge(rts, ntohs(icmph1->icmp6_seq));
 			return 0;
 		}
 
 		/* We've got something other than an ECHOREPLY */
-		if (!rts->opt_verbose || rts->uid)
+		if (!rts->opt.verbose || rts->uid)
 			return 1;
 		PRINT_TIMESTAMP;
 		printf(_("From %s: "), SPRINT_RES_ADDR(rts, from, sizeof(*from)));
 		print6_icmp(icmph->icmp6_type, icmph->icmp6_code, ntohl(icmph->icmp6_mtu));
 	}
 
-	if (rts->opt_audible) {
+	if (rts->opt.audible) {
 		putchar('\a');
-		if (rts->opt_flood)
+		if (rts->opt.flood)
 			fflush(stdout);
 	}
-	if (!rts->opt_flood) {
+	if (!rts->opt.flood) {
 		putchar('\n');
 		fflush(stdout);
 	}
@@ -351,20 +345,19 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 		.parse_reply    = ping6_parse_reply,
 		.install_filter = ping6_install_filter,
 	};
-
-	int hold, packlen;
-	size_t i;
-	unsigned char *packet;
-	struct icmp6_filter filter;
-	int err;
 	static uint32_t scope_id = 0;
+
+	rts->ip6 = true;
+	struct sockaddr_in6 *source   = (struct sockaddr_in6 *)&rts->source;
+	struct sockaddr_in6 *firsthop = (struct sockaddr_in6 *)&rts->firsthop;
+	struct sockaddr_in6 *whereto  = (struct sockaddr_in6 *)&rts->whereto;
+	source->sin6_family = AF_INET6;
 
 	if (niquery_is_enabled(&rts->ni)) {
 		niquery_init_nonce(&rts->ni);
-
 		if (!niquery_is_subject_valid(&rts->ni)) {
-			rts->ni.subject = &rts->whereto6.sin6_addr;
-			rts->ni.subject_len = sizeof(rts->whereto6.sin6_addr);
+			rts->ni.subject      = &whereto->sin6_addr;
+			rts->ni.subject_len  = sizeof(whereto->sin6_addr);
 			rts->ni.subject_type = IPUTILS_NI_ICMP6_SUBJ_IPV6;
 		}
 	}
@@ -380,78 +373,72 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 		target = rts->ni.group;
 	}
 
-	memcpy(&rts->whereto6, ai->ai_addr, sizeof(rts->whereto6));
-	rts->whereto6.sin6_port = htons(IPPROTO_ICMPV6);
+	memcpy(whereto, ai->ai_addr, sizeof(*whereto));
+	whereto->sin6_port = htons(IPPROTO_ICMPV6);
 
 	if (memchr(target, ':', strlen(target)))
-		rts->opt_numeric = 1;
+		rts->opt.numeric = true;
 
-	if (IN6_IS_ADDR_UNSPECIFIED(&rts->firsthop.sin6_addr)) {
-		memcpy(&rts->firsthop.sin6_addr, &rts->whereto6.sin6_addr, 16);
-		rts->firsthop.sin6_scope_id = rts->whereto6.sin6_scope_id;
+	if (IN6_IS_ADDR_UNSPECIFIED(&firsthop->sin6_addr)) {
+		memcpy(&firsthop->sin6_addr, &whereto->sin6_addr, sizeof(firsthop->sin6_addr));
+		firsthop->sin6_scope_id = whereto->sin6_scope_id;
 		/* Verify scope_id is the same as intermediate nodes */
-		if (rts->firsthop.sin6_scope_id && scope_id && rts->firsthop.sin6_scope_id != scope_id)
+		if (firsthop->sin6_scope_id && scope_id && (firsthop->sin6_scope_id != scope_id))
 			error(2, 0, _("scope discrepancy among the nodes"));
 		else if (!scope_id)
-			scope_id = rts->firsthop.sin6_scope_id;
+			scope_id = firsthop->sin6_scope_id;
 	}
 
 	rts->hostname = target;
 
-	if (IN6_IS_ADDR_UNSPECIFIED(&rts->source6.sin6_addr)) {
-		socklen_t alen;
+	if (IN6_IS_ADDR_UNSPECIFIED(&source->sin6_addr)) {
 		int probe_fd = socket(AF_INET6, SOCK_DGRAM, 0);
-
 		if (probe_fd < 0)
 			error(2, errno, "socket");
+
+		bool scoped = IN6_IS_ADDR_LINKLOCAL(&firsthop->sin6_addr) ||
+			      IN6_IS_ADDR_MC_LINKLOCAL(&firsthop->sin6_addr);
 		if (rts->device) {
-			unsigned int iface = if_name2index(rts->device);
-#ifdef IPV6_RECVPKTINFO
-			struct in6_pktinfo ipi;
-
-			memset(&ipi, 0, sizeof(ipi));
-			ipi.ipi6_ifindex = iface;
-#endif
-
-			if (IN6_IS_ADDR_LINKLOCAL(&rts->firsthop.sin6_addr) ||
-			    IN6_IS_ADDR_MC_LINKLOCAL(&rts->firsthop.sin6_addr))
-				rts->firsthop.sin6_scope_id = iface;
+			unsigned iface = if6_name2index(rts->device);
+			socklen_t slen = strlen(rts->device) + 1;
+#ifdef IPV6_PKTINFO
+			struct in6_pktinfo ipi = { .ipi6_ifindex = iface };
 			ENABLE_CAPABILITY_RAW;
-#ifdef IPV6_RECVPKTINFO
-			if (setsockopt(probe_fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof ipi) == -1 ||
-			    setsockopt(sock->fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof ipi) == -1) {
-				error(2, errno, "setsockopt(IPV6_PKTINFO)");
-			}
-#endif
-			if (setsockopt(probe_fd, SOL_SOCKET, SO_BINDTODEVICE, rts->device, strlen(rts->device) + 1) == -1 ||
-			    setsockopt(sock->fd, SOL_SOCKET, SO_BINDTODEVICE, rts->device, strlen(rts->device) + 1) == -1) {
-				error(2, errno, "setsockopt(SO_BINDTODEVICE) %s", rts->device);
-			}
+			if ((setsockopt(probe_fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
+			    (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0))
+				error(2, errno, "setsockopt(PKTINFO)");
 			DISABLE_CAPABILITY_RAW;
+#endif
+			if ((setsock_bindopt(probe_fd, rts->device, slen, 0) < 0) ||
+			    (setsock_bindopt(sock->fd, rts->device, slen, 0) < 0))
+				error(2, errno, "setsockopt(BINDIFACE=%s)", rts->device);
+			if (scoped)
+				firsthop->sin6_scope_id = iface;
 		}
 
-		if (rts->tclass &&
-		    setsockopt(probe_fd, IPPROTO_IPV6, IPV6_TCLASS, &rts->tclass, sizeof (rts->tclass)) <0)
-			error(2, errno, "setsockopt(IPV6_TCLASS)");
+		if (rts->qos) {
+			int opt = rts->qos;
+			if (setsockopt(probe_fd, IPPROTO_IPV6, IPV6_TCLASS, &opt, sizeof(opt)) < 0)
+				error(2, errno, "setsockopt(IPV6_TCLASS)");
+		}
 
-		if (!IN6_IS_ADDR_LINKLOCAL(&rts->firsthop.sin6_addr) &&
-		    !IN6_IS_ADDR_MC_LINKLOCAL(&rts->firsthop.sin6_addr))
-			rts->firsthop.sin6_family = AF_INET6;
+		if (!scoped)
+			firsthop->sin6_family = AF_INET6;
 
 		sock_setmark(rts, probe_fd);
 
-		rts->firsthop.sin6_port = htons(1025);
-		if (connect(probe_fd, (struct sockaddr *)&rts->firsthop, sizeof(rts->firsthop)) == -1) {
+		firsthop->sin6_port = htons(1025);
+		if (connect(probe_fd, (struct sockaddr *)firsthop, sizeof(*firsthop)) < 0) {
 			if ((errno == EHOSTUNREACH || errno == ENETUNREACH) && ai->ai_next) {
 				close(probe_fd);
 				return -1;
 			}
 			error(2, errno, "connect");
 		}
-		alen = sizeof rts->source6;
-		if (getsockname(probe_fd, (struct sockaddr *)&rts->source6, &alen) == -1)
+		socklen_t socklen = sizeof(*source);
+		if (getsockname(probe_fd, (struct sockaddr *)source, &socklen) < 0)
 			error(2, errno, "getsockname");
-		rts->source6.sin6_port = 0;
+		source->sin6_port = 0;
 		close(probe_fd);
 
 		if (rts->device) {
@@ -466,7 +453,7 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 					continue;
 				if (!strcmp(ifa->ifa_name, rts->device) &&
 				    IN6_ARE_ADDR_EQUAL(&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr,
-						       &rts->source6.sin6_addr))
+						       &source->sin6_addr))
 					break;
 			}
 			if (!ifa)
@@ -474,9 +461,9 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 
 			freeifaddrs(ifa0);
 		}
-	} else if (rts->device && (IN6_IS_ADDR_LINKLOCAL(&rts->source6.sin6_addr) ||
-			      IN6_IS_ADDR_MC_LINKLOCAL(&rts->source6.sin6_addr)))
-		rts->source6.sin6_scope_id = if_name2index(rts->device);
+	} else if (rts->device && (IN6_IS_ADDR_LINKLOCAL(&source->sin6_addr) ||
+			      IN6_IS_ADDR_MC_LINKLOCAL(&source->sin6_addr)))
+		source->sin6_scope_id = if6_name2index(rts->device);
 
 	if (rts->device) {
 		struct cmsghdr *cmsg;
@@ -492,40 +479,38 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 
 		ipi = (struct in6_pktinfo *)CMSG_DATA(cmsg);
 		memset(ipi, 0, sizeof(*ipi));
-		ipi->ipi6_ifindex = if_name2index(rts->device);
+		ipi->ipi6_ifindex = if6_name2index(rts->device);
 
-		if (rts->opt_strictsource) {
+		if (rts->opt.strictsource) {
 			ENABLE_CAPABILITY_RAW;
 			rc = setsockopt(sock->fd, SOL_SOCKET, SO_BINDTODEVICE,
 					rts->device, strlen(rts->device) + 1);
 			errno_save = errno;
 			DISABLE_CAPABILITY_RAW;
-			if (rc == -1)
+			if (rc < 0)
 				error(2, errno_save, "SO_BINDTODEVICE %s", rts->device);
 		}
 	}
 
-	if (IN6_IS_ADDR_MULTICAST(&rts->whereto6.sin6_addr)) {
-		rts->multicast = 1;
-
+	if (IN6_IS_ADDR_MULTICAST(&whereto->sin6_addr)) {
+		rts->multicast = true;
 		if (rts->uid) {
 			if (rts->interval < MIN_MCAST_INTERVAL_MS)
-				error(2, 0, _("minimal interval for multicast ping for user must be >= %d ms, use -i %s (or higher)"),
+				error(2, 0,
+_("minimal interval for multicast ping for user must be >= %d ms, use -i %s (or higher)"),
 					  MIN_MCAST_INTERVAL_MS,
 					  str_interval(MIN_MCAST_INTERVAL_MS));
-
-			if (rts->pmtudisc >= 0 && rts->pmtudisc != IPV6_PMTUDISC_DO)
+			if ((rts->pmtudisc >= 0) && (rts->pmtudisc != IPV6_PMTUDISC_DO))
 				error(2, 0, _("multicast ping does not fragment"));
 		}
-
 		if (rts->pmtudisc < 0)
 			rts->pmtudisc = IPV6_PMTUDISC_DO;
 	}
 
 	/* detect Subnet-Router anycast at least for the default prefix 64 */
 	rts->subnet_router_anycast = 1;
-	for (i = 8; i < sizeof(struct in6_addr); i++) {
-		if (rts->whereto6.sin6_addr.s6_addr[i]) {
+	for (size_t i = 8; i < sizeof(struct in6_addr); i++) {
+		if (whereto->sin6_addr.s6_addr[i]) {
 			rts->subnet_router_anycast = 0;
 			break;
 		}
@@ -533,70 +518,57 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 
 	if (rts->pmtudisc >= 0) {
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_MTU_DISCOVER, &rts->pmtudisc,
-			       sizeof rts->pmtudisc) == -1)
+			       sizeof(rts->pmtudisc)) < 0)
 			error(2, errno, "IPV6_MTU_DISCOVER");
 	}
 
-	int set_ident = (rts->ident > 0) && (sock->socktype == SOCK_DGRAM);
-	if (set_ident)
-		rts->source6.sin6_port = rts->ident;
+	ping_bind(rts, sock);
 
-	if (rts->opt_strictsource || set_ident) {
-		if (bind(sock->fd, (struct sockaddr *)&rts->source6, sizeof rts->source6) == -1)
-			error(2, errno, "bind icmp socket");
-	}
-
-	if ((ssize_t)rts->datalen >= (ssize_t)sizeof(struct timeval) && (rts->ni.query < 0)) {
+	if ((rts->datalen >= sizeof(struct timeval)) && (rts->ni.query < 0)) {
 		/* can we time transfer */
-		rts->timing = 1;
+		rts->timing = true;
 	}
-	packlen = rts->datalen + 8 + 4096 + 40 + 8; /* 4096 for rthdr */
-	packet = malloc(packlen);
+	int packlen = rts->datalen + 8 + 4096 + 40 + 8; /* 4096 for rthdr */
+	unsigned char *packet = malloc(packlen);
 	if (!packet)
 		error(2, errno, _("memory allocation failed"));
 
-	hold = 1;
-	if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_RECVERR, (const void *)&hold, sizeof hold))
+	{ int hold = 1;
+	  if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_RECVERR, &hold, sizeof(hold)) < 0)
 		error(2, errno, "IPV6_RECVERR");
-
-	/* Estimate memory eaten by single packet. It is rough estimate.
-	 * Actually, for small datalen's it depends on kernel side a lot. */
-	hold = rts->datalen + 8;
-	hold += ((hold + 511) / 512) * (40 + 16 + 64 + 160);
-	sock_setbufs(rts, sock->fd, hold);
+	  /* Estimate memory eaten by single packet. It is rough estimate.
+	   * Actually, for small datalen's it depends on kernel side a lot. */
+	  hold = rts->datalen + 8;
+	  hold += ((hold + 511) / 512) * (40 + 16 + 64 + 160);
+	  sock_setbufs(rts, sock->fd, hold);
+	}
 
 #ifdef __linux__
-	if (sock->socktype == SOCK_RAW) {
+	if (sock->raw) {
 		int csum_offset = 2;
-		int sz_opt = sizeof(int);
-
-		err = setsockopt(sock->fd, SOL_RAW, IPV6_CHECKSUM, &csum_offset, sz_opt);
-		if (err < 0) {
-			/* checksum should be enabled by default and setting this
-			 * option might fail anyway
-			 */
+		if (setsockopt(sock->fd, SOL_RAW, IPV6_CHECKSUM, &csum_offset, sizeof(csum_offset)) < 0)
+		/* checksum should be enabled by default and setting this option might fail anyway */
 			error(0, errno, _("setsockopt(RAW_CHECKSUM) failed - try to continue"));
-		}
 #else
 	{
 #endif
 		/* select icmp echo reply as icmp type to receive */
+		struct icmp6_filter filter = {0};
 		ICMP6_FILTER_SETBLOCKALL(&filter);
 		if (niquery_is_enabled(&rts->ni))
 			ICMP6_FILTER_SETPASS(IPUTILS_NI_ICMP6_REPLY, &filter);
 		else
 			ICMP6_FILTER_SETPASS(ICMP6_ECHO_REPLY, &filter);
-		err = setsockopt(sock->fd, IPPROTO_ICMPV6, ICMP6_FILTER, &filter, sizeof filter);
-		if (err < 0)
+		if (setsockopt(sock->fd, IPPROTO_ICMPV6, ICMP6_FILTER, &filter, sizeof(filter)) < 0)
 			error(2, errno, "setsockopt(ICMP6_FILTER)");
 	}
 
-	if (rts->opt_noloop) {
+	if (rts->opt.noloop) {
 		int loop = 0;
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &loop, sizeof(loop)) < 0)
 			error(2, errno, _("can't disable multicast loopback"));
 	}
-	if (rts->opt_ttl) {
+	if (rts->opt.ttl) {
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS,
 				&rts->ttl, sizeof(rts->ttl)) < 0)
 			error(2, errno, _("can't set multicast hop limit"));
@@ -605,56 +577,51 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 			error(2, errno, _("can't set unicast hop limit"));
 	}
 
-	const int on = 1;
-	if (
+	{ int on = 1;
+	  if (
 #ifdef IPV6_RECVHOPLIMIT
-	    (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_RECVHOPLIMIT, &on, sizeof(on)) < 0) &&
-	    (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_2292HOPLIMIT, &on, sizeof(on)) < 0)
+	(setsockopt(sock->fd, IPPROTO_IPV6, IPV6_RECVHOPLIMIT, &on, sizeof(on)) < 0) &&
+	(setsockopt(sock->fd, IPPROTO_IPV6, IPV6_2292HOPLIMIT, &on, sizeof(on)) < 0)
 #else
-	    (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_HOPLIMIT,     &on, sizeof(on)) < 0)
+	(setsockopt(sock->fd, IPPROTO_IPV6, IPV6_HOPLIMIT,     &on, sizeof(on)) < 0)
 #endif
-	   )
-		error(2, errno, _("can't receive hop limit"));
+	  ) error(2, errno, _("can't receive hop limit"));
+	}
 
-	if (rts->opt_flowinfo) {
-		char freq_buf[CMSG_ALIGN(sizeof(struct in6_flowlabel_req)) + rts->cmsglen];
-		struct in6_flowlabel_req *freq = (struct in6_flowlabel_req *)freq_buf;
-		int freq_len = sizeof(*freq);
-
-		memset(freq, 0, sizeof(*freq));
+	if (rts->opt.flowinfo) {
+		char buf[CMSG_ALIGN(sizeof(struct in6_flowlabel_req)) + rts->cmsglen];
+		memset(buf, 0, sizeof(buf));
+		struct in6_flowlabel_req *freq = (struct in6_flowlabel_req *)buf;
 		freq->flr_label = htonl(rts->flowlabel & IPV6_FLOWINFO_FLOWLABEL);
 		freq->flr_action = IPV6_FL_A_GET;
 		freq->flr_flags = IPV6_FL_F_CREATE;
 		freq->flr_share = IPV6_FL_S_EXCL;
-		memcpy(&freq->flr_dst, &rts->whereto6.sin6_addr, 16);
-		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWLABEL_MGR, freq, freq_len) == -1)
+		memcpy(&freq->flr_dst, &whereto->sin6_addr, sizeof(whereto->sin6_addr));
+		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWLABEL_MGR, freq, sizeof(*freq)) < 0)
 			error(2, errno, _("can't set flowlabel"));
-		rts->flowlabel = freq->flr_label;
-		rts->whereto6.sin6_flowinfo = rts->flowlabel;
-		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND, &on, sizeof on) == -1)
+		whereto->sin6_flowinfo = rts->flowlabel = freq->flr_label;
+		int on = 1;
+		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND, &on, sizeof(on)) < 0)
 			error(2, errno, _("can't send flowinfo"));
 	}
 
-	printf(_("PING %s (%s) "), rts->hostname,
-		SPRINT_RAW_ADDR(rts, &rts->whereto6, sizeof(rts->whereto6)));
+	printf(_("PING %s (%s) "), rts->hostname, SPRINT_RAW_ADDR(rts, whereto, sizeof(*whereto)));
 	if (rts->flowlabel)
-		printf(_(", flow 0x%05x, "), (unsigned)ntohl(rts->flowlabel));
-	if (rts->device || rts->opt_strictsource) {
-		int saved_opt_numeric = rts->opt_numeric;
-
-		rts->opt_numeric = 1;
-		printf(_("from %s %s: "),
-			SPRINT_RES_ADDR(rts, &rts->source6, sizeof(rts->source6)),
+		printf(_(", flow 0x%05x, "), ntohl(rts->flowlabel));
+	if (rts->device || rts->opt.strictsource) {
+		int keep = rts->opt.numeric;
+		rts->opt.numeric = true;
+		printf(_("from %s %s: "), SPRINT_RES_ADDR(rts, source, sizeof(*source)),
 			rts->device ? rts->device : "");
-		rts->opt_numeric = saved_opt_numeric;
+		rts->opt.numeric = keep;
 	}
 	printf(_("%zu data bytes\n"), rts->datalen);
 
 	ping_setup(rts, sock);
 	drop_capabilities();
 
-	hold = main_loop(rts, &ping6_func_set, sock, packet, packlen);
+	int rc = main_loop(rts, &ping6_func_set, sock, packet, packlen);
 	free(packet);
-	return hold;
+	return rc;
 }
 

@@ -53,6 +53,7 @@
 // ping.c auxiliary functions
 
 #include "iputils_common.h"
+#include "common.h"
 #include "ping_aux.h"
 
 #include <stdint.h>
@@ -60,7 +61,9 @@
 #include <errno.h>
 #include <math.h>
 #include <locale.h>
+#include <net/if.h>
 #include <linux/in6.h>
+#include <linux/errqueue.h>
 
 #define CASE_TYPE(x)	case x: return #x;
 
@@ -71,18 +74,6 @@ char *str_family(int family) {
 		CASE_TYPE(AF_INET6)
 	default:
 		error(2, 0, _("unknown protocol family: %d"), family);
-	}
-	return "";
-}
-
-char *str_socktype(int socktype) {
-	if (!socktype)
-		return "0";
-	switch (socktype) {
-		CASE_TYPE(SOCK_DGRAM)
-		CASE_TYPE(SOCK_RAW)
-	default:
-		error(2, 0, _("unknown sock type: %d"), socktype);
 	}
 	return "";
 }
@@ -117,7 +108,6 @@ double ping_strtod(const char *str, const char *err_msg) {
 }
 
 #define DX_SHIFT(str) (((str)[0] == '0') && (((str)[1] == 'x') || ((str)[1] == 'X')) ? 2 : 0)
-
 unsigned parse_flow(const char *str) {
 	/* handle both hex and decimal values */
 	char *ep = NULL;
@@ -132,18 +122,65 @@ unsigned parse_flow(const char *str) {
 }
 
 /* Set Type of Service (TOS) and other QOS relating bits */
-int parse_tos(const char *str) {
+unsigned char parse_tos(const char *str) {
 	/* handle both hex and decimal values */
 	char *ep = NULL;
 	int dx = DX_SHIFT(str);
-	int tos = strtol(str + dx, &ep, dx ? 16 : 10);
+	unsigned long tos = strtoul(str + dx, &ep, dx ? 16 : 10);
 	/* doesn't look like decimal or hex, eh? */
 	if (ep && *ep)
 		error(2, 0, _("bad TOS value: %s"), str);
-	if (tos > UINT8_MAX)
-		error(2, 0, _("the decimal value of TOS bits must be in range 0-255: %d"), tos);
+	if (tos > UCHAR_MAX)
+		error(2, 0, _("the decimal value of TOS bits must be in range 0-255: %lu"), tos);
 	return tos;
 }
-
 #undef DX_SHIFT
+
+// TMP
+unsigned if_name2index(const char *ifname) {
+	unsigned rc = if_nametoindex(ifname);
+	if (!rc)
+		error(2, 0, _("unknown iface: %s"), ifname);
+	return rc;
+}
+
+// return setsockopt's return_code and keep its errno
+int setsock_bindopt(int fd, const char *device, socklen_t slen, unsigned ifindex) {
+	ENABLE_CAPABILITY_RAW;
+	int rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, device, slen);
+	int bind_errno = errno;
+	DISABLE_CAPABILITY_RAW;
+	errno = bind_errno;
+	if ((rc < 0) && ifindex) {
+		struct ip_mreqn imr = { .imr_ifindex = ifindex };
+		rc = setsockopt(fd, SOL_IP, IP_MULTICAST_IF, &imr, sizeof(imr));
+	}
+	return rc;
+}
+
+// func_set:receive_error:print_local_ee
+inline void print_local_ee(struct ping_rts *rts, const struct sock_extended_err *ee) {
+	if (rts->opt.flood)
+		write(STDOUT_FILENO, "E", 1);
+	else if (ee->ee_errno != EMSGSIZE)
+		error(0, ee->ee_errno, _("local error"));
+	else
+		error(0, 0, _("local error: message too long, mtu: %u"), ee->ee_info);
+	rts->nerrors++;
+}
+
+void ping_bind(struct ping_rts *rts, const struct socket_st *sock) {
+	bool set_ident = (rts->custom_ident > 0) && !sock->raw;
+	if (set_ident) {
+		if (rts->ip6)
+			((struct sockaddr_in6 *)&rts->source)->sin6_port = rts->ident16;
+		else
+			((struct sockaddr_in  *)&rts->source)->sin_port  = rts->ident16;
+	}
+	if (rts->opt.strictsource || set_ident) {
+		socklen_t socklen = rts->ip6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+		if (bind(sock->fd, (struct sockaddr *)&rts->source, socklen) < 0)
+			error(2, errno, "bind icmp socket");
+	}
+}
 
