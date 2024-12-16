@@ -675,9 +675,9 @@ msgstr "TOS-ის არასწორი მნიშვნელობა: %
 
 #: ping/ping.c:300
 #, c-format
-msgid "the decimal value of TOS bits must be in range 0-255: %d"
+msgid "the decimal value of TOS bits must be in range 0-255: %lu"
 msgstr ""
-"TOS-ის ბიტების რიცხვის მთელი მნიშვნელობა 0-255 დიაპაზონში უნდა იყოს: %d"
+"TOS-ის ბიტების რიცხვის მთელი მნიშვნელობა 0-255 დიაპაზონში უნდა იყოს: %lu"
 
 #: ping/ping.c:371 ping/ping.c:402
 msgid "only one -4 or -6 option may be specified"

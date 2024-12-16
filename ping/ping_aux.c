@@ -57,10 +57,14 @@
 #include "ping_aux.h"
 
 #include <stdint.h>
+#include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <math.h>
 #include <locale.h>
+#include <netinet/in.h>
+#include <netinet/ip_icmp.h>
 #include <net/if.h>
 #include <linux/in6.h>
 #include <linux/errqueue.h>
@@ -136,8 +140,7 @@ unsigned char parse_tos(const char *str) {
 }
 #undef DX_SHIFT
 
-// TMP
-unsigned if_name2index(const char *ifname) {
+inline unsigned if_name2index(const char *ifname) {
 	unsigned rc = if_nametoindex(ifname);
 	if (!rc)
 		error(2, 0, _("unknown iface: %s"), ifname);
@@ -169,18 +172,53 @@ inline void print_local_ee(struct ping_rts *rts, const struct sock_extended_err 
 	rts->nerrors++;
 }
 
-void ping_bind(struct ping_rts *rts, const struct socket_st *sock) {
+struct ip46_consts {
+	socklen_t socklen;
+	size_t icmpsize;
+	size_t off_port;
+        size_t off_seq;
+	int mtu_level;
+	int mtu_name;
+};
+
+static const struct ip46_consts ip4c = {
+	.socklen   = sizeof(struct sockaddr_in),
+	.icmpsize  = sizeof(struct icmphdr),
+	.off_port  = offsetof(struct sockaddr_in, sin_port),
+	.off_seq   = offsetof(struct icmphdr, un.echo.sequence),
+	.mtu_level = SOL_IP,
+	.mtu_name  = IP_MTU_DISCOVER,
+};
+static const struct ip46_consts ip6c = {
+	.socklen   = sizeof(struct sockaddr_in6),
+	.icmpsize  = sizeof(struct icmp6_hdr),
+	.off_port  = offsetof(struct sockaddr_in6, sin6_port),
+	.off_seq   = offsetof(struct icmp6_hdr, icmp6_seq),
+	.mtu_level = IPPROTO_IPV6,
+	.mtu_name  = IPV6_MTU_DISCOVER,
+};
+
+void mtudisc_n_bind(struct ping_rts *rts, const struct socket_st *sock) {
+	const struct ip46_consts *ipc = rts->ip6 ? &ip6c : &ip4c;
+	if (rts->pmtudisc >= 0)
+		if (setsockopt(sock->fd, ipc->mtu_level, ipc->mtu_name,
+				&rts->pmtudisc, sizeof(rts->pmtudisc)) < 0)
+			error(2, errno, "MTU_DISCOVER");
 	bool set_ident = (rts->custom_ident > 0) && !sock->raw;
 	if (set_ident) {
-		if (rts->ip6)
-			((struct sockaddr_in6 *)&rts->source)->sin6_port = rts->ident16;
-		else
-			((struct sockaddr_in  *)&rts->source)->sin_port  = rts->ident16;
+		in_port_t *port = (in_port_t *)((char *)&rts->source + ipc->off_port);
+		*port = rts->ident16;
 	}
-	if (rts->opt.strictsource || set_ident) {
-		socklen_t socklen = rts->ip6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
-		if (bind(sock->fd, (struct sockaddr *)&rts->source, socklen) < 0)
+	if (rts->opt.strictsource || set_ident)
+		if (bind(sock->fd, (struct sockaddr *)&rts->source, ipc->socklen) < 0)
 			error(2, errno, "bind icmp socket");
+}
+
+void print_echo_reply(bool ip6, const uint8_t *hdr, size_t len) {
+	const struct ip46_consts *ipc = ip6 ? &ip6c : &ip4c;
+	if (len >= ipc->icmpsize) {
+		uint16_t *seq = (uint16_t *)(hdr + ipc->off_seq);
+		printf(_(" icmp_seq=%u"), ntohs(*seq));
 	}
 }
 

@@ -681,8 +681,8 @@ msgstr "不適切なTOS値です: %s"
 
 #: ping/ping.c:300
 #, c-format
-msgid "the decimal value of TOS bits must be in range 0-255: %d"
-msgstr "TOSビット %d は10進値で0-255でなければいけません"
+msgid "the decimal value of TOS bits must be in range 0-255: %lu"
+msgstr "TOSビット %lu は10進値で0-255でなければいけません"
 
 #
 #: ping/ping.c:371 ping/ping.c:402

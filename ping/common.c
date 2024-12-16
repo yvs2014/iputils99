@@ -80,7 +80,7 @@ static inline void rcvd_set(struct ping_rts *rts, uint16_t seq) {
 	BITMAP_ARR(bit) |= BITMAP_BIT(bit);
 }
 
-inline void rcvd_clear(struct ping_rts *rts, uint16_t seq) {
+static inline void rcvd_clear(struct ping_rts *rts, uint16_t seq) {
 	unsigned bit = seq % MAX_DUP_CHK;
 	BITMAP_ARR(bit) &= ~BITMAP_BIT(bit);
 }
@@ -232,7 +232,7 @@ void fill_packet(int quiet, const char *patp, unsigned char *packet, size_t pack
 		if (!isxdigit(*cp))
 			error(2, 0, _("patterns must be specified as hex digits: %s"), cp);
 	}
-	unsigned int pat[16];
+	unsigned pat[16];
 	int items = sscanf(patp,
 		    "%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x",
 		    &pat[0], &pat[1], &pat[2], &pat[3], &pat[4], &pat[5],
@@ -382,6 +382,7 @@ static int pinger(struct ping_rts *rts, const ping_func_set_st *fset, const sock
 	int rc;
 	int hard_local_error = 0;
 	do {
+		rcvd_clear(rts, rts->ntransmitted + 1);
 		rc = fset->send_probe(rts, sock->fd, rts->outpack, sizeof(rts->outpack));
 		if (rc == 0) {	// No error
 			oom_count = 0;
@@ -821,7 +822,7 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 
 int gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t received,
 	uint16_t seq, int hops, int csfailed, const struct timeval *tv, const char *from,
-	void (*print_reply)(const uint8_t *hdr, size_t len), bool multicast, bool wrong_source)
+	void (*print_reply)(bool ip6, const uint8_t *hdr, size_t len), bool multicast, bool wrong_source)
 {
 	++rts->nreceived;
 	if (!csfailed)
@@ -891,7 +892,7 @@ int gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t
 		printf(_("%zd bytes from %s:"), received, from);
 
 		if (print_reply)
-			print_reply(icmph, received);
+			print_reply(rts->ip6, icmph, received);
 		if (rts->opt.verbose)
 			printf(_(" ident=%u"), ntohs(rts->ident16));
 		if (hops >= 0)

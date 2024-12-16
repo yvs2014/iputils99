@@ -611,7 +611,7 @@ msgstr ""
 
 #: ping/ping.c:300
 #, c-format
-msgid "the decimal value of TOS bits must be in range 0-255: %d"
+msgid "the decimal value of TOS bits must be in range 0-255: %lu"
 msgstr ""
 
 #: ping/ping.c:371 ping/ping.c:402

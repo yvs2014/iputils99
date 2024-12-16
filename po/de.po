@@ -678,8 +678,8 @@ msgstr "falscher TOS-Wert: %s"
 
 #: ping/ping.c:300
 #, c-format
-msgid "the decimal value of TOS bits must be in range 0-255: %d"
-msgstr "der Dezimalwert der TOS-Bits muss im Bereich 0-255 liegen: %d"
+msgid "the decimal value of TOS bits must be in range 0-255: %lu"
+msgstr "der Dezimalwert der TOS-Bits muss im Bereich 0-255 liegen: %lu"
 
 #: ping/ping.c:371 ping/ping.c:402
 msgid "only one -4 or -6 option may be specified"

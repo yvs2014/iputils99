@@ -59,7 +59,6 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <net/if.h>
 #include <arpa/inet.h>
 
 #if BYTE_ORDER == LITTLE_ENDIAN
@@ -426,11 +425,5 @@ void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
 	default:
 		printf(_("Bad ICMP type: %d\n"), type);
 	}
-}
-
-void print4_echo_reply(const uint8_t *hdr, size_t len) {
-	if (len >= sizeof(struct icmphdr))
-		printf(_(" icmp_seq=%u"),
-			ntohs(((const struct icmphdr *)hdr)->un.echo.sequence));
 }
 

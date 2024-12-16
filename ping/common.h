@@ -83,11 +83,6 @@ typedef struct ping_bool_opts {
 
 /* ping runtime state */
 struct ping_rts {
-	unsigned int mark;
-	unsigned char *outpack;
-	//
-	struct rcvd_table rcvd_tbl;
-	//
 	size_t datalen;
 	char *hostname;
 	uid_t uid;
@@ -95,8 +90,9 @@ struct ping_rts {
 	int custom_ident;		/* -e option */
 	bool ip6;			/* true for IPv6 pings */
 	//
+	struct rcvd_table rcvd_tbl;
+	unsigned char *outpack;
 	int sndbuf;
-	int ttl;
 	//
 	long npackets;			/* max packets to transmit */
 	long nreceived;			/* # of packets we got back */
@@ -113,6 +109,8 @@ struct ping_rts {
 	int confirm_flag;
 	char *device;
 	int pmtudisc;
+	int ttl;
+	unsigned mark;
 	//
 	// timing
 	bool timing;			/* flag to do timing */
@@ -164,7 +162,6 @@ typedef struct ping_func_set_st {
 	void (*install_filter)(uint16_t ident, int sockfd);
 } ping_func_set_st;
 
-void rcvd_clear(struct ping_rts *rts, uint16_t seq);
 void acknowledge(struct ping_rts *rts, uint16_t seq);
 
 uid_t limit_capabilities(const struct ping_rts *rts);
@@ -204,7 +201,7 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset, const socket_s
 	uint8_t *packet, int packlen);
 int gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t received,
 	uint16_t seq, int hops, int csfailed, const struct timeval *tv, const char *from,
-	void (*print_reply)(const uint8_t *hdr, size_t len), bool multicast, bool wrong_source);
+	void (*print_reply)(bool ip6, const uint8_t *hdr, size_t len), bool multicast, bool wrong_source);
 void fill_packet(int quiet, const char *patp, unsigned char *packet, size_t packet_size);
 
 void usage(void);

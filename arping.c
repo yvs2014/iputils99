@@ -74,7 +74,7 @@ struct run_state {
 	char *target;
 	int count;
 	int timeout;
-	unsigned int interval;
+	unsigned interval;
 	int socketfd;
 	struct sockaddr_storage me;
 	struct sockaddr_storage he;
@@ -90,7 +90,7 @@ struct run_state {
 #else
 	uid_t euid;
 #endif
-	unsigned int
+	unsigned
 		advert:1,
 		broadcast_only:1,
 		dad:1,
@@ -571,8 +571,7 @@ static void guess_device(struct run_state *const ctl)
 }
 
 /* Common check for ifa->ifa_flags */
-static int check_ifflags(struct run_state const *const ctl, unsigned int ifflags)
-{
+static int check_ifflags(struct run_state const *const ctl, unsigned ifflags) {
 	if (!(ifflags & IFF_UP)) {
 		if (ctl->device.name != NULL) {
 			if (!ctl->quiet)

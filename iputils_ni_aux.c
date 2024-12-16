@@ -26,7 +26,7 @@ static unsigned srand_fallback(void) {
 }
 
 void iputils_srand(void) {
-	unsigned int i;
+	unsigned i;
 #if HAVE_GETRANDOM
 	ssize_t ret;
 	do {

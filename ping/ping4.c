@@ -103,8 +103,6 @@ static ssize_t ping4_send_probe(struct ping_rts *rts, int sockfd,
 	icp->un.echo.sequence = htons(rts->ntransmitted + 1);
 	icp->un.echo.id = rts->ident16;
 
-	rcvd_clear(rts, rts->ntransmitted + 1);
-
 	if (rts->timing) {
 		if (rts->opt.latency) {
 			struct timeval tmp_tv;
@@ -287,7 +285,7 @@ static int ping4_parse_reply(struct ping_rts *rts, bool rawsock,
 		if (gather_stats(rts, (uint8_t *)icp, sizeof(*icp), received,
 			ntohs(icp->un.echo.sequence), reply_ttl, 0, at,
 			SPRINT_RES_ADDR(rts, from, sizeof(*from)),
-			print4_echo_reply, rts->multicast, wrong_source))
+			print_echo_reply, rts->multicast, wrong_source))
 		{
 			fflush(stdout);
 			return 0;
@@ -566,26 +564,20 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 
 	if (rts->opt.broadcast || IN_MULTICAST(ntohl(whereto->sin_addr.s_addr))) {
 		rts->multicast = true;
-
 		if (rts->uid) {
 			if (rts->interval < MIN_MCAST_INTERVAL_MS)
 				error(2, 0,
 _("minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or higher)"),
 					  MIN_MCAST_INTERVAL_MS,
 					  str_interval(MIN_MCAST_INTERVAL_MS));
-			if (rts->pmtudisc >= 0 && rts->pmtudisc != IP_PMTUDISC_DO)
+			if ((rts->pmtudisc >= 0) && (rts->pmtudisc != IP_PMTUDISC_DO))
 				error(2, 0, _("broadcast ping does not fragment"));
 		}
-
 		if (rts->pmtudisc < 0)
 			rts->pmtudisc = IP_PMTUDISC_DO;
 	}
 
-	if (rts->pmtudisc >= 0)
-		if (setsockopt(sock->fd, SOL_IP, IP_MTU_DISCOVER, &rts->pmtudisc, sizeof(rts->pmtudisc)) < 0)
-			error(2, errno, "IP_MTU_DISCOVER");
-
-	ping_bind(rts, sock);
+	mtudisc_n_bind(rts, sock);
 
 	if (sock->raw) {
 		struct icmp_filter filt;

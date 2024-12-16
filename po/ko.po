@@ -672,8 +672,8 @@ msgstr "잘못된 TOS 값: %s"
 
 #: ping/ping.c:300
 #, c-format
-msgid "the decimal value of TOS bits must be in range 0-255: %d"
-msgstr "TOS 비트의 십진수 값은 범위가 0-255 이어야 합니다: %d"
+msgid "the decimal value of TOS bits must be in range 0-255: %lu"
+msgstr "TOS 비트의 십진수 값은 범위가 0-255 이어야 합니다: %lu"
 
 #: ping/ping.c:371 ping/ping.c:402
 msgid "only one -4 or -6 option may be specified"

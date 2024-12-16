@@ -64,7 +64,6 @@
 #include <arpa/inet.h>
 #include <netinet/icmp6.h>
 #include <resolv.h>
-#include <net/if.h>
 
 /* RFC 4443 addition not yet available in libc headers */
 #ifndef ICMP6_DST_UNREACH_POLICYFAIL
@@ -75,13 +74,6 @@
 #ifndef ICMP6_DST_UNREACH_REJECTROUTE
 #define ICMP6_DST_UNREACH_REJECTROUTE 6
 #endif
-
-unsigned if6_name2index(const char *ifname) {
-	unsigned rc = if_nametoindex(ifname);
-	if (!rc)
-		error(2, 0, _("unknown iface: %s"), ifname);
-	return rc;
-}
 
 ssize_t build_niquery(struct ping_rts *rts, uint8_t *_nih,
 		unsigned packet_size __attribute__((__unused__)))
@@ -195,12 +187,6 @@ void print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
 	}
 }
 
-void print6_echo_reply(const uint8_t *hdr, size_t len) {
-	if (len >= sizeof(struct icmp6_hdr))
-		printf(_(" icmp_seq=%u"),
-			ntohs(((struct icmp6_hdr *)hdr)->icmp6_seq));
-}
-
 static void putchar_safe(char c) {
 	if (isprint(c))
 		putchar(c);
@@ -298,7 +284,9 @@ static void print_ni_addr(const struct ni_hdr *nih, size_t len) {
 		printf(_(" (truncated)"));
 }
 
-void print6_ni_reply(const uint8_t *hdr, size_t len) {
+void print6_ni_reply(bool ip6, const uint8_t *hdr, size_t len) {
+	if (!ip6)
+		return;
 	const struct ni_hdr *nih = (const struct ni_hdr *)hdr;
 	switch (nih->ni_code) {
 	case IPUTILS_NI_ICMP6_SUCCESS:

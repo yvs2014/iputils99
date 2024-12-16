@@ -92,7 +92,7 @@ struct run_state {
 	void *pktbuf;
 	int hops_to;
 	int hops_from;
-	unsigned int
+	unsigned
 		no_resolve:1,
 		show_both:1,
 		mapped:1;

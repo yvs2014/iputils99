@@ -92,13 +92,12 @@
 static ssize_t ping6_send_probe(struct ping_rts *rts, int sockfd,
 		void *packet, unsigned packet_size)
 {
-	rcvd_clear(rts, rts->ntransmitted + 1);
 	ssize_t len = niquery_is_enabled(&rts->ni) ?
 		build_niquery(rts, packet, packet_size) :
 		build_echo   (rts, packet);
-	ssize_t sent = 0;
+	ssize_t rc = 0;
 	if (rts->cmsglen == 0) {
-		sent = sendto(sockfd, (char *)packet, len, rts->confirm,
+		rc = sendto(sockfd, (char *)packet, len, rts->confirm,
 			    (struct sockaddr *)&rts->whereto,
 			    sizeof(struct sockaddr_in6));
 	} else {
@@ -111,10 +110,10 @@ static ssize_t ping6_send_probe(struct ping_rts *rts, int sockfd,
 			.msg_control    = rts->cmsgbuf,
 			.msg_controllen = rts->cmsglen,
 		};
-		sent = sendmsg(sockfd, &mhdr, rts->confirm);
+		rc = sendmsg(sockfd, &mhdr, rts->confirm);
 	}
 	rts->confirm = 0;
-	return (sent == len) ? 0 : sent;
+	return (rc == len) ? 0 : rc;
 }
 
 // func_set:receive_error:print_addr_seq
@@ -241,7 +240,7 @@ static int ping6_parse_reply(struct ping_rts *rts, bool rawsock,
 		if (gather_stats(rts, (uint8_t *)icmph, sizeof(*icmph), received,
 			ntohs(icmph->icmp6_seq), hops, 0, at,
 			SPRINT_RES_ADDR(rts, from, sizeof(*from)),
-			print6_echo_reply, rts->multicast, wrong_source))
+			print_echo_reply, rts->multicast, wrong_source))
 		{
 			fflush(stdout);
 			return 0;
@@ -399,7 +398,7 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 		bool scoped = IN6_IS_ADDR_LINKLOCAL(&firsthop->sin6_addr) ||
 			      IN6_IS_ADDR_MC_LINKLOCAL(&firsthop->sin6_addr);
 		if (rts->device) {
-			unsigned iface = if6_name2index(rts->device);
+			unsigned iface = if_name2index(rts->device);
 			socklen_t slen = strlen(rts->device) + 1;
 #ifdef IPV6_PKTINFO
 			struct in6_pktinfo ipi = { .ipi6_ifindex = iface };
@@ -463,7 +462,7 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 		}
 	} else if (rts->device && (IN6_IS_ADDR_LINKLOCAL(&source->sin6_addr) ||
 			      IN6_IS_ADDR_MC_LINKLOCAL(&source->sin6_addr)))
-		source->sin6_scope_id = if6_name2index(rts->device);
+		source->sin6_scope_id = if_name2index(rts->device);
 
 	if (rts->device) {
 		struct cmsghdr *cmsg;
@@ -479,7 +478,7 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 
 		ipi = (struct in6_pktinfo *)CMSG_DATA(cmsg);
 		memset(ipi, 0, sizeof(*ipi));
-		ipi->ipi6_ifindex = if6_name2index(rts->device);
+		ipi->ipi6_ifindex = if_name2index(rts->device);
 
 		if (rts->opt.strictsource) {
 			ENABLE_CAPABILITY_RAW;
@@ -516,13 +515,7 @@ _("minimal interval for multicast ping for user must be >= %d ms, use -i %s (or 
 		}
 	}
 
-	if (rts->pmtudisc >= 0) {
-		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_MTU_DISCOVER, &rts->pmtudisc,
-			       sizeof(rts->pmtudisc)) < 0)
-			error(2, errno, "IPV6_MTU_DISCOVER");
-	}
-
-	ping_bind(rts, sock);
+	mtudisc_n_bind(rts, sock);
 
 	if ((rts->datalen >= sizeof(struct timeval)) && (rts->ni.query < 0)) {
 		/* can we time transfer */

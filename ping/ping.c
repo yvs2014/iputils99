@@ -159,7 +159,7 @@ static void create_socket(int verbose, socket_st *sock, int family,
 	}
 }
 
-/* Parse command line options, and return packets' ident if it is set */
+/* Parse command line options */
 void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *rts) {
 	if ((argc <= 0) || !hints || !rts)
 		return;
