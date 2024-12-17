@@ -587,11 +587,6 @@ msgstr " jäsennysvirhe (typistetty)"
 msgid " unexpected error in inet_ntop(%s)"
 msgstr " odottamaton virhe inet_ntop(%s):ssa"
 
-#: ping/ping6_common.c:784
-#, c-format
-msgid " (truncated)"
-msgstr " (typistetty)"
-
 #: ping/ping6_common.c:803
 #, c-format
 msgid " unknown qtype(0x%02x)"
@@ -901,98 +896,98 @@ msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
-msgid "Echo Reply\n"
-msgstr "Kaiun vastaus\n"
+msgid "Echo Reply"
+msgstr "Kaiun vastaus"
 
 #: ping/ping.c:1248
 #, c-format
-msgid "Destination Net Unreachable\n"
-msgstr "Tavoittamaton kohdeverkko\n"
+msgid "Destination Net Unreachable"
+msgstr "Tavoittamaton kohdeverkko"
 
 #: ping/ping.c:1251
 #, c-format
-msgid "Destination Host Unreachable\n"
-msgstr "Tavoittamaton kohdeisäntä\n"
+msgid "Destination Host Unreachable"
+msgstr "Tavoittamaton kohdeisäntä"
 
 #: ping/ping.c:1254
 #, c-format
-msgid "Destination Protocol Unreachable\n"
-msgstr "Tavoittamaton kohdeprotokolla\n"
+msgid "Destination Protocol Unreachable"
+msgstr "Tavoittamaton kohdeprotokolla"
 
 #: ping/ping.c:1257
 #, c-format
-msgid "Destination Port Unreachable\n"
-msgstr "Tavoittamaton kohdeportti\n"
+msgid "Destination Port Unreachable"
+msgstr "Tavoittamaton kohdeportti"
 
 #: ping/ping.c:1260
 #, c-format
-msgid "Frag needed and DF set (mtu = %u)\n"
-msgstr "Frag:ta tarvitaan ja DF asetettu (mtu = %u)\n"
+msgid "Frag needed and DF set (mtu = %u)"
+msgstr "Frag:ta tarvitaan ja DF asetettu (mtu = %u)"
 
 #: ping/ping.c:1263
 #, c-format
-msgid "Source Route Failed\n"
-msgstr "Lähteen reitti epäonnistui\n"
+msgid "Source Route Failed"
+msgstr "Lähteen reitti epäonnistui"
 
 #: ping/ping.c:1266
 #, c-format
-msgid "Destination Net Unknown\n"
-msgstr "Tuntematon kohdeverkko\n"
+msgid "Destination Net Unknown"
+msgstr "Tuntematon kohdeverkko"
 
 #: ping/ping.c:1269
 #, c-format
-msgid "Destination Host Unknown\n"
-msgstr "Tuntematon kohdeisäntä\n"
+msgid "Destination Host Unknown"
+msgstr "Tuntematon kohdeisäntä"
 
 #: ping/ping.c:1272
 #, c-format
-msgid "Source Host Isolated\n"
-msgstr "Lähdeisäntä eristettynä\n"
+msgid "Source Host Isolated"
+msgstr "Lähdeisäntä eristettynä"
 
 #: ping/ping.c:1275
 #, c-format
-msgid "Destination Net Prohibited\n"
-msgstr "Kielletty kohdeverkko\n"
+msgid "Destination Net Prohibited"
+msgstr "Kielletty kohdeverkko"
 
 #: ping/ping.c:1278
 #, c-format
-msgid "Destination Host Prohibited\n"
-msgstr "Kielletty kohdeisäntä\n"
+msgid "Destination Host Prohibited"
+msgstr "Kielletty kohdeisäntä"
 
 #: ping/ping.c:1281
 #, c-format
-msgid "Destination Net Unreachable for Type of Service\n"
-msgstr "Tavoittamaton kohdeverkko palvelutyypille\n"
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "Tavoittamaton kohdeverkko palvelutyypille"
 
 #: ping/ping.c:1284
 #, c-format
-msgid "Destination Host Unreachable for Type of Service\n"
-msgstr "Tavoittamaton kohdeisäntä palvelutyypille\n"
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "Tavoittamaton kohdeisäntä palvelutyypille"
 
 #: ping/ping.c:1287
 #, c-format
-msgid "Packet filtered\n"
-msgstr "Paketti suodatettu\n"
+msgid "Packet filtered"
+msgstr "Paketti suodatettu"
 
 #: ping/ping.c:1290
 #, c-format
-msgid "Precedence Violation\n"
-msgstr "Ensisijaisuuden rikkominen\n"
+msgid "Precedence Violation"
+msgstr "Ensisijaisuuden rikkominen"
 
 #: ping/ping.c:1293
 #, c-format
-msgid "Precedence Cutoff\n"
-msgstr "Ensisijaisuuden raja\n"
+msgid "Precedence Cutoff"
+msgstr "Ensisijaisuuden raja"
 
 #: ping/ping.c:1296
 #, c-format
-msgid "Dest Unreachable, Bad Code: %d\n"
-msgstr "Kohde tavoittamaton; huono koodi: %d\n"
+msgid "Dest Unreachable, Bad Code: %d"
+msgstr "Kohde tavoittamaton; huono koodi: %d"
 
 #: ping/ping.c:1303
 #, c-format
-msgid "Source Quench\n"
-msgstr "Lähde-Quench\n"
+msgid "Source Quench"
+msgstr "Lähde-Quench"
 
 #: ping/ping.c:1310
 #, c-format
@@ -1021,68 +1016,68 @@ msgstr "Ohjaa uudelleen; kelvoton koodi: %d"
 
 #: ping/ping.c:1333
 #, c-format
-msgid "(New nexthop: %s)\n"
-msgstr "(Uusi seuraava hyppy: %s)\n"
+msgid "(New nexthop: %s)"
+msgstr "(Uusi seuraava hyppy: %s)"
 
 #: ping/ping.c:1339
 #, c-format
-msgid "Echo Request\n"
-msgstr "Kaikupyyntö\n"
+msgid "Echo Request"
+msgstr "Kaikupyyntö"
 
 #: ping/ping.c:1345
 #, c-format
-msgid "Time to live exceeded\n"
-msgstr "Elinaika (TTL) ylitetty\n"
+msgid "Time to live exceeded"
+msgstr "Elinaika (TTL) ylitetty"
 
 #: ping/ping.c:1348
 #, c-format
-msgid "Frag reassembly time exceeded\n"
-msgstr "Frag:n uudelleenkokoamisaika ylitetty\n"
+msgid "Frag reassembly time exceeded"
+msgstr "Frag:n uudelleenkokoamisaika ylitetty"
 
 #: ping/ping.c:1351
 #, c-format
-msgid "Time exceeded, Bad Code: %d\n"
-msgstr "Aika ylitetty, kelvoton koodi: %d\n"
+msgid "Time exceeded, Bad Code: %d"
+msgstr "Aika ylitetty, kelvoton koodi: %d"
 
 #: ping/ping.c:1358
 #, c-format
-msgid "Parameter problem: pointer = %u\n"
-msgstr "Parametriongelma: osoitin = %u\n"
+msgid "Parameter problem: pointer = %u"
+msgstr "Parametriongelma: osoitin = %u"
 
 #: ping/ping.c:1364
 #, c-format
-msgid "Timestamp\n"
-msgstr "Aikaleima\n"
+msgid "Timestamp"
+msgstr "Aikaleima"
 
 #: ping/ping.c:1368
 #, c-format
-msgid "Timestamp Reply\n"
-msgstr "Aikaleiman vastaus\n"
+msgid "Timestamp Reply"
+msgstr "Aikaleiman vastaus"
 
 #: ping/ping.c:1372
 #, c-format
-msgid "Information Request\n"
-msgstr "Tietopyyntö\n"
+msgid "Information Request"
+msgstr "Tietopyyntö"
 
 #: ping/ping.c:1376
 #, c-format
-msgid "Information Reply\n"
-msgstr "Tietovastaus\n"
+msgid "Information Reply"
+msgstr "Tietovastaus"
 
 #: ping/ping.c:1381
 #, c-format
-msgid "Address Mask Request\n"
-msgstr "Osoitepeitepyyntö\n"
+msgid "Address Mask Request"
+msgstr "Osoitepeitepyyntö"
 
 #: ping/ping.c:1386
 #, c-format
-msgid "Address Mask Reply\n"
-msgstr "Osoitepeitevastaus\n"
+msgid "Address Mask Reply"
+msgstr "Osoitepeitevastaus"
 
 #: ping/ping.c:1390
 #, c-format
-msgid "Bad ICMP type: %d\n"
-msgstr "Kelvoton ICMP-tyyppi: %d\n"
+msgid "Bad ICMP type: %d"
+msgstr "Kelvoton ICMP-tyyppi: %d"
 
 #: ping/ping.c:1442
 #, c-format
@@ -1103,16 +1098,6 @@ msgstr "paketti liian lyhyt (%d tavua) %s:sta"
 #, c-format
 msgid "From %s: icmp_seq=%u "
 msgstr "%s:sta: icmp_seq=%u "
-
-#: ping/ping.c:1699
-#, c-format
-msgid "(BAD CHECKSUM)"
-msgstr "(Kelvoton tarkistussumma)"
-
-#: ping/ping.c:1723
-#, c-format
-msgid "(BAD CHECKSUM)\n"
-msgstr "(Kelvoton tarkistussumma)\n"
 
 #: ping/ping_common.c:49
 #, fuzzy, c-format
@@ -1299,8 +1284,8 @@ msgstr " ttl=%d"
 
 #: ping/ping_common.c:811
 #, c-format
-msgid " (truncated)\n"
-msgstr " (typistetty)\n"
+msgid " (truncated)"
+msgstr " (typistetty)"
 
 #: ping/ping_common.c:816
 #, c-format

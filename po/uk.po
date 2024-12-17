@@ -597,11 +597,6 @@ msgstr " помилка обробки (обрізано)"
 msgid " unexpected error in inet_ntop(%s)"
 msgstr " неочікувана помилка в inet_ntop(%s)"
 
-#: ping/ping6_common.c:784
-#, c-format
-msgid " (truncated)"
-msgstr " (обрізано)"
-
 #: ping/ping6_common.c:803
 #, c-format
 msgid " unknown qtype(0x%02x)"
@@ -915,98 +910,98 @@ msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
-msgid "Echo Reply\n"
-msgstr "Луна-відповідь\n"
+msgid "Echo Reply"
+msgstr "Луна-відповідь"
 
 #: ping/ping.c:1248
 #, c-format
-msgid "Destination Net Unreachable\n"
-msgstr "Мережа призначення недоступна\n"
+msgid "Destination Net Unreachable"
+msgstr "Мережа призначення недоступна"
 
 #: ping/ping.c:1251
 #, c-format
-msgid "Destination Host Unreachable\n"
-msgstr "Вузол призначення недоступний\n"
+msgid "Destination Host Unreachable"
+msgstr "Вузол призначення недоступний"
 
 #: ping/ping.c:1254
 #, c-format
-msgid "Destination Protocol Unreachable\n"
-msgstr "Протокол призначення недоступний\n"
+msgid "Destination Protocol Unreachable"
+msgstr "Протокол призначення недоступний"
 
 #: ping/ping.c:1257
 #, c-format
-msgid "Destination Port Unreachable\n"
-msgstr "Порт призначення недоступний\n"
+msgid "Destination Port Unreachable"
+msgstr "Порт призначення недоступний"
 
 #: ping/ping.c:1260
 #, c-format
-msgid "Frag needed and DF set (mtu = %u)\n"
-msgstr "Потрібна фрагментація і встановлено DF (mtu = %u)\n"
+msgid "Frag needed and DF set (mtu = %u)"
+msgstr "Потрібна фрагментація і встановлено DF (mtu = %u)"
 
 #: ping/ping.c:1263
 #, c-format
-msgid "Source Route Failed\n"
-msgstr "Помилка маршрутизації до джерела\n"
+msgid "Source Route Failed"
+msgstr "Помилка маршрутизації до джерела"
 
 #: ping/ping.c:1266
 #, c-format
-msgid "Destination Net Unknown\n"
-msgstr "Невідома мережа призначення\n"
+msgid "Destination Net Unknown"
+msgstr "Невідома мережа призначення"
 
 #: ping/ping.c:1269
 #, c-format
-msgid "Destination Host Unknown\n"
-msgstr "Невідомий вузол призначення\n"
+msgid "Destination Host Unknown"
+msgstr "Невідомий вузол призначення"
 
 #: ping/ping.c:1272
 #, c-format
-msgid "Source Host Isolated\n"
-msgstr "Ізольований вузол джерела\n"
+msgid "Source Host Isolated"
+msgstr "Ізольований вузол джерела"
 
 #: ping/ping.c:1275
 #, c-format
-msgid "Destination Net Prohibited\n"
-msgstr "Заборонена мережа призначення\n"
+msgid "Destination Net Prohibited"
+msgstr "Заборонена мережа призначення"
 
 #: ping/ping.c:1278
 #, c-format
-msgid "Destination Host Prohibited\n"
-msgstr "Заборонений вузол призначення\n"
+msgid "Destination Host Prohibited"
+msgstr "Заборонений вузол призначення"
 
 #: ping/ping.c:1281
 #, c-format
-msgid "Destination Net Unreachable for Type of Service\n"
-msgstr "Недоступна для типу служби мережа призначення\n"
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "Недоступна для типу служби мережа призначення"
 
 #: ping/ping.c:1284
 #, c-format
-msgid "Destination Host Unreachable for Type of Service\n"
-msgstr "Недоступний для типу служби вузол призначення\n"
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "Недоступний для типу служби вузол призначення"
 
 #: ping/ping.c:1287
 #, c-format
-msgid "Packet filtered\n"
-msgstr "Пакет відфільтровано\n"
+msgid "Packet filtered"
+msgstr "Пакет відфільтровано"
 
 #: ping/ping.c:1290
 #, c-format
-msgid "Precedence Violation\n"
-msgstr "Порушення першості\n"
+msgid "Precedence Violation"
+msgstr "Порушення першості"
 
 #: ping/ping.c:1293
 #, c-format
-msgid "Precedence Cutoff\n"
-msgstr "Обрізання першості\n"
+msgid "Precedence Cutoff"
+msgstr "Обрізання першості"
 
 #: ping/ping.c:1296
 #, c-format
-msgid "Dest Unreachable, Bad Code: %d\n"
-msgstr "Недоступне призначення, помилковий код: %d\n"
+msgid "Dest Unreachable, Bad Code: %d"
+msgstr "Недоступне призначення, помилковий код: %d"
 
 #: ping/ping.c:1303
 #, c-format
-msgid "Source Quench\n"
-msgstr "Обрив зв'язку з джерелом\n"
+msgid "Source Quench"
+msgstr "Обрив зв'язку з джерелом"
 
 #: ping/ping.c:1310
 #, c-format
@@ -1035,68 +1030,68 @@ msgstr "Переспрямовування, помилковий код: %d"
 
 #: ping/ping.c:1333
 #, c-format
-msgid "(New nexthop: %s)\n"
-msgstr "(Нове наступне перестрибування: %s)\n"
+msgid "(New nexthop: %s)"
+msgstr "(Нове наступне перестрибування: %s)"
 
 #: ping/ping.c:1339
 #, c-format
-msgid "Echo Request\n"
-msgstr "Луна-запит\n"
+msgid "Echo Request"
+msgstr "Луна-запит"
 
 #: ping/ping.c:1345
 #, c-format
-msgid "Time to live exceeded\n"
-msgstr "Перевищено граничний час існування\n"
+msgid "Time to live exceeded"
+msgstr "Перевищено граничний час існування"
 
 #: ping/ping.c:1348
 #, c-format
-msgid "Frag reassembly time exceeded\n"
-msgstr "Перевищено час повторного збирання фрагментів\n"
+msgid "Frag reassembly time exceeded"
+msgstr "Перевищено час повторного збирання фрагментів"
 
 #: ping/ping.c:1351
 #, c-format
-msgid "Time exceeded, Bad Code: %d\n"
-msgstr "Перевищено обмеження за часом, помилковий код: %d\n"
+msgid "Time exceeded, Bad Code: %d"
+msgstr "Перевищено обмеження за часом, помилковий код: %d"
 
 #: ping/ping.c:1358
 #, c-format
-msgid "Parameter problem: pointer = %u\n"
-msgstr "Проблема із параметрами: вказівник = %u\n"
+msgid "Parameter problem: pointer = %u"
+msgstr "Проблема із параметрами: вказівник = %u"
 
 #: ping/ping.c:1364
 #, c-format
-msgid "Timestamp\n"
-msgstr "Часова позначка\n"
+msgid "Timestamp"
+msgstr "Часова позначка"
 
 #: ping/ping.c:1368
 #, c-format
-msgid "Timestamp Reply\n"
-msgstr "Відповідь щодо часової позначки\n"
+msgid "Timestamp Reply"
+msgstr "Відповідь щодо часової позначки"
 
 #: ping/ping.c:1372
 #, c-format
-msgid "Information Request\n"
-msgstr "Запит щодо відомостей\n"
+msgid "Information Request"
+msgstr "Запит щодо відомостей"
 
 #: ping/ping.c:1376
 #, c-format
-msgid "Information Reply\n"
-msgstr "Відповідь щодо відомостей\n"
+msgid "Information Reply"
+msgstr "Відповідь щодо відомостей"
 
 #: ping/ping.c:1381
 #, c-format
-msgid "Address Mask Request\n"
-msgstr "Запит щодо маски адреси\n"
+msgid "Address Mask Request"
+msgstr "Запит щодо маски адреси"
 
 #: ping/ping.c:1386
 #, c-format
-msgid "Address Mask Reply\n"
-msgstr "Відповідь щодо маски адреси\n"
+msgid "Address Mask Reply"
+msgstr "Відповідь щодо маски адреси"
 
 #: ping/ping.c:1390
 #, c-format
-msgid "Bad ICMP type: %d\n"
-msgstr "Помилковий тип ICMP: %d\n"
+msgid "Bad ICMP type: %d"
+msgstr "Помилковий тип ICMP: %d"
 
 #: ping/ping.c:1442
 #, c-format
@@ -1117,16 +1112,6 @@ msgstr "пакет є надто коротким (%d байтів), отрим�
 #, c-format
 msgid "From %s: icmp_seq=%u "
 msgstr "З %s: icmp_seq=%u "
-
-#: ping/ping.c:1699
-#, c-format
-msgid "(BAD CHECKSUM)"
-msgstr "(ПОМИЛКОВА КОНТРОЛЬНА СУМА)"
-
-#: ping/ping.c:1723
-#, c-format
-msgid "(BAD CHECKSUM)\n"
-msgstr "(ПОМИЛКОВА КОНТРОЛЬНА СУМА)\n"
 
 #: ping/ping_common.c:49
 #, c-format
@@ -1323,8 +1308,8 @@ msgstr " ttl=%d"
 
 #: ping/ping_common.c:811
 #, c-format
-msgid " (truncated)\n"
-msgstr " (обрізано)\n"
+msgid " (truncated)"
+msgstr " (обрізано)"
 
 #: ping/ping_common.c:816
 #, c-format
@@ -1642,12 +1627,6 @@ msgstr "pktlen має задовольняти таку нерівністю: %d
 
 #~ msgid "Destination Unreachable"
 #~ msgstr "призначення недоступне"
-
-#~ msgid "Echo Reply"
-#~ msgstr "Луна-відповідь"
-
-#~ msgid "Echo Request"
-#~ msgstr "Луна-запит"
 
 #~ msgid "Error"
 #~ msgstr "Помилка"

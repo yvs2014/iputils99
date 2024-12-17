@@ -588,11 +588,6 @@ msgstr " kesalahan parse (terpotong)"
 msgid " unexpected error in inet_ntop(%s)"
 msgstr " kesalahan tidak terduga di inet_ntop(%s)"
 
-#: ping/ping6_common.c:784
-#, c-format
-msgid " (truncated)"
-msgstr " (terpotong)"
-
 #: ping/ping6_common.c:803
 #, c-format
 msgid " unknown qtype(0x%02x)"
@@ -898,97 +893,97 @@ msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
-msgid "Echo Reply\n"
-msgstr "Echo Balasan\n"
+msgid "Echo Reply"
+msgstr "Echo Balasan"
 
 #: ping/ping.c:1248
 #, c-format
-msgid "Destination Net Unreachable\n"
-msgstr "Jaringan Tujuan Tidak Terjangkau\n"
+msgid "Destination Net Unreachable"
+msgstr "Jaringan Tujuan Tidak Terjangkau"
 
 #: ping/ping.c:1251
 #, c-format
-msgid "Destination Host Unreachable\n"
-msgstr "Host Tujuan Tidak Terjangkau\n"
+msgid "Destination Host Unreachable"
+msgstr "Host Tujuan Tidak Terjangkau"
 
 #: ping/ping.c:1254
 #, c-format
-msgid "Destination Protocol Unreachable\n"
-msgstr "Protokol Tujuan Tidak Terjangkau\n"
+msgid "Destination Protocol Unreachable"
+msgstr "Protokol Tujuan Tidak Terjangkau"
 
 #: ping/ping.c:1257
 #, c-format
-msgid "Destination Port Unreachable\n"
-msgstr "Port Tujuan Tidak Terjangkau\n"
+msgid "Destination Port Unreachable"
+msgstr "Port Tujuan Tidak Terjangkau"
 
 #: ping/ping.c:1260
 #, c-format
-msgid "Frag needed and DF set (mtu = %u)\n"
-msgstr "Frag dibutuhkan dan DF diatur (mtu = %u)\n"
+msgid "Frag needed and DF set (mtu = %u)"
+msgstr "Frag dibutuhkan dan DF diatur (mtu = %u)"
 
 #: ping/ping.c:1263
 #, c-format
-msgid "Source Route Failed\n"
-msgstr "Rute Asal Gagal\n"
+msgid "Source Route Failed"
+msgstr "Rute Asal Gagal"
 
 #: ping/ping.c:1266
 #, c-format
-msgid "Destination Net Unknown\n"
-msgstr "Jaringan Tujuan Tidak Diketahui\n"
+msgid "Destination Net Unknown"
+msgstr "Jaringan Tujuan Tidak Diketahui"
 
 #: ping/ping.c:1269
 #, c-format
-msgid "Destination Host Unknown\n"
-msgstr "Host Tujuan Tidak Diketahui\n"
+msgid "Destination Host Unknown"
+msgstr "Host Tujuan Tidak Diketahui"
 
 #: ping/ping.c:1272
 #, c-format
-msgid "Source Host Isolated\n"
-msgstr "Host Asal Terisolasi\n"
+msgid "Source Host Isolated"
+msgstr "Host Asal Terisolasi"
 
 #: ping/ping.c:1275
 #, c-format
-msgid "Destination Net Prohibited\n"
-msgstr "Jaringan Tujuan Terlarang\n"
+msgid "Destination Net Prohibited"
+msgstr "Jaringan Tujuan Terlarang"
 
 #: ping/ping.c:1278
 #, c-format
-msgid "Destination Host Prohibited\n"
-msgstr "Host Tujuan Terlarang\n"
+msgid "Destination Host Prohibited"
+msgstr "Host Tujuan Terlarang"
 
 #: ping/ping.c:1281
 #, c-format
-msgid "Destination Net Unreachable for Type of Service\n"
-msgstr "Jaringan Tujuan Tidak Terjangkau untuk Type of Service\n"
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "Jaringan Tujuan Tidak Terjangkau untuk Type of Service"
 
 #: ping/ping.c:1284
 #, c-format
-msgid "Destination Host Unreachable for Type of Service\n"
-msgstr "Host Tujuan Tidak Terjangkau untuk Type of Service\n"
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "Host Tujuan Tidak Terjangkau untuk Type of Service"
 
 #: ping/ping.c:1287
 #, c-format
-msgid "Packet filtered\n"
-msgstr "Paket difilter\n"
+msgid "Packet filtered"
+msgstr "Paket difilter"
 
 #: ping/ping.c:1290
 #, c-format
-msgid "Precedence Violation\n"
-msgstr "Pelanggaran Prioritas\n"
+msgid "Precedence Violation"
+msgstr "Pelanggaran Prioritas"
 
 #: ping/ping.c:1293
 #, c-format
-msgid "Precedence Cutoff\n"
-msgstr "Batas Prioritas\n"
+msgid "Precedence Cutoff"
+msgstr "Batas Prioritas"
 
 #: ping/ping.c:1296
 #, c-format
-msgid "Dest Unreachable, Bad Code: %d\n"
-msgstr "Tujuan Tidak Terjangkau, Kode Buruk: %d\n"
+msgid "Dest Unreachable, Bad Code: %d"
+msgstr "Tujuan Tidak Terjangkau, Kode Buruk: %d"
 
 #: ping/ping.c:1303
 #, c-format
-msgid "Source Quench\n"
+msgid "Source Quench"
 msgstr ""
 
 #: ping/ping.c:1310
@@ -1018,68 +1013,68 @@ msgstr ""
 
 #: ping/ping.c:1333
 #, c-format
-msgid "(New nexthop: %s)\n"
-msgstr "(Nexthop baru: %s)\n"
+msgid "(New nexthop: %s)"
+msgstr "(Nexthop baru: %s)"
 
 #: ping/ping.c:1339
 #, c-format
-msgid "Echo Request\n"
-msgstr "Echo permintaan\n"
+msgid "Echo Request"
+msgstr "Echo permintaan"
 
 #: ping/ping.c:1345
 #, c-format
-msgid "Time to live exceeded\n"
-msgstr "Time to live terlampaui\n"
+msgid "Time to live exceeded"
+msgstr "Time to live terlampaui"
 
 #: ping/ping.c:1348
 #, c-format
-msgid "Frag reassembly time exceeded\n"
-msgstr "Waktu reassembly fragmen terlampaui\n"
+msgid "Frag reassembly time exceeded"
+msgstr "Waktu reassembly fragmen terlampaui"
 
 #: ping/ping.c:1351
 #, c-format
-msgid "Time exceeded, Bad Code: %d\n"
-msgstr "Waktu terlampaui, Kode Buruk: %d\n"
+msgid "Time exceeded, Bad Code: %d"
+msgstr "Waktu terlampaui, Kode Buruk: %d"
 
 #: ping/ping.c:1358
 #, c-format
-msgid "Parameter problem: pointer = %u\n"
-msgstr "Masalah parameter: pointer = %u\n"
+msgid "Parameter problem: pointer = %u"
+msgstr "Masalah parameter: pointer = %u"
 
 #: ping/ping.c:1364
 #, c-format
-msgid "Timestamp\n"
-msgstr "Timestamp\n"
+msgid "Timestamp"
+msgstr "Timestamp"
 
 #: ping/ping.c:1368
 #, c-format
-msgid "Timestamp Reply\n"
-msgstr "Timestamp Balasan\n"
+msgid "Timestamp Reply"
+msgstr "Timestamp Balasan"
 
 #: ping/ping.c:1372
 #, c-format
-msgid "Information Request\n"
-msgstr "Informasi Permintaan\n"
+msgid "Information Request"
+msgstr "Informasi Permintaan"
 
 #: ping/ping.c:1376
 #, c-format
-msgid "Information Reply\n"
-msgstr "Informasi Balasan\n"
+msgid "Information Reply"
+msgstr "Informasi Balasan"
 
 #: ping/ping.c:1381
 #, c-format
-msgid "Address Mask Request\n"
-msgstr "Mask Alamat Permintaan\n"
+msgid "Address Mask Request"
+msgstr "Mask Alamat Permintaan"
 
 #: ping/ping.c:1386
 #, c-format
-msgid "Address Mask Reply\n"
-msgstr "Mask Alamat Balasan\n"
+msgid "Address Mask Reply"
+msgstr "Mask Alamat Balasan"
 
 #: ping/ping.c:1390
 #, c-format
-msgid "Bad ICMP type: %d\n"
-msgstr "Tipe ICMP buruk: %d\n"
+msgid "Bad ICMP type: %d"
+msgstr "Tipe ICMP buruk: %d"
 
 #: ping/ping.c:1442
 #, c-format
@@ -1100,16 +1095,6 @@ msgstr "packet terlalu singkat (%d byte) dari %s"
 #, c-format
 msgid "From %s: icmp_seq=%u "
 msgstr "Dari %s: icmp_seq=%u "
-
-#: ping/ping.c:1699
-#, c-format
-msgid "(BAD CHECKSUM)"
-msgstr "(BAD CHECKSUM)"
-
-#: ping/ping.c:1723
-#, c-format
-msgid "(BAD CHECKSUM)\n"
-msgstr "(BAD CHECKSUM)\n"
 
 #: ping/ping_common.c:49
 #, c-format
@@ -1240,8 +1225,8 @@ msgstr " ttl=%d"
 
 #: ping/ping_common.c:811
 #, c-format
-msgid " (truncated)\n"
-msgstr " (terpotong)\n"
+msgid " (truncated)"
+msgstr " (terpotong)"
 
 #: ping/ping_common.c:816
 #, c-format
@@ -1523,12 +1508,6 @@ msgstr "panjang paket harus dalam: %d < nilai <= %d"
 
 #~ msgid "Parameter Problem"
 #~ msgstr "Masalah Parameter"
-
-#~ msgid "Echo Request"
-#~ msgstr "Echo permintaan"
-
-#~ msgid "Echo Reply"
-#~ msgstr "Echo Balasan"
 
 #~ msgid "Membership Query"
 #~ msgstr "Query Membership"

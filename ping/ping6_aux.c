@@ -185,6 +185,7 @@ void print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
 	default:
 		printf(_("unknown icmp type: %u"), type);
 	}
+	// note: no \n, no stdout flush
 }
 
 static void putchar_safe(char c) {

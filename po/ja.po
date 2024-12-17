@@ -596,11 +596,6 @@ msgstr " 解析エラー (切り詰められました)"
 msgid " unexpected error in inet_ntop(%s)"
 msgstr " inet_ntop(%s) で予期せぬエラーが発生しました"
 
-#: ping/ping6_common.c:784
-#, c-format
-msgid " (truncated)"
-msgstr " (切り詰められました)"
-
 #: ping/ping6_common.c:803
 #, c-format
 msgid " unknown qtype(0x%02x)"
@@ -920,98 +915,98 @@ msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
-msgid "Echo Reply\n"
-msgstr "エコー応答\n"
+msgid "Echo Reply"
+msgstr "エコー応答"
 
 #: ping/ping.c:1248
 #, c-format
-msgid "Destination Net Unreachable\n"
-msgstr "目的のネットワークへ届きません。\n"
+msgid "Destination Net Unreachable"
+msgstr "目的のネットワークへ届きません。"
 
 #: ping/ping.c:1251
 #, c-format
-msgid "Destination Host Unreachable\n"
-msgstr "目的のホストへ届きません。\n"
+msgid "Destination Host Unreachable"
+msgstr "目的のホストへ届きません。"
 
 #: ping/ping.c:1254
 #, c-format
-msgid "Destination Protocol Unreachable\n"
-msgstr "目的のプロトコルへ届きません。\n"
+msgid "Destination Protocol Unreachable"
+msgstr "目的のプロトコルへ届きません。"
 
 #: ping/ping.c:1257
 #, c-format
-msgid "Destination Port Unreachable\n"
-msgstr "目的のポートへ届きません。\n"
+msgid "Destination Port Unreachable"
+msgstr "目的のポートへ届きません。"
 
 #: ping/ping.c:1260
 #, c-format
-msgid "Frag needed and DF set (mtu = %u)\n"
-msgstr "断片化が必要ですがDFフラグがセットされています (mtu = %u)。\n"
+msgid "Frag needed and DF set (mtu = %u)"
+msgstr "断片化が必要ですがDFフラグがセットされています (mtu = %u)。"
 
 #: ping/ping.c:1263
 #, c-format
-msgid "Source Route Failed\n"
-msgstr "ソースルーティングに失敗しました。\n"
+msgid "Source Route Failed"
+msgstr "ソースルーティングに失敗しました。"
 
 #: ping/ping.c:1266
 #, c-format
-msgid "Destination Net Unknown\n"
-msgstr "目的のネットワークが不明です。\n"
+msgid "Destination Net Unknown"
+msgstr "目的のネットワークが不明です。"
 
 #: ping/ping.c:1269
 #, c-format
-msgid "Destination Host Unknown\n"
-msgstr "目的のホストが不明です。\n"
+msgid "Destination Host Unknown"
+msgstr "目的のホストが不明です。"
 
 #: ping/ping.c:1272
 #, c-format
-msgid "Source Host Isolated\n"
-msgstr "送信元ホストが孤立しています。\n"
+msgid "Source Host Isolated"
+msgstr "送信元ホストが孤立しています。"
 
 #: ping/ping.c:1275
 #, c-format
-msgid "Destination Net Prohibited\n"
-msgstr "目的のネットワークは禁止されています。\n"
+msgid "Destination Net Prohibited"
+msgstr "目的のネットワークは禁止されています。"
 
 #: ping/ping.c:1278
 #, c-format
-msgid "Destination Host Prohibited\n"
-msgstr "目的のホストは禁止されています。\n"
+msgid "Destination Host Prohibited"
+msgstr "目的のホストは禁止されています。"
 
 #: ping/ping.c:1281
 #, c-format
-msgid "Destination Net Unreachable for Type of Service\n"
-msgstr "このtosでは目的のネットワークへ届きません。\n"
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "このtosでは目的のネットワークへ届きません。"
 
 #: ping/ping.c:1284
 #, c-format
-msgid "Destination Host Unreachable for Type of Service\n"
-msgstr "このtosでは目的のホストへ届きません。\n"
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "このtosでは目的のホストへ届きません。"
 
 #: ping/ping.c:1287
 #, c-format
-msgid "Packet filtered\n"
-msgstr "パケットがフィルタリングされました。\n"
+msgid "Packet filtered"
+msgstr "パケットがフィルタリングされました。"
 
 #: ping/ping.c:1290
 #, c-format
-msgid "Precedence Violation\n"
-msgstr "優先度違反\n"
+msgid "Precedence Violation"
+msgstr "優先度違反"
 
 #: ping/ping.c:1293
 #, c-format
-msgid "Precedence Cutoff\n"
-msgstr "優先度に基づく遮断\n"
+msgid "Precedence Cutoff"
+msgstr "優先度に基づく遮断"
 
 #: ping/ping.c:1296
 #, c-format
-msgid "Dest Unreachable, Bad Code: %d\n"
-msgstr "目的サイトへ届きません, 不正なコード: %d\n"
+msgid "Dest Unreachable, Bad Code: %d"
+msgstr "目的サイトへ届きません, 不正なコード: %d"
 
 #: ping/ping.c:1303
 #, c-format
-msgid "Source Quench\n"
-msgstr "発信抑制\n"
+msgid "Source Quench"
+msgstr "発信抑制"
 
 #: ping/ping.c:1310
 #, c-format
@@ -1040,68 +1035,68 @@ msgstr "リダイレクト, 不正なコード: %d"
 
 #: ping/ping.c:1333
 #, c-format
-msgid "(New nexthop: %s)\n"
-msgstr "(新しい次ホップ: %s)\n"
+msgid "(New nexthop: %s)"
+msgstr "(新しい次ホップ: %s)"
 
 #: ping/ping.c:1339
 #, c-format
-msgid "Echo Request\n"
-msgstr "エコー要求\n"
+msgid "Echo Request"
+msgstr "エコー要求"
 
 #: ping/ping.c:1345
 #, c-format
-msgid "Time to live exceeded\n"
-msgstr "TTLを超過しました。\n"
+msgid "Time to live exceeded"
+msgstr "TTLを超過しました。"
 
 #: ping/ping.c:1348
 #, c-format
-msgid "Frag reassembly time exceeded\n"
-msgstr "断片化パケットの再構築時間を超過しました。\n"
+msgid "Frag reassembly time exceeded"
+msgstr "断片化パケットの再構築時間を超過しました。"
 
 #: ping/ping.c:1351
 #, c-format
-msgid "Time exceeded, Bad Code: %d\n"
-msgstr "時間超過です。不正なコード: %d\n"
+msgid "Time exceeded, Bad Code: %d"
+msgstr "時間超過です。不正なコード: %d"
 
 #: ping/ping.c:1358
 #, c-format
-msgid "Parameter problem: pointer = %u\n"
-msgstr "パラメータの問題: ポインタ = %u\n"
+msgid "Parameter problem: pointer = %u"
+msgstr "パラメータの問題: ポインタ = %u"
 
 #: ping/ping.c:1364
 #, c-format
-msgid "Timestamp\n"
-msgstr "タイムスタンプ\n"
+msgid "Timestamp"
+msgstr "タイムスタンプ"
 
 #: ping/ping.c:1368
 #, c-format
-msgid "Timestamp Reply\n"
-msgstr "タイムスタンプ応答\n"
+msgid "Timestamp Reply"
+msgstr "タイムスタンプ応答"
 
 #: ping/ping.c:1372
 #, c-format
-msgid "Information Request\n"
-msgstr "情報要求\n"
+msgid "Information Request"
+msgstr "情報要求"
 
 #: ping/ping.c:1376
 #, c-format
-msgid "Information Reply\n"
-msgstr "情報応答\n"
+msgid "Information Reply"
+msgstr "情報応答"
 
 #: ping/ping.c:1381
 #, c-format
-msgid "Address Mask Request\n"
-msgstr "アドレスマスク要求\n"
+msgid "Address Mask Request"
+msgstr "アドレスマスク要求"
 
 #: ping/ping.c:1386
 #, c-format
-msgid "Address Mask Reply\n"
-msgstr "アドレスマスク応答\n"
+msgid "Address Mask Reply"
+msgstr "アドレスマスク応答"
 
 #: ping/ping.c:1390
 #, c-format
-msgid "Bad ICMP type: %d\n"
-msgstr "不正なICMP種別です: %d\n"
+msgid "Bad ICMP type: %d"
+msgstr "不正なICMP種別です: %d"
 
 #: ping/ping.c:1442
 #, c-format
@@ -1122,16 +1117,6 @@ msgstr "パケットが短すぎます (%d バイト)。送信元 %s"
 #, c-format
 msgid "From %s: icmp_seq=%u "
 msgstr "送信元 %s: icmp_seq=%u "
-
-#: ping/ping.c:1699
-#, c-format
-msgid "(BAD CHECKSUM)"
-msgstr "(チェックサム異常)"
-
-#: ping/ping.c:1723
-#, c-format
-msgid "(BAD CHECKSUM)\n"
-msgstr "(チェックサム異常)\n"
 
 #: ping/ping_common.c:49
 #, c-format
@@ -1264,8 +1249,8 @@ msgstr " ttl=%d"
 
 #: ping/ping_common.c:811
 #, c-format
-msgid " (truncated)\n"
-msgstr " (切り詰められました)\n"
+msgid " (truncated)"
+msgstr " (切り詰められました)"
 
 #: ping/ping_common.c:816
 #, c-format
@@ -1621,14 +1606,6 @@ msgstr "エラー: pktlenは %d < pktlen <= %d の範囲内でなければいけ
 #
 #~ msgid "Parameter Problem"
 #~ msgstr "パラメータの問題"
-
-#
-#~ msgid "Echo Request"
-#~ msgstr "エコー要求"
-
-#
-#~ msgid "Echo Reply"
-#~ msgstr "エコー応答"
 
 #~ msgid "Membership Query"
 #~ msgstr "マルチキャストグループ照会"

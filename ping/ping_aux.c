@@ -55,6 +55,8 @@
 #include "iputils_common.h"
 #include "common.h"
 #include "ping_aux.h"
+#include "ping4_aux.h"
+#include "ping6_aux.h"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -219,6 +221,28 @@ void print_echo_reply(bool ip6, const uint8_t *hdr, size_t len) {
 	if (len >= ipc->icmpsize) {
 		uint16_t *seq = (uint16_t *)(hdr + ipc->off_seq);
 		printf(_(" icmp_seq=%u"), ntohs(*seq));
+	}
+}
+
+// func_set:receive_error:print_addr_seq
+inline void print_addr_seq(struct ping_rts *rts, uint16_t seq,
+	const struct sock_extended_err *ee, socklen_t salen)
+{
+	rts->nerrors++;
+	if (rts->opt.quiet)
+		return;
+	if (rts->opt.flood)
+		write(STDOUT_FILENO, "\bE", 2);
+	else {
+		PRINT_TIMESTAMP;
+		const void *sa = ee + 1;
+		printf(_("From %s icmp_seq=%u "), SPRINT_RES_ADDR(rts, sa, salen), seq);
+		if (rts->ip6) {
+			print6_icmp(ee->ee_type, ee->ee_code, ee->ee_info);
+			putchar('\n');
+		} else
+			print4_icmph(rts, ee->ee_type, ee->ee_code, ee->ee_info, NULL);
+		fflush(stdout);
 	}
 }
 

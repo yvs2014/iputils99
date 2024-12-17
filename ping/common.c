@@ -646,12 +646,12 @@ static int finish(const struct ping_rts *rts) {
 
 
 static void fin_status(const struct ping_rts *rts) {
-	static int in_fin_status;
+	static bool in_fin_status;
 	if (in_fin_status)
 		return;
-	in_fin_status = 1;
+	in_fin_status = true;
 	int loss = rts->ntransmitted ?
-		loss = (100ll * (rts->ntransmitted - rts->nreceived)) / rts->ntransmitted
+		(100ll * (rts->ntransmitted - rts->nreceived)) / rts->ntransmitted
 		: 0;
 	fprintf(stderr, "\r");
 	fprintf(stderr, _("%ld/%ld packets, %d%% loss"), rts->nreceived, rts->ntransmitted, loss);
@@ -662,7 +662,7 @@ static void fin_status(const struct ping_rts *rts) {
 			rts->rtt / 8000, (rts->rtt / 8) % 1000, rts->tmax / 1000, rts->tmax % 1000);
 	}
 	fprintf(stderr, "\n");
-	in_fin_status = 0;
+	in_fin_status = false;
 }
 
 
@@ -671,13 +671,7 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 {
 	char addrbuf[128];
 	char ans_data[4096];
-	struct iovec iov;
-	struct msghdr msg;
-	int next;
-	int polling;
-	int recv_error;
-
-	iov.iov_base = (char *)packet;
+	struct iovec iov = { .iov_base = (char *)packet };
 
 	for (;;) {
 		/* Check exit conditions. */
@@ -694,6 +688,7 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 		}
 
 		/* Send probes scheduled to this time. */
+		int next;
 		do {
 			next = pinger(rts, fset, sock);
 			if (rts->npackets && (rts->ntransmitted >= rts->npackets) && !rts->deadline)
@@ -710,8 +705,8 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 		 *    Solution: spinning.
 		 * 2. Avoid use of poll(), when recvmsg() can provide
 		 *    timed waiting (SO_RCVTIMEO). */
-		polling = 0;
-		recv_error = 0;
+		int polling = 0;
+		int recv_error = 0;
 		if (rts->opt.adaptive || rts->opt.flood_poll || (next <= SCHINT(rts->interval))) {
 			int recv_expected = in_flight(rts);
 
@@ -748,19 +743,18 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 		}
 
 		for (;;) {
-			struct timeval *recv_timep = NULL;
-			struct timeval recv_time;
-			int not_ours = 0; /* Raw socket can receive messages
-					   * destined to other running pings. */
+			/* Raw socket can receive messages destined to other running pings */
+			bool not_ours = false;
 
 			iov.iov_len = packlen;
-			memset(&msg, 0, sizeof(msg));
-			msg.msg_name = addrbuf;
-			msg.msg_namelen = sizeof(addrbuf);
-			msg.msg_iov = &iov;
-			msg.msg_iovlen = 1;
-			msg.msg_control = ans_data;
-			msg.msg_controllen = sizeof(ans_data);
+			struct msghdr msg = {
+				.msg_name       = addrbuf,
+				.msg_namelen    = sizeof(addrbuf),
+				.msg_iov        = &iov,
+				.msg_iovlen     = 1,
+				.msg_control    = ans_data,
+				.msg_controllen = sizeof(ans_data),
+			};
 
 			ssize_t received = recvmsg(sock->fd, &msg, polling);
 			polling = MSG_DONTWAIT;
@@ -779,12 +773,14 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 						error(0, errno, "recvmsg");
 						break;
 					}
-					not_ours = 1;
+					not_ours = true;
 				}
 			} else {
+				struct timeval *recv_timep = NULL;
 #ifdef SO_TIMESTAMP
-				struct cmsghdr *c;
-				for (c = CMSG_FIRSTHDR(&msg); c; c = CMSG_NXTHDR(&msg, c)) {
+				for (struct cmsghdr *c = CMSG_FIRSTHDR(&msg); c;
+						c = CMSG_NXTHDR(&msg, c))
+				{
 					if ((c->cmsg_level != SOL_SOCKET  ) ||
 					    (c->cmsg_type  != SO_TIMESTAMP))
 						continue;
@@ -793,10 +789,12 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 					recv_timep = (struct timeval *)CMSG_DATA(c);
 				}
 #endif
+				struct timeval recv_time;
 				if (rts->opt.latency || !recv_timep) {
-					if (rts->opt.latency ||
-					    ioctl(sock->fd, SIOCGSTAMP, &recv_time))
-						gettimeofday(&recv_time, NULL);
+					if (rts->opt.latency || ioctl(sock->fd, SIOCGSTAMP, &recv_time)) {
+						if (gettimeofday(&recv_time, NULL) < 0) // no way
+							memset(&recv_time, 0, sizeof(recv_time));
+					}
 					recv_timep = &recv_time;
 				}
 				assert(received >= 0); // be sure in ssize_t to size_t conversion at one place
@@ -820,7 +818,7 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 	return finish(rts);
 }
 
-int gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t received,
+bool gather_stats_noflush(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t received,
 	uint16_t seq, int hops, int csfailed, const struct timeval *tv, const char *from,
 	void (*print_reply)(bool ip6, const uint8_t *hdr, size_t len), bool multicast, bool wrong_source)
 {
@@ -880,68 +878,80 @@ int gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t
 	rts->confirm = rts->confirm_flag;
 
 	if (rts->opt.quiet)
-		return 1;
-
+		return true;
 	if (rts->opt.flood) {
 		if (!csfailed)
 			write(STDOUT_FILENO, "\b \b", 3);
 		else
 			write(STDOUT_FILENO, "\bC", 2);
-	} else {
-		PRINT_TIMESTAMP;
-		printf(_("%zd bytes from %s:"), received, from);
+		return true;
+	}
 
-		if (print_reply)
-			print_reply(rts->ip6, icmph, received);
-		if (rts->opt.verbose)
-			printf(_(" ident=%u"), ntohs(rts->ident16));
-		if (hops >= 0)
-			printf(_(" ttl=%d"), hops);
-		if (received < (rts->datalen + 8)) {
-			printf(_(" (truncated)\n"));
-			return 1;
-		}
+	PRINT_TIMESTAMP;
+	printf(_("%zd bytes from %s:"), received, from);
 
-		if (rts->timing) {
-			if      (triptime >= (100000 - 50))
-				printf(_(" time=%ld ms"),       (triptime + 500) / 1000);
-			else if (triptime >= ( 10000 -  5))
-				printf(_(" time=%ld.%01ld ms"), (triptime +  50) / 1000,
-				       ((triptime + 50) % 1000) / 100);
-			else if (triptime >= (  1000     ))
-				printf(_(" time=%ld.%02ld ms"), (triptime +   5) / 1000,
-				       ((triptime +  5) % 1000) /  10);
-			else
-				printf(_(" time=%ld.%03ld ms"), triptime / 1000,
+	if (print_reply)
+		print_reply(rts->ip6, icmph, received);
+	if (rts->opt.verbose)
+		printf(_(" ident=%u"), ntohs(rts->ident16));
+	if (hops >= 0)
+		printf(_(" ttl=%d"), hops);
+	if (received < (rts->datalen + 8)) {
+		printf(_(" (truncated)"));
+		putchar('\n');
+		return true;
+	}
+
+	if (rts->timing) {
+		if      (triptime >= (100000 - 50))
+			printf(_(" time=%ld ms"),       (triptime + 500) / 1000);
+		else if (triptime >= ( 10000 -  5))
+			printf(_(" time=%ld.%01ld ms"), (triptime +  50) / 1000,
+			       ((triptime + 50) % 1000) / 100);
+		else if (triptime >= (  1000     ))
+			printf(_(" time=%ld.%02ld ms"), (triptime +   5) / 1000,
+			       ((triptime +  5) % 1000) /  10);
+		else
+			printf(_(" time=%ld.%03ld ms"), triptime / 1000,
 				       triptime % 1000);
-		}
-		if (dupflag && (!multicast || rts->opt.verbose))
-			printf(_(" (DUP!)"));
-		if (csfailed)
-			printf(_(" (BAD CHECKSUM!)"));
-		if (wrong_source)
-			printf(_(" (DIFFERENT ADDRESS!)"));
+	}
+	if (dupflag && (!multicast || rts->opt.verbose))
+		printf(_(" (DUP!)"));
+	if (csfailed)
+		printf(_(" (BAD CHECKSUM)"));
+	if (wrong_source)
+		printf(_(" (DIFFERENT ADDRESS!)"));
 
-		/* check the data */
-		const uint8_t *cp = ptr + sizeof(struct timeval);
-		const uint8_t *dp = &rts->outpack[8 + sizeof(struct timeval)];
-		for (size_t i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp, ++dp) {
-			if (*cp != *dp) {
-				printf(_("\nwrong data byte #%zu should be 0x%x but was 0x%x"),
-				       i, *dp, *cp);
-				cp = ptr + sizeof(struct timeval);
-				for (i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp) {
-					if ((i % 32) == sizeof(struct timeval))
-						printf("\n#%zu\t", i);
-					printf("%x ", *cp);
-				}
-				break;
+	/* check the data */
+	const uint8_t *cp = ptr + sizeof(struct timeval);
+	const uint8_t *dp = &rts->outpack[8 + sizeof(struct timeval)];
+	for (size_t i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp, ++dp) {
+		if (*cp != *dp) {
+			printf(_("\nwrong data byte #%zu should be 0x%x but was 0x%x"),
+			       i, *dp, *cp);
+			cp = ptr + sizeof(struct timeval);
+			for (i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp) {
+				if ((i % 32) == sizeof(struct timeval))
+					printf("\n#%zu\t", i);
+				printf("%x ", *cp);
 			}
+			break;
 		}
 	}
-	return 0;
+
+	return false;
 }
 
+inline bool gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t received,
+	uint16_t seq, int hops, int csfailed, const struct timeval *tv, const char *from,
+	void (*print_reply)(bool ip6, const uint8_t *hdr, size_t len), bool multicast, bool wrong_source)
+{
+	bool finished = gather_stats_noflush(rts, icmph, icmplen, received, seq, hops,
+		csfailed, tv, from, print_reply, multicast, wrong_source);
+	if (finished)
+		fflush(stdout);
+	return finished;
+}
 
 const char *str_interval(int interval) {
 	static char buf[14];

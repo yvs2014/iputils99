@@ -588,11 +588,6 @@ msgstr " 구문 분석 오류 (잘림)"
 msgid " unexpected error in inet_ntop(%s)"
 msgstr " inet_ntop(%s)에서 예상치 못한 오류"
 
-#: ping/ping6_common.c:784
-#, c-format
-msgid " (truncated)"
-msgstr " (잘린)"
-
 #: ping/ping6_common.c:803
 #, c-format
 msgid " unknown qtype(0x%02x)"
@@ -902,98 +897,98 @@ msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
-msgid "Echo Reply\n"
-msgstr "반향 응답\n"
+msgid "Echo Reply"
+msgstr "반향 응답"
 
 #: ping/ping.c:1248
 #, c-format
-msgid "Destination Net Unreachable\n"
-msgstr "대상 넷에 도달 할 수 없음\n"
+msgid "Destination Net Unreachable"
+msgstr "대상 넷에 도달 할 수 없음"
 
 #: ping/ping.c:1251
 #, c-format
-msgid "Destination Host Unreachable\n"
-msgstr "대상 호스트에 도달 할 수 없음\n"
+msgid "Destination Host Unreachable"
+msgstr "대상 호스트에 도달 할 수 없음"
 
 #: ping/ping.c:1254
 #, c-format
-msgid "Destination Protocol Unreachable\n"
-msgstr "대상 통신규악에 도달 할 수 없음\n"
+msgid "Destination Protocol Unreachable"
+msgstr "대상 통신규악에 도달 할 수 없음"
 
 #: ping/ping.c:1257
 #, c-format
-msgid "Destination Port Unreachable\n"
-msgstr "대상 포트에 도달 할 수 없음\n"
+msgid "Destination Port Unreachable"
+msgstr "대상 포트에 도달 할 수 없음"
 
 #: ping/ping.c:1260
 #, c-format
-msgid "Frag needed and DF set (mtu = %u)\n"
-msgstr "조각화가 필요하고 DF 설정(mtu = %u)\n"
+msgid "Frag needed and DF set (mtu = %u)"
+msgstr "조각화가 필요하고 DF 설정(mtu = %u)"
 
 #: ping/ping.c:1263
 #, c-format
-msgid "Source Route Failed\n"
-msgstr "원천 경로에 실패함\n"
+msgid "Source Route Failed"
+msgstr "원천 경로에 실패함"
 
 #: ping/ping.c:1266
 #, c-format
-msgid "Destination Net Unknown\n"
-msgstr "대상 넷을 알지 못함\n"
+msgid "Destination Net Unknown"
+msgstr "대상 넷을 알지 못함"
 
 #: ping/ping.c:1269
 #, c-format
-msgid "Destination Host Unknown\n"
-msgstr "대상 호스트를 알지 못함\n"
+msgid "Destination Host Unknown"
+msgstr "대상 호스트를 알지 못함"
 
 #: ping/ping.c:1272
 #, c-format
-msgid "Source Host Isolated\n"
-msgstr "원천 호스트가 격리됨\n"
+msgid "Source Host Isolated"
+msgstr "원천 호스트가 격리됨"
 
 #: ping/ping.c:1275
 #, c-format
-msgid "Destination Net Prohibited\n"
-msgstr "대상 넷이 금지됨\n"
+msgid "Destination Net Prohibited"
+msgstr "대상 넷이 금지됨"
 
 #: ping/ping.c:1278
 #, c-format
-msgid "Destination Host Prohibited\n"
-msgstr "대상 호스트가 금지됨\n"
+msgid "Destination Host Prohibited"
+msgstr "대상 호스트가 금지됨"
 
 #: ping/ping.c:1281
 #, c-format
-msgid "Destination Net Unreachable for Type of Service\n"
-msgstr "서비스 형식으로 대상 네트워크에 도달할 수 없습니다\n"
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "서비스 형식으로 대상 네트워크에 도달할 수 없습니다"
 
 #: ping/ping.c:1284
 #, c-format
-msgid "Destination Host Unreachable for Type of Service\n"
-msgstr "서비스 유형을 위해 대상 호스트에 도달 할 수 없습니다\n"
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "서비스 유형을 위해 대상 호스트에 도달 할 수 없습니다"
 
 #: ping/ping.c:1287
 #, c-format
-msgid "Packet filtered\n"
-msgstr "패킷이 필터링됨\n"
+msgid "Packet filtered"
+msgstr "패킷이 필터링됨"
 
 #: ping/ping.c:1290
 #, c-format
-msgid "Precedence Violation\n"
-msgstr "우선 순위 위반\n"
+msgid "Precedence Violation"
+msgstr "우선 순위 위반"
 
 #: ping/ping.c:1293
 #, c-format
-msgid "Precedence Cutoff\n"
-msgstr "우선순위 효력 차단\n"
+msgid "Precedence Cutoff"
+msgstr "우선순위 효력 차단"
 
 #: ping/ping.c:1296
 #, c-format
-msgid "Dest Unreachable, Bad Code: %d\n"
-msgstr "대상에 도달 할 수 없으며, 잘못된 코드: %d\n"
+msgid "Dest Unreachable, Bad Code: %d"
+msgstr "대상에 도달 할 수 없으며, 잘못된 코드: %d"
 
 #: ping/ping.c:1303
 #, c-format
-msgid "Source Quench\n"
-msgstr "발신 제한\n"
+msgid "Source Quench"
+msgstr "발신 제한"
 
 #: ping/ping.c:1310
 #, c-format
@@ -1022,68 +1017,68 @@ msgstr "넘겨주기, 잘못된 코드: %d"
 
 #: ping/ping.c:1333
 #, c-format
-msgid "(New nexthop: %s)\n"
-msgstr "(신규 다음 건너뛰기: %s)\n"
+msgid "(New nexthop: %s)"
+msgstr "(신규 다음 건너뛰기: %s)"
 
 #: ping/ping.c:1339
 #, c-format
-msgid "Echo Request\n"
-msgstr "반향 요청\n"
+msgid "Echo Request"
+msgstr "반향 요청"
 
 #: ping/ping.c:1345
 #, c-format
-msgid "Time to live exceeded\n"
-msgstr "유효기간(ttl)이 초과됨\n"
+msgid "Time to live exceeded"
+msgstr "유효기간(ttl)이 초과됨"
 
 #: ping/ping.c:1348
 #, c-format
-msgid "Frag reassembly time exceeded\n"
-msgstr "조각 재결합 시간이 초과됨\n"
+msgid "Frag reassembly time exceeded"
+msgstr "조각 재결합 시간이 초과됨"
 
 #: ping/ping.c:1351
 #, c-format
-msgid "Time exceeded, Bad Code: %d\n"
-msgstr "시간이 초과되었으며, 잘못된 코드: %d\n"
+msgid "Time exceeded, Bad Code: %d"
+msgstr "시간이 초과되었으며, 잘못된 코드: %d"
 
 #: ping/ping.c:1358
 #, c-format
-msgid "Parameter problem: pointer = %u\n"
-msgstr "매개변수 문제: pointer = %u\n"
+msgid "Parameter problem: pointer = %u"
+msgstr "매개변수 문제: pointer = %u"
 
 #: ping/ping.c:1364
 #, c-format
-msgid "Timestamp\n"
-msgstr "시간표기\n"
+msgid "Timestamp"
+msgstr "시간표기"
 
 #: ping/ping.c:1368
 #, c-format
-msgid "Timestamp Reply\n"
-msgstr "시간표기 응답\n"
+msgid "Timestamp Reply"
+msgstr "시간표기 응답"
 
 #: ping/ping.c:1372
 #, c-format
-msgid "Information Request\n"
-msgstr "정보 요청\n"
+msgid "Information Request"
+msgstr "정보 요청"
 
 #: ping/ping.c:1376
 #, c-format
-msgid "Information Reply\n"
-msgstr "정보 응답\n"
+msgid "Information Reply"
+msgstr "정보 응답"
 
 #: ping/ping.c:1381
 #, c-format
-msgid "Address Mask Request\n"
-msgstr "주소 매스크 요청\n"
+msgid "Address Mask Request"
+msgstr "주소 매스크 요청"
 
 #: ping/ping.c:1386
 #, c-format
-msgid "Address Mask Reply\n"
-msgstr "주소 매스크 응답\n"
+msgid "Address Mask Reply"
+msgstr "주소 매스크 응답"
 
 #: ping/ping.c:1390
 #, c-format
-msgid "Bad ICMP type: %d\n"
-msgstr "잘못된 ICMP 형식: %d\n"
+msgid "Bad ICMP type: %d"
+msgstr "잘못된 ICMP 형식: %d"
 
 #: ping/ping.c:1442
 #, c-format
@@ -1104,16 +1099,6 @@ msgstr "패킷이 너무 짧음(%d 바이트) (%s에서)"
 #, c-format
 msgid "From %s: icmp_seq=%u "
 msgstr "%s에서: icmp_seq=%u "
-
-#: ping/ping.c:1699
-#, c-format
-msgid "(BAD CHECKSUM)"
-msgstr "(잘못된 검사합)"
-
-#: ping/ping.c:1723
-#, c-format
-msgid "(BAD CHECKSUM)\n"
-msgstr "(잘못된 검사합)\n"
 
 #: ping/ping_common.c:49
 #, c-format
@@ -1300,8 +1285,8 @@ msgstr " ttl=%d"
 
 #: ping/ping_common.c:811
 #, c-format
-msgid " (truncated)\n"
-msgstr " (잘림)\n"
+msgid " (truncated)"
+msgstr " (잘림)"
 
 #: ping/ping_common.c:816
 #, c-format
@@ -1585,12 +1570,6 @@ msgstr "pktlen은 다음 값 안에 있어야 합니다: %d < 값 <= %d"
 
 #~ msgid "Parameter Problem"
 #~ msgstr "매개변수 문제"
-
-#~ msgid "Echo Request"
-#~ msgstr "반향 요청"
-
-#~ msgid "Echo Reply"
-#~ msgstr "반향 응답"
 
 #~ msgid "Membership Query"
 #~ msgstr "구성원 요청"

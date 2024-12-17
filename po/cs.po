@@ -588,11 +588,6 @@ msgstr " chyba rozboru (zkráceno)"
 msgid " unexpected error in inet_ntop(%s)"
 msgstr " nečekaná chyba v inet_ntop(%s)"
 
-#: ping/ping6_common.c:784
-#, c-format
-msgid " (truncated)"
-msgstr " (zkráceno)"
-
 #: ping/ping6_common.c:803
 #, c-format
 msgid " unknown qtype(0x%02x)"
@@ -904,98 +899,98 @@ msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
-msgid "Echo Reply\n"
-msgstr "Odpověď na echo\n"
+msgid "Echo Reply"
+msgstr "Odpověď na echo"
 
 #: ping/ping.c:1248
 #, c-format
-msgid "Destination Net Unreachable\n"
-msgstr "Cílová síť nedostupná\n"
+msgid "Destination Net Unreachable"
+msgstr "Cílová síť nedostupná"
 
 #: ping/ping.c:1251
 #, c-format
-msgid "Destination Host Unreachable\n"
-msgstr "Cílový stroj nedostupný\n"
+msgid "Destination Host Unreachable"
+msgstr "Cílový stroj nedostupný"
 
 #: ping/ping.c:1254
 #, c-format
-msgid "Destination Protocol Unreachable\n"
-msgstr "Cílový protokol nedostupný\n"
+msgid "Destination Protocol Unreachable"
+msgstr "Cílový protokol nedostupný"
 
 #: ping/ping.c:1257
 #, c-format
-msgid "Destination Port Unreachable\n"
-msgstr "Cílový port nedostupný\n"
+msgid "Destination Port Unreachable"
+msgstr "Cílový port nedostupný"
 
 #: ping/ping.c:1260
 #, c-format
-msgid "Frag needed and DF set (mtu = %u)\n"
-msgstr "Potřeba fragmentace, ale DF je nastaveno (MTU = %u)\n"
+msgid "Frag needed and DF set (mtu = %u)"
+msgstr "Potřeba fragmentace, ale DF je nastaveno (MTU = %u)"
 
 #: ping/ping.c:1263
 #, c-format
-msgid "Source Route Failed\n"
-msgstr "Zdrojová trasa nezafungovala\n"
+msgid "Source Route Failed"
+msgstr "Zdrojová trasa nezafungovala"
 
 #: ping/ping.c:1266
 #, c-format
-msgid "Destination Net Unknown\n"
-msgstr "Cílová síť není známa\n"
+msgid "Destination Net Unknown"
+msgstr "Cílová síť není známa"
 
 #: ping/ping.c:1269
 #, c-format
-msgid "Destination Host Unknown\n"
-msgstr "Cílový stroj není znám\n"
+msgid "Destination Host Unknown"
+msgstr "Cílový stroj není znám"
 
 #: ping/ping.c:1272
 #, c-format
-msgid "Source Host Isolated\n"
-msgstr "Zdrojový stroj je izolován\n"
+msgid "Source Host Isolated"
+msgstr "Zdrojový stroj je izolován"
 
 #: ping/ping.c:1275
 #, c-format
-msgid "Destination Net Prohibited\n"
-msgstr "Cílová síť je zakázána\n"
+msgid "Destination Net Prohibited"
+msgstr "Cílová síť je zakázána"
 
 #: ping/ping.c:1278
 #, c-format
-msgid "Destination Host Prohibited\n"
-msgstr "Cílový stroj je zakázán\n"
+msgid "Destination Host Prohibited"
+msgstr "Cílový stroj je zakázán"
 
 #: ping/ping.c:1281
 #, c-format
-msgid "Destination Net Unreachable for Type of Service\n"
-msgstr "Cílový síť není pro daný typ služby dostupná\n"
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "Cílový síť není pro daný typ služby dostupná"
 
 #: ping/ping.c:1284
 #, c-format
-msgid "Destination Host Unreachable for Type of Service\n"
-msgstr "Cílový stroj není pro daný typ služby dostupný\n"
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "Cílový stroj není pro daný typ služby dostupný"
 
 #: ping/ping.c:1287
 #, c-format
-msgid "Packet filtered\n"
-msgstr "Paket odfiltrován\n"
+msgid "Packet filtered"
+msgstr "Paket odfiltrován"
 
 #: ping/ping.c:1290
 #, c-format
-msgid "Precedence Violation\n"
-msgstr "Porušuje přednost\n"
+msgid "Precedence Violation"
+msgstr "Porušuje přednost"
 
 #: ping/ping.c:1293
 #, c-format
-msgid "Precedence Cutoff\n"
-msgstr "Nedostatečná přednost\n"
+msgid "Precedence Cutoff"
+msgstr "Nedostatečná přednost"
 
 #: ping/ping.c:1296
 #, c-format
-msgid "Dest Unreachable, Bad Code: %d\n"
-msgstr "Cíl nedostupný, chybný kód: %d\n"
+msgid "Dest Unreachable, Bad Code: %d"
+msgstr "Cíl nedostupný, chybný kód: %d"
 
 #: ping/ping.c:1303
 #, c-format
-msgid "Source Quench\n"
-msgstr "Útlum zdroje\n"
+msgid "Source Quench"
+msgstr "Útlum zdroje"
 
 #: ping/ping.c:1310
 #, c-format
@@ -1024,68 +1019,68 @@ msgstr "Přesměrování, chybný kód: %d"
 
 #: ping/ping.c:1333
 #, c-format
-msgid "(New nexthop: %s)\n"
-msgstr "(Nový následující skok: %s)\n"
+msgid "(New nexthop: %s)"
+msgstr "(Nový následující skok: %s)"
 
 #: ping/ping.c:1339
 #, c-format
-msgid "Echo Request\n"
-msgstr "Požadavek na echo\n"
+msgid "Echo Request"
+msgstr "Požadavek na echo"
 
 #: ping/ping.c:1345
 #, c-format
-msgid "Time to live exceeded\n"
-msgstr "Překročena doba životnosti\n"
+msgid "Time to live exceeded"
+msgstr "Překročena doba životnosti"
 
 #: ping/ping.c:1348
 #, c-format
-msgid "Frag reassembly time exceeded\n"
-msgstr "Překročena doba pro provedení opětovného složení fragmentů\n"
+msgid "Frag reassembly time exceeded"
+msgstr "Překročena doba pro provedení opětovného složení fragmentů"
 
 #: ping/ping.c:1351
 #, c-format
-msgid "Time exceeded, Bad Code: %d\n"
-msgstr "Překročen čas, chybný kód: %d\n"
+msgid "Time exceeded, Bad Code: %d"
+msgstr "Překročen čas, chybný kód: %d"
 
 #: ping/ping.c:1358
 #, c-format
-msgid "Parameter problem: pointer = %u\n"
-msgstr "Problém s parametrem: ukazatel = %u\n"
+msgid "Parameter problem: pointer = %u"
+msgstr "Problém s parametrem: ukazatel = %u"
 
 #: ping/ping.c:1364
 #, c-format
-msgid "Timestamp\n"
-msgstr "Časová značka\n"
+msgid "Timestamp"
+msgstr "Časová značka"
 
 #: ping/ping.c:1368
 #, c-format
-msgid "Timestamp Reply\n"
-msgstr "Odpověď s časovou značkou\n"
+msgid "Timestamp Reply"
+msgstr "Odpověď s časovou značkou"
 
 #: ping/ping.c:1372
 #, c-format
-msgid "Information Request\n"
-msgstr "Dotaz na informace\n"
+msgid "Information Request"
+msgstr "Dotaz na informace"
 
 #: ping/ping.c:1376
 #, c-format
-msgid "Information Reply\n"
-msgstr "Odpověď s informacemi\n"
+msgid "Information Reply"
+msgstr "Odpověď s informacemi"
 
 #: ping/ping.c:1381
 #, c-format
-msgid "Address Mask Request\n"
-msgstr "Dotaz na masku adresy\n"
+msgid "Address Mask Request"
+msgstr "Dotaz na masku adresy"
 
 #: ping/ping.c:1386
 #, c-format
-msgid "Address Mask Reply\n"
-msgstr "Odpověď s maskou adresy\n"
+msgid "Address Mask Reply"
+msgstr "Odpověď s maskou adresy"
 
 #: ping/ping.c:1390
 #, c-format
-msgid "Bad ICMP type: %d\n"
-msgstr "Chybný typ ICMP: %d\n"
+msgid "Bad ICMP type: %d"
+msgstr "Chybný typ ICMP: %d"
 
 #: ping/ping.c:1442
 #, c-format
@@ -1106,16 +1101,6 @@ msgstr "paket od %s je příliš krátký (%d bajtů)"
 #, c-format
 msgid "From %s: icmp_seq=%u "
 msgstr "Od %s: pořadí=%u "
-
-#: ping/ping.c:1699
-#, c-format
-msgid "(BAD CHECKSUM)"
-msgstr "(CHYBNÝ KONTROLNÍ SOUČET)"
-
-#: ping/ping.c:1723
-#, c-format
-msgid "(BAD CHECKSUM)\n"
-msgstr "(CHYBNÝ KONTROLNÍ SOUČET)\n"
 
 #: ping/ping_common.c:49
 #, c-format
@@ -1307,8 +1292,8 @@ msgstr " TTL=%d"
 
 #: ping/ping_common.c:811
 #, c-format
-msgid " (truncated)\n"
-msgstr " (zkráceno)\n"
+msgid " (truncated)"
+msgstr " (zkráceno)"
 
 #: ping/ping_common.c:816
 #, c-format
@@ -1590,12 +1575,6 @@ msgstr "Je třeba, aby délka paketu byla z rozmezí: %d < hodnota <= %d"
 
 #~ msgid "Parameter Problem"
 #~ msgstr "Problém s parametrem"
-
-#~ msgid "Echo Request"
-#~ msgstr "Požadavek na echo"
-
-#~ msgid "Echo Reply"
-#~ msgstr "Odpověď echa"
 
 #~ msgid "Membership Query"
 #~ msgstr "Dotaz na členství"

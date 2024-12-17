@@ -589,11 +589,6 @@ msgstr " ayrıştırma hatası (kısaltıldı)"
 msgid " unexpected error in inet_ntop(%s)"
 msgstr " inet_ntop'ta beklenmeyen hata(%s)"
 
-#: ping/ping6_common.c:784
-#, c-format
-msgid " (truncated)"
-msgstr " (kısaltıldı)"
-
 #: ping/ping6_common.c:803
 #, c-format
 msgid " unknown qtype(0x%02x)"
@@ -904,98 +899,98 @@ msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
-msgid "Echo Reply\n"
-msgstr "Yankı Yanıtı\n"
+msgid "Echo Reply"
+msgstr "Yankı Yanıtı"
 
 #: ping/ping.c:1248
 #, c-format
-msgid "Destination Net Unreachable\n"
-msgstr "Ulaşılamayan Hedef Ağ\n"
+msgid "Destination Net Unreachable"
+msgstr "Ulaşılamayan Hedef Ağ"
 
 #: ping/ping.c:1251
 #, c-format
-msgid "Destination Host Unreachable\n"
-msgstr "Ulaşılamayan Hedef Ana Makine\n"
+msgid "Destination Host Unreachable"
+msgstr "Ulaşılamayan Hedef Ana Makine"
 
 #: ping/ping.c:1254
 #, c-format
-msgid "Destination Protocol Unreachable\n"
-msgstr "Ulaşılamayan Hedef Protokolü\n"
+msgid "Destination Protocol Unreachable"
+msgstr "Ulaşılamayan Hedef Protokolü"
 
 #: ping/ping.c:1257
 #, c-format
-msgid "Destination Port Unreachable\n"
-msgstr "Ulaşılamayan Hedef Bağlantı Noktası\n"
+msgid "Destination Port Unreachable"
+msgstr "Ulaşılamayan Hedef Bağlantı Noktası"
 
 #: ping/ping.c:1260
 #, c-format
-msgid "Frag needed and DF set (mtu = %u)\n"
-msgstr "Parçalanma (frag) gerekli ve DF ayarlandı (mtu = %u)\n"
+msgid "Frag needed and DF set (mtu = %u)"
+msgstr "Parçalanma (frag) gerekli ve DF ayarlandı (mtu = %u)"
 
 #: ping/ping.c:1263
 #, c-format
-msgid "Source Route Failed\n"
-msgstr "Kaynak Rota Başarısız\n"
+msgid "Source Route Failed"
+msgstr "Kaynak Rota Başarısız"
 
 #: ping/ping.c:1266
 #, c-format
-msgid "Destination Net Unknown\n"
-msgstr "Bilinmeyen Hedef Ağ\n"
+msgid "Destination Net Unknown"
+msgstr "Bilinmeyen Hedef Ağ"
 
 #: ping/ping.c:1269
 #, c-format
-msgid "Destination Host Unknown\n"
-msgstr "Bilinmeyen Hedef Ana Makine\n"
+msgid "Destination Host Unknown"
+msgstr "Bilinmeyen Hedef Ana Makine"
 
 #: ping/ping.c:1272
 #, c-format
-msgid "Source Host Isolated\n"
-msgstr "Yalıtılmış Kaynak Ana Makine\n"
+msgid "Source Host Isolated"
+msgstr "Yalıtılmış Kaynak Ana Makine"
 
 #: ping/ping.c:1275
 #, c-format
-msgid "Destination Net Prohibited\n"
-msgstr "Yasak Hedef Ağ\n"
+msgid "Destination Net Prohibited"
+msgstr "Yasak Hedef Ağ"
 
 #: ping/ping.c:1278
 #, c-format
-msgid "Destination Host Prohibited\n"
-msgstr "Yasak Hedef Ana Makine\n"
+msgid "Destination Host Prohibited"
+msgstr "Yasak Hedef Ana Makine"
 
 #: ping/ping.c:1281
 #, c-format
-msgid "Destination Net Unreachable for Type of Service\n"
-msgstr "Hizmet Türü için Ulaşılamayan Hedef Ağ\n"
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "Hizmet Türü için Ulaşılamayan Hedef Ağ"
 
 #: ping/ping.c:1284
 #, c-format
-msgid "Destination Host Unreachable for Type of Service\n"
-msgstr "Hizmet Türü için Ulaşılamayan Hedef Ana Makine\n"
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "Hizmet Türü için Ulaşılamayan Hedef Ana Makine"
 
 #: ping/ping.c:1287
 #, c-format
-msgid "Packet filtered\n"
-msgstr "Paket filtrelendi\n"
+msgid "Packet filtered"
+msgstr "Paket filtrelendi"
 
 #: ping/ping.c:1290
 #, c-format
-msgid "Precedence Violation\n"
-msgstr "Öncelik İhlali\n"
+msgid "Precedence Violation"
+msgstr "Öncelik İhlali"
 
 #: ping/ping.c:1293
 #, c-format
-msgid "Precedence Cutoff\n"
-msgstr "Öncelik Kesintisi\n"
+msgid "Precedence Cutoff"
+msgstr "Öncelik Kesintisi"
 
 #: ping/ping.c:1296
 #, c-format
-msgid "Dest Unreachable, Bad Code: %d\n"
-msgstr "Ulaşılamayan Hedef, Hata Kodu: %d\n"
+msgid "Dest Unreachable, Bad Code: %d"
+msgstr "Ulaşılamayan Hedef, Hata Kodu: %d"
 
 #: ping/ping.c:1303
 #, c-format
-msgid "Source Quench\n"
-msgstr "Yavaşlatılmış Kaynak\n"
+msgid "Source Quench"
+msgstr "Yavaşlatılmış Kaynak"
 
 #: ping/ping.c:1310
 #, c-format
@@ -1024,68 +1019,68 @@ msgstr "Yeniden Yönlendirme, Hata Kodu: %d"
 
 #: ping/ping.c:1333
 #, c-format
-msgid "(New nexthop: %s)\n"
-msgstr "(Yeni sonraki atlama: %s)\n"
+msgid "(New nexthop: %s)"
+msgstr "(Yeni sonraki atlama: %s)"
 
 #: ping/ping.c:1339
 #, c-format
-msgid "Echo Request\n"
-msgstr "Yankı İsteği\n"
+msgid "Echo Request"
+msgstr "Yankı İsteği"
 
 #: ping/ping.c:1345
 #, c-format
-msgid "Time to live exceeded\n"
-msgstr "Yaşam süresi aşıldı\n"
+msgid "Time to live exceeded"
+msgstr "Yaşam süresi aşıldı"
 
 #: ping/ping.c:1348
 #, c-format
-msgid "Frag reassembly time exceeded\n"
-msgstr "Parçalanma yeniden birleştirme zamanı aşıldı\n"
+msgid "Frag reassembly time exceeded"
+msgstr "Parçalanma yeniden birleştirme zamanı aşıldı"
 
 #: ping/ping.c:1351
 #, c-format
-msgid "Time exceeded, Bad Code: %d\n"
-msgstr "Süre aşıldı, Hata Kodu: %d\n"
+msgid "Time exceeded, Bad Code: %d"
+msgstr "Süre aşıldı, Hata Kodu: %d"
 
 #: ping/ping.c:1358
 #, c-format
-msgid "Parameter problem: pointer = %u\n"
-msgstr "Parametre sorunu: işaretçi = %u\n"
+msgid "Parameter problem: pointer = %u"
+msgstr "Parametre sorunu: işaretçi = %u"
 
 #: ping/ping.c:1364
 #, c-format
-msgid "Timestamp\n"
-msgstr "Zaman Damgası\n"
+msgid "Timestamp"
+msgstr "Zaman Damgası"
 
 #: ping/ping.c:1368
 #, c-format
-msgid "Timestamp Reply\n"
-msgstr "Zaman Damgası Yanıtı\n"
+msgid "Timestamp Reply"
+msgstr "Zaman Damgası Yanıtı"
 
 #: ping/ping.c:1372
 #, c-format
-msgid "Information Request\n"
-msgstr "Bilgi İsteği\n"
+msgid "Information Request"
+msgstr "Bilgi İsteği"
 
 #: ping/ping.c:1376
 #, c-format
-msgid "Information Reply\n"
-msgstr "Bilgi Yanıtı\n"
+msgid "Information Reply"
+msgstr "Bilgi Yanıtı"
 
 #: ping/ping.c:1381
 #, c-format
-msgid "Address Mask Request\n"
-msgstr "Adres Maskesi İsteği\n"
+msgid "Address Mask Request"
+msgstr "Adres Maskesi İsteği"
 
 #: ping/ping.c:1386
 #, c-format
-msgid "Address Mask Reply\n"
-msgstr "Adres Maskesi Yanıtı\n"
+msgid "Address Mask Reply"
+msgstr "Adres Maskesi Yanıtı"
 
 #: ping/ping.c:1390
 #, c-format
-msgid "Bad ICMP type: %d\n"
-msgstr "Hatalı ICMP türü: %d\n"
+msgid "Bad ICMP type: %d"
+msgstr "Hatalı ICMP türü: %d"
 
 #: ping/ping.c:1442
 #, c-format
@@ -1106,16 +1101,6 @@ msgstr "paket çok kısa(%d bayt), %s'den"
 #, c-format
 msgid "From %s: icmp_seq=%u "
 msgstr "%s'den: icmp_seq=%u "
-
-#: ping/ping.c:1699
-#, c-format
-msgid "(BAD CHECKSUM)"
-msgstr "(YANLIŞ SAĞLAMA TOPLAMI)"
-
-#: ping/ping.c:1723
-#, c-format
-msgid "(BAD CHECKSUM)\n"
-msgstr "(YANLIŞ SAĞLAMA TOPLAMI)\n"
 
 #: ping/ping_common.c:49
 #, c-format
@@ -1302,8 +1287,8 @@ msgstr " ttl=%d"
 
 #: ping/ping_common.c:811
 #, c-format
-msgid " (truncated)\n"
-msgstr " (kısaltıldı)\n"
+msgid " (truncated)"
+msgstr " (kısaltıldı)"
 
 #: ping/ping_common.c:816
 #, c-format
@@ -1622,12 +1607,6 @@ msgstr "pktlen şu aralıkta olmalıdır: %d < değer <= %d"
 
 #~ msgid "Destination Unreachable"
 #~ msgstr "Ulaşılamayan Hedef"
-
-#~ msgid "Echo Reply"
-#~ msgstr "Yankı Yanıtı"
-
-#~ msgid "Echo Request"
-#~ msgstr "Yankı İsteği"
 
 #~ msgid "Error"
 #~ msgstr "Hata"

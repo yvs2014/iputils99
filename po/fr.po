@@ -594,11 +594,6 @@ msgstr " erreur d’analyse (tronqué)"
 msgid " unexpected error in inet_ntop(%s)"
 msgstr " erreur inattendue dans inet_ntop (%s)"
 
-#: ping/ping6_common.c:784
-#, c-format
-msgid " (truncated)"
-msgstr " (tronqué)"
-
 #: ping/ping6_common.c:803
 #, c-format
 msgid " unknown qtype(0x%02x)"
@@ -909,98 +904,98 @@ msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
-msgid "Echo Reply\n"
-msgstr "Réponse Echo\n"
+msgid "Echo Reply"
+msgstr "Réponse Echo"
 
 #: ping/ping.c:1248
 #, c-format
-msgid "Destination Net Unreachable\n"
-msgstr "Réseau de destination injoignable\n"
+msgid "Destination Net Unreachable"
+msgstr "Réseau de destination injoignable"
 
 #: ping/ping.c:1251
 #, c-format
-msgid "Destination Host Unreachable\n"
-msgstr "Hôte de destination injoignable\n"
+msgid "Destination Host Unreachable"
+msgstr "Hôte de destination injoignable"
 
 #: ping/ping.c:1254
 #, c-format
-msgid "Destination Protocol Unreachable\n"
-msgstr "Protocole de destination injoignable\n"
+msgid "Destination Protocol Unreachable"
+msgstr "Protocole de destination injoignable"
 
 #: ping/ping.c:1257
 #, c-format
-msgid "Destination Port Unreachable\n"
-msgstr "Port de destination injoignable\n"
+msgid "Destination Port Unreachable"
+msgstr "Port de destination injoignable"
 
 #: ping/ping.c:1260
 #, c-format
-msgid "Frag needed and DF set (mtu = %u)\n"
-msgstr "Fragmentation nécessaire et DF est défini (mtu = %u)\n"
+msgid "Frag needed and DF set (mtu = %u)"
+msgstr "Fragmentation nécessaire et DF est défini (mtu = %u)"
 
 #: ping/ping.c:1263
 #, c-format
-msgid "Source Route Failed\n"
-msgstr "Échec de la route source\n"
+msgid "Source Route Failed"
+msgstr "Échec de la route source"
 
 #: ping/ping.c:1266
 #, c-format
-msgid "Destination Net Unknown\n"
-msgstr "Réseau de destination inconnu\n"
+msgid "Destination Net Unknown"
+msgstr "Réseau de destination inconnu"
 
 #: ping/ping.c:1269
 #, c-format
-msgid "Destination Host Unknown\n"
-msgstr "Hôte de destination inconnu\n"
+msgid "Destination Host Unknown"
+msgstr "Hôte de destination inconnu"
 
 #: ping/ping.c:1272
 #, c-format
-msgid "Source Host Isolated\n"
-msgstr "Hôte source isolé\n"
+msgid "Source Host Isolated"
+msgstr "Hôte source isolé"
 
 #: ping/ping.c:1275
 #, c-format
-msgid "Destination Net Prohibited\n"
-msgstr "Réseau de destination interdit\n"
+msgid "Destination Net Prohibited"
+msgstr "Réseau de destination interdit"
 
 #: ping/ping.c:1278
 #, c-format
-msgid "Destination Host Prohibited\n"
-msgstr "Hôte de destination interdit\n"
+msgid "Destination Host Prohibited"
+msgstr "Hôte de destination interdit"
 
 #: ping/ping.c:1281
 #, c-format
-msgid "Destination Net Unreachable for Type of Service\n"
-msgstr "Réseau de destination injoignable pour Type de service\n"
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "Réseau de destination injoignable pour Type de service"
 
 #: ping/ping.c:1284
 #, c-format
-msgid "Destination Host Unreachable for Type of Service\n"
-msgstr "Hôte de destination injoignable pour Type de service\n"
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "Hôte de destination injoignable pour Type de service"
 
 #: ping/ping.c:1287
 #, c-format
-msgid "Packet filtered\n"
-msgstr "Paquet filtré\n"
+msgid "Packet filtered"
+msgstr "Paquet filtré"
 
 #: ping/ping.c:1290
 #, c-format
-msgid "Precedence Violation\n"
-msgstr "Violation de priorité\n"
+msgid "Precedence Violation"
+msgstr "Violation de priorité"
 
 #: ping/ping.c:1293
 #, c-format
-msgid "Precedence Cutoff\n"
-msgstr "Coupure de priorité\n"
+msgid "Precedence Cutoff"
+msgstr "Coupure de priorité"
 
 #: ping/ping.c:1296
 #, c-format
-msgid "Dest Unreachable, Bad Code: %d\n"
-msgstr "Destination injoignable, mauvais code : %d\n"
+msgid "Dest Unreachable, Bad Code: %d"
+msgstr "Destination injoignable, mauvais code : %d"
 
 #: ping/ping.c:1303
 #, c-format
-msgid "Source Quench\n"
-msgstr "Terminaison de source\n"
+msgid "Source Quench"
+msgstr "Terminaison de source"
 
 #: ping/ping.c:1310
 #, c-format
@@ -1029,68 +1024,68 @@ msgstr "Redirection, mauvais code : %d"
 
 #: ping/ping.c:1333
 #, c-format
-msgid "(New nexthop: %s)\n"
-msgstr "(Nouveau sautsuivant : %s)\n"
+msgid "(New nexthop: %s)"
+msgstr "(Nouveau sautsuivant : %s)"
 
 #: ping/ping.c:1339
 #, c-format
-msgid "Echo Request\n"
-msgstr "Requête Echo\n"
+msgid "Echo Request"
+msgstr "Requête Echo"
 
 #: ping/ping.c:1345
 #, c-format
-msgid "Time to live exceeded\n"
-msgstr "Durée de vie dépassée\n"
+msgid "Time to live exceeded"
+msgstr "Durée de vie dépassée"
 
 #: ping/ping.c:1348
 #, c-format
-msgid "Frag reassembly time exceeded\n"
-msgstr "Temps de réassemblage des fragments dépassé\n"
+msgid "Frag reassembly time exceeded"
+msgstr "Temps de réassemblage des fragments dépassé"
 
 #: ping/ping.c:1351
 #, c-format
-msgid "Time exceeded, Bad Code: %d\n"
-msgstr "Temps dépassé, mauvais code : %d\n"
+msgid "Time exceeded, Bad Code: %d"
+msgstr "Temps dépassé, mauvais code : %d"
 
 #: ping/ping.c:1358
 #, c-format
-msgid "Parameter problem: pointer = %u\n"
-msgstr "Problème de paramètre : pointer = %u\n"
+msgid "Parameter problem: pointer = %u"
+msgstr "Problème de paramètre : pointer = %u"
 
 #: ping/ping.c:1364
 #, c-format
-msgid "Timestamp\n"
-msgstr "Horodatage\n"
+msgid "Timestamp"
+msgstr "Horodatage"
 
 #: ping/ping.c:1368
 #, c-format
-msgid "Timestamp Reply\n"
-msgstr "Réponse timestamp\n"
+msgid "Timestamp Reply"
+msgstr "Réponse timestamp"
 
 #: ping/ping.c:1372
 #, c-format
-msgid "Information Request\n"
-msgstr "Demande d'information\n"
+msgid "Information Request"
+msgstr "Demande d'information"
 
 #: ping/ping.c:1376
 #, c-format
-msgid "Information Reply\n"
-msgstr "Réponse d'information\n"
+msgid "Information Reply"
+msgstr "Réponse d'information"
 
 #: ping/ping.c:1381
 #, c-format
-msgid "Address Mask Request\n"
-msgstr "Requête de masque d’adresse\n"
+msgid "Address Mask Request"
+msgstr "Requête de masque d’adresse"
 
 #: ping/ping.c:1386
 #, c-format
-msgid "Address Mask Reply\n"
-msgstr "Réponse de masque d’adresse\n"
+msgid "Address Mask Reply"
+msgstr "Réponse de masque d’adresse"
 
 #: ping/ping.c:1390
 #, c-format
-msgid "Bad ICMP type: %d\n"
-msgstr "Mauvais type ICMP : %d\n"
+msgid "Bad ICMP type: %d"
+msgstr "Mauvais type ICMP : %d"
 
 #: ping/ping.c:1442
 #, c-format
@@ -1111,16 +1106,6 @@ msgstr "paquet trop court (%d bytes) de %s"
 #, c-format
 msgid "From %s: icmp_seq=%u "
 msgstr "De %s : icmp_seq=%u "
-
-#: ping/ping.c:1699
-#, c-format
-msgid "(BAD CHECKSUM)"
-msgstr "(MAUVAISE SOMME DE CONTRÔLE)"
-
-#: ping/ping.c:1723
-#, c-format
-msgid "(BAD CHECKSUM)\n"
-msgstr "(MAUVAISE SOMME DE CONTRÔLE)\n"
 
 #: ping/ping_common.c:49
 #, c-format
@@ -1317,8 +1302,8 @@ msgstr " ttl=%d"
 
 #: ping/ping_common.c:811
 #, c-format
-msgid " (truncated)\n"
-msgstr " (tronqué)\n"
+msgid " (truncated)"
+msgstr " (tronqué)"
 
 #: ping/ping_common.c:816
 #, c-format
@@ -1617,12 +1602,6 @@ msgstr "pktlen doit être entre : %d < valeur <= %d"
 
 #~ msgid "Destination Unreachable"
 #~ msgstr "Destination injoignable"
-
-#~ msgid "Echo Reply"
-#~ msgstr "Réponse Echo"
-
-#~ msgid "Echo Request"
-#~ msgstr "Requête Echo"
 
 #~ msgid "Error"
 #~ msgstr "Erreur"

@@ -527,11 +527,6 @@ msgstr ""
 msgid " unexpected error in inet_ntop(%s)"
 msgstr ""
 
-#: ping/ping6_common.c:784
-#, c-format
-msgid " (truncated)"
-msgstr ""
-
 #: ping/ping6_common.c:803
 #, c-format
 msgid " unknown qtype(0x%02x)"
@@ -825,97 +820,97 @@ msgstr ""
 
 #: ping/ping.c:1242
 #, c-format
-msgid "Echo Reply\n"
+msgid "Echo Reply"
 msgstr ""
 
 #: ping/ping.c:1248
 #, c-format
-msgid "Destination Net Unreachable\n"
+msgid "Destination Net Unreachable"
 msgstr ""
 
 #: ping/ping.c:1251
 #, c-format
-msgid "Destination Host Unreachable\n"
+msgid "Destination Host Unreachable"
 msgstr ""
 
 #: ping/ping.c:1254
 #, c-format
-msgid "Destination Protocol Unreachable\n"
+msgid "Destination Protocol Unreachable"
 msgstr ""
 
 #: ping/ping.c:1257
 #, c-format
-msgid "Destination Port Unreachable\n"
+msgid "Destination Port Unreachable"
 msgstr ""
 
 #: ping/ping.c:1260
 #, c-format
-msgid "Frag needed and DF set (mtu = %u)\n"
+msgid "Frag needed and DF set (mtu = %u)"
 msgstr ""
 
 #: ping/ping.c:1263
 #, c-format
-msgid "Source Route Failed\n"
+msgid "Source Route Failed"
 msgstr ""
 
 #: ping/ping.c:1266
 #, c-format
-msgid "Destination Net Unknown\n"
+msgid "Destination Net Unknown"
 msgstr ""
 
 #: ping/ping.c:1269
 #, c-format
-msgid "Destination Host Unknown\n"
+msgid "Destination Host Unknown"
 msgstr ""
 
 #: ping/ping.c:1272
 #, c-format
-msgid "Source Host Isolated\n"
+msgid "Source Host Isolated"
 msgstr ""
 
 #: ping/ping.c:1275
 #, c-format
-msgid "Destination Net Prohibited\n"
+msgid "Destination Net Prohibited"
 msgstr ""
 
 #: ping/ping.c:1278
 #, c-format
-msgid "Destination Host Prohibited\n"
+msgid "Destination Host Prohibited"
 msgstr ""
 
 #: ping/ping.c:1281
 #, c-format
-msgid "Destination Net Unreachable for Type of Service\n"
+msgid "Destination Net Unreachable for Type of Service"
 msgstr ""
 
 #: ping/ping.c:1284
 #, c-format
-msgid "Destination Host Unreachable for Type of Service\n"
+msgid "Destination Host Unreachable for Type of Service"
 msgstr ""
 
 #: ping/ping.c:1287
 #, c-format
-msgid "Packet filtered\n"
+msgid "Packet filtered"
 msgstr ""
 
 #: ping/ping.c:1290
 #, c-format
-msgid "Precedence Violation\n"
+msgid "Precedence Violation"
 msgstr ""
 
 #: ping/ping.c:1293
 #, c-format
-msgid "Precedence Cutoff\n"
+msgid "Precedence Cutoff"
 msgstr ""
 
 #: ping/ping.c:1296
 #, c-format
-msgid "Dest Unreachable, Bad Code: %d\n"
+msgid "Dest Unreachable, Bad Code: %d"
 msgstr ""
 
 #: ping/ping.c:1303
 #, c-format
-msgid "Source Quench\n"
+msgid "Source Quench"
 msgstr ""
 
 #: ping/ping.c:1310
@@ -945,67 +940,67 @@ msgstr ""
 
 #: ping/ping.c:1333
 #, c-format
-msgid "(New nexthop: %s)\n"
+msgid "(New nexthop: %s)"
 msgstr ""
 
 #: ping/ping.c:1339
 #, c-format
-msgid "Echo Request\n"
+msgid "Echo Request"
 msgstr ""
 
 #: ping/ping.c:1345
 #, c-format
-msgid "Time to live exceeded\n"
+msgid "Time to live exceeded"
 msgstr ""
 
 #: ping/ping.c:1348
 #, c-format
-msgid "Frag reassembly time exceeded\n"
+msgid "Frag reassembly time exceeded"
 msgstr ""
 
 #: ping/ping.c:1351
 #, c-format
-msgid "Time exceeded, Bad Code: %d\n"
+msgid "Time exceeded, Bad Code: %d"
 msgstr ""
 
 #: ping/ping.c:1358
 #, c-format
-msgid "Parameter problem: pointer = %u\n"
+msgid "Parameter problem: pointer = %u"
 msgstr ""
 
 #: ping/ping.c:1364
 #, c-format
-msgid "Timestamp\n"
+msgid "Timestamp"
 msgstr ""
 
 #: ping/ping.c:1368
 #, c-format
-msgid "Timestamp Reply\n"
+msgid "Timestamp Reply"
 msgstr ""
 
 #: ping/ping.c:1372
 #, c-format
-msgid "Information Request\n"
+msgid "Information Request"
 msgstr ""
 
 #: ping/ping.c:1376
 #, c-format
-msgid "Information Reply\n"
+msgid "Information Reply"
 msgstr ""
 
 #: ping/ping.c:1381
 #, c-format
-msgid "Address Mask Request\n"
+msgid "Address Mask Request"
 msgstr ""
 
 #: ping/ping.c:1386
 #, c-format
-msgid "Address Mask Reply\n"
+msgid "Address Mask Reply"
 msgstr ""
 
 #: ping/ping.c:1390
 #, c-format
-msgid "Bad ICMP type: %d\n"
+msgid "Bad ICMP type: %d"
 msgstr ""
 
 #: ping/ping.c:1442
@@ -1026,16 +1021,6 @@ msgstr ""
 #: ping/ping.c:1696
 #, c-format
 msgid "From %s: icmp_seq=%u "
-msgstr ""
-
-#: ping/ping.c:1699
-#, c-format
-msgid "(BAD CHECKSUM)"
-msgstr ""
-
-#: ping/ping.c:1723
-#, c-format
-msgid "(BAD CHECKSUM)\n"
 msgstr ""
 
 #: ping/ping_common.c:49
@@ -1165,7 +1150,7 @@ msgstr ""
 
 #: ping/ping_common.c:811
 #, c-format
-msgid " (truncated)\n"
+msgid " (truncated)"
 msgstr ""
 
 #: ping/ping_common.c:816

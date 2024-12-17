@@ -585,11 +585,6 @@ msgstr " 解析错误 (被截断)"
 msgid " unexpected error in inet_ntop(%s)"
 msgstr " 在 inet_ntop(%s) 发生未预期的错误"
 
-#: ping/ping6_common.c:784
-#, c-format
-msgid " (truncated)"
-msgstr " (已截断)"
-
 #: ping/ping6_common.c:803
 #, c-format
 msgid " unknown qtype(0x%02x)"
@@ -896,73 +891,73 @@ msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
-msgid "Echo Reply\n"
-msgstr "回声应答\n"
+msgid "Echo Reply"
+msgstr "回声应答"
 
 #: ping/ping.c:1248
 #, c-format
-msgid "Destination Net Unreachable\n"
-msgstr "目标网络不可达\n"
+msgid "Destination Net Unreachable"
+msgstr "目标网络不可达"
 
 #: ping/ping.c:1251
 #, c-format
-msgid "Destination Host Unreachable\n"
-msgstr "目标主机不可达\n"
+msgid "Destination Host Unreachable"
+msgstr "目标主机不可达"
 
 #: ping/ping.c:1254
 #, c-format
-msgid "Destination Protocol Unreachable\n"
-msgstr "目标协议不可达\n"
+msgid "Destination Protocol Unreachable"
+msgstr "目标协议不可达"
 
 #: ping/ping.c:1257
 #, c-format
-msgid "Destination Port Unreachable\n"
-msgstr "目标端口不可达\n"
+msgid "Destination Port Unreachable"
+msgstr "目标端口不可达"
 
 #: ping/ping.c:1260
 #, c-format
-msgid "Frag needed and DF set (mtu = %u)\n"
-msgstr "需要分段但是设置了 DF （mtu = %u）\n"
+msgid "Frag needed and DF set (mtu = %u)"
+msgstr "需要分段但是设置了 DF （mtu = %u）"
 
 #: ping/ping.c:1263
 #, c-format
-msgid "Source Route Failed\n"
-msgstr "源路由失败\n"
+msgid "Source Route Failed"
+msgstr "源路由失败"
 
 #: ping/ping.c:1266
 #, c-format
-msgid "Destination Net Unknown\n"
-msgstr "目标网络未知\n"
+msgid "Destination Net Unknown"
+msgstr "目标网络未知"
 
 #: ping/ping.c:1269
 #, c-format
-msgid "Destination Host Unknown\n"
-msgstr "目标主机未知\n"
+msgid "Destination Host Unknown"
+msgstr "目标主机未知"
 
 #: ping/ping.c:1272
 #, c-format
-msgid "Source Host Isolated\n"
-msgstr "源主机隔离\n"
+msgid "Source Host Isolated"
+msgstr "源主机隔离"
 
 #: ping/ping.c:1275
 #, c-format
-msgid "Destination Net Prohibited\n"
-msgstr "目标网络被禁止。\n"
+msgid "Destination Net Prohibited"
+msgstr "目标网络被禁止。"
 
 #: ping/ping.c:1278
 #, c-format
-msgid "Destination Host Prohibited\n"
-msgstr "目标主机被禁止\n"
+msgid "Destination Host Prohibited"
+msgstr "目标主机被禁止"
 
 #: ping/ping.c:1281
 #, c-format
-msgid "Destination Net Unreachable for Type of Service\n"
-msgstr "对于此 ToS 而言目标网络不可达\n"
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "对于此 ToS 而言目标网络不可达"
 
 #: ping/ping.c:1284
 #, c-format
-msgid "Destination Host Unreachable for Type of Service\n"
-msgstr "对于此 ToS 而言目标主机不可达\n"
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "对于此 ToS 而言目标主机不可达"
 
 #: ping/ping.c:1287
 #, c-format
@@ -1098,16 +1093,6 @@ msgstr "过短的包 (%d 字节) 来自 %s"
 #, c-format
 msgid "From %s: icmp_seq=%u "
 msgstr "来自 %s: icmp_seq=%u "
-
-#: ping/ping.c:1699
-#, c-format
-msgid "(BAD CHECKSUM)"
-msgstr "(CHECKSUM 错误)"
-
-#: ping/ping.c:1723
-#, c-format
-msgid "(BAD CHECKSUM)\n"
-msgstr "(CHECKSUM 错误)\n"
 
 #: ping/ping_common.c:49
 #, c-format
@@ -1287,8 +1272,8 @@ msgstr " ttl=%d"
 
 #: ping/ping_common.c:811
 #, c-format
-msgid " (truncated)\n"
-msgstr " (已截断)\n"
+msgid " (truncated)"
+msgstr " (已截断)"
 
 #: ping/ping_common.c:816
 #, c-format
@@ -1603,9 +1588,6 @@ msgstr "PKTLEN 必须在以下范围内： %d < 值 <= %d"
 #, fuzzy
 #~ msgid "Destination Unreachable"
 #~ msgstr "目标不可达"
-
-#~ msgid "Echo Reply"
-#~ msgstr "Echo 应答"
 
 #~ msgid "Echo Request"
 #~ msgstr "Echo 请求"

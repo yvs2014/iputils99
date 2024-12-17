@@ -279,61 +279,61 @@ void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
 {
 	switch (type) {
 	case ICMP_ECHOREPLY:
-		printf(_("Echo Reply\n"));
+		printf(_("Echo Reply"));
 		/* XXX ID + Seq + Data */
 		break;
 	case ICMP_DEST_UNREACH:
 		switch (code) {
 		case ICMP_NET_UNREACH:
-			printf(_("Destination Net Unreachable\n"));
+			printf(_("Destination Net Unreachable"));
 			break;
 		case ICMP_HOST_UNREACH:
-			printf(_("Destination Host Unreachable\n"));
+			printf(_("Destination Host Unreachable"));
 			break;
 		case ICMP_PROT_UNREACH:
-			printf(_("Destination Protocol Unreachable\n"));
+			printf(_("Destination Protocol Unreachable"));
 			break;
 		case ICMP_PORT_UNREACH:
-			printf(_("Destination Port Unreachable\n"));
+			printf(_("Destination Port Unreachable"));
 			break;
 		case ICMP_FRAG_NEEDED:
-			printf(_("Frag needed and DF set (mtu = %u)\n"), info);
+			printf(_("Frag needed and DF set (mtu = %u)"), info);
 			break;
 		case ICMP_SR_FAILED:
-			printf(_("Source Route Failed\n"));
+			printf(_("Source Route Failed"));
 			break;
 		case ICMP_NET_UNKNOWN:
-			printf(_("Destination Net Unknown\n"));
+			printf(_("Destination Net Unknown"));
 			break;
 		case ICMP_HOST_UNKNOWN:
-			printf(_("Destination Host Unknown\n"));
+			printf(_("Destination Host Unknown"));
 			break;
 		case ICMP_HOST_ISOLATED:
-			printf(_("Source Host Isolated\n"));
+			printf(_("Source Host Isolated"));
 			break;
 		case ICMP_NET_ANO:
-			printf(_("Destination Net Prohibited\n"));
+			printf(_("Destination Net Prohibited"));
 			break;
 		case ICMP_HOST_ANO:
-			printf(_("Destination Host Prohibited\n"));
+			printf(_("Destination Host Prohibited"));
 			break;
 		case ICMP_NET_UNR_TOS:
-			printf(_("Destination Net Unreachable for Type of Service\n"));
+			printf(_("Destination Net Unreachable for Type of Service"));
 			break;
 		case ICMP_HOST_UNR_TOS:
-			printf(_("Destination Host Unreachable for Type of Service\n"));
+			printf(_("Destination Host Unreachable for Type of Service"));
 			break;
 		case ICMP_PKT_FILTERED:
-			printf(_("Packet filtered\n"));
+			printf(_("Packet filtered"));
 			break;
 		case ICMP_PREC_VIOLATION:
-			printf(_("Precedence Violation\n"));
+			printf(_("Precedence Violation"));
 			break;
 		case ICMP_PREC_CUTOFF:
-			printf(_("Precedence Cutoff\n"));
+			printf(_("Precedence Cutoff"));
 			break;
 		default:
-			printf(_("Dest Unreachable, Bad Code: %d\n"), code);
+			printf(_("Dest Unreachable, Bad Code: %d"), code);
 			break;
 		}
 		if (icp && rts->opt.verbose)
@@ -366,64 +366,65 @@ void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
 			.sin_family = AF_INET,
 			.sin_addr   = { .s_addr = icp ? icp->un.gateway : htonl(info) },
 		  };
-		  printf(_("(New nexthop: %s)\n"), SPRINT_RES_ADDR(rts, &sin, sizeof(sin)));
+		  printf(_("(New nexthop: %s)"), SPRINT_RES_ADDR(rts, &sin, sizeof(sin)));
 		}
 		if (icp && rts->opt.verbose)
 			print4_iph(rts, (struct iphdr *)(icp + 1));
 		break;
 	case ICMP_ECHO:
-		printf(_("Echo Request\n"));
+		printf(_("Echo Request"));
 		/* XXX ID + Seq + Data */
 		break;
 	case ICMP_TIME_EXCEEDED:
 		switch(code) {
 		case ICMP_EXC_TTL:
-			printf(_("Time to live exceeded\n"));
+			printf(_("Time to live exceeded"));
 			break;
 		case ICMP_EXC_FRAGTIME:
-			printf(_("Frag reassembly time exceeded\n"));
+			printf(_("Frag reassembly time exceeded"));
 			break;
 		default:
-			printf(_("Time exceeded, Bad Code: %d\n"), code);
+			printf(_("Time exceeded, Bad Code: %d"), code);
 			break;
 		}
 		if (icp && rts->opt.verbose)
 			print4_iph(rts, (struct iphdr *)(icp + 1));
 		break;
 	case ICMP_PARAMETERPROB:
-		printf(_("Parameter problem: pointer = %u\n"),
+		printf(_("Parameter problem: pointer = %u"),
 			icp ? (ntohl(icp->un.gateway) >> 24) : info);
 		if (icp && rts->opt.verbose)
 			print4_iph(rts, (struct iphdr *)(icp + 1));
 		break;
 	case ICMP_TIMESTAMP:
-		printf(_("Timestamp\n"));
+		printf(_("Timestamp"));
 		/* XXX ID + Seq + 3 timestamps */
 		break;
 	case ICMP_TIMESTAMPREPLY:
-		printf(_("Timestamp Reply\n"));
+		printf(_("Timestamp Reply"));
 		/* XXX ID + Seq + 3 timestamps */
 		break;
 	case ICMP_INFO_REQUEST:
-		printf(_("Information Request\n"));
+		printf(_("Information Request"));
 		/* XXX ID + Seq */
 		break;
 	case ICMP_INFO_REPLY:
-		printf(_("Information Reply\n"));
+		printf(_("Information Reply"));
 		/* XXX ID + Seq */
 		break;
 #ifdef ICMP_MASKREQ
 	case ICMP_MASKREQ:
-		printf(_("Address Mask Request\n"));
+		printf(_("Address Mask Request"));
 		break;
 #endif
 #ifdef ICMP_MASKREPLY
 	case ICMP_MASKREPLY:
-		printf(_("Address Mask Reply\n"));
+		printf(_("Address Mask Reply"));
 		break;
 #endif
 	default:
-		printf(_("Bad ICMP type: %d\n"), type);
+		printf(_("Bad ICMP type: %d"), type);
 	}
+	putchar('\n');
 }
 

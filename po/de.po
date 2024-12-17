@@ -594,11 +594,6 @@ msgstr " Analysefehler (abgeschnitten)"
 msgid " unexpected error in inet_ntop(%s)"
 msgstr " unerwarteter Fehler in inet_ntop(%s)"
 
-#: ping/ping6_common.c:784
-#, c-format
-msgid " (truncated)"
-msgstr " (abgeschnitten)"
-
 #: ping/ping6_common.c:803
 #, c-format
 msgid " unknown qtype(0x%02x)"
@@ -908,98 +903,98 @@ msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
-msgid "Echo Reply\n"
-msgstr "Echo-Antwort\n"
+msgid "Echo Reply"
+msgstr "Echo-Antwort"
 
 #: ping/ping.c:1248
 #, c-format
-msgid "Destination Net Unreachable\n"
-msgstr "Zielnetz nicht erreichbar\n"
+msgid "Destination Net Unreachable"
+msgstr "Zielnetz nicht erreichbar"
 
 #: ping/ping.c:1251
 #, c-format
-msgid "Destination Host Unreachable\n"
-msgstr "Zielhost nicht erreichbar\n"
+msgid "Destination Host Unreachable"
+msgstr "Zielhost nicht erreichbar"
 
 #: ping/ping.c:1254
 #, c-format
-msgid "Destination Protocol Unreachable\n"
-msgstr "Zielprotokoll nicht erreichbar\n"
+msgid "Destination Protocol Unreachable"
+msgstr "Zielprotokoll nicht erreichbar"
 
 #: ping/ping.c:1257
 #, c-format
-msgid "Destination Port Unreachable\n"
-msgstr "Zielport nicht erreichbar\n"
+msgid "Destination Port Unreachable"
+msgstr "Zielport nicht erreichbar"
 
 #: ping/ping.c:1260
 #, c-format
-msgid "Frag needed and DF set (mtu = %u)\n"
-msgstr "Fragmentierung benötigt und DF gesetzt (mtu=%u)\n"
+msgid "Frag needed and DF set (mtu = %u)"
+msgstr "Fragmentierung benötigt und DF gesetzt (mtu=%u)"
 
 #: ping/ping.c:1263
 #, c-format
-msgid "Source Route Failed\n"
-msgstr "Fehler bei Quellroute\n"
+msgid "Source Route Failed"
+msgstr "Fehler bei Quellroute"
 
 #: ping/ping.c:1266
 #, c-format
-msgid "Destination Net Unknown\n"
-msgstr "Zielnetz unbekannt\n"
+msgid "Destination Net Unknown"
+msgstr "Zielnetz unbekannt"
 
 #: ping/ping.c:1269
 #, c-format
-msgid "Destination Host Unknown\n"
-msgstr "Zielhost unbekannt\n"
+msgid "Destination Host Unknown"
+msgstr "Zielhost unbekannt"
 
 #: ping/ping.c:1272
 #, c-format
-msgid "Source Host Isolated\n"
-msgstr "Quellhost isoliert\n"
+msgid "Source Host Isolated"
+msgstr "Quellhost isoliert"
 
 #: ping/ping.c:1275
 #, c-format
-msgid "Destination Net Prohibited\n"
-msgstr "Zielnetz verboten\n"
+msgid "Destination Net Prohibited"
+msgstr "Zielnetz verboten"
 
 #: ping/ping.c:1278
 #, c-format
-msgid "Destination Host Prohibited\n"
-msgstr "Zielhost verboten\n"
+msgid "Destination Host Prohibited"
+msgstr "Zielhost verboten"
 
 #: ping/ping.c:1281
 #, c-format
-msgid "Destination Net Unreachable for Type of Service\n"
-msgstr "Zielnetz unerreichbar für Typ des Dienstes\n"
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "Zielnetz unerreichbar für Typ des Dienstes"
 
 #: ping/ping.c:1284
 #, c-format
-msgid "Destination Host Unreachable for Type of Service\n"
-msgstr "Zielhost unerreichbar für Typ des Dienstes\n"
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "Zielhost unerreichbar für Typ des Dienstes"
 
 #: ping/ping.c:1287
 #, c-format
-msgid "Packet filtered\n"
-msgstr "Paket gefiltert\n"
+msgid "Packet filtered"
+msgstr "Paket gefiltert"
 
 #: ping/ping.c:1290
 #, c-format
-msgid "Precedence Violation\n"
-msgstr "Vorrangsverletzung\n"
+msgid "Precedence Violation"
+msgstr "Vorrangsverletzung"
 
 #: ping/ping.c:1293
 #, c-format
-msgid "Precedence Cutoff\n"
-msgstr "Vorrang Cutoff\n"
+msgid "Precedence Cutoff"
+msgstr "Vorrang Cutoff"
 
 #: ping/ping.c:1296
 #, c-format
-msgid "Dest Unreachable, Bad Code: %d\n"
-msgstr "Ziel nicht erreichbar, Fehlercode: %d\n"
+msgid "Dest Unreachable, Bad Code: %d"
+msgstr "Ziel nicht erreichbar, Fehlercode: %d"
 
 #: ping/ping.c:1303
 #, c-format
-msgid "Source Quench\n"
-msgstr "Quellenlöschung\n"
+msgid "Source Quench"
+msgstr "Quellenlöschung"
 
 #: ping/ping.c:1310
 #, c-format
@@ -1028,68 +1023,68 @@ msgstr "Leite um, Fehlercode: %d"
 
 #: ping/ping.c:1333
 #, c-format
-msgid "(New nexthop: %s)\n"
-msgstr "(Neuer Nexthop: %s)\n"
+msgid "(New nexthop: %s)"
+msgstr "(Neuer Nexthop: %s)"
 
 #: ping/ping.c:1339
 #, c-format
-msgid "Echo Request\n"
-msgstr "Echo-Anforderung\n"
+msgid "Echo Request"
+msgstr "Echo-Anforderung"
 
 #: ping/ping.c:1345
 #, c-format
-msgid "Time to live exceeded\n"
-msgstr "Lebenszeit überschritten\n"
+msgid "Time to live exceeded"
+msgstr "Lebenszeit überschritten"
 
 #: ping/ping.c:1348
 #, c-format
-msgid "Frag reassembly time exceeded\n"
-msgstr "Fragmentierungs-Wiederherstellungszeit überschritten\n"
+msgid "Frag reassembly time exceeded"
+msgstr "Fragmentierungs-Wiederherstellungszeit überschritten"
 
 #: ping/ping.c:1351
 #, c-format
-msgid "Time exceeded, Bad Code: %d\n"
-msgstr "Zeit überschritten, schlechter Code: %d\n"
+msgid "Time exceeded, Bad Code: %d"
+msgstr "Zeit überschritten, schlechter Code: %d"
 
 #: ping/ping.c:1358
 #, c-format
-msgid "Parameter problem: pointer = %u\n"
-msgstr "Parameterproblem: Zeiger = %u\n"
+msgid "Parameter problem: pointer = %u"
+msgstr "Parameterproblem: Zeiger = %u"
 
 #: ping/ping.c:1364
 #, c-format
-msgid "Timestamp\n"
-msgstr "Zeitstempel\n"
+msgid "Timestamp"
+msgstr "Zeitstempel"
 
 #: ping/ping.c:1368
 #, c-format
-msgid "Timestamp Reply\n"
-msgstr "Zeitstempel-Antwort\n"
+msgid "Timestamp Reply"
+msgstr "Zeitstempel-Antwort"
 
 #: ping/ping.c:1372
 #, c-format
-msgid "Information Request\n"
-msgstr "Informationsanfrage\n"
+msgid "Information Request"
+msgstr "Informationsanfrage"
 
 #: ping/ping.c:1376
 #, c-format
-msgid "Information Reply\n"
-msgstr "Informationsantwort\n"
+msgid "Information Reply"
+msgstr "Informationsantwort"
 
 #: ping/ping.c:1381
 #, c-format
-msgid "Address Mask Request\n"
-msgstr "Adressmaske-Anfrage\n"
+msgid "Address Mask Request"
+msgstr "Adressmaske-Anfrage"
 
 #: ping/ping.c:1386
 #, c-format
-msgid "Address Mask Reply\n"
-msgstr "Adressmaske-Antwort\n"
+msgid "Address Mask Reply"
+msgstr "Adressmaske-Antwort"
 
 #: ping/ping.c:1390
 #, c-format
-msgid "Bad ICMP type: %d\n"
-msgstr "Falscher ICMP-Typ: %d\n"
+msgid "Bad ICMP type: %d"
+msgstr "Falscher ICMP-Typ: %d"
 
 #: ping/ping.c:1442
 #, c-format
@@ -1110,16 +1105,6 @@ msgstr "Paket zu kurz (%d Bytes) aus %s"
 #, c-format
 msgid "From %s: icmp_seq=%u "
 msgstr "Von %s: icmp_seq=%u "
-
-#: ping/ping.c:1699
-#, c-format
-msgid "(BAD CHECKSUM)"
-msgstr "(FALSCHE PRÜFSUMME)"
-
-#: ping/ping.c:1723
-#, c-format
-msgid "(BAD CHECKSUM)\n"
-msgstr "(FALSCHE PRÜFSUMME)\n"
 
 #: ping/ping_common.c:49
 #, c-format
@@ -1311,8 +1296,8 @@ msgstr " ttl=%d"
 
 #: ping/ping_common.c:811
 #, c-format
-msgid " (truncated)\n"
-msgstr " (abgeschnitten)\n"
+msgid " (truncated)"
+msgstr " (abgeschnitten)"
 
 #: ping/ping_common.c:816
 #, c-format

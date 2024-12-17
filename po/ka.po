@@ -591,11 +591,6 @@ msgstr " დამუშავების შეცდომა (წაკვ�
 msgid " unexpected error in inet_ntop(%s)"
 msgstr " მოულოდნელი შეცდომა inet_ntop(%s)-ში"
 
-#: ping/ping6_common.c:784
-#, c-format
-msgid " (truncated)"
-msgstr " (წაკვეთილია)"
-
 #: ping/ping6_common.c:803
 #, c-format
 msgid " unknown qtype(0x%02x)"
@@ -909,98 +904,98 @@ msgstr "  %02x  %02x%04x"
 
 #: ping/ping.c:1242
 #, c-format
-msgid "Echo Reply\n"
-msgstr "პასუხი ექოზე\n"
+msgid "Echo Reply"
+msgstr "პასუხი ექოზე"
 
 #: ping/ping.c:1248
 #, c-format
-msgid "Destination Net Unreachable\n"
-msgstr "სამიზნე ქსელი მიუწვდომელია\n"
+msgid "Destination Net Unreachable"
+msgstr "სამიზნე ქსელი მიუწვდომელია"
 
 #: ping/ping.c:1251
 #, c-format
-msgid "Destination Host Unreachable\n"
-msgstr "სამიზნე ჰოსტი ხელმიუწვდომელია\n"
+msgid "Destination Host Unreachable"
+msgstr "სამიზნე ჰოსტი ხელმიუწვდომელია"
 
 #: ping/ping.c:1254
 #, c-format
-msgid "Destination Protocol Unreachable\n"
-msgstr "სამიზნე პროტოკოლი ხელმიუწვდომელია\n"
+msgid "Destination Protocol Unreachable"
+msgstr "სამიზნე პროტოკოლი ხელმიუწვდომელია"
 
 #: ping/ping.c:1257
 #, c-format
-msgid "Destination Port Unreachable\n"
-msgstr "სამიზნე პორტი ხელმიუწვდომელია\n"
+msgid "Destination Port Unreachable"
+msgstr "სამიზნე პორტი ხელმიუწვდომელია"
 
 #: ping/ping.c:1260
 #, c-format
-msgid "Frag needed and DF set (mtu = %u)\n"
-msgstr "საჭიროა DF ბიტისა და დახლეჩვის ჩართვა (mtu = %u)\n"
+msgid "Frag needed and DF set (mtu = %u)"
+msgstr "საჭიროა DF ბიტისა და დახლეჩვის ჩართვა (mtu = %u)"
 
 #: ping/ping.c:1263
 #, c-format
-msgid "Source Route Failed\n"
-msgstr "საწყისი რაუტის შეცდომა\n"
+msgid "Source Route Failed"
+msgstr "საწყისი რაუტის შეცდომა"
 
 #: ping/ping.c:1266
 #, c-format
-msgid "Destination Net Unknown\n"
-msgstr "სამიზნე ქსელი უცნობია\n"
+msgid "Destination Net Unknown"
+msgstr "სამიზნე ქსელი უცნობია"
 
 #: ping/ping.c:1269
 #, c-format
-msgid "Destination Host Unknown\n"
-msgstr "სამიზნე ჰოსტი უცნობია\n"
+msgid "Destination Host Unknown"
+msgstr "სამიზნე ჰოსტი უცნობია"
 
 #: ping/ping.c:1272
 #, c-format
-msgid "Source Host Isolated\n"
-msgstr "საწყისი ჰოსტი იზოლირებულია\n"
+msgid "Source Host Isolated"
+msgstr "საწყისი ჰოსტი იზოლირებულია"
 
 #: ping/ping.c:1275
 #, c-format
-msgid "Destination Net Prohibited\n"
-msgstr "სამიზნე ქსელი აკრძალულია\n"
+msgid "Destination Net Prohibited"
+msgstr "სამიზნე ქსელი აკრძალულია"
 
 #: ping/ping.c:1278
 #, c-format
-msgid "Destination Host Prohibited\n"
-msgstr "სამიზნე ჰოსტი აკრძალულია\n"
+msgid "Destination Host Prohibited"
+msgstr "სამიზნე ჰოსტი აკრძალულია"
 
 #: ping/ping.c:1281
 #, c-format
-msgid "Destination Net Unreachable for Type of Service\n"
-msgstr "TOS-ის სამიზნე ქსელი მიუწვდომელია\n"
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "TOS-ის სამიზნე ქსელი მიუწვდომელია"
 
 #: ping/ping.c:1284
 #, c-format
-msgid "Destination Host Unreachable for Type of Service\n"
-msgstr "ToS-ისთვის სამიზნე ჰოსტი მიუწვდომელია\n"
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "ToS-ისთვის სამიზნე ჰოსტი მიუწვდომელია"
 
 #: ping/ping.c:1287
 #, c-format
-msgid "Packet filtered\n"
-msgstr "პაკეტი გაიფილტრა\n"
+msgid "Packet filtered"
+msgstr "პაკეტი გაიფილტრა"
 
 #: ping/ping.c:1290
 #, c-format
-msgid "Precedence Violation\n"
-msgstr "თანამიმდევრობის დარღვევა\n"
+msgid "Precedence Violation"
+msgstr "თანამიმდევრობის დარღვევა"
 
 #: ping/ping.c:1293
 #, c-format
-msgid "Precedence Cutoff\n"
-msgstr "თანამიმდევრობის ამოჭრა\n"
+msgid "Precedence Cutoff"
+msgstr "თანამიმდევრობის ამოჭრა"
 
 #: ping/ping.c:1296
 #, c-format
-msgid "Dest Unreachable, Bad Code: %d\n"
-msgstr "სამიზნე მიუწვდომელია. კოდი: %d\n"
+msgid "Dest Unreachable, Bad Code: %d"
+msgstr "სამიზნე მიუწვდომელია. კოდი: %d"
 
 #: ping/ping.c:1303
 #, c-format
-msgid "Source Quench\n"
-msgstr "წყაროს შეწყვეტა\n"
+msgid "Source Quench"
+msgstr "წყაროს შეწყვეტა"
 
 #: ping/ping.c:1310
 #, c-format
@@ -1029,68 +1024,68 @@ msgstr "გადამისამართება ცუდი კოდი�
 
 #: ping/ping.c:1333
 #, c-format
-msgid "(New nexthop: %s)\n"
-msgstr "(ახალი შემდგომი ჰოპია: %s)\n"
+msgid "(New nexthop: %s)"
+msgstr "(ახალი შემდგომი ჰოპია: %s)"
 
 #: ping/ping.c:1339
 #, c-format
-msgid "Echo Request\n"
-msgstr "ექოს მოთხოვნა\n"
+msgid "Echo Request"
+msgstr "ექოს მოთხოვნა"
 
 #: ping/ping.c:1345
 #, c-format
-msgid "Time to live exceeded\n"
-msgstr "TTL გადაჭარბებულია\n"
+msgid "Time to live exceeded"
+msgstr "TTL გადაჭარბებულია"
 
 #: ping/ping.c:1348
 #, c-format
-msgid "Frag reassembly time exceeded\n"
-msgstr "დანახლეჩის აწყობის დრო გავიდა\n"
+msgid "Frag reassembly time exceeded"
+msgstr "დანახლეჩის აწყობის დრო გავიდა"
 
 #: ping/ping.c:1351
 #, c-format
-msgid "Time exceeded, Bad Code: %d\n"
-msgstr "დრო გასულია. ცუდი კოდი: %d\n"
+msgid "Time exceeded, Bad Code: %d"
+msgstr "დრო გასულია. ცუდი კოდი: %d"
 
 #: ping/ping.c:1358
 #, c-format
-msgid "Parameter problem: pointer = %u\n"
-msgstr "პარამეტრის პრობლემა: მაჩვენებელი = %u\n"
+msgid "Parameter problem: pointer = %u"
+msgstr "პარამეტრის პრობლემა: მაჩვენებელი = %u"
 
 #: ping/ping.c:1364
 #, c-format
-msgid "Timestamp\n"
-msgstr "დროის სანიშნი\n"
+msgid "Timestamp"
+msgstr "დროის სანიშნი"
 
 #: ping/ping.c:1368
 #, c-format
-msgid "Timestamp Reply\n"
-msgstr "დროის სანიშნის პასუხი\n"
+msgid "Timestamp Reply"
+msgstr "დროის სანიშნის პასუხი"
 
 #: ping/ping.c:1372
 #, c-format
-msgid "Information Request\n"
-msgstr "ინფორმაციის მოთხოვნა\n"
+msgid "Information Request"
+msgstr "ინფორმაციის მოთხოვნა"
 
 #: ping/ping.c:1376
 #, c-format
-msgid "Information Reply\n"
-msgstr "საპასუხო ინფორმაცია\n"
+msgid "Information Reply"
+msgstr "საპასუხო ინფორმაცია"
 
 #: ping/ping.c:1381
 #, c-format
-msgid "Address Mask Request\n"
-msgstr "მისამართის ნიღბის მოთხოვნა\n"
+msgid "Address Mask Request"
+msgstr "მისამართის ნიღბის მოთხოვნა"
 
 #: ping/ping.c:1386
 #, c-format
-msgid "Address Mask Reply\n"
-msgstr "მისამართის ნიღბის პასუხი\n"
+msgid "Address Mask Reply"
+msgstr "მისამართის ნიღბის პასუხი"
 
 #: ping/ping.c:1390
 #, c-format
-msgid "Bad ICMP type: %d\n"
-msgstr "ICMP-ის არასწორი ტიპი: %d\n"
+msgid "Bad ICMP type: %d"
+msgstr "ICMP-ის არასწორი ტიპი: %d"
 
 #: ping/ping.c:1442
 #, c-format
@@ -1111,16 +1106,6 @@ msgstr "პაკეტი ძალიან მოკლეა (%d ბაი�
 #, c-format
 msgid "From %s: icmp_seq=%u "
 msgstr "%s-დან: icmp_seq=%u "
-
-#: ping/ping.c:1699
-#, c-format
-msgid "(BAD CHECKSUM)"
-msgstr "(არასწორი საკონტროლო ჯამი)"
-
-#: ping/ping.c:1723
-#, c-format
-msgid "(BAD CHECKSUM)\n"
-msgstr "(არასწორი საკონტროლო ჯამი)\n"
 
 #: ping/ping_common.c:49
 #, c-format
@@ -1319,8 +1304,8 @@ msgstr " ttl =%d"
 
 #: ping/ping_common.c:811
 #, c-format
-msgid " (truncated)\n"
-msgstr " (მოკვეცილია)\n"
+msgid " (truncated)"
+msgstr " (მოკვეცილია)"
 
 #: ping/ping_common.c:816
 #, c-format

@@ -140,24 +140,6 @@ static inline void ping4_raw_ack(int sockfd) {
 		error(2, errno, "setsockopt(ICMP_FILTER)");
 }
 
-// func_set:receive_error:print_addr_seq
-static inline void ping4_print_addr_seq(struct ping_rts *rts, uint16_t seq,
-	const struct sock_extended_err *ee, socklen_t salen)
-{
-	rts->nerrors++;
-	if (rts->opt.quiet)
-		return;
-	if (rts->opt.flood)
-		write(STDOUT_FILENO, "\bE", 2);
-	else {
-		PRINT_TIMESTAMP;
-		const void *sa = ee + 1;
-		printf(_("From %s icmp_seq=%u "), SPRINT_RES_ADDR(rts, sa, salen), seq);
-		print4_icmph(rts, ee->ee_type, ee->ee_code, ee->ee_info, NULL);
-		fflush(stdout);
-	}
-}
-
 // func_set:receive_error
 static int ping4_receive_error(struct ping_rts *rts, const socket_st *sock) {
 	int saved_errno = errno;
@@ -206,7 +188,7 @@ static int ping4_receive_error(struct ping_rts *rts, const socket_st *sock) {
 				acknowledge(rts, seq);
 				if (sock->raw)
 					ping4_raw_ack(sock->fd);
-				ping4_print_addr_seq(rts, seq, ee, sizeof(struct sockaddr_in));
+				print_addr_seq(rts, seq, ee, sizeof(struct sockaddr_in));
 			}
 		}
 	}
@@ -222,47 +204,40 @@ static int ping4_receive_error(struct ping_rts *rts, const socket_st *sock) {
  * program to be run without having intermingled output (or statistics!).
  */
 // func_set:parse_reply
-static int ping4_parse_reply(struct ping_rts *rts, bool rawsock,
+static bool ping4_parse_reply(struct ping_rts *rts, bool rawsock,
 	struct msghdr *msg, size_t received, void *addr, const struct timeval *at)
 {
 	struct sockaddr_in *from = addr;
-	uint8_t *buf = msg->msg_iov->iov_base;
-	struct icmphdr *icp;
-	struct iphdr *ip;
-	size_t hlen;
-	int csfailed;
-	struct cmsghdr *cmsgh;
-	int reply_ttl;
-	uint8_t *opts, *tmp_ttl;
-	int olen;
-	bool wrong_source = false;
+	uint8_t *base = msg->msg_iov->iov_base;
 
 	/* Check the IP header */
-	ip = (struct iphdr *)buf;
+	struct iphdr *ip = (struct iphdr *)base;
+	size_t hlen   = 0;
+	int reply_ttl = 0;
+	uint8_t *opts = base;
+	ssize_t olen  = 0;
 	if (rawsock) {
 		hlen = ip->ihl * 4;
 		if ((received < (hlen + 8)) || (ip->ihl < 5)) {
 			if (rts->opt.verbose)
 				error(0, 0, _("packet too short (%zd bytes) from %s"), received,
 					SPRINT_RES_ADDR(rts, from, sizeof(*from)));
-			return 1;
+			return true;
 		}
 		reply_ttl = ip->ttl;
-		opts = buf + sizeof(struct iphdr);
-		olen = hlen - sizeof(struct iphdr);
+		opts += sizeof(struct iphdr);
+		olen = (ssize_t)hlen - sizeof(struct iphdr);
 	} else {
-		hlen = 0;
-		reply_ttl = 0;
-		opts = buf;
-		olen = 0;
-		for (cmsgh = CMSG_FIRSTHDR(msg); cmsgh; cmsgh = CMSG_NXTHDR(msg, cmsgh)) {
+		for (struct cmsghdr *cmsgh = CMSG_FIRSTHDR(msg); cmsgh;
+				cmsgh = CMSG_NXTHDR(msg, cmsgh))
+		{
 			if (cmsgh->cmsg_level != SOL_IP)
 				continue;
 			if (cmsgh->cmsg_type == IP_TTL) {
 				if (cmsgh->cmsg_len < sizeof(int))
 					continue;
-				tmp_ttl = (uint8_t *)CMSG_DATA(cmsgh);
-				reply_ttl = (int)*tmp_ttl;
+				uint8_t *ttl = CMSG_DATA(cmsgh);
+				reply_ttl = (int)*ttl;
 			} else if (cmsgh->cmsg_type == IP_RETOPTS) {
 				opts = (uint8_t *)CMSG_DATA(cmsgh);
 				olen = cmsgh->cmsg_len;
@@ -270,32 +245,34 @@ static int ping4_parse_reply(struct ping_rts *rts, bool rawsock,
 		}
 	}
 
-	/* Now the ICMP part */
+	if (received < (hlen + 8)) {
+		if (rts->opt.verbose)
+			error(0, 0, _("packet too short: %zd bytes"), received);
+		return true;
+	}
 	received -= hlen;
-	icp = (struct icmphdr *)(buf + hlen);
-	csfailed = in_cksum((unsigned short *)icp, received, 0);
+
+	/* Now the ICMP part */
+	struct icmphdr *icp = (struct icmphdr *)(base + hlen);
+	int csfailed = in_cksum((unsigned short *)icp, received, 0);
 
 	if (icp->type == ICMP_ECHOREPLY) {
 		if (!IS_OURS(rts, rawsock, icp->un.echo.id))
-			return 1;	/* 'Twas not our ECHO */
+			return true;	/* 'Twas not our ECHO */
 		struct sockaddr_in *sin = (struct sockaddr_in *)&rts->whereto;
-		if (!rts->opt.broadcast && !rts->multicast &&
-		    from->sin_addr.s_addr != sin->sin_addr.s_addr)
-			wrong_source = true;
+		bool okay = (from->sin_addr.s_addr == sin->sin_addr.s_addr)
+			|| rts->opt.broadcast || rts->multicast;
 		if (gather_stats(rts, (uint8_t *)icp, sizeof(*icp), received,
-			ntohs(icp->un.echo.sequence), reply_ttl, 0, at,
-			SPRINT_RES_ADDR(rts, from, sizeof(*from)),
-			print_echo_reply, rts->multicast, wrong_source))
-		{
-			fflush(stdout);
-			return 0;
-		}
+				ntohs(icp->un.echo.sequence), reply_ttl, 0, at,
+				SPRINT_RES_ADDR(rts, from, sizeof(*from)),
+				print_echo_reply, rts->multicast, !okay))
+			return false;
 	} else {
 		/* We fall here when a redirect or source quench arrived */
 		switch (icp->type) {
 		case ICMP_ECHO:
 			/* MUST NOT */
-			return 1;
+			return true;
 		case ICMP_SOURCE_QUENCH:
 		case ICMP_REDIRECT:
 		case ICMP_DEST_UNREACH:
@@ -308,28 +285,28 @@ static int ping4_parse_reply(struct ping_rts *rts, bool rawsock,
 				int error_pkt;
 				size_t minhl = 8 + iph->ihl * 4 + 8;
 				if ((received < (8 + sizeof(struct iphdr) + 8)) || (received < minhl))
-					return 1;
+					return true;
 				struct sockaddr_in *sin = (struct sockaddr_in *)&rts->whereto;
 				if ((icp1->type != ICMP_ECHO)            ||
 				    (iph->daddr != sin->sin_addr.s_addr) ||
 				    !IS_OURS(rts, rawsock, icp1->un.echo.id))
-					return 1;
+					return true;
 				error_pkt = (icp->type != ICMP_REDIRECT &&
 					     icp->type != ICMP_SOURCE_QUENCH);
 				if (error_pkt) {
 					acknowledge(rts, ntohs(icp1->un.echo.sequence));
-					return 0;
+					return false;
 				}
 				if (rts->opt.quiet || rts->opt.flood)
-					return 1;
+					return true;
 				PRINT_TIMESTAMP;
 				printf(_("From %s: icmp_seq=%u "),
 					SPRINT_RES_ADDR(rts, from, sizeof(*from)),
 					ntohs(icp1->un.echo.sequence));
 				if (csfailed)
-					printf(_("(BAD CHECKSUM)"));
+					printf(_(" (BAD CHECKSUM!)"));
 				print4_icmph(rts, icp->type, icp->code, ntohl(icp->un.gateway), icp);
-				return 1;
+				return true;
 			}
 		default:
 			/* MUST NOT */
@@ -337,10 +314,10 @@ static int ping4_parse_reply(struct ping_rts *rts, bool rawsock,
 		}
 		if (rts->opt.flood && !(rts->opt.verbose || rts->opt.quiet)) {
 			write(STDOUT_FILENO, "!EC", csfailed ? 3 : 2);
-			return 0;
+			return false;
 		}
 		if (!rts->opt.verbose || rts->uid)
-			return 0;
+			return false;
 		if (rts->opt.ptimeofday) {
 			struct timeval recv_time;
 			gettimeofday(&recv_time, NULL);
@@ -348,13 +325,14 @@ static int ping4_parse_reply(struct ping_rts *rts, bool rawsock,
 		}
 		printf(_("From %s: "), SPRINT_RES_ADDR(rts, from, sizeof(*from)));
 		if (csfailed) {
-			printf(_("(BAD CHECKSUM)\n"));
-			return 0;
+			printf(_(" (BAD CHECKSUM!)"));
+			putchar('\n');
+			return false;
 		}
 		print4_icmph(rts, icp->type, icp->code, ntohl(icp->un.gateway), icp);
-		return 0;
+		fflush(stdout);
+		return false;
 	}
-
 	if (rts->opt.audible) {
 		putchar('\a');
 		if (rts->opt.flood)
@@ -365,7 +343,7 @@ static int ping4_parse_reply(struct ping_rts *rts, bool rawsock,
 		putchar('\n');
 		fflush(stdout);
 	}
-	return 0;
+	return false;
 }
 
 

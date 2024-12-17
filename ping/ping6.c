@@ -116,25 +116,6 @@ static ssize_t ping6_send_probe(struct ping_rts *rts, int sockfd,
 	return (rc == len) ? 0 : rc;
 }
 
-// func_set:receive_error:print_addr_seq
-static inline void ping6_print_addr_seq(struct ping_rts *rts, uint16_t seq,
-	const struct sock_extended_err *ee, socklen_t salen)
-{
-	rts->nerrors++;
-	if (rts->opt.quiet)
-		return;
-	if (rts->opt.flood)
-		write(STDOUT_FILENO, "\bE", 2);
-	else {
-		PRINT_TIMESTAMP;
-		const void *sa = ee + 1;
-		printf(_("From %s icmp_seq=%u "), SPRINT_RES_ADDR(rts, sa, salen), seq);
-		print6_icmp(ee->ee_type, ee->ee_code, ee->ee_info);
-		putchar('\n');
-		fflush(stdout);
-	}
-}
-
 // func_set:receive_error
 static int ping6_receive_error(struct ping_rts *rts, const socket_st *sock) {
 	int saved_errno = errno;
@@ -179,8 +160,8 @@ static int ping6_receive_error(struct ping_rts *rts, const socket_st *sock) {
 				saved_errno = 0;
 			else {
 				net_errors++;
-				ping6_print_addr_seq(rts, ntohs(icmph.icmp6_seq),
-					ee, sizeof(struct sockaddr_in6));
+				print_addr_seq(rts, ntohs(icmph.icmp6_seq), ee,
+					sizeof(struct sockaddr_in6));
 			}
 		}
 	}
@@ -189,6 +170,19 @@ static int ping6_receive_error(struct ping_rts *rts, const socket_st *sock) {
 }
 
 
+// func_set:parse_reply:fin
+static inline void ping6_parse_reply_fin(bool audible, bool flood) {
+	if (audible) {
+		putchar('\a');
+		if (flood)
+			fflush(stdout);
+	}
+	if (!flood) {
+		putchar('\n');
+		fflush(stdout);
+	}
+}
+
 /*
  *	Print out the packet, if it came from us.  This logic is necessary
  * because ALL readers of the ICMP socket get a copy of ALL ICMP packets
@@ -196,17 +190,14 @@ static int ping6_receive_error(struct ping_rts *rts, const socket_st *sock) {
  * program to be run without having intermingled output (or statistics!).
  */
 // func_set:parse_reply
-static int ping6_parse_reply(struct ping_rts *rts, bool rawsock,
+static bool ping6_parse_reply(struct ping_rts *rts, bool rawsock,
 	struct msghdr *msg, size_t received, void *addr, const struct timeval *at)
 {
 	struct sockaddr_in6 *from = addr;
-	uint8_t *buf = msg->msg_iov->iov_base;
-	struct cmsghdr *c;
-	struct icmp6_hdr *icmph;
-	int hops = -1;
-	bool wrong_source = false;
+	uint8_t *base = msg->msg_iov->iov_base;
 
-	for (c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c)) {
+	int hops = -1;
+	for (struct cmsghdr *c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c)) {
 		if (c->cmsg_level != IPPROTO_IPV6)
 			continue;
 		switch (c->cmsg_type) {
@@ -220,61 +211,53 @@ static int ping6_parse_reply(struct ping_rts *rts, bool rawsock,
 		}
 	}
 
-
-	/* Now the ICMP part */
-
-	icmph = (struct icmp6_hdr *)buf;
 	if (received < 8) {
 		if (rts->opt.verbose)
 			error(0, 0, _("packet too short: %zd bytes"), received);
-		return 1;
+		return true;
 	}
 
+	/* Now the ICMP part */
+	struct icmp6_hdr *icmph = (struct icmp6_hdr *)base;
 	struct sockaddr_in6 *whereto = (struct sockaddr_in6 *)&rts->whereto;
+
 	if (icmph->icmp6_type == ICMP6_ECHO_REPLY) {
 		if (!IS_OURS(rts, rawsock, icmph->icmp6_id))
-			return 1;
-		if (!rts->multicast && !rts->subnet_router_anycast &&
-		    memcmp(&from->sin6_addr.s6_addr, &whereto->sin6_addr.s6_addr, 16))
-			wrong_source = true;
+			return true;
+		bool okay =
+		    !memcmp(&from->sin6_addr.s6_addr, &whereto->sin6_addr.s6_addr, 16)
+		    || rts->multicast || rts->subnet_router_anycast;
 		if (gather_stats(rts, (uint8_t *)icmph, sizeof(*icmph), received,
-			ntohs(icmph->icmp6_seq), hops, 0, at,
-			SPRINT_RES_ADDR(rts, from, sizeof(*from)),
-			print_echo_reply, rts->multicast, wrong_source))
-		{
-			fflush(stdout);
-			return 0;
-		}
+				ntohs(icmph->icmp6_seq), hops, 0, at,
+				SPRINT_RES_ADDR(rts, from, sizeof(*from)),
+				print_echo_reply, rts->multicast, !okay))
+			return false;
 	} else if (icmph->icmp6_type == IPUTILS_NI_ICMP6_REPLY) {
 		struct ni_hdr *nih = (struct ni_hdr *)icmph;
 		int seq = niquery_check_nonce(&rts->ni, nih->ni_nonce);
 		if (seq < 0)
-			return 1;
+			return true;
 		if (gather_stats(rts, (uint8_t *)icmph, sizeof(*icmph), received,
-			seq, hops, 0, at,
-			SPRINT_RES_ADDR(rts, from, sizeof(*from)),
-			print6_ni_reply, rts->multicast, false))
-			return 0;
+				seq, hops, 0, at,
+				SPRINT_RES_ADDR(rts, from, sizeof(*from)),
+				print6_ni_reply, rts->multicast, false))
+			return false;
 	} else {
-		int nexthdr;
-		struct ip6_hdr *iph1 = (struct ip6_hdr *)(icmph + 1);
-		struct icmp6_hdr *icmph1 = (struct icmp6_hdr *)(iph1 + 1);
-
 		/* We must not ever fall here. All the messages but
 		 * echo reply are blocked by filter and error are
 		 * received with IPV6_RECVERR. Ugly code is preserved
 		 * however, just to remember what crap we avoided
 		 * using RECVRERR. :-)
 		 */
-
+		int nexthdr;
+		struct ip6_hdr *iph1 = (struct ip6_hdr *)(icmph + 1);
+		struct icmp6_hdr *icmph1 = (struct icmp6_hdr *)(iph1 + 1);
 		if (received < (8 + sizeof(struct ip6_hdr) + 8))
-			return 1;
-
+			return true;
 		if (memcmp(&iph1->ip6_dst, &whereto->sin6_addr, sizeof(whereto->sin6_addr)))
-			return 1;
+			return true;
 
 		nexthdr = iph1->ip6_nxt;
-
 		if (nexthdr == NEXTHDR_FRAGMENT) {
 			nexthdr = *(uint8_t *)icmph1;
 			icmph1++;
@@ -282,31 +265,21 @@ static int ping6_parse_reply(struct ping_rts *rts, bool rawsock,
 		if (nexthdr == IPPROTO_ICMPV6) {
 			if (icmph1->icmp6_type != ICMP6_ECHO_REQUEST ||
 			    !IS_OURS(rts, rawsock, icmph1->icmp6_id))
-				return 1;
+				return true;
 			acknowledge(rts, ntohs(icmph1->icmp6_seq));
-			return 0;
+			return false;
 		}
 
 		/* We've got something other than an ECHOREPLY */
 		if (!rts->opt.verbose || rts->uid)
-			return 1;
+			return true;
 		PRINT_TIMESTAMP;
 		printf(_("From %s: "), SPRINT_RES_ADDR(rts, from, sizeof(*from)));
 		print6_icmp(icmph->icmp6_type, icmph->icmp6_code, ntohl(icmph->icmp6_mtu));
 	}
-
-	if (rts->opt.audible) {
-		putchar('\a');
-		if (rts->opt.flood)
-			fflush(stdout);
-	}
-	if (!rts->opt.flood) {
-		putchar('\n');
-		fflush(stdout);
-	}
-	return 0;
+	ping6_parse_reply_fin(rts->opt.audible, rts->opt.flood);
+	return false;
 }
-
 
 // func_set:install_filter
 static void ping6_install_filter(uint16_t ident, int sockfd) {
