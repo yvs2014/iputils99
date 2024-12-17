@@ -62,7 +62,9 @@
 static uid_t euid;
 #endif
 
+#include <netinet/ip_icmp.h>
 #include <linux/sockios.h>
+#include <linux/filter.h>
 
 #define MIN_USER_INTERVAL_MS	2	// Minimal allowed interval for non-root for single host ping
 #define MIN_INTERVAL_MS		10	// Minimal interpacket gap
@@ -665,6 +667,49 @@ static void fin_status(const struct ping_rts *rts) {
 	in_fin_status = false;
 }
 
+static inline void install_filter(bool ip6, uint16_t ident, int sockfd) {
+	static struct sock_filter insns4[] = {
+		BPF_STMT(BPF_LDX | BPF_B   | BPF_MSH, 0),	/* Skip IP header due BSD, see ping6 */
+		BPF_STMT(BPF_LD  | BPF_H   | BPF_IND, 4),	/* Load icmp echo ident */
+		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, 0xAAAA, 0, 1), /* Ours? */
+		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Yes, it passes */
+		BPF_STMT(BPF_LD  | BPF_B   | BPF_IND, 0),	/* Load icmp type */
+		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, ICMP_ECHOREPLY, 1, 0), /* Echo? */
+		BPF_STMT(BPF_RET | BPF_K, 0xFFFFFFF),		/* No. It passes. */
+		BPF_STMT(BPF_RET | BPF_K, 0)			/* Reject echo with wrong ident */
+	};
+	static struct sock_fprog filter4 = {
+		.len    = sizeof(insns4) / sizeof(insns4[0]),
+		.filter = insns4,
+	};
+	//
+	static struct sock_filter insns6[] = {
+		BPF_STMT(BPF_LD	 | BPF_H   | BPF_ABS, 4),	/* Load icmp echo ident */
+		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, 0xAAAA, 0, 1), /* Ours? */
+		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Yes, it passes */
+		BPF_STMT(BPF_LD  | BPF_B   | BPF_ABS, 0),	/* Load icmp type */
+		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, ICMP6_ECHO_REPLY, 1, 0), /* Echo? */
+		BPF_STMT(BPF_RET | BPF_K, ~0U),		/* No. It passes. This must not happen. */
+		BPF_STMT(BPF_RET | BPF_K, 0), 		/* Reject echo with wrong ident */
+	};
+	static struct sock_fprog filter6 = {
+		.len    = sizeof(insns6) / sizeof(insns6[0]),
+		.filter = insns6,
+	};
+	//
+	static bool filter_once;
+	//
+	if (filter_once)
+		return;
+	filter_once = true;
+	struct sock_filter *insns = ip6 ? insns6 : insns4;
+	struct sock_fprog *filter = ip6 ? &filter6 : &filter4;
+	/* Patch bpflet for current identifier */
+	insns[2] = (struct sock_filter)BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, htons(ident), 0, 1);
+	if (setsockopt(sockfd, SOL_SOCKET, SO_ATTACH_FILTER, &filter, sizeof(*filter)) < 0)
+		error(0, errno, _("WARNING: failed to install socket filter"));
+}
+
 
 int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 		const socket_st *sock, uint8_t *packet, int packlen)
@@ -802,8 +847,8 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 			}
 
 			/* See? ... someone runs another ping on this host */
-			if (not_ours && sock->raw)
-				fset->install_filter(rts->ident16, sock->fd);
+			if (not_ours && sock->raw) // done once
+				install_filter(rts->ip6, rts->ident16, sock->fd);
 
 			/* If nothing is in flight, "break" returns us to pinger */
 			if (!in_flight(rts))

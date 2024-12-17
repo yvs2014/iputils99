@@ -69,15 +69,14 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <ifaddrs.h>
-#include <netinet/ip_icmp.h>
 
-#include <linux/filter.h>
+//#include <linux/icmp.h> /* conflicted with <netinet/ip_icmp.h> */
 #include <linux/errqueue.h>
 
 #ifndef ICMP_FILTER
 #define ICMP_FILTER	1
 struct icmp_filter {
-	uint32_t	data;
+	uint32_t data;
 };
 #endif
 
@@ -347,33 +346,6 @@ static bool ping4_parse_reply(struct ping_rts *rts, bool rawsock,
 }
 
 
-// func_set:install_filter
-static void ping4_install_filter(uint16_t ident, int sockfd) {
-	static struct sock_filter insns[] = {
-		BPF_STMT(BPF_LDX | BPF_B   | BPF_MSH, 0),	/* Skip IP header due BSD, see ping6 */
-		BPF_STMT(BPF_LD  | BPF_H   | BPF_IND, 4),	/* Load icmp echo ident */
-		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, 0xAAAA, 0, 1), /* Ours? */
-		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Yes, it passes */
-		BPF_STMT(BPF_LD  | BPF_B   | BPF_IND, 0),	/* Load icmp type */
-		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, ICMP_ECHOREPLY, 1, 0), /* Echo? */
-		BPF_STMT(BPF_RET | BPF_K, 0xFFFFFFF),		/* No. It passes. */
-		BPF_STMT(BPF_RET | BPF_K, 0)			/* Reject echo with wrong ident */
-	};
-	static struct sock_fprog filter = {
-		.len    = sizeof(insns) / sizeof(insns[0]),
-		.filter = insns,
-	};
-	static int filter4_once;
-	if (filter4_once)
-		return;
-	filter4_once = 1;
-	/* Patch bpflet for current identifier */
-	insns[2] = (struct sock_filter)BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, htons(ident), 0, 1);
-	if (setsockopt(sockfd, SOL_SOCKET, SO_ATTACH_FILTER, &filter, sizeof(filter)))
-		error(0, errno, _("WARNING: failed to install socket filter"));
-}
-
-
 /* return >= 0: exit with this code, < 0: go on to next addrinfo result */
 int ping4_run(struct ping_rts *rts, int argc, char **argv,
 		struct addrinfo *ai, const socket_st *sock)
@@ -382,7 +354,6 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv,
 		.send_probe     = ping4_send_probe,
 		.receive_error  = ping4_receive_error,
 		.parse_reply    = ping4_parse_reply,
-		.install_filter = ping4_install_filter,
 	};
 	static const struct addrinfo hints = {
 		.ai_family = AF_INET,
@@ -444,8 +415,15 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv,
 		argv++;
 	}
 
-	unsigned iface = rts->device ? if_name2index(rts->device) : 0;
-	socklen_t slen = rts->device ? (strlen(rts->device)  + 1) : 0;
+	socklen_t slen = 0;
+	unsigned iface = 0;
+	unsigned mcast = 0;
+	if (rts->device) {
+		slen  = strlen(rts->device) + 1;
+		iface = if_name2index(rts->device);
+		if (iface && IN_MULTICAST(ntohl(whereto->sin_addr.s_addr)))
+			mcast = iface;
+	}
 
 	struct sockaddr_in dst = *whereto;
 	if (!source->sin_addr.s_addr) {
@@ -453,27 +431,13 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv,
 		if (probe_fd < 0)
 			error(2, errno, "socket");
 
-		if (rts->device) {
-#ifdef IP_PKTINFO
-			struct in_pktinfo ipi = { .ipi_ifindex = iface };
-			ENABLE_CAPABILITY_RAW;
-			if ((setsockopt(probe_fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
-			    (setsockopt(sock->fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0))
-				error(2, errno, "setsockopt(PKTINFO)");
-			DISABLE_CAPABILITY_RAW;
-#endif
-			unsigned bind_iface = IN_MULTICAST(ntohl(whereto->sin_addr.s_addr)) ? iface : 0;
-			if ((setsock_bindopt(probe_fd, rts->device, slen, bind_iface) < 0) ||
-			    (setsock_bindopt(sock->fd, rts->device, slen, bind_iface) < 0))
-				error(2, errno, "setsockopt(BINDIFACE=%s)", rts->device);
-		}
-
+		if (rts->device)
+			set_device(false, rts->device, slen, iface, mcast, probe_fd, sock->fd);
 		if (rts->qos) {
 			int opt = rts->qos;
 			if (setsockopt(probe_fd, IPPROTO_IP, IP_TOS, &opt, sizeof(opt)) < 0)
 				error(0, errno, _("warning: QOS sockopts"));
 		}
-
 		sock_setmark(rts, probe_fd);
 
 		dst.sin_port = htons(1025);
@@ -532,8 +496,7 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 		close(probe_fd);
 
 	} else if (rts->device) {
-		unsigned bind_iface = IN_MULTICAST(ntohl(whereto->sin_addr.s_addr)) ? iface : 0;
-		if (setsock_bindopt(sock->fd, rts->device, slen, bind_iface) < 0)
+		if (setsock_bindopt(sock->fd, rts->device, slen, mcast) < 0)
 			error(2, errno, "setsock_bindopt(%s)", rts->device);
 	}
 

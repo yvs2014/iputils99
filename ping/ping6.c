@@ -78,7 +78,6 @@
 
 #include <netinet/ip6.h>
 #include <linux/in6.h>
-#include <linux/filter.h>
 #include <linux/errqueue.h>
 
 #ifndef IPV6_FLOWLABEL_MGR
@@ -281,32 +280,6 @@ static bool ping6_parse_reply(struct ping_rts *rts, bool rawsock,
 	return false;
 }
 
-// func_set:install_filter
-static void ping6_install_filter(uint16_t ident, int sockfd) {
-	static struct sock_filter insns[] = {
-		BPF_STMT(BPF_LD	 | BPF_H   | BPF_ABS, 4),	/* Load icmp echo ident */
-		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, 0xAAAA, 0, 1), /* Ours? */
-		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Yes, it passes */
-		BPF_STMT(BPF_LD  | BPF_B   | BPF_ABS, 0),	/* Load icmp type */
-		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, ICMP6_ECHO_REPLY, 1, 0), /* Echo? */
-		BPF_STMT(BPF_RET | BPF_K, ~0U),		/* No. It passes. This must not happen. */
-		BPF_STMT(BPF_RET | BPF_K, 0), 		/* Reject echo with wrong ident */
-	};
-	static struct sock_fprog filter = {
-		.len    = sizeof(insns) / sizeof(insns[0]),
-		.filter = insns,
-	};
-	static int filter6_once;
-	if (filter6_once)
-		return;
-	filter6_once = 1;
-	/* Patch bpflet for current identifier */
-	insns[1] = (struct sock_filter)BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, htons(ident), 0, 1);
-	if (setsockopt(sockfd, SOL_SOCKET, SO_ATTACH_FILTER, &filter, sizeof(filter)))
-		error(0, errno, _("WARNING: failed to install socket filter"));
-}
-
-
 /* return >= 0: exit with this code, < 0: go on to next addrinfo result */
 int ping6_run(struct ping_rts *rts, int argc, char **argv,
 		const struct addrinfo *ai, const socket_st *sock)
@@ -315,7 +288,6 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 		.send_probe     = ping6_send_probe,
 		.receive_error  = ping6_receive_error,
 		.parse_reply    = ping6_parse_reply,
-		.install_filter = ping6_install_filter,
 	};
 	static uint32_t scope_id = 0;
 
@@ -373,17 +345,7 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 		if (rts->device) {
 			unsigned iface = if_name2index(rts->device);
 			socklen_t slen = strlen(rts->device) + 1;
-#ifdef IPV6_PKTINFO
-			struct in6_pktinfo ipi = { .ipi6_ifindex = iface };
-			ENABLE_CAPABILITY_RAW;
-			if ((setsockopt(probe_fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
-			    (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0))
-				error(2, errno, "setsockopt(PKTINFO)");
-			DISABLE_CAPABILITY_RAW;
-#endif
-			if ((setsock_bindopt(probe_fd, rts->device, slen, 0) < 0) ||
-			    (setsock_bindopt(sock->fd, rts->device, slen, 0) < 0))
-				error(2, errno, "setsockopt(BINDIFACE=%s)", rts->device);
+			set_device(true, rts->device, slen, iface, 0, probe_fd, sock->fd);
 			if (scoped)
 				firsthop->sin6_scope_id = iface;
 		}

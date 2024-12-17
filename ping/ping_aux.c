@@ -150,17 +150,48 @@ inline unsigned if_name2index(const char *ifname) {
 }
 
 // return setsockopt's return_code and keep its errno
-int setsock_bindopt(int fd, const char *device, socklen_t slen, unsigned ifindex) {
+int setsock_bindopt(int fd, const char *device, socklen_t slen, unsigned mcast_face) {
 	ENABLE_CAPABILITY_RAW;
 	int rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, device, slen);
-	int bind_errno = errno;
+	int keep = errno;
 	DISABLE_CAPABILITY_RAW;
-	errno = bind_errno;
-	if ((rc < 0) && ifindex) {
-		struct ip_mreqn imr = { .imr_ifindex = ifindex };
+	errno = keep;
+	if ((rc < 0) && mcast_face) {
+		struct ip_mreqn imr = { .imr_ifindex = mcast_face };
 		rc = setsockopt(fd, SOL_IP, IP_MULTICAST_IF, &imr, sizeof(imr));
 	}
 	return rc;
+}
+
+#if defined(IP_PKTINFO) || defined(IPV6_PKTINFO)
+static void set_pktinfo(int level, int name, const void *val, socklen_t len, int fd1, int fd2) {
+	ENABLE_CAPABILITY_RAW;
+	if ((setsockopt(fd1, level, name, val, len) < 0) ||
+	    (setsockopt(fd2, level, name, val, len) < 0))
+		error(2, errno, "setsockopt(PKTINFO)");
+	DISABLE_CAPABILITY_RAW;
+}
+#endif
+
+void set_device(bool ip6, const char *device, socklen_t len,
+	unsigned pkt_face, unsigned mcast_face, int fd1, int fd2)
+{
+#if defined(IP_PKTINFO) || defined(IPV6_PKTINFO)
+	if (ip6) {
+#ifdef IPV6_PKTINFO
+		struct in6_pktinfo ipi = { .ipi6_ifindex = pkt_face };
+		set_pktinfo(IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi), fd1, fd2);
+#endif
+	} else {
+#ifdef IP_PKTINFO
+		struct in_pktinfo  ipi = { .ipi_ifindex  = pkt_face };
+		set_pktinfo(IPPROTO_IP,   IP_PKTINFO,   &ipi, sizeof(ipi), fd1, fd2);
+#endif
+	}
+#endif
+	if ((setsock_bindopt(fd1, device, len, mcast_face) < 0) ||
+	    (setsock_bindopt(fd2, device, len, mcast_face) < 0))
+		error(2, errno, "setsockopt(BINDIFACE=%s)", device);
 }
 
 // func_set:receive_error:print_local_ee

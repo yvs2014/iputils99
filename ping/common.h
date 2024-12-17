@@ -159,7 +159,6 @@ typedef struct ping_func_set_st {
 	int (*receive_error)(struct ping_rts *rts, const socket_st *sock);
 	bool (*parse_reply)(struct ping_rts *rts, bool rawsock,
 		struct msghdr *msg, size_t received, void *addr, const struct timeval *at);
-	void (*install_filter)(uint16_t ident, int sockfd);
 } ping_func_set_st;
 
 void acknowledge(struct ping_rts *rts, uint16_t seq);
