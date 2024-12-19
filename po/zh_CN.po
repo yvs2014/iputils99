@@ -638,15 +638,6 @@ msgstr "未知套接字类型： %d"
 msgid "=> missing cap_net_raw+p capability or setuid?"
 msgstr "=> 缺少 cap_net_raw+p 功能或 setuid？"
 
-#: ping/ping.c:237
-#, c-format
-msgid "option argument contains garbage: %s"
-msgstr "选项参数包含垃圾： %s"
-
-#: ping/ping.c:238
-msgid "this will become fatal error in the future"
-msgstr "这将在未来成为致命错误"
-
 #: ping/ping.c:272
 #, c-format
 msgid "bad value for flowinfo: %s"
@@ -684,11 +675,6 @@ msgstr "时间戳类型无效： %s"
 msgid "bad timing interval"
 msgstr "时序间隔错误"
 
-#: ping/ping.c:445
-#, c-format
-msgid "bad timing interval: %s"
-msgstr "时序间隔错误：%s"
-
 #: ping/ping.c:456
 #, c-format
 msgid "cannot copy: %s"
@@ -712,11 +698,6 @@ msgstr "无效参数：%s"
 #: ping/ping.c:557
 msgid "bad linger time"
 msgstr "徘徊时间无效"
-
-#: ping/ping.c:559
-#, c-format
-msgid "bad linger time: %s"
-msgstr "徘徊时间无效：%s"
 
 #: ping/ping.c:595
 msgid "WARNING: ident 0 => forcing raw socket"

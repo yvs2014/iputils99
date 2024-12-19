@@ -74,7 +74,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-#include <ifaddrs.h>
 
 #include <netinet/ip6.h>
 #include <linux/in6.h>
@@ -182,6 +181,39 @@ static inline void ping6_parse_reply_fin(bool audible, bool flood) {
 	}
 }
 
+static inline int ping6_icmp_extra_type(struct ping_rts *rts,
+		const struct icmp6_hdr *icmp, size_t received, bool raw,
+		const struct sockaddr_in6 *src, const struct sockaddr_in6 *dst)
+{
+	const struct ip6_hdr *iph = (struct ip6_hdr *)(icmp + 1);
+	const struct icmp6_hdr *orig = (struct icmp6_hdr *)(iph + 1);
+	if (received < (8 + sizeof(struct ip6_hdr) + 8))
+		return true;
+	if (memcmp(&iph->ip6_dst, &dst->sin6_addr, sizeof(dst->sin6_addr)))
+		return true;
+	//
+	uint8_t next = iph->ip6_nxt;
+	if (next == NEXTHDR_FRAGMENT) {
+		next = *(uint8_t *)orig;
+		orig++;
+	}
+	if (next == IPPROTO_ICMPV6) {
+		if (orig->icmp6_type != ICMP6_ECHO_REQUEST ||
+		    !IS_OURS(rts, raw, orig->icmp6_id))
+			return true;
+		acknowledge(rts, ntohs(orig->icmp6_seq));
+		return false;
+	}
+	//
+	/* We've got something other than an ECHOREPLY */
+	if (!rts->opt.verbose || rts->uid)
+		return true;
+	PRINT_TIMESTAMP;
+	printf(_("From %s: "), SPRINT_RES_ADDR(rts, src, sizeof(*src)));
+	print6_icmp(icmp->icmp6_type, icmp->icmp6_code, ntohl(icmp->icmp6_mtu));
+	return -1;
+}
+
 /*
  *	Print out the packet, if it came from us.  This logic is necessary
  * because ALL readers of the ICMP socket get a copy of ALL ICMP packets
@@ -189,7 +221,7 @@ static inline void ping6_parse_reply_fin(bool audible, bool flood) {
  * program to be run without having intermingled output (or statistics!).
  */
 // func_set:parse_reply
-static bool ping6_parse_reply(struct ping_rts *rts, bool rawsock,
+static bool ping6_parse_reply(struct ping_rts *rts, bool raw,
 	struct msghdr *msg, size_t received, void *addr, const struct timeval *at)
 {
 	struct sockaddr_in6 *from = addr;
@@ -197,17 +229,17 @@ static bool ping6_parse_reply(struct ping_rts *rts, bool rawsock,
 
 	int hops = -1;
 	for (struct cmsghdr *c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c)) {
-		if (c->cmsg_level != IPPROTO_IPV6)
-			continue;
-		switch (c->cmsg_type) {
-		case IPV6_HOPLIMIT:
+		if (c->cmsg_level == IPPROTO_IPV6)
+			switch (c->cmsg_type) {
+			case IPV6_HOPLIMIT:
 #ifdef IPV6_2292HOPLIMIT
-		case IPV6_2292HOPLIMIT:
+			case IPV6_2292HOPLIMIT:
 #endif
-			if (c->cmsg_len < CMSG_LEN(sizeof(int)))
-				continue;
-			memcpy(&hops, CMSG_DATA(c), sizeof(hops));
-		}
+				if (c->cmsg_len >= CMSG_LEN(sizeof(int)))
+					memcpy(&hops, CMSG_DATA(c), sizeof(hops));
+				break;
+			default: break;
+			}
 	}
 
 	if (received < 8) {
@@ -217,30 +249,28 @@ static bool ping6_parse_reply(struct ping_rts *rts, bool rawsock,
 	}
 
 	/* Now the ICMP part */
-	struct icmp6_hdr *icmph = (struct icmp6_hdr *)base;
+	struct icmp6_hdr *icmp = (struct icmp6_hdr *)base;
 	struct sockaddr_in6 *whereto = (struct sockaddr_in6 *)&rts->whereto;
 
-	if (icmph->icmp6_type == ICMP6_ECHO_REPLY) {
-		if (!IS_OURS(rts, rawsock, icmph->icmp6_id))
+	if (icmp->icmp6_type == ICMP6_ECHO_REPLY) {
+		if (!IS_OURS(rts, raw, icmp->icmp6_id))
 			return true;
 		bool okay =
 		    !memcmp(&from->sin6_addr.s6_addr, &whereto->sin6_addr.s6_addr, 16)
 		    || rts->multicast || rts->subnet_router_anycast;
-		if (gather_stats(rts, (uint8_t *)icmph, sizeof(*icmph), received,
-				ntohs(icmph->icmp6_seq), hops, 0, at,
-				SPRINT_RES_ADDR(rts, from, sizeof(*from)),
-				print_echo_reply, rts->multicast, !okay))
-			return false;
-	} else if (icmph->icmp6_type == IPUTILS_NI_ICMP6_REPLY) {
-		struct ni_hdr *nih = (struct ni_hdr *)icmph;
+		if (gather_stats(rts, (uint8_t *)icmp, sizeof(*icmp), received,
+			ntohs(icmp->icmp6_seq), hops, at, NULL,
+			SPRINT_RES_ADDR(rts, from, sizeof(*from)), true, !okay))
+				return false;
+	} else if (icmp->icmp6_type == IPUTILS_NI_ICMP6_REPLY) {
+		struct ni_hdr *nih = (struct ni_hdr *)icmp;
 		int seq = niquery_check_nonce(&rts->ni, nih->ni_nonce);
 		if (seq < 0)
 			return true;
-		if (gather_stats(rts, (uint8_t *)icmph, sizeof(*icmph), received,
-				seq, hops, 0, at,
-				SPRINT_RES_ADDR(rts, from, sizeof(*from)),
-				print6_ni_reply, rts->multicast, false))
-			return false;
+		if (gather_stats(rts, (uint8_t *)icmp, sizeof(*icmp), received,
+			seq, hops, at, print6_ni_reply,
+			SPRINT_RES_ADDR(rts, from, sizeof(*from)), true, false))
+				return false;
 	} else {
 		/* We must not ever fall here. All the messages but
 		 * echo reply are blocked by filter and error are
@@ -248,33 +278,9 @@ static bool ping6_parse_reply(struct ping_rts *rts, bool rawsock,
 		 * however, just to remember what crap we avoided
 		 * using RECVRERR. :-)
 		 */
-		int nexthdr;
-		struct ip6_hdr *iph1 = (struct ip6_hdr *)(icmph + 1);
-		struct icmp6_hdr *icmph1 = (struct icmp6_hdr *)(iph1 + 1);
-		if (received < (8 + sizeof(struct ip6_hdr) + 8))
-			return true;
-		if (memcmp(&iph1->ip6_dst, &whereto->sin6_addr, sizeof(whereto->sin6_addr)))
-			return true;
-
-		nexthdr = iph1->ip6_nxt;
-		if (nexthdr == NEXTHDR_FRAGMENT) {
-			nexthdr = *(uint8_t *)icmph1;
-			icmph1++;
-		}
-		if (nexthdr == IPPROTO_ICMPV6) {
-			if (icmph1->icmp6_type != ICMP6_ECHO_REQUEST ||
-			    !IS_OURS(rts, rawsock, icmph1->icmp6_id))
-				return true;
-			acknowledge(rts, ntohs(icmph1->icmp6_seq));
-			return false;
-		}
-
-		/* We've got something other than an ECHOREPLY */
-		if (!rts->opt.verbose || rts->uid)
-			return true;
-		PRINT_TIMESTAMP;
-		printf(_("From %s: "), SPRINT_RES_ADDR(rts, from, sizeof(*from)));
-		print6_icmp(icmph->icmp6_type, icmph->icmp6_code, ntohl(icmph->icmp6_mtu));
+		int rc = ping6_icmp_extra_type(rts, icmp, received, raw, from, whereto);
+		if (rc >= 0)
+			return rc;
 	}
 	ping6_parse_reply_fin(rts->opt.audible, rts->opt.flood);
 	return false;
@@ -312,7 +318,7 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 	} else if (argc == 1) {
 		target = *argv;
 	} else {
-		if (rts->ni.query < 0 && rts->ni.subject_type != IPUTILS_NI_ICMP6_SUBJ_FQDN)
+		if ((rts->ni.query < 0) && (rts->ni.subject_type != IPUTILS_NI_ICMP6_SUBJ_FQDN))
 			usage();
 		target = rts->ni.group;
 	}
@@ -320,7 +326,7 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 	memcpy(whereto, ai->ai_addr, sizeof(*whereto));
 	whereto->sin6_port = htons(IPPROTO_ICMPV6);
 
-	if (memchr(target, ':', strlen(target)))
+	if (target && memchr(target, ':', strlen(target)))
 		rts->opt.numeric = true;
 
 	if (IN6_IS_ADDR_UNSPECIFIED(&firsthop->sin6_addr)) {
@@ -369,32 +375,15 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 			}
 			error(2, errno, "connect");
 		}
-		socklen_t socklen = sizeof(*source);
+		socklen_t socklen = sizeof(struct sockaddr_in6);
 		if (getsockname(probe_fd, (struct sockaddr *)source, &socklen) < 0)
 			error(2, errno, "getsockname");
 		source->sin6_port = 0;
 		close(probe_fd);
 
-		if (rts->device) {
-			struct ifaddrs *ifa0, *ifa;
+		if (rts->device)
+			cmp_srcdev(rts);
 
-			if (getifaddrs(&ifa0))
-				error(2, errno, "getifaddrs");
-
-			for (ifa = ifa0; ifa; ifa = ifa->ifa_next) {
-				if (!ifa->ifa_name || !ifa->ifa_addr ||
-				    ifa->ifa_addr->sa_family != AF_INET6)
-					continue;
-				if (!strcmp(ifa->ifa_name, rts->device) &&
-				    IN6_ARE_ADDR_EQUAL(&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr,
-						       &source->sin6_addr))
-					break;
-			}
-			if (!ifa)
-				error(0, 0, _("Warning: source address might be selected on device other than: %s"), rts->device);
-
-			freeifaddrs(ifa0);
-		}
 	} else if (rts->device && (IN6_IS_ADDR_LINKLOCAL(&source->sin6_addr) ||
 			      IN6_IS_ADDR_MC_LINKLOCAL(&source->sin6_addr)))
 		source->sin6_scope_id = if_name2index(rts->device);

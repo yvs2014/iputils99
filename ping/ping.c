@@ -66,7 +66,6 @@
 #include <limits.h>
 #include <assert.h>
 #include <errno.h>
-#include <math.h>
 #include <locale.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -241,10 +240,9 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 			rts->opt.force_lookup = true;
 			break;
 		case 'i': {
-			double optval = ping_strtod(optarg, _("bad timing interval"));
-			if (isless(optval, 0) || isgreater(optval, (double)INT_MAX / 1000))
-				error(2, 0, _("bad timing interval: %s"), optarg);
-			rts->interval = (int)(optval * 1000);
+			double value = strtod_or_err(optarg, _("bad timing interval"),
+				0, (double)INT_MAX / 1000);
+			rts->interval = (int)(value * 1000);
 			rts->opt.interval = true;
 		}
 			break;
@@ -361,11 +359,10 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 			rts->deadline = strtol_or_err(optarg, _("invalid argument"), 0, INT_MAX);
 			break;
 		case 'W': {
-			double optval = ping_strtod(optarg, _("bad linger time"));
-			if (isless(optval, 0) || isgreater(optval, (double)INT_MAX / 1000))
-				error(2, 0, _("bad linger time: %s"), optarg);
+			double value = strtod_or_err(optarg, _("bad linger time"),
+				0, (double)INT_MAX / 1000);
 			/* lingertime will be converted to usec later */
-			rts->lingertime = (int)(optval * 1000);
+			rts->lingertime = (int)(value * 1000);
 		}
 			break;
 		default:

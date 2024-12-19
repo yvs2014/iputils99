@@ -198,11 +198,23 @@ void sock_setmark(struct ping_rts *rts, int sockfd);
 void ping_setup(struct ping_rts *rts, const socket_st *sock);
 int main_loop(struct ping_rts *rts, const ping_func_set_st *fset, const socket_st *sock,
 	uint8_t *packet, int packlen);
-bool gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t received,
-	uint16_t seq, int hops, int csfailed, const struct timeval *tv, const char *from,
-	void (*print_reply)(bool ip6, const uint8_t *hdr, size_t len), bool multicast, bool wrong_source);
+bool gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen,
+	size_t received, uint16_t seq, int hops, const struct timeval *at,
+	void (*print)(bool ip6, const uint8_t *hdr, size_t len),
+	const char *from, bool ack, bool wrong);
 void fill_packet(int quiet, const char *patp, unsigned char *packet, size_t packet_size);
 
-void usage(void);
+// wrapper: __has_attribute
+#ifndef __has_attribute
+#define __has_attribute(attr) 0
+#endif
+// attribute: noreturn
+#if __has_attribute(__noreturn__)
+#define NORETURN __attribute__((__noreturn__))
+#else
+#define NORETURN
+#endif
+
+void usage(void) NORETURN;
 
 #endif

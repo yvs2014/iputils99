@@ -647,15 +647,6 @@ msgstr "unbekannter Sockel-Typ: %d"
 msgid "=> missing cap_net_raw+p capability or setuid?"
 msgstr "fehlende cap_net_raw+p Fähigkeit oder setuid?"
 
-#: ping/ping.c:237
-#, c-format
-msgid "option argument contains garbage: %s"
-msgstr "Optionsargument enthält Müll: %s"
-
-#: ping/ping.c:238
-msgid "this will become fatal error in the future"
-msgstr "dies wird in Zukunft zu einem fatalen Fehler werden"
-
 #: ping/ping.c:272
 #, c-format
 msgid "bad value for flowinfo: %s"
@@ -693,11 +684,6 @@ msgstr "ungültiger Zeitstempel-Typ: %s"
 msgid "bad timing interval"
 msgstr "schlechtes Zeitintervall"
 
-#: ping/ping.c:445
-#, c-format
-msgid "bad timing interval: %s"
-msgstr "schlechtes Zeitintervall: %s"
-
 #: ping/ping.c:456
 #, c-format
 msgid "cannot copy: %s"
@@ -721,11 +707,6 @@ msgstr "ungültiger -M Parameter: %s"
 #: ping/ping.c:557
 msgid "bad linger time"
 msgstr "schlechte Verweildauer"
-
-#: ping/ping.c:559
-#, c-format
-msgid "bad linger time: %s"
-msgstr "schlechte Verweildauer: %s"
 
 #: ping/ping.c:595
 msgid "WARNING: ident 0 => forcing raw socket"

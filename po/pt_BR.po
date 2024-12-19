@@ -643,15 +643,6 @@ msgstr "tipo de sock desconhecido: %d"
 msgid "=> missing cap_net_raw+p capability or setuid?"
 msgstr "=> faltando a capacidade cap_net_raw+p ou setuid?"
 
-#: ping/ping.c:237
-#, c-format
-msgid "option argument contains garbage: %s"
-msgstr "o argumento de opção contém lixo: %s"
-
-#: ping/ping.c:238
-msgid "this will become fatal error in the future"
-msgstr "este se tornará um erro fatal no futuro"
-
 #: ping/ping.c:272
 #, c-format
 msgid "bad value for flowinfo: %s"
@@ -689,11 +680,6 @@ msgstr "tipo de marca de tempo inválido: %s"
 msgid "bad timing interval"
 msgstr "intervalo de tempo inválido"
 
-#: ping/ping.c:445
-#, c-format
-msgid "bad timing interval: %s"
-msgstr "intervalo de tempo inválido: %s"
-
 #: ping/ping.c:456
 #, c-format
 msgid "cannot copy: %s"
@@ -717,11 +703,6 @@ msgstr "argumento -M inválido: %s"
 #: ping/ping.c:557
 msgid "bad linger time"
 msgstr "tempo de espera inválido"
-
-#: ping/ping.c:559
-#, c-format
-msgid "bad linger time: %s"
-msgstr "tempo de espera inválido: %s"
 
 #: ping/ping.c:595
 msgid "WARNING: ident 0 => forcing raw socket"

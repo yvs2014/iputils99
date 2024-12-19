@@ -188,50 +188,44 @@ void print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
 	// note: no \n, no stdout flush
 }
 
-static void putchar_safe(char c) {
+static inline void putchar_safe(char c) {
 	if (isprint(c))
 		putchar(c);
 	else
 		printf("\\%03o", c);
 }
 
-
 static void print_ni_name(const struct ni_hdr *hdr, size_t len) {
-	const uint8_t *h = (const uint8_t *)(hdr + 1);
-	const uint8_t *p = h + 4;
-	const uint8_t *end = (const uint8_t *)hdr + len;
-	int continued = 0;
-	char buf[1024];
-	int ret;
-
-	size_t shift = sizeof(struct ni_hdr) + 4;
-	if (len < shift) {
+	if (len < (sizeof(struct ni_hdr) + 4)) {
 		printf(_(" parse error (too short)"));
 		return;
 	}
-	len -= shift;
+	//
+	const uint8_t *h = (const uint8_t *)(hdr + 1);
+	const uint8_t *p = h + 4;
+	const uint8_t *end = (const uint8_t *)hdr + len;
+	bool continued = false;
+	char buf[1024];
 	while (p < end) {
-		int fqdn = 1;
 		memset(buf, 0xff, sizeof(buf));
 		if (continued)
 			putchar(',');
-
-		ret = dn_expand(h, end, p, buf, sizeof(buf));
-		if (ret < 0) {
+		//
+		int rc = dn_expand(h, end, p, buf, sizeof(buf));
+		if (rc < 0) {
 			printf(_(" parse error (truncated)"));
 			break;
 		}
-		if (((p + ret) < end) && (*(p + ret) == '\0'))
-			fqdn = 0;
 		putchar(' ');
-
-		for (size_t i = 0; i < strlen(buf); i++)
+		for (size_t i = 0; i < strnlen(buf, sizeof(buf)); i++)
 			putchar_safe(buf[i]);
-		if (fqdn)
+		p += rc;
+		if ((p < end) && !*p)
 			putchar('.');
-
-		p += ret + !fqdn;
-		continued = 1;
+		else
+			p++;
+		//
+		continued = true;
 	}
 }
 

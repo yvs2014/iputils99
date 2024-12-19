@@ -293,11 +293,11 @@ static int schedule_exit(const struct ping_rts *rts, int next) {
 	} else {
 		waittime = rts->lingertime * 1000ull;
 	}
-	time_t sec = waittime / 1000;
-	if ((next < 0) || (next < sec))
-		next = sec;
+	time_t msec = waittime / 1000;
+	if ((next < 0) || (next < msec))
+		next = msec;
 	struct itimerval it = { .it_value =
-		{ .tv_sec = sec, .tv_usec = waittime % 1000000 }};
+		{ .tv_sec = waittime / 1000000, .tv_usec = waittime % 1000000 }};
 	setitimer(ITIMER_REAL, &it, NULL);
 	return next;
 }
@@ -706,10 +706,20 @@ static inline void install_filter(bool ip6, uint16_t ident, int sockfd) {
 	struct sock_fprog *filter = ip6 ? &filter6 : &filter4;
 	/* Patch bpflet for current identifier */
 	insns[2] = (struct sock_filter)BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, htons(ident), 0, 1);
-	if (setsockopt(sockfd, SOL_SOCKET, SO_ATTACH_FILTER, &filter, sizeof(*filter)) < 0)
+	if (setsockopt(sockfd, SOL_SOCKET, SO_ATTACH_FILTER, filter, sizeof(*filter)) < 0)
 		error(0, errno, _("WARNING: failed to install socket filter"));
 }
 
+#ifdef SO_TIMESTAMP
+static inline struct timeval *msghdr_timeval(struct msghdr *msg) {
+	struct timeval *tv = NULL;
+	for (struct cmsghdr *c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c))
+		if ((c->cmsg_level == SOL_SOCKET) && (c->cmsg_type == SO_TIMESTAMP))
+			if (c->cmsg_len >= CMSG_LEN(sizeof(struct timeval)))
+				tv = (struct timeval *)CMSG_DATA(c);
+	return tv;
+}
+#endif
 
 int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 		const socket_st *sock, uint8_t *packet, int packlen)
@@ -726,13 +736,13 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 			break;
 		if (rts->deadline && rts->nerrors)
 			break;
-		/* Check for and do special actions. */
+		/* Check for and do special actions */
 		if (snapshot) { // SIGQUIT
 			fin_status(rts);
 			snapshot = false;
 		}
 
-		/* Send probes scheduled to this time. */
+		/* Send probes scheduled to this time */
 		int next;
 		do {
 			next = pinger(rts, fset, sock);
@@ -821,29 +831,22 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 					not_ours = true;
 				}
 			} else {
-				struct timeval *recv_timep = NULL;
+				struct timeval *recv_tv =
 #ifdef SO_TIMESTAMP
-				for (struct cmsghdr *c = CMSG_FIRSTHDR(&msg); c;
-						c = CMSG_NXTHDR(&msg, c))
-				{
-					if ((c->cmsg_level != SOL_SOCKET  ) ||
-					    (c->cmsg_type  != SO_TIMESTAMP))
-						continue;
-					if (c->cmsg_len < CMSG_LEN(sizeof(struct timeval)))
-						continue;
-					recv_timep = (struct timeval *)CMSG_DATA(c);
-				}
+					msghdr_timeval(&msg);
+#else
+					NULL;
 #endif
-				struct timeval recv_time;
-				if (rts->opt.latency || !recv_timep) {
-					if (rts->opt.latency || ioctl(sock->fd, SIOCGSTAMP, &recv_time)) {
-						if (gettimeofday(&recv_time, NULL) < 0) // no way
-							memset(&recv_time, 0, sizeof(recv_time));
+				struct timeval timeval;
+				if (rts->opt.latency || !recv_tv) {
+					if (rts->opt.latency || ioctl(sock->fd, SIOCGSTAMP, &timeval)) {
+						if (gettimeofday(&timeval, NULL) < 0) // no way
+							memset(&timeval, 0, sizeof(timeval));
 					}
-					recv_timep = &recv_time;
+					recv_tv = &timeval;
 				}
 				assert(received >= 0); // be sure in ssize_t to size_t conversion at one place
-				not_ours = fset->parse_reply(rts, sock->raw, &msg, received, addrbuf, recv_timep);
+				not_ours = fset->parse_reply(rts, sock->raw, &msg, received, addrbuf, recv_tv);
 			}
 
 			/* See? ... someone runs another ping on this host */
@@ -863,25 +866,26 @@ int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 	return finish(rts);
 }
 
-bool gather_stats_noflush(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t received,
-	uint16_t seq, int hops, int csfailed, const struct timeval *tv, const char *from,
-	void (*print_reply)(bool ip6, const uint8_t *hdr, size_t len), bool multicast, bool wrong_source)
+bool stats_noflush(struct ping_rts *rts, const uint8_t *icmp, int icmplen,
+	size_t received, uint16_t seq, int hops, const struct timeval *at,
+	void (*print)(bool ip6, const uint8_t *hdr, size_t len),
+	const char *from, bool ack, bool wrong)
 {
 	++rts->nreceived;
-	if (!csfailed)
+	if (ack)
 		acknowledge(rts, seq);
 
-	const uint8_t *ptr = icmph + icmplen;
+	const uint8_t *ptr = icmp + icmplen;
 	long triptime = 0;
 
 	if (rts->timing && (received >= (8 + sizeof(struct timeval)))) {
 		struct timeval peer;
 		memcpy(&peer, ptr, sizeof(peer));
-		struct timeval at;
-		memcpy(&at,    tv, sizeof(at));
+		struct timeval tv;
+		memcpy(&tv,    at, sizeof(tv));
 		do {
-			timersub(&at, &peer, &at);
-			triptime = at.tv_sec * 1000000 + at.tv_usec;
+			timersub(&tv, &peer, &tv);
+			triptime = tv.tv_sec * 1000000 + tv.tv_usec;
 			if (triptime >= 0)
 				break;
 			error(0, 0, _("Warning: time of day goes back (%ldus), taking countermeasures"), triptime);
@@ -890,12 +894,12 @@ bool gather_stats_noflush(struct ping_rts *rts, const uint8_t *icmph, int icmple
 				break;
 			}
 			rts->opt.latency = true;
-			gettimeofday(&at, NULL);
+			gettimeofday(&tv, NULL);
 		} while (1);
 		if (triptime > (MAXWAIT * 1000000))
 			triptime = MAXWAIT * 1000000;
-		if (!csfailed) {
-			rts->tsum += triptime;
+		if (ack) {
+			rts->tsum  += triptime;
 			rts->tsum2 += (double)((long long)triptime * (long long)triptime);
 			if (triptime < rts->tmin)
 				rts->tmin = triptime;
@@ -910,14 +914,14 @@ bool gather_stats_noflush(struct ping_rts *rts, const uint8_t *icmph, int icmple
 		}
 	}
 
-	bool dupflag = false;
-	if (csfailed) {
+	bool dup = false;
+	if (!ack) {
 		++rts->nchecksum;
 		--rts->nreceived;
 	} else if (rcvd_test(rts, seq)) {
 		++rts->nrepeats;
 		--rts->nreceived;
-		dupflag = false;
+		dup = true;
 	} else
 		rcvd_set(rts, seq);
 	rts->confirm = rts->confirm_flag;
@@ -925,7 +929,7 @@ bool gather_stats_noflush(struct ping_rts *rts, const uint8_t *icmph, int icmple
 	if (rts->opt.quiet)
 		return true;
 	if (rts->opt.flood) {
-		if (!csfailed)
+		if (ack)
 			write(STDOUT_FILENO, "\b \b", 3);
 		else
 			write(STDOUT_FILENO, "\bC", 2);
@@ -935,8 +939,11 @@ bool gather_stats_noflush(struct ping_rts *rts, const uint8_t *icmph, int icmple
 	PRINT_TIMESTAMP;
 	printf(_("%zd bytes from %s:"), received, from);
 
-	if (print_reply)
-		print_reply(rts->ip6, icmph, received);
+	if (print) /* seq */
+		print(rts->ip6, icmp, received);
+	else
+		printf(_(" icmp_seq=%u"), seq);
+
 	if (rts->opt.verbose)
 		printf(_(" ident=%u"), ntohs(rts->ident16));
 	if (hops >= 0)
@@ -960,11 +967,11 @@ bool gather_stats_noflush(struct ping_rts *rts, const uint8_t *icmph, int icmple
 			printf(_(" time=%ld.%03ld ms"), triptime / 1000,
 				       triptime % 1000);
 	}
-	if (dupflag && (!multicast || rts->opt.verbose))
+	if (dup && (!rts->multicast || rts->opt.verbose))
 		printf(_(" (DUP!)"));
-	if (csfailed)
+	if (!ack)
 		printf(_(" (BAD CHECKSUM)"));
-	if (wrong_source)
+	if (wrong)
 		printf(_(" (DIFFERENT ADDRESS!)"));
 
 	/* check the data */
@@ -987,12 +994,13 @@ bool gather_stats_noflush(struct ping_rts *rts, const uint8_t *icmph, int icmple
 	return false;
 }
 
-inline bool gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen, size_t received,
-	uint16_t seq, int hops, int csfailed, const struct timeval *tv, const char *from,
-	void (*print_reply)(bool ip6, const uint8_t *hdr, size_t len), bool multicast, bool wrong_source)
+inline bool gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen,
+	size_t received, uint16_t seq, int hops, const struct timeval *at,
+	void (*print)(bool ip6, const uint8_t *hdr, size_t len),
+	const char *from, bool ack, bool wrong)
 {
-	bool finished = gather_stats_noflush(rts, icmph, icmplen, received, seq, hops,
-		csfailed, tv, from, print_reply, multicast, wrong_source);
+	bool finished = stats_noflush(rts, icmph, icmplen, received, seq, hops,
+		at, print, from, ack, wrong);
 	if (finished)
 		fflush(stdout);
 	return finished;

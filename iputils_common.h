@@ -56,10 +56,8 @@
 void error(int status, int errnum, const char *format, ...);
 #endif
 
-void close_stdout(void);
 long strtol_or_err(const char *str, const char *errmesg, long min, long max);
-unsigned long strtoul_or_err(const char *str, const char *errmesg,
-	unsigned long min, unsigned long max);
+void close_stdout(void);
 void print_config(void);
 
 #ifndef timespecsub

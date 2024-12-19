@@ -641,15 +641,6 @@ msgstr "알 수 없는 소켓 형식: %d"
 msgid "=> missing cap_net_raw+p capability or setuid?"
 msgstr "=> cap_net_raw+p 기능 또는 setuid가 빠졌습니까?"
 
-#: ping/ping.c:237
-#, c-format
-msgid "option argument contains garbage: %s"
-msgstr "선택 인수에 쓰레기가 포함되었습니다: %s"
-
-#: ping/ping.c:238
-msgid "this will become fatal error in the future"
-msgstr "이는 미래에 치명적인 오류가 발생 할 것입니다"
-
 #: ping/ping.c:272
 #, c-format
 msgid "bad value for flowinfo: %s"
@@ -687,11 +678,6 @@ msgstr "부적절한 타임스탬프 형식: %s"
 msgid "bad timing interval"
 msgstr "나쁜 시간 간격"
 
-#: ping/ping.c:445
-#, c-format
-msgid "bad timing interval: %s"
-msgstr "나쁜 시간 간격: %s"
-
 #: ping/ping.c:456
 #, c-format
 msgid "cannot copy: %s"
@@ -715,11 +701,6 @@ msgstr "부적절한 -M 인자: %s"
 #: ping/ping.c:557
 msgid "bad linger time"
 msgstr "나쁜 체류시간"
-
-#: ping/ping.c:559
-#, c-format
-msgid "bad linger time: %s"
-msgstr "나쁜 체류시간: %s"
 
 #: ping/ping.c:595
 msgid "WARNING: ident 0 => forcing raw socket"

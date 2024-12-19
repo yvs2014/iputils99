@@ -67,6 +67,8 @@
 #include <locale.h>
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
+#include <sys/types.h>
+#include <ifaddrs.h>
 #include <net/if.h>
 #include <linux/in6.h>
 #include <linux/errqueue.h>
@@ -84,33 +86,48 @@ char *str_family(int family) {
 	return "";
 }
 
-/* Much like strtod(3), but will fails if str is not valid number */
-double ping_strtod(const char *str, const char *err_msg) {
+unsigned long strtoul_or_err(const char *str, const char *errmesg,
+	unsigned long min, unsigned long max)
+{
+	errno = (str && *str) ? 0 : EINVAL;
+	if (!errno) {
+		char *end = NULL;
+		unsigned long num = strtoul(str, &end, 10);
+		if (!(errno || (str == end) || (end && *end))) {
+			if ((min <= num) && (num <= max))
+				return num;
+			error(ERANGE, 0, _("%s: '%s': out of range %lu-%lu"),
+			      errmesg, str, min, max);
+		}
+	}
+	error(errno, errno, "%s: '%s'", errmesg, str);
+	_exit(errno ? errno : EXIT_FAILURE);
+}
+
+double strtod_or_err(const char *str, const char *errmesg,
+	double min, double max)
+{
 	errno = (str && *str) ? 0 : EINVAL;
 	if (!errno) {
 		/*
 		 * Here we always want to use locale regardless USE_IDN or ENABLE_NLS,
 		 * because it handles decimal point of -i/-W input options
 		 */
-		setlocale(LC_ALL, "C");
 		char *end = NULL;
+		setlocale(LC_ALL, "C");
 		double num = strtod(str, &end);
-		int strtod_errno = errno;
+		int keep = errno;
 		setlocale(LC_ALL, "");
-		/* Ignore setlocale() errno (e.g. invalid locale in env) */
-		errno = strtod_errno;
-		if (errno || (str == end) || (end && *end)) {
-			error(0, 0, _("option argument contains garbage: %s"), end);
-			error(0, 0, _("this will become fatal error in the future"));
+		errno = keep;
+		if (!(errno || (str == end) || (end && *end))) {
+			if (isgreaterequal(num, min) && islessequal(num, max))
+				return num;
+			error(ERANGE, 0, _("%s: '%s': out of range %g - %g"),
+			      errmesg, str, min, max);
 		}
-		int fp = fpclassify(num);
-		if ((fp == FP_NORMAL) || (fp == FP_ZERO))
-			return num;
-		errno = ERANGE;
 	}
-	error(2, errno, "%s: %s", err_msg, str);
-	abort();	/* cannot be reached, above error() will exit */
-	return 0.;
+	error(errno, errno, "%s: %s", errmesg, str);
+	_exit(errno ? errno : EXIT_FAILURE);
 }
 
 #define DX_SHIFT(str) (((str)[0] == '0') && (((str)[1] == 'x') || ((str)[1] == 'X')) ? 2 : 0)
@@ -205,58 +222,33 @@ inline void print_local_ee(struct ping_rts *rts, const struct sock_extended_err 
 	rts->nerrors++;
 }
 
-struct ip46_consts {
-	socklen_t socklen;
-	size_t icmpsize;
-	size_t off_port;
-        size_t off_seq;
-	int mtu_level;
-	int mtu_name;
-};
-
-static const struct ip46_consts ip4c = {
-	.socklen   = sizeof(struct sockaddr_in),
-	.icmpsize  = sizeof(struct icmphdr),
-	.off_port  = offsetof(struct sockaddr_in, sin_port),
-	.off_seq   = offsetof(struct icmphdr, un.echo.sequence),
-	.mtu_level = SOL_IP,
-	.mtu_name  = IP_MTU_DISCOVER,
-};
-static const struct ip46_consts ip6c = {
-	.socklen   = sizeof(struct sockaddr_in6),
-	.icmpsize  = sizeof(struct icmp6_hdr),
-	.off_port  = offsetof(struct sockaddr_in6, sin6_port),
-	.off_seq   = offsetof(struct icmp6_hdr, icmp6_seq),
-	.mtu_level = IPPROTO_IPV6,
-	.mtu_name  = IPV6_MTU_DISCOVER,
-};
-
 void mtudisc_n_bind(struct ping_rts *rts, const struct socket_st *sock) {
-	const struct ip46_consts *ipc = rts->ip6 ? &ip6c : &ip4c;
-	if (rts->pmtudisc >= 0)
-		if (setsockopt(sock->fd, ipc->mtu_level, ipc->mtu_name,
+	// called once at setup
+	if (rts->pmtudisc >= 0) {
+		int level = rts->ip6 ? IPPROTO_IPV6      : SOL_IP;
+		int name  = rts->ip6 ? IPV6_MTU_DISCOVER : IP_MTU_DISCOVER;
+		if (setsockopt(sock->fd, level, name,
 				&rts->pmtudisc, sizeof(rts->pmtudisc)) < 0)
 			error(2, errno, "MTU_DISCOVER");
+	}
 	bool set_ident = (rts->custom_ident > 0) && !sock->raw;
 	if (set_ident) {
-		in_port_t *port = (in_port_t *)((char *)&rts->source + ipc->off_port);
+		in_port_t *port = rts->ip6 ?
+			&((struct sockaddr_in6 *)&rts->source)->sin6_port :
+			&((struct sockaddr_in  *)&rts->source)->sin_port;
 		*port = rts->ident16;
 	}
-	if (rts->opt.strictsource || set_ident)
-		if (bind(sock->fd, (struct sockaddr *)&rts->source, ipc->socklen) < 0)
+	if (rts->opt.strictsource || set_ident) {
+		socklen_t socklen = rts->ip6 ?
+			sizeof(struct sockaddr_in6) :
+			sizeof(struct sockaddr_in);
+		if (bind(sock->fd, (struct sockaddr *)&rts->source, socklen) < 0)
 			error(2, errno, "bind icmp socket");
-}
-
-void print_echo_reply(bool ip6, const uint8_t *hdr, size_t len) {
-	const struct ip46_consts *ipc = ip6 ? &ip6c : &ip4c;
-	if (len >= ipc->icmpsize) {
-		uint16_t *seq = (uint16_t *)(hdr + ipc->off_seq);
-		printf(_(" icmp_seq=%u"), ntohs(*seq));
 	}
 }
 
 // func_set:receive_error:print_addr_seq
-inline void print_addr_seq(struct ping_rts *rts, uint16_t seq,
+void print_addr_seq(struct ping_rts *rts, uint16_t seq,
 	const struct sock_extended_err *ee, socklen_t salen)
 {
 	rts->nerrors++;
@@ -275,5 +267,29 @@ inline void print_addr_seq(struct ping_rts *rts, uint16_t seq,
 			print4_icmph(rts, ee->ee_type, ee->ee_code, ee->ee_info, NULL);
 		fflush(stdout);
 	}
+}
+
+void cmp_srcdev(const struct ping_rts *rts) {
+	// called once before loop
+	struct ifaddrs *list = NULL;
+	if (getifaddrs(&list))
+		error(2, errno, _("getifaddrs failed"));
+	uint16_t af = rts->ip6 ? AF_INET6 : AF_INET;
+	size_t len  = rts->ip6 ? 16 : 4;
+	size_t off  = rts->ip6 ?
+		offsetof(struct sockaddr_in6, sin6_addr) :
+		offsetof(struct sockaddr_in,  sin_addr);
+	const uint8_t *addr = (uint8_t *)&rts->source + off;
+	struct ifaddrs *ifa = list;
+	for (; ifa; ifa = ifa->ifa_next) {
+		if (ifa->ifa_name && ifa->ifa_addr && (ifa->ifa_addr->sa_family == af))
+			if (!strcmp(ifa->ifa_name, rts->device) &&
+			    !memcmp((uint8_t *)ifa->ifa_addr + off, addr, len))
+			break;
+	}
+	if (!ifa)
+		error(0, 0, _("Warning: source address might be selected on device other than: %s"), rts->device);
+	if (list)
+		freeifaddrs(list);
 }
 

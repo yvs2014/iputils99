@@ -625,7 +625,7 @@ msgstr "; посл=%u;"
 #: ping/ping6_common.c:856
 #, c-format
 msgid "packet too short: %d bytes"
-msgstr "надто короткий пакет: %d байтів"
+msgstr "занадто короткий пакет: %d байтів"
 
 #: ping/ping6_common.c:923 ping/ping.c:1721
 #, c-format
@@ -644,25 +644,16 @@ msgstr "невідоме сімейство протоколів: %d"
 #: ping/ping.c:111
 #, c-format
 msgid "unknown sock type: %d"
-msgstr "невідомий тип sock: %d"
+msgstr "невідомий тип сокета: %d"
 
 #: ping/ping.c:198
 msgid "=> missing cap_net_raw+p capability or setuid?"
-msgstr "=> пропущено можливість cap_net_raw+p або setuid?"
-
-#: ping/ping.c:237
-#, c-format
-msgid "option argument contains garbage: %s"
-msgstr "аргумент параметра містить зайві дані: %s"
-
-#: ping/ping.c:238
-msgid "this will become fatal error in the future"
-msgstr "у майбутніх версіях це вважатиметься критичною помилкою"
+msgstr "=> пропущено cap_net_raw+p або setuid ?"
 
 #: ping/ping.c:272
 #, c-format
 msgid "bad value for flowinfo: %s"
-msgstr "помилкове значення flowinfo: %s"
+msgstr "неправильне значення flowinfo: %s"
 
 #: ping/ping.c:275
 #, c-format
@@ -672,12 +663,12 @@ msgstr "значення потоку перевищує найбільше 20-�
 #: ping/ping.c:297
 #, c-format
 msgid "bad TOS value: %s"
-msgstr "помилкове значення TOS: %s"
+msgstr "неправильне значення TOS: %s"
 
 #: ping/ping.c:300
 #, c-format
 msgid "the decimal value of TOS bits must be in range 0-255: %lu"
-msgstr "значення TOS має належати до діапазону від 0 до 255: %lu"
+msgstr "значення TOS має бути в діапазоні 0-255: %lu"
 
 #: ping/ping.c:371 ping/ping.c:402
 msgid "only one -4 or -6 option may be specified"
@@ -694,12 +685,7 @@ msgstr "некоректний тип часової позначки: %s"
 
 #: ping/ping.c:443
 msgid "bad timing interval"
-msgstr "помилковий часовий інтервал"
-
-#: ping/ping.c:445
-#, c-format
-msgid "bad timing interval: %s"
-msgstr "помилковий часовий інтервал: %s"
+msgstr "помилковий інтервал часу"
 
 #: ping/ping.c:456
 #, c-format
@@ -726,11 +712,6 @@ msgstr "некоректний аргумент -M: %s"
 #: ping/ping.c:557
 msgid "bad linger time"
 msgstr "помилковий час затягування"
-
-#: ping/ping.c:559
-#, c-format
-msgid "bad linger time: %s"
-msgstr "помилковий час затягування: %s"
 
 #: ping/ping.c:595
 msgid "WARNING: ident 0 => forcing raw socket"
@@ -1272,8 +1253,8 @@ msgid ""
 "cannot flood, minimal interval for user must be >= %d ms, use -i %s (or "
 "higher)"
 msgstr ""
-"неможливо переповнити; мінімальний проміжок для користувача має бути >= %d "
-"мс, скористайтеся -i %s (або більшим значенням)"
+"флуд неможливо реалізувати, інтервал має бути не меньш ніж %d мс"
+" (тобто -i >= %s)"
 
 #: ping/ping_common.c:493
 #, c-format
@@ -1393,7 +1374,7 @@ msgstr ", втрачено %g%% пакетів"
 #: ping/ping_common.c:899
 #, c-format
 msgid ", time %ldms"
-msgstr ", час %ld мс"
+msgstr ", час %ldмс"
 
 #: ping/ping_common.c:919
 #, c-format

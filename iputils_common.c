@@ -68,37 +68,19 @@ void close_stdout(void) {
 }
 
 long strtol_or_err(const char *str, const char *errmesg, long min, long max) {
-	errno = 0;
-	if (str && *str) {
+	errno = (str && *str) ? 0 : EINVAL;
+	if (!errno) {
 		char *end = NULL;
 		long num = strtol(str, &end, 10);
 		if (!(errno || (str == end) || (end && *end))) {
 			if ((min <= num) && (num <= max))
 				return num;
-			error(EXIT_FAILURE, 0, "%s: '%s': out of range: %ld <= value <= %ld",
-				errmesg, str,  min, max);
+			error(ERANGE, 0, _("%s: '%s': out of range %ld - %ld"),
+				errmesg, str, min, max);
 		}
 	}
-	error(EXIT_FAILURE, errno, "%s: '%s'", errmesg, str);
-	abort();
-}
-
-unsigned long strtoul_or_err(const char *str, const char *errmesg,
-	unsigned long min, unsigned long max)
-{
-	errno = 0;
-	if (str && *str) {
-		char *end = NULL;
-		unsigned long num = strtoul(str, &end, 10);
-		if (!(errno || (str == end) || (end && *end))) {
-			if ((min <= num) && (num <= max))
-				return num;
-			error(EXIT_FAILURE, 0, "%s: '%s': out of range: %lu <= value <= %lu",
-			      errmesg, str, min, max);
-		}
-	}
-	error(EXIT_FAILURE, errno, "%s: '%s'", errmesg, str);
-	abort();
+	error(errno, errno, "%s: '%s'", errmesg, str);
+	_exit(errno ? errno : EXIT_FAILURE);
 }
 
 #ifndef timespecsub

@@ -644,15 +644,6 @@ msgstr "სოკეტის უცნობი ტიპი: %d"
 msgid "=> missing cap_net_raw+p capability or setuid?"
 msgstr "=> აკლია cap_net_raw+p შესაძლებლობა ან setuid-ი?"
 
-#: ping/ping.c:237
-#, c-format
-msgid "option argument contains garbage: %s"
-msgstr "პარამეტრის არგუმენტები შეიცავს დაუშვებელ ინფორმაციას: %s"
-
-#: ping/ping.c:238
-msgid "this will become fatal error in the future"
-msgstr "მომავალში ეს ფატალური შეცდომა იქნება"
-
 #: ping/ping.c:272
 #, c-format
 msgid "bad value for flowinfo: %s"
@@ -691,11 +682,6 @@ msgstr "დროის სანიშნის არასწორი ტი
 msgid "bad timing interval"
 msgstr "ინტერვალის არასწორი დრო"
 
-#: ping/ping.c:445
-#, c-format
-msgid "bad timing interval: %s"
-msgstr "დროის არასწორი ინტერვალი: %s"
-
 #: ping/ping.c:456
 #, c-format
 msgid "cannot copy: %s"
@@ -719,11 +705,6 @@ msgstr "-M-ის არასწორი არგუმენტი: %s"
 #: ping/ping.c:557
 msgid "bad linger time"
 msgstr "გაწელვის ცუდი დრო"
-
-#: ping/ping.c:559
-#, c-format
-msgid "bad linger time: %s"
-msgstr "დაყოვნების არასწორი დრო: %s"
 
 #: ping/ping.c:595
 msgid "WARNING: ident 0 => forcing raw socket"
