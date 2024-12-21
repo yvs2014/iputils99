@@ -67,6 +67,7 @@
 #include <limits.h>
 #include <assert.h>
 #include <errno.h>
+#include <err.h>
 #include <locale.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -162,14 +163,13 @@ static void open_socket(socket_st *sock, int af, int proto, bool verbose) {
 		DISABLE_CAPABILITY_RAW;
 	}
 	if (verbose)
-		error(0, 0, "%s: %s %s socket", _INFO,
-			PINGTYPE(sock->raw), AFTYPE(af));
+		warnx("%s: %s %s socket", _INFO, PINGTYPE(sock->raw), AFTYPE(af));
 	if (sock->fd >= 0)
 		return;
 	// failed
 	if (sock->raw && geteuid())
-		error(0, 0, _("=> missing cap_net_raw+p capability or setuid?"));
-	error(num ? num : 2, num, "socket");
+		warnx(_("=> missing cap_net_raw+p capability or setuid?"));
+	err(num ? num : 2, "socket");
 }
 
 /* Parse command line options */
@@ -185,7 +185,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 		case '6': {
 			int not = (ch == '4') ? AF_INET6 : AF_INET;
 			if (hints->ai_family == not)
-				error(2, 0, _("only one -4 or -6 option may be specified"));
+				errx(2, _("only one -4 or -6 option may be specified"));
 			hints->ai_family = (ch == '4') ? AF_INET : AF_INET6;
 		}
 			break;
@@ -200,12 +200,12 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 			break;
 		case 'R':
 			if (rts->opt.timestamp)
-				error(2, 0, _("only one of -T or -R may be used"));
+				errx(2, _("only one of -T or -R may be used"));
 			rts->opt.rroute = true;
 			break;
 		case 'T':
 			if (rts->opt.rroute)
-				error(2, 0, _("only one of -T or -R may be used"));
+				errx(2, _("only one of -T or -R may be used"));
 			rts->opt.timestamp = true;
 			if (strcmp(optarg, "tsonly") == 0)
 				rts->ipt_flg = IPOPT_TS_TSONLY;
@@ -214,7 +214,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 			else if (strcmp(optarg, "tsprespec") == 0)
 				rts->ipt_flg = IPOPT_TS_PRESPEC;
 			else
-				error(2, 0, _("invalid timestamp type: %s"), optarg);
+				errx(2, _("invalid timestamp type: %s"), optarg);
 			break;
 		/* IPv6 specific options */
 		case 'F':
@@ -262,7 +262,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 			if (strchr(optarg, ':')) { /* IPv6 */
 				char *addr = strdup(optarg);
 				if (!addr)
-					error(2, errno, _("cannot copy: %s"), optarg);
+					err(errno, _("cannot copy: %s"), optarg);
 				char *scope = strchr(addr, SCOPE_DELIMITER);
 				if (scope) {
 					*scope++ = 0;
@@ -270,14 +270,14 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 				}
 				struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&rts->source;
 				if (inet_pton(AF_INET6, addr, &sin6->sin6_addr) <= 0)
-					error(2, 0, _("invalid source address: %s"), optarg);
+					errx(2, _("invalid source address: %s"), optarg);
 				rts->opt.strictsource = true;
 				free(addr);
 			} else {
 				struct sockaddr_in *sin = (struct sockaddr_in *)&rts->source;
 				int rc = inet_pton(AF_INET, optarg, &sin->sin_addr);
 				if (rc < 0)
-					error(2, 0, _("invalid source: %s"), optarg);
+					errx(2, _("invalid source: %s"), optarg);
 				else {
 					if (rc)
 						rts->opt.strictsource = true;
@@ -289,7 +289,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 		case 'l':
 			rts->preload = strtol_or_err(optarg, _("invalid argument"), 1, MAX_DUP_CHK);
 			if (rts->uid && (rts->preload > 3))
-				error(2, 0, _("cannot set preload to value greater than 3: %d"), rts->preload);
+				errx(2, _("cannot set preload to value greater than 3: %d"), rts->preload);
 			break;
 		case 'L':
 			rts->opt.noloop = true;
@@ -308,7 +308,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 			else if (strcmp(optarg, "probe") == 0)
 				rts->pmtudisc = IP_PMTUDISC_PROBE;
 			else
-				error(2, 0, _("invalid -M argument: %s"), optarg);
+				errx(2, _("invalid -M argument: %s"), optarg);
 			break;
 		case 'n':
 			rts->opt.numeric = true;
@@ -347,7 +347,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 				rts->outpack = pack;
 				rts->datalen = len;
 			} else
-				error(2, errno, _("memory allocation failed"));
+				err(errno, _("memory allocation failed"));
 		}
 			break;
 		case 'S':
@@ -408,7 +408,7 @@ int main(int argc, char **argv) {
 
 	rts.outpack = calloc(1, PACKHDRLEN + rts.datalen);
 	if (!rts.outpack)
-		error(2, errno, _("memory allocation failed"));
+		err(errno, _("memory allocation failed"));
 
 	atexit(close_stdout);
 	rts.uid = limit_capabilities(&rts);
@@ -440,8 +440,11 @@ int main(int argc, char **argv) {
 	parse_opt(argc, argv, &hints, &rts);
 	argc -= optind;
 	argv += optind;
-	if (argc <= 0)
-		error(1, EDESTADDRREQ, "usage error");
+	if (argc <= 0) {
+		errno = EDESTADDRREQ;
+		warn("Usage error");
+		usage();
+	}
 	const char *target = argv[argc - 1];
 
 	if (rts.custom_ident < 0) {
@@ -453,22 +456,22 @@ int main(int argc, char **argv) {
 	} else if (rts.custom_ident == 0) {
 		/* Current Linux kernel 6.0 doesn't support on SOCK_DGRAM setting ident == 0 */
 		if (rts.opt.verbose)
-			error(0, 0, "%s: %s", _INFO, _("ident 0 => forcing raw socket"));
+			warnx("%s: %s", _INFO, _("ident 0 => forcing raw socket"));
 		hints.ai_socktype = SOCK_RAW;
 	}
 
 	struct addrinfo *resolv = NULL;
 	int rcode = getaddrinfo(target, NULL, &hints, &resolv);
 	if (rcode)
-		error(2, 0, "%s: %s", target, gai_strerror(rcode));
+		errx(rcode, "%s: %s", target, gai_strerror(rcode));
 
 	for (struct addrinfo *ai = resolv; ai; ai = ai->ai_next) {
 		if (rts.opt.verbose) {
 			if (ai->ai_canonname)
-				error(0, 0, "%s: %s canonname '%s'", _INFO,
+				warnx("%s: %s canonname '%s'", _INFO,
 					AFTYPE(ai->ai_family), ai->ai_canonname);
 			else
-				error(0, 0, "%s: %s gai", _INFO, AFTYPE(ai->ai_family));
+				warnx("%s: %s gai", _INFO, AFTYPE(ai->ai_family));
 		}
 
 		// ip4-in-ip6-space workaround
@@ -476,11 +479,11 @@ int main(int argc, char **argv) {
 		    IN6_IS_ADDR_V4MAPPED(&((struct sockaddr_in6 *)ai->ai_addr)->sin6_addr))
 			switch (hints.ai_family) {
 			case AF_INET6:
-				error(1, ENETUNREACH, _(V4IN6_WARNING));
+				err(ENETUNREACH, _(V4IN6_WARNING));
 				break;
 			case AF_UNSPEC:
 				unmap_ai_sa4(ai);
-				error(0, 0, "%s: %s", WARN, _(V4IN6_WARNING));
+				warnx("%s: %s", WARN, _(V4IN6_WARNING));
 				break;
 			default: break;
 			}
@@ -506,7 +509,7 @@ int main(int argc, char **argv) {
 			}
 		} break;
 		default:
-			error(2, 0, _("unknown protocol family: %d"), ai->ai_family);
+			errx(2, _("unknown protocol family: %d"), ai->ai_family);
 		}
 
 		if (rcode >= 0)

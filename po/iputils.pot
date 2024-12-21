@@ -291,7 +291,7 @@ msgstr ""
 
 #: ping/ping6_common.c:226 ping/ping.c:878
 #, c-format
-msgid "Warning: source address might be selected on device other than: %s"
+msgid "%s: source address might be selected on device other than: %s"
 msgstr ""
 
 #: ping/ping6_common.c:267
@@ -310,27 +310,27 @@ msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
 msgstr ""
 
 #: ping/ping6_common.c:357
-msgid "can't disable multicast loopback"
+msgid "cannot disable multicast loopback"
 msgstr ""
 
 #: ping/ping6_common.c:362
-msgid "can't set multicast hop limit"
+msgid "cannot set multicast hop limit"
 msgstr ""
 
 #: ping/ping6_common.c:365
-msgid "can't set unicast hop limit"
+msgid "cannot set unicast hop limit"
 msgstr ""
 
 #: ping/ping6_common.c:377
-msgid "can't receive hop limit"
+msgid "cannot receive hop limit"
 msgstr ""
 
 #: ping/ping6_common.c:391
-msgid "can't set flowlabel"
+msgid "cannot set flowlabel"
 msgstr ""
 
 #: ping/ping6_common.c:395
-msgid "can't send flowinfo"
+msgid "cannot send flowinfo"
 msgstr ""
 
 #: ping/ping6_common.c:398 ping/ping.c:1023
@@ -350,7 +350,7 @@ msgstr ""
 
 #: ping/ping6_common.c:408
 #, c-format
-msgid "%zu data bytes\n"
+msgid "%zu data bytes"
 msgstr ""
 
 #: ping/ping6_common.c:423
@@ -644,16 +644,11 @@ msgstr ""
 msgid "ident 0 => forcing raw socket"
 msgstr ""
 
-#: ping/ping.c:652
 #, c-format
-msgid ""
-"Warning: IPv6 link-local address on ICMP datagram socket may require ifname "
-"or scope-id => use: address%%<ifname|scope-id>"
-msgstr ""
-
-#: ping/ping.c:829
-msgid "warning: QOS sockopts"
-msgstr ""
+#~ msgid ""
+#~ "IPv6 link-local address on ICMP datagram socket may require ifname "
+#~ "or scope-id => use: address%%<ifname|scope-id>"
+#~ msgstr ""
 
 #: ping/ping.c:841
 msgid ""
@@ -670,7 +665,7 @@ msgid "cannot set broadcasting"
 msgstr ""
 
 #: ping/ping.c:866
-msgid "gatifaddrs failed"
+msgid "getifaddrs failed"
 msgstr ""
 
 #: ping/ping.c:894
@@ -763,26 +758,6 @@ msgstr ""
 msgid ""
 "\n"
 "unknown option %x"
-msgstr ""
-
-#: ping/ping.c:1221
-#, c-format
-msgid "Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n"
-msgstr ""
-
-#: ping/ping.c:1222
-#, c-format
-msgid " %1x  %1x  %02x %04x %04x"
-msgstr ""
-
-#: ping/ping.c:1224
-#, c-format
-msgid "   %1x %04x"
-msgstr ""
-
-#: ping/ping.c:1226
-#, c-format
-msgid "  %02x  %02x %04x"
 msgstr ""
 
 #: ping/ping.c:1242
@@ -1091,12 +1066,12 @@ msgid "illegal preload and/or interval: %d"
 msgstr ""
 
 #: ping/ping_common.c:505
-msgid "Warning: no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
+msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
 msgstr ""
 
 #: ping/ping_common.c:749
 #, c-format
-msgid "Warning: time of day goes back (%ldus), taking countermeasures"
+msgid "%s: time of day goes back (%ldus), taking countermeasures"
 msgstr ""
 
 #: ping/ping_common.c:799
@@ -1156,9 +1131,7 @@ msgstr ""
 
 #: ping/ping_common.c:840
 #, c-format
-msgid ""
-"\n"
-"wrong data byte #%zu should be 0x%x but was 0x%x"
+msgid "wrong data byte #%zu should be 0x%x but was 0x%x"
 msgstr ""
 
 #: ping/ping_common.c:883
@@ -1224,20 +1197,6 @@ msgstr ""
 #: ping/ping_common.c:957
 #, c-format
 msgid ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
-msgstr ""
-
-#: tracepath.c:218
-#, c-format
-msgid ""
-"cmsg6:%d\n"
-" "
-msgstr ""
-
-#: tracepath.c:230
-#, c-format
-msgid ""
-"cmsg4:%d\n"
-" "
 msgstr ""
 
 #: tracepath.c:235

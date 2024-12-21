@@ -62,6 +62,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <err.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -135,7 +136,7 @@ static inline void ping4_raw_ack(int sockfd) {
 		(1 << ICMP_ECHOREPLY)
 	)};
 	if (setsockopt(sockfd, SOL_RAW, ICMP_FILTER, &filt, sizeof(filt)) < 0)
-		error(2, errno, "setsockopt(ICMP_FILTER)");
+		err(errno, "setsockopt(ICMP_FILTER)");
 }
 
 // func_set:receive_error
@@ -248,7 +249,7 @@ static bool ping4_parse_reply(struct ping_rts *rts, bool raw,
 		hlen = ip->ihl * 4;
 		if ((received < (hlen + 8)) || (ip->ihl < 5)) {
 			if (rts->opt.verbose)
-				error(0, 0, _("packet too short (%zd bytes) from %s"),
+				warnx(_("packet too short (%zd bytes) from %s"),
 					received, sprint_addr(rts, from, sizeof(*from)));
 			return true;
 		}
@@ -274,7 +275,7 @@ static bool ping4_parse_reply(struct ping_rts *rts, bool raw,
 
 	if (received < (hlen + 8)) {
 		if (rts->opt.verbose)
-			error(0, 0, _("packet too short: %zd bytes"), received);
+			warnx(_("packet too short: %zd bytes"), received);
 		return true;
 	}
 	received -= hlen;
@@ -393,7 +394,7 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv,
 			if (argc > 1) {
 				int rc = getaddrinfo(target, NULL, &hints, &result);
 				if (rc)
-					error(2, 0, "%s: %s", target, gai_strerror(rc));
+					errx(2, "%s: %s", target, gai_strerror(rc));
 			}
 			memcpy(whereto, result->ai_addr, sizeof(*whereto));
 			/*
@@ -427,7 +428,7 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv,
 	if (!source->sin_addr.s_addr) {
 		int probe_fd = socket(AF_INET, SOCK_DGRAM, 0);
 		if (probe_fd < 0)
-			error(2, errno, "socket");
+			err(errno, "socket");
 
 		if (rts->device)
 			set_device(false, rts->device, slen, iface, mcast, probe_fd, sock->fd);
@@ -441,14 +442,14 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv,
 			switch (errno) {
 			case EACCES:
 				if (!rts->opt.broadcast)
-					error(2, 0,
+					errx(2,
 _("Do you want to ping broadcast? Then -b. If not, check your local firewall rules"));
-				error(0, 0, "%s: %s", _WARN, _("pinging broadcast address"));
+				warnx("%s: %s", _WARN, _("pinging broadcast address"));
 				int opt = rts->opt.broadcast;
 				if (setsockopt(probe_fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
-					error(2, errno, _("cannot set broadcasting"));
+					err(errno, _("cannot set broadcasting"));
 				if (connect(probe_fd, (struct sockaddr *)&dst, sizeof(dst)) < 0)
-					error(2, errno, "connect");
+					err(errno, "connect");
 				break;
 			case EHOSTUNREACH:
 			case ENETUNREACH:
@@ -456,16 +457,16 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 					close(probe_fd);
 					return -1;
 				}
-				error(2, errno, "connect");
+				err(errno, "connect");
 				break;
 			default:
-				error(2, errno, "connect");
+				err(errno, "connect");
 				break;
 			}
 		}
 		socklen_t socklen = sizeof(struct sockaddr_in);
 		if (getsockname(probe_fd, (struct sockaddr *)source, &socklen) < 0)
-			error(2, errno, "getsockname");
+			err(errno, "getsockname");
 		source->sin_port = 0;
 		close(probe_fd);
 
@@ -474,7 +475,7 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 
 	} else if (rts->device) {
 		if (setsock_bindopt(sock->fd, rts->device, slen, mcast) < 0)
-			error(2, errno, "setsock_bindopt(%s)", rts->device);
+			err(errno, "setsock_bindopt(%s)", rts->device);
 	}
 
 	if (!whereto->sin_addr.s_addr)
@@ -484,12 +485,12 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 		rts->multicast = true;
 		if (rts->uid) {
 			if (rts->interval < MIN_MCAST_INTERVAL_MS)
-				error(2, 0,
+				errx(2,
 _("minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or higher)"),
 					  MIN_MCAST_INTERVAL_MS,
 					  str_interval(MIN_MCAST_INTERVAL_MS));
 			if ((rts->pmtudisc >= 0) && (rts->pmtudisc != IP_PMTUDISC_DO))
-				error(2, 0, _("broadcast ping does not fragment"));
+				errx(2, _("broadcast ping does not fragment"));
 		}
 		if (rts->pmtudisc < 0)
 			rts->pmtudisc = IP_PMTUDISC_DO;
@@ -506,18 +507,18 @@ _("minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or 
 			      (1 << ICMP_REDIRECT)	|
 			      (1 << ICMP_ECHOREPLY));
 		if (setsockopt(sock->fd, SOL_RAW, ICMP_FILTER, &filt, sizeof filt) < 0)
-			error(0, errno, "%s: %s", _WARN, "setsockopt(ICMP_FILTER)");
+			warn("%s: %s", _WARN, "setsockopt(ICMP_FILTER)");
 	}
 
 	{ int hold = 1;
 	  if (setsockopt(sock->fd, SOL_IP, IP_RECVERR, &hold, sizeof(hold)) < 0)
-		error(0, 0, "%s: %s", _WARN, _("your kernel is veeery old. No problems."));
+		warnx("%s: %s", _WARN, _("your kernel is veeery old. No problems."));
 
 	  if (!sock->raw) {
 		if (setsockopt(sock->fd, SOL_IP, IP_RECVTTL, &hold, sizeof(hold)) < 0)
-			error(0, errno, "%s: %s", _WARN, "setsockopt(IP_RECVTTL)");
+			warn("%s: %s", _WARN, "setsockopt(IP_RECVTTL)");
 		if (setsockopt(sock->fd, SOL_IP, IP_RETOPTS, &hold, sizeof(hold)) < 0)
-			error(0, errno, "%s: %s", _WARN, "setsockopt(IP_RETOPTS)");
+			warn("%s: %s", _WARN, "setsockopt(IP_RETOPTS)");
 	  }
 	}
 
@@ -530,7 +531,7 @@ _("minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or 
 		rspace[1 + IPOPT_OFFSET] = IPOPT_MINOFF;
 		rts->optlen = 40;
 		if (setsockopt(sock->fd, IPPROTO_IP, IP_OPTIONS, rspace, sizeof rspace) < 0)
-			error(2, errno, "record route");
+			err(errno, "record route");
 	}
 	if (rts->opt.timestamp) {
 		unsigned char rspace[3 + 4 * NROUTES + 1] = {0};	/* record route space */
@@ -548,7 +549,7 @@ _("minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or 
 		if (setsockopt(sock->fd, IPPROTO_IP, IP_OPTIONS, rspace, rspace[1]) < 0) {
 			rspace[3] = 2;
 			if (setsockopt(sock->fd, IPPROTO_IP, IP_OPTIONS, rspace, rspace[1]) < 0)
-				error(2, errno, "ts option");
+				err(errno, "ts option");
 		}
 		rts->optlen = 40;
 	}
@@ -563,7 +564,7 @@ _("minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or 
 			*tmp = rts->route[i];
 		}
 		if (setsockopt(sock->fd, IPPROTO_IP, IP_OPTIONS, rspace, 4 + rts->nroute * 4) < 0)
-			error(2, errno, "record route");
+			err(errno, "record route");
 		rts->optlen = 40;
 	}
 
@@ -577,20 +578,20 @@ _("minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or 
 	if (rts->opt.broadcast) {
 		int opt = 1;
 		if (setsockopt(sock->fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
-			error(2, errno, _("cannot set broadcasting"));
+			err(errno, _("cannot set broadcasting"));
 	}
 
 	if (rts->opt.noloop) {
 		int opt = 0;
 		if (setsockopt(sock->fd, IPPROTO_IP, IP_MULTICAST_LOOP, &opt, sizeof(opt)) < 0)
-			error(2, errno, _("cannot disable multicast loopback"));
+			err(errno, _("cannot disable multicast loopback"));
 	}
 	if (rts->opt.ttl) {
 		if (setsockopt(sock->fd, IPPROTO_IP, IP_MULTICAST_TTL, &rts->ttl, sizeof(rts->ttl)) < 0)
-			error(2, errno, _("cannot set multicast time-to-live"));
+			err(errno, _("cannot set multicast time-to-live"));
 		int opt = 1;
 		if (setsockopt(sock->fd, IPPROTO_IP, IP_TTL, &opt, sizeof(opt)) < 0)
-			error(2, errno, _("cannot set unicast time-to-live"));
+			err(errno, _("cannot set unicast time-to-live"));
 	}
 
 	if (rts->datalen >= sizeof(struct timeval))	/* can we time transfer */
@@ -598,12 +599,12 @@ _("minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or 
 	int packlen = rts->datalen + MAXIPLEN + MAXICMPLEN;
 	unsigned char *packet = malloc(packlen);
 	if (!packet)
-		error(2, errno, _("memory allocation failed"));
+		err(errno, _("memory allocation failed"));
 
 	ping_setup(rts, sock);
 	if (rts->opt.connect_sk)
 		if (connect(sock->fd, (struct sockaddr *)&dst, sizeof(dst)) < 0)
-			error(2, errno, "connect");
+			err(errno, "connect");
 	drop_capabilities();
 
 	int rc = main_loop(rts, &ping4_func_set, sock, packet, packlen);

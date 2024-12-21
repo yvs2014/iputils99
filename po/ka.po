@@ -352,9 +352,8 @@ msgstr "ფარგლების შეუსაბამობა კვა�
 
 #: ping/ping6_common.c:226 ping/ping.c:878
 #, c-format
-msgid "Warning: source address might be selected on device other than: %s"
-msgstr ""
-"გაფრთხილება: საწყისი მისამართი სეიძლება აირჩიოთ მოწყობილობებზე %s-ის გარდა"
+msgid "%s: source address might be selected on device other than: %s"
+msgstr "%s: საწყისი მისამართი სეიძლება აირჩიოთ მოწყობილობებზე %s-ის გარდა"
 
 #: ping/ping6_common.c:267
 #, c-format
@@ -373,28 +372,24 @@ msgstr "გადაცემის პინგი არ იხლიჩებ
 msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
 msgstr "setsockopt(RAW_CHECKSUM) -ის შეცდომა - გაგრძელების მცდელობა"
 
-#: ping/ping6_common.c:357
-msgid "can't disable multicast loopback"
-msgstr "მულტიკასტის მარყუჟის გამორთვა შეუძლებელია"
-
 #: ping/ping6_common.c:362
-msgid "can't set multicast hop limit"
+msgid "cannot set multicast hop limit"
 msgstr "ტრანსლაციის ჰოპების ლიმიტის დაყენების შეცდომა"
 
 #: ping/ping6_common.c:365
-msgid "can't set unicast hop limit"
+msgid "cannot set unicast hop limit"
 msgstr "უნიკასტ პაკეტის ჰოპების ლიმიტის დაყენების შეცდომა"
 
 #: ping/ping6_common.c:377
-msgid "can't receive hop limit"
+msgid "cannot receive hop limit"
 msgstr "ჰოპების ლიმიტის მიღების შეცდომა"
 
 #: ping/ping6_common.c:391
-msgid "can't set flowlabel"
+msgid "cannot set flowlabel"
 msgstr "დინების ჭდის დადების შეცდომა"
 
 #: ping/ping6_common.c:395
-msgid "can't send flowinfo"
+msgid "cannot send flowinfo"
 msgstr "დინების ინფორმაციის გაგზავნის შეცდომა"
 
 #: ping/ping6_common.c:398 ping/ping.c:1023
@@ -414,8 +409,8 @@ msgstr "%s%s-დან: "
 
 #: ping/ping6_common.c:408
 #, c-format
-msgid "%zu data bytes\n"
-msgstr "%zu ბაიტი მონაცემი\n"
+msgid "%zu data bytes"
+msgstr "%zu ბაიტი მონაცემი"
 
 #: ping/ping6_common.c:423
 #, c-format
@@ -709,18 +704,13 @@ msgstr "გაწელვის ცუდი დრო"
 msgid "ident 0 => forcing raw socket"
 msgstr "ident 0 => raw ტიპის სოკეტის ნაძალადევი არჩევა"
 
-#: ping/ping.c:652
 #, c-format
-msgid ""
-"Warning: IPv6 link-local address on ICMP datagram socket may require ifname "
-"or scope-id => use: address%%<ifname|scope-id>"
-msgstr ""
-"გაფრთხილება: IPv6 link-local misamarTs ICMP დატაგრამის სოკეტზე შეიძლება "
-"ifname an scope-id => use: address%%<ifname|scope-id> დასჭირდეს"
-
-#: ping/ping.c:829
-msgid "warning: QOS sockopts"
-msgstr "გაფრთხილება: QOS sockopts"
+#~ msgid ""
+#~ "IPv6 link-local address on ICMP datagram socket may require ifname "
+#~ "or scope-id => use: address%%<ifname|scope-id>"
+#~ msgstr ""
+#~ "IPv6 link-local misamarTs ICMP დატაგრამის სოკეტზე შეიძლება "
+#~ "ifname an scope-id => use: address%%<ifname|scope-id> დასჭირდეს"
 
 #: ping/ping.c:841
 msgid ""
@@ -739,8 +729,8 @@ msgid "cannot set broadcasting"
 msgstr "გადაცემის დაყენების შეცდომა"
 
 #: ping/ping.c:866
-msgid "gatifaddrs failed"
-msgstr "gatifaddrs-ის შეცდომა"
+msgid "getifaddrs failed"
+msgstr "getifaddrs-ის შეცდომა"
 
 #: ping/ping.c:894
 #, c-format
@@ -846,27 +836,6 @@ msgid ""
 msgstr ""
 "\n"
 "უცნობი პარამეტრი %x"
-
-#: ping/ping.c:1221
-#, c-format
-msgid "Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n"
-msgstr ""
-"Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst მონაცემები\n"
-
-#: ping/ping.c:1222
-#, c-format
-msgid " %1x  %1x  %02x %04x %04x"
-msgstr " %1x  %1x  %02x %04x %04x"
-
-#: ping/ping.c:1224
-#, c-format
-msgid "   %1x %04x"
-msgstr "   %1x%04x"
-
-#: ping/ping.c:1226
-#, c-format
-msgid "  %02x  %02x %04x"
-msgstr "  %02x  %02x%04x"
 
 #: ping/ping.c:1242
 #, c-format
@@ -1066,7 +1035,7 @@ msgstr "ლოკალური შეცდომა: შეტყობინ
 #: ping/ping.c:1617
 #, c-format
 msgid "packet too short (%zd bytes) from %s"
-msgstr "პაკეტი ძალიან მოკლეა (%d ბაიტი). გამომგზავნი:%s"
+msgstr "პაკეტი ძალიან მოკლეა (%zd ბაიტი). გამომგზავნი:%s"
 
 #: ping/ping.c:1696
 #, c-format
@@ -1242,19 +1211,18 @@ msgid "illegal preload and/or interval: %d"
 msgstr "არასწორი წინასწარი ჩატვირთვა ან/და ინტერვალი: %d"
 
 #: ping/ping_common.c:505
-msgid "Warning: no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
-msgstr ""
-"გაფრთხილება: SO_TIMESTAMP-ის მხარდაჭერის გარეშე. SIOCGSTAMP-ზე გადართვა"
+msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
+msgstr "SO_TIMESTAMP-ის მხარდაჭერის გარეშე. SIOCGSTAMP-ზე გადართვა"
 
 #: ping/ping_common.c:749
 #, c-format
-msgid "Warning: time of day goes back (%ldus), taking countermeasures"
-msgstr "გაფრთხილება: დრო უკან დაბრუნდა (%ldus), მიიღება საწინააღმდეგო ზომები"
+msgid "%s: time of day goes back (%ldus), taking countermeasures"
+msgstr "%s: დრო უკან დაბრუნდა (%ldus), მიიღება საწინააღმდეგო ზომები"
 
 #: ping/ping_common.c:799
 #, c-format
 msgid "%zd bytes from %s:"
-msgstr "%d ბაიტი %s-დან:"
+msgstr "%zd ბაიტი %s-დან:"
 
 #: ping/ping_common.c:805
 #, c-format
@@ -1308,12 +1276,8 @@ msgstr " (განსხვავებული მისამართი)"
 
 #: ping/ping_common.c:840
 #, c-format
-msgid ""
-"\n"
-"wrong data byte #%zu should be 0x%x but was 0x%x"
-msgstr ""
-"\n"
-"მონაცემების არასწორი ბაიტი #%zu უნდა იყოს 0ხ%x მაგრამ იყო 0x%x"
+msgid "wrong data byte #%zu should be 0x%x but was 0x%x"
+msgstr "მონაცემების არასწორი ბაიტი #%zu უნდა იყოს 0ხ%x მაგრამ იყო 0x%x"
 
 #: ping/ping_common.c:883
 #, c-format
@@ -1379,24 +1343,6 @@ msgstr "%ld/%ld პაკეტი, %d%% დაკარგულია"
 #, c-format
 msgid ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
 msgstr ", მინ/საშ/ewma/მაქს = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld მწმ"
-
-#: tracepath.c:218
-#, c-format
-msgid ""
-"cmsg6:%d\n"
-" "
-msgstr ""
-"cmsg6: %d\n"
-" "
-
-#: tracepath.c:230
-#, c-format
-msgid ""
-"cmsg4:%d\n"
-" "
-msgstr ""
-"cmsg4: %d\n"
-" "
 
 #: tracepath.c:235
 #, c-format

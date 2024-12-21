@@ -55,12 +55,6 @@
 #define _INFO	_(INFO)
 #define _WARN	_(WARN)
 
-#ifdef HAVE_ERROR_H
-# include <error.h>
-#else
-void error(int status, int errnum, const char *format, ...);
-#endif
-
 long strtol_or_err(const char *str, const char *errmesg, long min, long max);
 void close_stdout(void);
 void print_config(void);

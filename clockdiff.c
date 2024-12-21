@@ -56,7 +56,6 @@
 #endif
 
 #include <arpa/inet.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <linux/types.h>
@@ -67,6 +66,7 @@
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <sys/param.h>
 #include <sys/socket.h>
@@ -74,7 +74,8 @@
 #include <sys/timex.h>
 #include <sys/types.h>
 #include <time.h>
-#include <unistd.h>
+#include <err.h>
+#include <errno.h>
 
 #ifdef HAVE_LIBCAP
 # include <sys/capability.h>
@@ -432,13 +433,12 @@ static void drop_rights(void)
 {
 #ifdef HAVE_LIBCAP
 	cap_t caps = cap_init();
-
 	if (cap_set_proc(caps))
-		error(-1, errno, "cap_set_proc");
+		err(errno, "cap_set_proc");
 	cap_free(caps);
 #endif
 	if (setuid(getuid()))
-		error(-1, errno, "setuid");
+		err(errno, "setuid");
 }
 
 static void usage(int exit_status)
@@ -483,8 +483,9 @@ static void parse_opts(struct run_state *ctl, int argc, char **argv) {
 			else if (!strcmp(optarg, "ctime"))
 				ctl->time_format = time_format_ctime;
 			else
-				error(1, 0, "Invalid time-format argument: %s",
-				      optarg);
+				errx(EXIT_FAILURE,
+					"Invalid time-format argument: %s",
+					optarg);
 			break;
 		case 'I':
 			ctl->time_format = time_format_iso;
@@ -537,9 +538,9 @@ int main(int argc, char **argv)
 
 	ctl.sock_raw = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (ctl.sock_raw < 0)
-		error(1, errno, "socket");
+		err(errno, "socket");
 	if (nice(-16) == -1)
-		error(1, errno, "nice");
+		err(errno, "nice");
 	drop_rights();
 
 	if (isatty(fileno(stdin)) && isatty(fileno(stdout)))
@@ -549,28 +550,28 @@ int main(int argc, char **argv)
 
 	status = getaddrinfo(argv[0], NULL, &hints, &result);
 	if (status)
-		error(1, 0, "%s: %s", argv[0], gai_strerror(status));
+		errx(EXIT_FAILURE, "%s: %s", argv[0], gai_strerror(status));
 	ctl.hisname = strdup(result->ai_canonname);
 
 	memcpy(&ctl.server, result->ai_addr, sizeof ctl.server);
 	freeaddrinfo(result);
 
-	if (connect(ctl.sock_raw, (struct sockaddr *)&ctl.server, sizeof(ctl.server)) == -1)
-		error(1, errno, "connect");
+	if (connect(ctl.sock_raw, (struct sockaddr *)&ctl.server, sizeof(ctl.server)) < 0)
+		err(errno, "connect");
 	if (ctl.ip_opt_len) {
 		struct sockaddr_in myaddr = { 0 };
 		socklen_t addrlen = sizeof(myaddr);
 		uint8_t *rspace = calloc(ctl.ip_opt_len, sizeof(uint8_t));
 
 		if (rspace == NULL)
-			error(1, errno, "allocating %zu bytes failed",
+			err(errno, "allocating %zu bytes failed",
 					ctl.ip_opt_len * sizeof(uint8_t));
 		rspace[0] = IPOPT_TIMESTAMP;
 		rspace[1] = ctl.ip_opt_len;
 		rspace[2] = 5;
 		rspace[3] = IPOPT_TS_PRESPEC;
-		if (getsockname(ctl.sock_raw, (struct sockaddr *)&myaddr, &addrlen) == -1)
-			error(1, errno, "getsockname");
+		if (getsockname(ctl.sock_raw, (struct sockaddr *)&myaddr, &addrlen) < 0)
+			err(errno, "getsockname");
 		((uint32_t *) (rspace + 4))[0 * 2] = myaddr.sin_addr.s_addr;
 		((uint32_t *) (rspace + 4))[1 * 2] = ctl.server.sin_addr.s_addr;
 		((uint32_t *) (rspace + 4))[2 * 2] = myaddr.sin_addr.s_addr;
@@ -580,7 +581,7 @@ int main(int argc, char **argv)
 		}
 
 		if (setsockopt(ctl.sock_raw, IPPROTO_IP, IP_OPTIONS, rspace, ctl.ip_opt_len) < 0) {
-			error(0, errno, "IP_OPTIONS (fallback to icmp tstamps)");
+			warn("IP_OPTIONS (fallback to icmp tstamps)");
 			ctl.ip_opt_len = 0;
 		}
 		free(rspace);
@@ -589,19 +590,19 @@ int main(int argc, char **argv)
 	measure_status = measure(&ctl);
 	if (measure_status < 0) {
 		if (errno)
-			error(1, errno, "measure");
-		error(1, 0, _("measure: unknown failure"));
+			err(errno, "measure");
+		errx(EXIT_FAILURE, _("measure: unknown failure"));
 	}
 
 	switch (measure_status) {
 	case HOSTDOWN:
-		error(1, 0, _("%s is down"), ctl.hisname);
+		errx(EXIT_FAILURE, _("%s is down"), ctl.hisname);
 		break;
 	case NONSTDTIME:
-		error(1, 0, _("%s time transmitted in a non-standard format"), ctl.hisname);
+		errx(EXIT_FAILURE, _("%s time transmitted in a non-standard format"), ctl.hisname);
 		break;
 	case UNREACHABLE:
-		error(1, 0, _("%s is unreachable"), ctl.hisname);
+		errx(EXIT_FAILURE, _("%s is unreachable"), ctl.hisname);
 		break;
 	default:
 		break;
@@ -629,3 +630,4 @@ int main(int argc, char **argv)
 	}
 	exit(0);
 }
+

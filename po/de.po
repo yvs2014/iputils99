@@ -354,10 +354,9 @@ msgstr "Bereichsunstimmigkeit unter den Knoten"
 
 #: ping/ping6_common.c:226 ping/ping.c:878
 #, c-format
-msgid "Warning: source address might be selected on device other than: %s"
+msgid "%s: source address might be selected on device other than: %s"
 msgstr ""
-"Warnung: Die Quelladresse könnte auf einem anderen Gerät ausgewählt sein "
-"als: %s"
+"%s: Die Quelladresse könnte auf einem anderen Gerät ausgewählt sein als: %s"
 
 #: ping/ping6_common.c:267
 #, c-format
@@ -376,28 +375,24 @@ msgstr "Multicast Ping fragmentiert nicht"
 msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
 msgstr "Fehler bei setsockopt(RAW_CHECKSUM) - versuche fortzufahren"
 
-#: ping/ping6_common.c:357
-msgid "can't disable multicast loopback"
-msgstr "kann Multicast Loopback nicht deaktivieren"
-
 #: ping/ping6_common.c:362
-msgid "can't set multicast hop limit"
+msgid "cannot set multicast hop limit"
 msgstr "kann Multicast Hop Limit nicht setzen"
 
 #: ping/ping6_common.c:365
-msgid "can't set unicast hop limit"
+msgid "cannot set unicast hop limit"
 msgstr "kann Unicast Hop Limit nicht setzen"
 
 #: ping/ping6_common.c:377
-msgid "can't receive hop limit"
+msgid "cannot receive hop limit"
 msgstr "kann Hop Limit nicht empfangen"
 
 #: ping/ping6_common.c:391
-msgid "can't set flowlabel"
+msgid "cannot set flowlabel"
 msgstr "kann Flowlabel nicht setzen"
 
 #: ping/ping6_common.c:395
-msgid "can't send flowinfo"
+msgid "cannot send flowinfo"
 msgstr "kann Flussinformationen nicht senden"
 
 #: ping/ping6_common.c:398 ping/ping.c:1023
@@ -417,8 +412,8 @@ msgstr "von %s %s: "
 
 #: ping/ping6_common.c:408
 #, c-format
-msgid "%zu data bytes\n"
-msgstr "%zu Datenbytes\n"
+msgid "%zu data bytes"
+msgstr "%zu Datenbytes"
 
 #: ping/ping6_common.c:423
 #, c-format
@@ -711,18 +706,13 @@ msgstr "schlechte Verweildauer"
 msgid "ident 0 => forcing raw socket"
 msgstr "ident 0 => erzwinge raw socket"
 
-#: ping/ping.c:652
 #, c-format
-msgid ""
-"Warning: IPv6 link-local address on ICMP datagram socket may require ifname "
-"or scope-id => use: address%%<ifname|scope-id>"
-msgstr ""
-"Warnung: IPv6 link-local Adresse auf einem ICMP Datagrammsockel kann ifname "
-"or Bereichs-ID erfordern => benutzen Sie: Adresse%%<ifname|Bereichs-ID>"
-
-#: ping/ping.c:829
-msgid "warning: QOS sockopts"
-msgstr "Warnung: QOS sockopts"
+#~ msgid ""
+#~ "IPv6 link-local address on ICMP datagram socket may require ifname "
+#~ "or scope-id => use: address%%<ifname|scope-id>"
+#~ msgstr ""
+#~ "IPv6 link-local Adresse auf einem ICMP Datagrammsockel kann ifname "
+#~ "or Bereichs-ID erfordern => benutzen Sie: Adresse%%<ifname|Bereichs-ID>"
 
 #: ping/ping.c:841
 msgid ""
@@ -741,8 +731,8 @@ msgid "cannot set broadcasting"
 msgstr "kann broadcasting nicht einstellen"
 
 #: ping/ping.c:866
-msgid "gatifaddrs failed"
-msgstr "gatifaddrs fehlgeschlagen"
+msgid "getifaddrs failed"
+msgstr "getifaddrs fehlgeschlagen"
 
 #: ping/ping.c:894
 #, c-format
@@ -847,26 +837,6 @@ msgid ""
 msgstr ""
 "\n"
 "unbekannte Option %x"
-
-#: ping/ping.c:1221
-#, c-format
-msgid "Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n"
-msgstr "Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n"
-
-#: ping/ping.c:1222
-#, c-format
-msgid " %1x  %1x  %02x %04x %04x"
-msgstr " %1x  %1x  %02x %04x %04x"
-
-#: ping/ping.c:1224
-#, c-format
-msgid "   %1x %04x"
-msgstr "   %1x %04x"
-
-#: ping/ping.c:1226
-#, c-format
-msgid "  %02x  %02x %04x"
-msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
@@ -1066,7 +1036,7 @@ msgstr "lokaler Fehler: Nachricht zu lang, MTU=%u"
 #: ping/ping.c:1617
 #, c-format
 msgid "packet too short (%zd bytes) from %s"
-msgstr "Paket zu kurz (%d Bytes) aus %s"
+msgstr "Paket zu kurz (%zd Bytes) aus %s"
 
 #: ping/ping.c:1696
 #, c-format
@@ -1236,18 +1206,18 @@ msgid "illegal preload and/or interval: %d"
 msgstr "unerlaubter Preload bzw. Intervall: %d"
 
 #: ping/ping_common.c:505
-msgid "Warning: no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
-msgstr "Warnung: keine SO_TIMESTAMP Unterstützung, kehre zurück zu SIOCGSTAMP"
+msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
+msgstr "keine SO_TIMESTAMP Unterstützung, kehre zurück zu SIOCGSTAMP"
 
 #: ping/ping_common.c:749
 #, c-format
-msgid "Warning: time of day goes back (%ldus), taking countermeasures"
-msgstr "Warnung: Tageszeit liegt vor (%ldus), leite Gegenmaßnahmen ein"
+msgid "%s: time of day goes back (%ldus), taking countermeasures"
+msgstr "%s: Tageszeit liegt vor (%ldus), leite Gegenmaßnahmen ein"
 
 #: ping/ping_common.c:799
 #, c-format
 msgid "%zd bytes from %s:"
-msgstr "%d Bytes von %s:"
+msgstr "%zd Bytes von %s:"
 
 #: ping/ping_common.c:805
 #, c-format
@@ -1301,12 +1271,8 @@ msgstr " (ANDERE ADRESSE!)"
 
 #: ping/ping_common.c:840
 #, c-format
-msgid ""
-"\n"
-"wrong data byte #%zu should be 0x%x but was 0x%x"
-msgstr ""
-"\n"
-"falsches Datenbyte #%zu sollte 0x%x sein, aber war 0x%x"
+msgid "wrong data byte #%zu should be 0x%x but was 0x%x"
+msgstr "falsches Datenbyte #%zu sollte 0x%x sein, aber war 0x%x"
 
 #: ping/ping_common.c:883
 #, c-format
@@ -1372,24 +1338,6 @@ msgstr "%ld/%ld Pakete, %d%% Verlust"
 #, c-format
 msgid ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
 msgstr ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
-
-#: tracepath.c:218
-#, c-format
-msgid ""
-"cmsg6:%d\n"
-" "
-msgstr ""
-"cmsg6:%d\n"
-" "
-
-#: tracepath.c:230
-#, c-format
-msgid ""
-"cmsg4:%d\n"
-" "
-msgstr ""
-"cmsg4:%d\n"
-" "
 
 #: tracepath.c:235
 #, c-format

@@ -5,11 +5,7 @@
 #include "extra.h"
 
 #include <string.h>
-#ifdef HAVE_ERROR_H
-#include <error.h>
-#else
-#include "iputils_common.h"
-#endif
+#include <err.h>
 
 void unmap_ai_sa4(struct addrinfo *ai) {
 	if (!ai || !ai->ai_addr)
@@ -31,7 +27,7 @@ void ping6_unspec(const char *target, const struct in6_addr *addr,
 	unspec.ai_family = AF_UNSPEC;
 	int rc = getaddrinfo(target, NULL, &unspec, &result);
 	if (rc)
-		error(2, 0, "%s: %s", target, gai_strerror(rc));
+		errx(rc, "%s: %s", target, gai_strerror(rc));
 	for (struct addrinfo *ai = result; ai; ai = ai->ai_next) {
 		if (ai->ai_family != AF_INET6)
 			continue;

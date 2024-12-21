@@ -350,8 +350,8 @@ msgstr "노드 사이의 범위 불일치"
 
 #: ping/ping6_common.c:226 ping/ping.c:878
 #, c-format
-msgid "Warning: source address might be selected on device other than: %s"
-msgstr "경고: 원천 주소는 다른 이외의 장치에서 선택될 수 있습니다: %s"
+msgid "%s: source address might be selected on device other than: %s"
+msgstr "%s: 원천 주소는 다른 이외의 장치에서 선택될 수 있습니다: %s"
 
 #: ping/ping6_common.c:267
 #, c-format
@@ -370,28 +370,24 @@ msgstr "다중 전송 ping이 조각화되지 않음"
 msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
 msgstr "setsockopt(RAW_CHECKSUM) 실패함 - 계속 시도"
 
-#: ping/ping6_common.c:357
-msgid "can't disable multicast loopback"
-msgstr "다중 전송 루프백을 비활성화 할 수 없습니다"
-
 #: ping/ping6_common.c:362
-msgid "can't set multicast hop limit"
+msgid "cannot set multicast hop limit"
 msgstr "다중 전송 건너뛰기 한계 값을 설정 할 수 없습니다"
 
 #: ping/ping6_common.c:365
-msgid "can't set unicast hop limit"
+msgid "cannot set unicast hop limit"
 msgstr "단일 전송 건너뛰기 한계값을 설정 할 수 없습니다"
 
 #: ping/ping6_common.c:377
-msgid "can't receive hop limit"
+msgid "cannot receive hop limit"
 msgstr "건너뛰기 제한을 받을 수 없습니다"
 
 #: ping/ping6_common.c:391
-msgid "can't set flowlabel"
+msgid "cannot set flowlabel"
 msgstr "흐름부호(flowlabel)를 설정 할 수 없습니다"
 
 #: ping/ping6_common.c:395
-msgid "can't send flowinfo"
+msgid "cannot send flowinfo"
 msgstr "흐름 정보를 보낼 수 없습니다"
 
 #: ping/ping6_common.c:398 ping/ping.c:1023
@@ -411,8 +407,8 @@ msgstr "%s %s에서: "
 
 #: ping/ping6_common.c:408
 #, c-format
-msgid "%zu data bytes\n"
-msgstr "%zu 자료 바이트\n"
+msgid "%zu data bytes"
+msgstr "%zu 자료 바이트"
 
 #: ping/ping6_common.c:423
 #, c-format
@@ -705,14 +701,13 @@ msgstr "나쁜 체류시간"
 msgid "ident 0 => forcing raw socket"
 msgstr "ident 0 => 원시 소켓으로 강제합니다"
 
-#: ping/ping.c:652
 #, c-format
-msgid ""
-"Warning: IPv6 link-local address on ICMP datagram socket may require ifname "
-"or scope-id => use: address%%<ifname|scope-id>"
-msgstr ""
-"경고: ICMP 데이타그램에서 IPv6 연결-로컬 주소는 ifname 또는 scope-id가 요구 "
-"될 수 있습니다 => use: address%%<ifname|scope-id>"
+#~ msgid ""
+#~ "IPv6 link-local address on ICMP datagram socket may require ifname "
+#~ "or scope-id => use: address%%<ifname|scope-id>"
+#~ msgstr ""
+#~ "ICMP 데이타그램에서 IPv6 연결-로컬 주소는 ifname 또는 scope-id가 요구 "
+#~ "될 수 있습니다 => use: address%%<ifname|scope-id>"
 
 #: ping/ping.c:829
 msgid "warning: QOS sockopts"
@@ -735,8 +730,8 @@ msgid "cannot set broadcasting"
 msgstr "광역전송 중에 설정 할 수 없습니다"
 
 #: ping/ping.c:866
-msgid "gatifaddrs failed"
-msgstr "gatifaddrs 실패함"
+msgid "getifaddrs failed"
+msgstr "getifaddrs 실패함"
 
 #: ping/ping.c:894
 #, c-format
@@ -841,26 +836,6 @@ msgid ""
 msgstr ""
 "\n"
 "알지 못하는 옵션 %x"
-
-#: ping/ping.c:1221
-#, c-format
-msgid "Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n"
-msgstr "Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst 자료\n"
-
-#: ping/ping.c:1222
-#, c-format
-msgid " %1x  %1x  %02x %04x %04x"
-msgstr " %1x  %1x  %02x %04x %04x"
-
-#: ping/ping.c:1224
-#, c-format
-msgid "   %1x %04x"
-msgstr "   %1x %04x"
-
-#: ping/ping.c:1226
-#, c-format
-msgid "  %02x  %02x %04x"
-msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
@@ -1060,7 +1035,7 @@ msgstr "로컬 오류: 메시지가 너무 김, mtu=%u"
 #: ping/ping.c:1617
 #, c-format
 msgid "packet too short (%zd bytes) from %s"
-msgstr "패킷이 너무 짧음(%d 바이트) (%s에서)"
+msgstr "패킷이 너무 짧음(%zd 바이트) (%s에서)"
 
 #: ping/ping.c:1696
 #, c-format
@@ -1226,18 +1201,18 @@ msgid "illegal preload and/or interval: %d"
 msgstr "잘못된 사전 적재와/또는 간격: %d"
 
 #: ping/ping_common.c:505
-msgid "Warning: no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
-msgstr "경고: SO_TIMESTAMP를 지원하지 않아서, SIOCGSTAMP로 되바꿉니다"
+msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
+msgstr "SO_TIMESTAMP를 지원하지 않아서, SIOCGSTAMP로 되바꿉니다"
 
 #: ping/ping_common.c:749
 #, c-format
-msgid "Warning: time of day goes back (%ldus), taking countermeasures"
-msgstr "경고: 시간을 (%ldus)로 되돌리고, 대책을 강구합니다"
+msgid "%s: time of day goes back (%ldus), taking countermeasures"
+msgstr "%s: 시간을 (%ldus)로 되돌리고, 대책을 강구합니다"
 
 #: ping/ping_common.c:799
 #, c-format
 msgid "%zd bytes from %s:"
-msgstr "%d 바이트 (%s에서):"
+msgstr "%zd 바이트 (%s에서):"
 
 #: ping/ping_common.c:805
 #, c-format
@@ -1291,12 +1266,8 @@ msgstr " (다른 주소!)"
 
 #: ping/ping_common.c:840
 #, c-format
-msgid ""
-"\n"
-"wrong data byte #%zu should be 0x%x but was 0x%x"
-msgstr ""
-"\n"
-"잘못된 자료 바이트 #%zu는 0x%x이어야 하지만 0x%x입니다"
+msgid "wrong data byte #%zu should be 0x%x but was 0x%x"
+msgstr "잘못된 자료 바이트 #%zu는 0x%x이어야 하지만 0x%x입니다"
 
 #: ping/ping_common.c:883
 #, c-format
@@ -1364,24 +1335,6 @@ msgstr "%ld/%ld 패킷, %d%% 손실"
 msgid ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
 msgstr ""
 ", 최소/평균/지수가중평균/최대 = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
-
-#: tracepath.c:218
-#, c-format
-msgid ""
-"cmsg6:%d\n"
-" "
-msgstr ""
-"cmsg6:%d\n"
-" "
-
-#: tracepath.c:230
-#, c-format
-msgid ""
-"cmsg4:%d\n"
-" "
-msgstr ""
-"cmsg4:%d\n"
-" "
 
 #: tracepath.c:235
 #, c-format

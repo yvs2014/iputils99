@@ -20,12 +20,13 @@
 #include <resolv.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/uio.h>
 #include <time.h>
-#include <unistd.h>
+#include <err.h>
 
 /*
  * Keep linux/ includes after standard headers.
@@ -217,7 +218,7 @@ static int recverr(struct run_state *const ctl)
 				memcpy(&rethops, CMSG_DATA(cmsg), sizeof(rethops));
 				break;
 			default:
-				printf(_("cmsg6:%d\n "), cmsg->cmsg_type);
+				printf("cmsg6:%d\n ", cmsg->cmsg_type);
 			}
 			break;
 		case SOL_IP:
@@ -229,7 +230,7 @@ static int recverr(struct run_state *const ctl)
 				rethops = *(uint8_t *)CMSG_DATA(cmsg);
 				break;
 			default:
-				printf(_("cmsg4:%d\n "), cmsg->cmsg_type);
+				printf("cmsg4:%d\n ", cmsg->cmsg_type);
 			}
 		}
 	}
@@ -338,7 +339,7 @@ static int recverr(struct run_state *const ctl)
 		return 0;
 	default:
 		printf("\n");
-		error(0, e->ee_errno, _("NET ERROR"));
+		warnx(_("NET ERROR"));
 		return 0;
 	}
 	goto restart;
@@ -456,12 +457,12 @@ int main(int argc, char **argv)
 		switch (ch) {
 		case '4':
 			if (hints.ai_family == AF_INET6)
-				error(2, 0, _("Only one -4 or -6 option may be specified"));
+				errx(2, _("Only one -4 or -6 option may be specified"));
 			hints.ai_family = AF_INET;
 			break;
 		case '6':
 			if (hints.ai_family == AF_INET)
-				error(2, 0, _("Only one -4 or -6 option may be specified"));
+				errx(2, _("Only one -4 or -6 option may be specified"));
 			hints.ai_family = AF_INET6;
 			break;
 		case 'n':
@@ -507,7 +508,7 @@ int main(int argc, char **argv)
 
 	status = getaddrinfo(argv[0], pbuf, &hints, &result);
 	if (status || !result) {
-		error(1, 0, "%s: %s", argv[0], gai_strerror(status));
+		errx(EXIT_FAILURE, "%s: %s", argv[0], gai_strerror(status));
 		abort();
 	}
 
@@ -523,7 +524,7 @@ int main(int argc, char **argv)
 		break;
 	}
 	if ((ctl.socket_fd < 0) || !ctl.ai)
-		error(1, errno, "socket/ai");
+		err(EXIT_FAILURE, "socket/ai");
 
 	switch (ctl.ai->ai_family) {
 	case AF_INET6:
@@ -534,19 +535,20 @@ int main(int argc, char **argv)
 			goto pktlen_error;
 
 		on = IPV6_PMTUDISC_PROBE;
-		if (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_MTU_DISCOVER, &on, sizeof(on)) &&
-		    (on = IPV6_PMTUDISC_DO, setsockopt(ctl.socket_fd, SOL_IPV6,
-		     IPV6_MTU_DISCOVER, &on, sizeof(on))))
-			error(1, errno, "IPV6_MTU_DISCOVER");
+		if (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_MTU_DISCOVER, &on, sizeof(on)) < 0) {
+		    on = IPV6_PMTUDISC_DO;
+		    if (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_MTU_DISCOVER, &on, sizeof(on)) < 0)
+			err(errno, "IPV6_MTU_DISCOVER");
+		}
 		on = 1;
-		if (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_RECVERR, &on, sizeof(on)))
-			error(1, errno, "IPV6_RECVERR");
-		if (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_HOPLIMIT, &on, sizeof(on))
+		if (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_RECVERR, &on, sizeof(on)) < 0)
+			err(errno, "IPV6_RECVERR");
+		if ((setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_HOPLIMIT, &on, sizeof(on)) < 0)
 #ifdef IPV6_RECVHOPLIMIT
-		    && setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_2292HOPLIMIT, &on, sizeof(on))
+		    && (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_2292HOPLIMIT, &on, sizeof(on)) < 0)
 #endif
 		    )
-			error(1, errno, "IPV6_HOPLIMIT");
+			err(errno, "IPV6_HOPLIMIT");
 		if (!IN6_IS_ADDR_V4MAPPED(&(((struct sockaddr_in6 *)&ctl.target)->sin6_addr)))
 			break;
 		ctl.mapped = 1;
@@ -559,18 +561,18 @@ int main(int argc, char **argv)
 			goto pktlen_error;
 
 		on = IP_PMTUDISC_PROBE;
-		if (setsockopt(ctl.socket_fd, SOL_IP, IP_MTU_DISCOVER, &on, sizeof(on)))
-			error(1, errno, "IP_MTU_DISCOVER");
+		if (setsockopt(ctl.socket_fd, SOL_IP, IP_MTU_DISCOVER, &on, sizeof(on)) < 0)
+			err(errno, "IP_MTU_DISCOVER");
 		on = 1;
-		if (setsockopt(ctl.socket_fd, SOL_IP, IP_RECVERR, &on, sizeof(on)))
-			error(1, errno, "IP_RECVERR");
-		if (setsockopt(ctl.socket_fd, SOL_IP, IP_RECVTTL, &on, sizeof(on)))
-			error(1, errno, "IP_RECVTTL");
+		if (setsockopt(ctl.socket_fd, SOL_IP, IP_RECVERR, &on, sizeof(on)) < 0)
+			err(errno, "IP_RECVERR");
+		if (setsockopt(ctl.socket_fd, SOL_IP, IP_RECVTTL, &on, sizeof(on)) < 0)
+			err(errno, "IP_RECVTTL");
 	}
 
 	ctl.pktbuf = malloc(ctl.mtu);
 	if (!ctl.pktbuf)
-		error(1, errno, "malloc");
+		err(errno, "malloc");
 
 	for (ctl.ttl = 1; ctl.ttl <= ctl.max_hops; ctl.ttl++) {
 		int res = -1;
@@ -579,14 +581,14 @@ int main(int argc, char **argv)
 		on = ctl.ttl;
 		switch (ctl.ai->ai_family) {
 		case AF_INET6:
-			if (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_UNICAST_HOPS, &on, sizeof(on)))
-				error(1, errno, "IPV6_UNICAST_HOPS");
+			if (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_UNICAST_HOPS, &on, sizeof(on)) < 0)
+				err(errno, "IPV6_UNICAST_HOPS");
 			if (!ctl.mapped)
 				break;
 			/*FALLTHROUGH*/
 		case AF_INET:
-			if (setsockopt(ctl.socket_fd, SOL_IP, IP_TTL, &on, sizeof(on)))
-				error(1, errno, "IP_TTL");
+			if (setsockopt(ctl.socket_fd, SOL_IP, IP_TTL, &on, sizeof(on)) < 0)
+				err(errno, "IP_TTL");
 		}
 
  restart:
@@ -620,5 +622,6 @@ int main(int argc, char **argv)
 	exit(0);
 
  pktlen_error:
-	error(1, 0, _("pktlen must be within: %d < value <= %d"), ctl.overhead, INT_MAX);
+	errx(EXIT_FAILURE, _("pktlen must be within: %d < value <= %d"), ctl.overhead, INT_MAX);
 }
+

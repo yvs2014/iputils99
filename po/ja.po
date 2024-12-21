@@ -358,8 +358,8 @@ msgstr "ノード間のスコープが一致していません"
 
 #: ping/ping6_common.c:226 ping/ping.c:878
 #, c-format
-msgid "Warning: source address might be selected on device other than: %s"
-msgstr "警告: ソースアドレスは %s 以外のデバイスから選択される可能性があります"
+msgid "%s: source address might be selected on device other than: %s"
+msgstr "%s: ソースアドレスは %s 以外のデバイスから選択される可能性があります"
 
 #: ping/ping6_common.c:267
 #, c-format
@@ -377,28 +377,24 @@ msgstr "マルチキャストpingは断片化しません"
 msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
 msgstr "setsockopt(RAW_CHECKSUM) に失敗しました。再試行します"
 
-#: ping/ping6_common.c:357
-msgid "can't disable multicast loopback"
-msgstr "マルチキャスト・ループバックを無効にできません"
-
 #: ping/ping6_common.c:362
-msgid "can't set multicast hop limit"
+msgid "cannot set multicast hop limit"
 msgstr "マルチキャスト・ホップ数の上限を設定できません"
 
 #: ping/ping6_common.c:365
-msgid "can't set unicast hop limit"
+msgid "cannot set unicast hop limit"
 msgstr "ユニキャスト・ホップ数の上限を設定できません"
 
 #: ping/ping6_common.c:377
-msgid "can't receive hop limit"
+msgid "cannot receive hop limit"
 msgstr "ホップ数の上限を設定できません"
 
 #: ping/ping6_common.c:391
-msgid "can't set flowlabel"
+msgid "cannot set flowlabel"
 msgstr "フローラベルを設定できません"
 
 #: ping/ping6_common.c:395
-msgid "can't send flowinfo"
+msgid "cannot send flowinfo"
 msgstr "フロー情報を送信できません"
 
 #: ping/ping6_common.c:398 ping/ping.c:1023
@@ -418,8 +414,8 @@ msgstr "送信元 %s %s: "
 
 #: ping/ping6_common.c:408
 #, c-format
-msgid "%zu data bytes\n"
-msgstr "%zu データ長(byte)\n"
+msgid "%zu data bytes"
+msgstr "%zu データ長(byte)"
 
 #: ping/ping6_common.c:423
 #, c-format
@@ -713,18 +709,6 @@ msgstr "応答待ち時間が正しくありません"
 msgid "ident 0 => forcing raw socket"
 msgstr ""
 
-#: ping/ping.c:652
-#, c-format
-msgid ""
-"Warning: IPv6 link-local address on ICMP datagram socket may require ifname "
-"or scope-id => use: address%%<ifname|scope-id>"
-msgstr ""
-
-#
-#: ping/ping.c:829
-msgid "warning: QOS sockopts"
-msgstr "警告: QOSソケットオプションの設定エラーが発生しました"
-
 #
 #: ping/ping.c:841
 msgid ""
@@ -745,8 +729,8 @@ msgstr "ブロードキャストを設定できません"
 
 #
 #: ping/ping.c:866
-msgid "gatifaddrs failed"
-msgstr "gatifaddrsに失敗しました"
+msgid "getifaddrs failed"
+msgstr "getifaddrs に失敗しました"
 
 #: ping/ping.c:894
 #, c-format
@@ -854,26 +838,6 @@ msgid ""
 msgstr ""
 "\n"
 "%x は不明なオプションです"
-
-#: ping/ping.c:1221
-#, c-format
-msgid "Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n"
-msgstr ""
-
-#: ping/ping.c:1222
-#, c-format
-msgid " %1x  %1x  %02x %04x %04x"
-msgstr " %1x  %1x  %02x %04x %04x"
-
-#: ping/ping.c:1224
-#, c-format
-msgid "   %1x %04x"
-msgstr "   %1x %04x"
-
-#: ping/ping.c:1226
-#, c-format
-msgid "  %02x  %02x %04x"
-msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
@@ -1073,7 +1037,7 @@ msgstr "内部エラー: メッセージが長すぎます: mtu=%u"
 #: ping/ping.c:1617
 #, c-format
 msgid "packet too short (%zd bytes) from %s"
-msgstr "パケットが短すぎます (%d バイト)。送信元 %s"
+msgstr "パケットが短すぎます (%zd バイト)。送信元 %s"
 
 #: ping/ping.c:1696
 #, c-format
@@ -1184,20 +1148,19 @@ msgstr "preloadまたはintervalの値 %d が不正です"
 
 #
 #: ping/ping_common.c:505
-msgid "Warning: no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
+msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
 msgstr ""
-"警告: SO_TIMESTAMPはサポートされていないため、SIOCGSTAMPにフォールバックしま"
-"す"
+"SO_TIMESTAMPはサポートされていないため、SIOCGSTAMPにフォールバックします"
 
 #: ping/ping_common.c:749
 #, c-format
-msgid "Warning: time of day goes back (%ldus), taking countermeasures"
-msgstr "警告: 時刻が巻き戻りました (%ldus)。対策を行います"
+msgid "%s: time of day goes back (%ldus), taking countermeasures"
+msgstr "%s: 時刻が巻き戻りました (%ldus)。対策を行います"
 
 #: ping/ping_common.c:799
 #, c-format
 msgid "%zd bytes from %s:"
-msgstr "%d バイト応答 送信元 %s:"
+msgstr "%zd バイト応答 送信元 %s:"
 
 #: ping/ping_common.c:805
 #, c-format
@@ -1251,12 +1214,8 @@ msgstr " (アドレス相違!)"
 
 #: ping/ping_common.c:840
 #, c-format
-msgid ""
-"\n"
-"wrong data byte #%zu should be 0x%x but was 0x%x"
-msgstr ""
-"\n"
-"誤りデータバイト #%zu. 正しい値: 0x%x 返り値: 0x%x"
+msgid "wrong data byte #%zu should be 0x%x but was 0x%x"
+msgstr "誤りデータバイト #%zu. 正しい値: 0x%x 返り値: 0x%x"
 
 #: ping/ping_common.c:883
 #, c-format
@@ -1323,24 +1282,6 @@ msgstr "%ld/%ld パケット, パケット損失 %d%%"
 #, c-format
 msgid ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
 msgstr ", 最小/平均/ewma/最大 = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ldミリ秒"
-
-#: tracepath.c:218
-#, c-format
-msgid ""
-"cmsg6:%d\n"
-" "
-msgstr ""
-"cmsg6:%d\n"
-" "
-
-#: tracepath.c:230
-#, c-format
-msgid ""
-"cmsg4:%d\n"
-" "
-msgstr ""
-"cmsg4:%d\n"
-" "
 
 #: tracepath.c:235
 #, c-format

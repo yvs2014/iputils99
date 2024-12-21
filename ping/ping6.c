@@ -74,6 +74,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <err.h>
 
 #include <netinet/ip6.h>
 #include <linux/in6.h>
@@ -246,7 +247,7 @@ static bool ping6_parse_reply(struct ping_rts *rts, bool raw,
 
 	if (received < 8) {
 		if (rts->opt.verbose)
-			error(0, 0, _("packet too short: %zd bytes"), received);
+			warnx(_("packet too short: %zd bytes"), received);
 		return true;
 	}
 
@@ -336,7 +337,7 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 		firsthop->sin6_scope_id = whereto->sin6_scope_id;
 		/* Verify scope_id is the same as intermediate nodes */
 		if (firsthop->sin6_scope_id && scope_id && (firsthop->sin6_scope_id != scope_id))
-			error(2, 0, _("scope discrepancy among the nodes"));
+			errx(2, _("scope discrepancy among the nodes"));
 		else if (!scope_id)
 			scope_id = firsthop->sin6_scope_id;
 	}
@@ -346,7 +347,7 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 	if (IN6_IS_ADDR_UNSPECIFIED(&source->sin6_addr)) {
 		int probe_fd = socket(AF_INET6, SOCK_DGRAM, 0);
 		if (probe_fd < 0)
-			error(2, errno, "socket");
+			err(errno, "socket");
 
 		bool scoped = IN6_IS_ADDR_LINKLOCAL(&firsthop->sin6_addr) ||
 			      IN6_IS_ADDR_MC_LINKLOCAL(&firsthop->sin6_addr);
@@ -368,11 +369,11 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 				close(probe_fd);
 				return -1;
 			}
-			error(2, errno, "connect");
+			err(errno, "connect");
 		}
 		socklen_t socklen = sizeof(struct sockaddr_in6);
 		if (getsockname(probe_fd, (struct sockaddr *)source, &socklen) < 0)
-			error(2, errno, "getsockname");
+			err(errno, "getsockname");
 		source->sin6_port = 0;
 		close(probe_fd);
 
@@ -384,29 +385,26 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 		source->sin6_scope_id = if_name2index(rts->device);
 
 	if (rts->device) {
-		struct cmsghdr *cmsg;
-		struct in6_pktinfo *ipi;
-		int rc;
-		int errno_save;
-
-		cmsg = (struct cmsghdr *)(rts->cmsgbuf + rts->cmsglen);
-		rts->cmsglen += CMSG_SPACE(sizeof(*ipi));
-		cmsg->cmsg_len = CMSG_LEN(sizeof(*ipi));
+		struct cmsghdr *cmsg = (struct cmsghdr *)(rts->cmsgbuf + rts->cmsglen);
+		rts->cmsglen += CMSG_SPACE(sizeof(struct in6_pktinfo));
+		cmsg->cmsg_len = CMSG_LEN(sizeof(struct in6_pktinfo));
 		cmsg->cmsg_level = IPPROTO_IPV6;
 		cmsg->cmsg_type = IPV6_PKTINFO;
 
-		ipi = (struct in6_pktinfo *)CMSG_DATA(cmsg);
+		struct in6_pktinfo *ipi = (struct in6_pktinfo *)CMSG_DATA(cmsg);
 		memset(ipi, 0, sizeof(*ipi));
 		ipi->ipi6_ifindex = if_name2index(rts->device);
 
 		if (rts->opt.strictsource) {
 			ENABLE_CAPABILITY_RAW;
-			rc = setsockopt(sock->fd, SOL_SOCKET, SO_BINDTODEVICE,
+			int rc = setsockopt(sock->fd, SOL_SOCKET, SO_BINDTODEVICE,
 					rts->device, strlen(rts->device) + 1);
-			errno_save = errno;
+			int keep = errno;
 			DISABLE_CAPABILITY_RAW;
-			if (rc < 0)
-				error(2, errno_save, "SO_BINDTODEVICE %s", rts->device);
+			if (rc < 0) {
+				errno = keep;
+				err(errno, "SO_BINDTODEVICE %s", rts->device);
+			}
 		}
 	}
 
@@ -414,12 +412,12 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 		rts->multicast = true;
 		if (rts->uid) {
 			if (rts->interval < MIN_MCAST_INTERVAL_MS)
-				error(2, 0,
+				errx(2,
 _("minimal interval for multicast ping for user must be >= %d ms, use -i %s (or higher)"),
 					  MIN_MCAST_INTERVAL_MS,
 					  str_interval(MIN_MCAST_INTERVAL_MS));
 			if ((rts->pmtudisc >= 0) && (rts->pmtudisc != IPV6_PMTUDISC_DO))
-				error(2, 0, _("multicast ping does not fragment"));
+				errx(2, _("multicast ping does not fragment"));
 		}
 		if (rts->pmtudisc < 0)
 			rts->pmtudisc = IPV6_PMTUDISC_DO;
@@ -443,11 +441,11 @@ _("minimal interval for multicast ping for user must be >= %d ms, use -i %s (or 
 	int packlen = rts->datalen + 8 + 4096 + 40 + 8; /* 4096 for rthdr */
 	unsigned char *packet = malloc(packlen);
 	if (!packet)
-		error(2, errno, _("memory allocation failed"));
+		err(errno, _("memory allocation failed"));
 
 	{ int hold = 1;
 	  if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_RECVERR, &hold, sizeof(hold)) < 0)
-		error(2, errno, "IPV6_RECVERR");
+		err(errno, "IPV6_RECVERR");
 	  /* Estimate memory eaten by single packet. It is rough estimate.
 	   * Actually, for small datalen's it depends on kernel side a lot. */
 	  hold = rts->datalen + 8;
@@ -460,7 +458,7 @@ _("minimal interval for multicast ping for user must be >= %d ms, use -i %s (or 
 		int csum_offset = 2;
 		if (setsockopt(sock->fd, SOL_RAW, IPV6_CHECKSUM, &csum_offset, sizeof(csum_offset)) < 0)
 		/* checksum should be enabled by default and setting this option might fail anyway */
-			error(0, errno, _("setsockopt(RAW_CHECKSUM) failed - try to continue"));
+			warn(_("setsockopt(RAW_CHECKSUM) failed - try to continue"));
 #else
 	{
 #endif
@@ -472,21 +470,21 @@ _("minimal interval for multicast ping for user must be >= %d ms, use -i %s (or 
 		else
 			ICMP6_FILTER_SETPASS(ICMP6_ECHO_REPLY, &filter);
 		if (setsockopt(sock->fd, IPPROTO_ICMPV6, ICMP6_FILTER, &filter, sizeof(filter)) < 0)
-			error(2, errno, "setsockopt(ICMP6_FILTER)");
+			err(errno, "setsockopt(ICMP6_FILTER)");
 	}
 
 	if (rts->opt.noloop) {
 		int loop = 0;
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &loop, sizeof(loop)) < 0)
-			error(2, errno, _("can't disable multicast loopback"));
+			err(errno, _("cannot disable multicast loopback"));
 	}
 	if (rts->opt.ttl) {
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS,
 				&rts->ttl, sizeof(rts->ttl)) < 0)
-			error(2, errno, _("can't set multicast hop limit"));
+			err(errno, _("cannot set multicast hop limit"));
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_UNICAST_HOPS,
 				&rts->ttl, sizeof(rts->ttl)) < 0)
-			error(2, errno, _("can't set unicast hop limit"));
+			err(errno, _("cannot set unicast hop limit"));
 	}
 
 	{ int on = 1;
@@ -497,7 +495,7 @@ _("minimal interval for multicast ping for user must be >= %d ms, use -i %s (or 
 #else
 	(setsockopt(sock->fd, IPPROTO_IPV6, IPV6_HOPLIMIT,     &on, sizeof(on)) < 0)
 #endif
-	  ) error(2, errno, _("can't receive hop limit"));
+	  ) err(errno, _("cannot receive hop limit"));
 	}
 
 	if (rts->opt.flowinfo) {
@@ -510,11 +508,11 @@ _("minimal interval for multicast ping for user must be >= %d ms, use -i %s (or 
 		freq->flr_share = IPV6_FL_S_EXCL;
 		memcpy(&freq->flr_dst, &whereto->sin6_addr, sizeof(whereto->sin6_addr));
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWLABEL_MGR, freq, sizeof(*freq)) < 0)
-			error(2, errno, _("can't set flowlabel"));
+			err(errno, _("cannot set flowlabel"));
 		whereto->sin6_flowinfo = rts->flowlabel = freq->flr_label;
 		int on = 1;
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND, &on, sizeof(on)) < 0)
-			error(2, errno, _("can't send flowinfo"));
+			err(errno, _("cannot send flowinfo"));
 	}
 
 	ping_setup(rts, sock);

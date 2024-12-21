@@ -1,41 +1,18 @@
 
 #include "iputils_common.h"
 
-#include <errno.h>
 #include <stdarg.h>
 #include <stdio_ext.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
+#include <err.h>
+#include <errno.h>
 
 #if HAVE_GETRANDOM
 # include <sys/random.h>
-#endif
-
-#ifdef HAVE_ERROR_H
-# include <error.h>
-#else
-void error(int status, int errnum, const char *format, ...) {
-	va_list ap;
-	fprintf(stderr, "%s: ",
-#ifdef HAVE_GETPROGNAME
-		getprogname()
-#elif  HAVE_PROGRAM_INVOCATION_SHORT_NAME
-		program_invocation_short_name
-#endif
-	);
-	va_start(ap, format);
-	vfprintf(stderr, format, ap);
-	va_end(ap);
-	if (errnum)
-		fprintf(stderr, ": %s\n", strerror(errnum));
-	else
-		fprintf(stderr, "\n");
-	if (status)
-		exit(status);
-}
 #endif
 
 static int close_stream(FILE *stream) {
@@ -59,12 +36,10 @@ static int close_stream(FILE *stream) {
 }
 
 void close_stdout(void) {
-	if (close_stream(stdout) && (errno != EPIPE)) {
-		error(0, errno, "write error");
-		_exit(EXIT_FAILURE);
-	}
+	if (close_stream(stdout) && (errno != EPIPE))
+		err(errno ? errno : EXIT_FAILURE, "write error");
 	if (close_stream(stderr))
-		_exit(EXIT_FAILURE);
+		_exit(errno ? errno : EXIT_FAILURE);
 }
 
 long strtol_or_err(const char *str, const char *errmesg, long min, long max) {
@@ -75,12 +50,11 @@ long strtol_or_err(const char *str, const char *errmesg, long min, long max) {
 		if (!(errno || (str == end) || (end && *end))) {
 			if ((min <= num) && (num <= max))
 				return num;
-			error(ERANGE, 0, _("%s: '%s': out of range %ld - %ld"),
+			errx(ERANGE, _("%s: '%s': out of range %ld - %ld"),
 				errmesg, str, min, max);
 		}
 	}
-	error(errno, errno, "%s: '%s'", errmesg, str);
-	_exit(errno ? errno : EXIT_FAILURE);
+	err(errno ? errno : EXIT_FAILURE, "%s: '%s'", errmesg, str);
 }
 
 #ifndef timespecsub

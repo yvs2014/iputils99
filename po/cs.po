@@ -350,8 +350,8 @@ msgstr "nejednotnost síťové oblasti mezi uzly"
 
 #: ping/ping6_common.c:226 ping/ping.c:878
 #, c-format
-msgid "Warning: source address might be selected on device other than: %s"
-msgstr "Pozor: zdrojová adresa může být vybrána na zařízením jiném než: %s"
+msgid "%s: source address might be selected on device other than: %s"
+msgstr "%s: zdrojová adresa může být vybrána na zařízením jiném než: %s"
 
 #: ping/ping6_common.c:267
 #, c-format
@@ -370,28 +370,24 @@ msgstr "multicastový ping se nefragmentuje"
 msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
 msgstr "volání setsockopt(RAW_CHECKSUM) selhalo – pokračuje se"
 
-#: ping/ping6_common.c:357
-msgid "can't disable multicast loopback"
-msgstr "příjem vlastních multicastových dotazů nelze zakázat"
-
 #: ping/ping6_common.c:362
-msgid "can't set multicast hop limit"
+msgid "cannot set multicast hop limit"
 msgstr "omezení na počet skoků při multicastu nelze nastavit"
 
 #: ping/ping6_common.c:365
-msgid "can't set unicast hop limit"
+msgid "cannot set unicast hop limit"
 msgstr "omezení na počet skoků při unicastu nelze nastavit"
 
 #: ping/ping6_common.c:377
-msgid "can't receive hop limit"
+msgid "cannot receive hop limit"
 msgstr "nedaří se získat údaj o omezení počtu skoků"
 
 #: ping/ping6_common.c:391
-msgid "can't set flowlabel"
+msgid "cannot set flowlabel"
 msgstr "jmenovku toku nelze nastavit"
 
 #: ping/ping6_common.c:395
-msgid "can't send flowinfo"
+msgid "cannot send flowinfo"
 msgstr "údaje o toku nelze poslat"
 
 #: ping/ping6_common.c:398 ping/ping.c:1023
@@ -411,8 +407,8 @@ msgstr "od %s %s: "
 
 #: ping/ping6_common.c:408
 #, c-format
-msgid "%zu data bytes\n"
-msgstr "%zu datových bajtů\n"
+msgid "%zu data bytes"
+msgstr "%zu datových bajtů"
 
 #: ping/ping6_common.c:423
 #, c-format
@@ -705,18 +701,13 @@ msgstr "chybný čas čekání"
 msgid "ident 0 => forcing raw socket"
 msgstr "ident 0 => vyžadován raw socket"
 
-#: ping/ping.c:652
 #, c-format
-msgid ""
-"Warning: IPv6 link-local address on ICMP datagram socket may require ifname "
-"or scope-id => use: address%%<ifname|scope-id>"
-msgstr ""
-"Pozor: IPv6 link-local adresa u ICMP datagram socketu může vyžadovat ifname "
-"nebo scope-id => použijte: adresa%%<ifname|scope-id>"
-
-#: ping/ping.c:829
-msgid "warning: QOS sockopts"
-msgstr "pozor: QoS volby soketu"
+#~ msgid ""
+#~ "IPv6 link-local address on ICMP datagram socket may require ifname "
+#~ "or scope-id => use: address%%<ifname|scope-id>"
+#~ msgstr ""
+#~ "IPv6 link-local adresa u ICMP datagram socketu může vyžadovat ifname "
+#~ "nebo scope-id => použijte: adresa%%<ifname|scope-id>"
 
 #: ping/ping.c:841
 msgid ""
@@ -735,7 +726,7 @@ msgid "cannot set broadcasting"
 msgstr "všesměr nelze nastavit"
 
 #: ping/ping.c:866
-msgid "gatifaddrs failed"
+msgid "getifaddrs failed"
 msgstr "funkce getifaddrs nezafungovala"
 
 #: ping/ping.c:894
@@ -843,26 +834,6 @@ msgid ""
 msgstr ""
 "\n"
 "neznámá volba %x"
-
-#: ping/ping.c:1221
-#, c-format
-msgid "Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n"
-msgstr "Vr HL ToS  Dél   ID Pří  vyp TTL Pro  ksč      Zdr      Cíl Data\n"
-
-#: ping/ping.c:1222
-#, c-format
-msgid " %1x  %1x  %02x %04x %04x"
-msgstr " %1x  %1x  %02x %04x %04x"
-
-#: ping/ping.c:1224
-#, c-format
-msgid "   %1x %04x"
-msgstr "   %1x %04x"
-
-#: ping/ping.c:1226
-#, c-format
-msgid "  %02x  %02x %04x"
-msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
@@ -1062,7 +1033,7 @@ msgstr "místní chyba: zpráva je příliš dlouhá, MTU=%u"
 #: ping/ping.c:1617
 #, c-format
 msgid "packet too short (%zd bytes) from %s"
-msgstr "paket od %s je příliš krátký (%d bajtů)"
+msgstr "paket od %s je příliš krátký (%zd bajtů)"
 
 #: ping/ping.c:1696
 #, c-format
@@ -1233,18 +1204,18 @@ msgid "illegal preload and/or interval: %d"
 msgstr "neplatné přednačtení nebo interval: %d"
 
 #: ping/ping_common.c:505
-msgid "Warning: no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
-msgstr "Pozor: SO_TIMESTAMP není podporováno, přechází se na SIOCGSTAMP"
+msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
+msgstr "SO_TIMESTAMP není podporováno, přechází se na SIOCGSTAMP"
 
 #: ping/ping_common.c:749
 #, c-format
-msgid "Warning: time of day goes back (%ldus), taking countermeasures"
-msgstr "Pozor: čas se vrátil zpět (%ld µs), přijímají se protiopatření"
+msgid "%s: time of day goes back (%ldus), taking countermeasures"
+msgstr "%s: čas se vrátil zpět (%ld µs), přijímají se protiopatření"
 
 #: ping/ping_common.c:799
 #, c-format
 msgid "%zd bytes from %s:"
-msgstr "%d bajtů od %s:"
+msgstr "%zd bajtů od %s:"
 
 #: ping/ping_common.c:805
 #, c-format
@@ -1298,12 +1269,8 @@ msgstr " (ODLIŠNÁ ADRESA!)"
 
 #: ping/ping_common.c:840
 #, c-format
-msgid ""
-"\n"
-"wrong data byte #%zu should be 0x%x but was 0x%x"
-msgstr ""
-"\n"
-"nesprávná data na bajtu č. %zu – měla by být 0x%x, ale jsou 0x%x"
+msgid "wrong data byte #%zu should be 0x%x but was 0x%x"
+msgstr "nesprávná data na bajtu č. %zu – měla by být 0x%x, ale jsou 0x%x"
 
 #: ping/ping_common.c:883
 #, c-format
@@ -1369,24 +1336,6 @@ msgstr "%ld/%ld paketů, %d%% ztráta"
 #, c-format
 msgid ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
 msgstr ", min/prům/klouz.prům/max = %ld,%03ld/%lu,%03ld/%d,%03d/%ld,%03ld ms"
-
-#: tracepath.c:218
-#, c-format
-msgid ""
-"cmsg6:%d\n"
-" "
-msgstr ""
-"cmsg6:%d\n"
-" "
-
-#: tracepath.c:230
-#, c-format
-msgid ""
-"cmsg4:%d\n"
-" "
-msgstr ""
-"cmsg4:%d\n"
-" "
 
 #: tracepath.c:235
 #, c-format

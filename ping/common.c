@@ -47,6 +47,7 @@
 #include <poll.h>
 #include <math.h>
 #include <assert.h>
+#include <err.h>
 
 #if defined(USE_IDN)
 # include <locale.h>
@@ -145,11 +146,11 @@ uid_t limit_capabilities(const struct ping_rts *rts) {
 	// set proc
 	cap_t proc = cap_get_proc();
 	if (!proc)
-		error(-1, errno, "cap_get_proc");
+		err(errno, "cap_get_proc");
 	// set caps
 	cap_t cap = cap_init();
 	if (!cap)
-		error(-1, errno, "cap_init");
+		err(errno, "cap_init");
 	// set flags
 	cap_flag_value_t flag = CAP_CLEAR;
 	cap_get_flag(proc, CAP_NET_ADMIN, CAP_PERMITTED, &flag);
@@ -160,16 +161,16 @@ uid_t limit_capabilities(const struct ping_rts *rts) {
 	if (flag != CAP_CLEAR)
 		cap_set_flag(cap, CAP_PERMITTED, 1, &rts->cap_raw,   CAP_SET);
 	if (cap_set_proc(cap) < 0)
-		error(-1, errno, "cap_set_proc");
+		err(errno, "cap_set_proc");
 	cap_free(cap);
 	cap_free(proc);
 	// set state
 	if (prctl(PR_SET_KEEPCAPS, 1) < 0)
-		error(-1, errno, "prctl");
+		err(errno, "prctl");
 	if (setuid(getuid()) < 0)
-		error(-1, errno, "setuid");
+		err(errno, "setuid");
 	if (prctl(PR_SET_KEEPCAPS, 0) < 0)
-		error(-1, errno, "prctl");
+		err(errno, "prctl");
 #else
 	euid = geteuid();
 #endif
@@ -191,14 +192,14 @@ int modify_capability(cap_value_t cap, cap_flag_value_t on) {
 		if (cap_ok != CAP_CLEAR) {
 			cap_set_flag(cap_p, CAP_EFFECTIVE, 1, &cap, on);
 			if (cap_set_proc(cap_p) < 0)
-				error(0, errno, "cap_set_proc");
+				warn("cap_set_proc");
 			else
 				rc = 0;
 		} else
 			rc = on ? -1 : 0;
 		cap_free(cap_p);
 	} else
-		error(0, errno, "cap_get_proc");
+		warn("cap_get_proc");
 	return rc;
 }
 #else
@@ -214,11 +215,11 @@ void drop_capabilities(void) {
 #ifdef HAVE_LIBCAP
 	cap_t cap = cap_init();
 	if (cap_set_proc(cap) < 0)
-		error(-1, errno, "cap_set_proc");
+		err(errno, "cap_set_proc");
 	cap_free(cap);
 #else
-	if (setuid(getuid()))
-		error(-1, errno, "setuid");
+	if (setuid(getuid()) < 0)
+		err(errno, "setuid");
 #endif
 }
 
@@ -232,7 +233,7 @@ void fill_packet(int quiet, const char *patp, unsigned char *packet, size_t pack
 #endif
 	for (const char *cp = patp; *cp; cp++) {
 		if (!isxdigit(*cp))
-			error(2, 0, _("patterns must be specified as hex digits: %s"), cp);
+			errx(2, _("patterns must be specified as hex digits: %s"), cp);
 	}
 	unsigned pat[16];
 	int items = sscanf(patp,
@@ -458,7 +459,7 @@ static int pinger(struct ping_rts *rts, const ping_func_set_st *fset, const sock
 		if (rts->opt.flood)
 			write(STDOUT_FILENO, "E", 1);
 		else
-			error(0, errno, "sendmsg");
+			warn("sendmsg");
 	}
 	tokens = 0;
 	return SCHINT(rts->interval);
@@ -476,10 +477,9 @@ void sock_setbufs(struct ping_rts *rts, int sockfd, int alloc) {
 	if (hold < MAXHOLD)
 		hold = MAXHOLD;
 	setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &hold, sizeof(hold));
-	if (getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &hold, &tmplen) == 0) {
+	if (getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &hold, &tmplen) == 0)
 		if (hold < rcvbuf)
-			error(0, 0, "%s: %s", _WARN, _("probably, rcvbuf is not enough to hold preload"));
-	}
+			warnx("%s: %s", _WARN, _("probably, rcvbuf is not enough to hold preload"));
 }
 #undef MAXHOLD
 
@@ -488,24 +488,26 @@ void sock_setmark(struct ping_rts *rts, int sockfd) {
 	if (!rts->opt.mark)
 		return;
 	ENABLE_CAPABILITY_ADMIN;
-	int ret = setsockopt(sockfd, SOL_SOCKET, SO_MARK, &rts->mark, sizeof(rts->mark));
-	int errno_save = errno;
+	int rc = setsockopt(sockfd, SOL_SOCKET, SO_MARK, &rts->mark, sizeof(rts->mark));
+	int keep = errno;
 	DISABLE_CAPABILITY_ADMIN;
-	if (ret == -1) {
-		error(0, errno_save, "%s: %s: %u", _WARN, _("failed to set mark"), rts->mark);
-		if (errno_save == EPERM)
-			error(0, 0, _("=> missing cap_net_admin+p or cap_net_raw+p (since Linux 5.17) capability?"));
+	if (rc < 0) {
+		errno = keep;
+		warn("%s: %s: %u", _WARN, _("failed to set mark"), rts->mark);
+		errno = keep;
+		if (errno == EPERM)
+			warnx(_("=> missing cap_net_admin+p or cap_net_raw+p (since Linux 5.17) capability?"));
 		rts->opt.mark = false;
 	}
 #else
-	error(0, errno_save, "%s: %s", _WARN, _("SO_MARK not supported"));
+	warnx("%s: %s", _WARN, _("SO_MARK not supported"));
 #endif
 }
 
 inline void sock_settos(int fd, int qos, bool ip6) {
 	if (qos && (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
 	    ip6 ? IPV6_TCLASS : IP_TOS, &qos, sizeof(qos)) < 0))
-		error(2, errno, "setsockopt(QoS)");
+		err(errno, "setsockopt(QoS)");
 }
 
 static void print_headline(struct ping_rts *rts) {
@@ -540,10 +542,10 @@ void ping_setup(struct ping_rts *rts, const socket_st *sock) {
 
 	// interval restrictions
 	if (rts->uid && (rts->interval < MIN_USER_INTERVAL_MS))
-		error(2, 0, _("cannot flood, minimal interval for user must be >= %d ms, use -i %s (or higher)"),
+		errx(2, _("cannot flood, minimal interval for user must be >= %d ms, use -i %s (or higher)"),
 			  MIN_USER_INTERVAL_MS, str_interval(MIN_USER_INTERVAL_MS));
 	if (rts->interval >= INT_MAX / rts->preload)
-		error(2, 0, _("illegal preload and/or interval: %d"), rts->interval);
+		errx(2, _("illegal preload and/or interval: %d"), rts->interval);
 
 	// socket options
 	if (rts->opt.so_debug) {
@@ -557,8 +559,8 @@ void ping_setup(struct ping_rts *rts, const socket_st *sock) {
 #ifdef SO_TIMESTAMP
 	if (!rts->opt.latency) {
 		int opt = 1;
-		if (setsockopt(sock->fd, SOL_SOCKET, SO_TIMESTAMP, &opt, sizeof(opt)))
-			error(0, 0, _("Warning: no SO_TIMESTAMP support, falling back to SIOCGSTAMP"));
+		if (setsockopt(sock->fd, SOL_SOCKET, SO_TIMESTAMP, &opt, sizeof(opt)) < 0)
+			warnx("%s: %s", _WARN, _("no SO_TIMESTAMP support, falling back to SIOCGSTAMP"));
 	}
 #endif
 	sock_setmark(rts, sock->fd);
@@ -734,7 +736,7 @@ static inline void install_filter(bool ip6, uint16_t ident, int sockfd) {
 	/* Patch bpflet for current identifier */
 	insns[2] = (struct sock_filter)BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, htons(ident), 0, 1);
 	if (setsockopt(sockfd, SOL_SOCKET, SO_ATTACH_FILTER, filter, sizeof(*filter)) < 0)
-		error(0, errno, "%s: %s", _WARN, _("failed to install socket filter"));
+		warn("%s: %s", _WARN, _("failed to install socket filter"));
 }
 
 #ifdef SO_TIMESTAMP
@@ -846,13 +848,15 @@ bool main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 				 * on the socket, try to read the error queue.
 				 * Otherwise, give up.
 				 */
-				if ((errno == EAGAIN && !recv_error) ||
-				    errno == EINTR)
+				if (((errno == EAGAIN) && !recv_error)
+				    || (errno == EINTR))
 					break;
+				int keep = errno;
 				recv_error = 0;
 				if (!fset->receive_error(rts, sock)) {
+					errno = keep;
 					if (errno) {
-						error(0, errno, "recvmsg");
+						warn("recvmsg");
 						break;
 					}
 					not_ours = true;
@@ -916,7 +920,7 @@ bool stats_noflush(struct ping_rts *rts, const uint8_t *icmp, int icmplen,
 			triptime = tv.tv_sec * 1000000 + tv.tv_usec;
 			if (triptime >= 0)
 				break;
-			error(0, 0, _("Warning: time of day goes back (%ldus), taking countermeasures"), triptime);
+			warnx(_("%s: time of day goes back (%ldus), taking countermeasures"), _WARN, triptime);
 			if (rts->opt.latency) {
 				triptime = 0;
 				break;
@@ -1007,7 +1011,8 @@ bool stats_noflush(struct ping_rts *rts, const uint8_t *icmp, int icmplen,
 	const uint8_t *dp = &rts->outpack[8 + sizeof(struct timeval)];
 	for (size_t i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp, ++dp) {
 		if (*cp != *dp) {
-			printf(_("\nwrong data byte #%zu should be 0x%x but was 0x%x"),
+			putchar('\n');
+			printf(_("wrong data byte #%zu should be 0x%x but was 0x%x"),
 			       i, *dp, *cp);
 			cp = ptr + sizeof(struct timeval);
 			for (i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp) {

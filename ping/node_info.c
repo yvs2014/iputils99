@@ -45,7 +45,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
-#include <errno.h>
+#include <err.h>
 #include <resolv.h>
 #include <net/if.h>
 
@@ -268,14 +268,14 @@ static int niquery_option_subject_addr_handler(struct ping_ni *ni, int index, co
 		break;
 	default:
 		/* should not happen */
-		error(0, 0, "%s: unknown IPUTILS_NI_ICMP6_SUBJ family(%d)", arg, niquery_options[index].data);
+		warnx("%s: unknown IPUTILS_NI_ICMP6_SUBJ family(%d)", arg, niquery_options[index].data);
 		return -1;
 	}
 
 	struct addrinfo *result = NULL;
 	{ int rc = getaddrinfo(arg, 0, &hints, &result);
 	  if (rc) {
-		error(0, 0, "%s: %s", arg, gai_strerror(rc));
+		warnx("%s: %s", arg, gai_strerror(rc));
 		return -1;
 	  }
 	}
@@ -320,7 +320,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 	{ // glibc: internal libidn2 lookup
 	  int rc = __idna_to_dns_encoding(name, &idn);
 	  if (rc)
-		error(2, 0, _("IDN encoding error: %s"), gai_strerror(rc)); }
+		errx(2, _("IDN encoding error: %s"), gai_strerror(rc)); }
 #else
 	idn = strdup(name);
 	if (!idn)
@@ -331,7 +331,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 	if (p) {
 		*p = '\0';
 		if (strlen(p + 1) >= IFNAMSIZ)
-			error(1, 0, _("too long scope name"));
+			errx(EXIT_FAILURE, _("too long scope name"));
 	}
 
 	namelen = strlen(idn);
@@ -355,7 +355,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 					   plus non-fqdn indicator. */
 	buf = malloc(buflen);
 	if (!buf) {
-		error(0, errno, _("memory allocation failed"));
+		warn(_("memory allocation failed"));
 		goto errexit;
 	}
 
@@ -367,10 +367,10 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 
 	n = dn_comp(canonname, (unsigned char *)buf, buflen, dnptrs, lastdnptr);
 	if (n < 0) {
-		error(0, 0, _("inappropriate subject name: %s"), canonname);
+		warnx(_("inappropriate subject name: %s"), canonname);
 		goto errexit;
 	} else if ((size_t)n >= buflen) {
-		error(0, 0, _("dn_comp() returned too long result"));
+		warnx(_("dn_comp() returned too long result"));
 		goto errexit;
 	}
 
@@ -397,7 +397,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 
 	return 0;
 oomexit:
-	error(0, errno, _("memory allocation failed"));
+	warn(_("memory allocation failed"));
 errexit:
 	free(buf);
 	free(canonname);

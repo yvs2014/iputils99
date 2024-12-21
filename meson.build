@@ -145,13 +145,6 @@ foreach f: extra_funcs
 	endif
 endforeach
 
-# Check headers availability
-foreach h: ['error.h']
-	if cc.has_header(h)
-		conf.set('HAVE_' + h.to_upper().underscorify(), 1, description: 'Define if ' + h + ' can be included')
-	endif
-endforeach
-
 git_version_h = vcs_tag(
 	input:    'git-version.h.meson',
 	output:   'git-version.h',

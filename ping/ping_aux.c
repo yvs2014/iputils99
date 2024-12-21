@@ -63,6 +63,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <err.h>
 #include <math.h>
 #include <locale.h>
 #include <netinet/in.h>
@@ -83,12 +84,11 @@ unsigned long strtoul_or_err(const char *str, const char *errmesg,
 		if (!(errno || (str == end) || (end && *end))) {
 			if ((min <= num) && (num <= max))
 				return num;
-			error(ERANGE, 0, _("%s: '%s': out of range %lu-%lu"),
+			errx(ERANGE, _("%s: '%s': out of range %lu-%lu"),
 			      errmesg, str, min, max);
 		}
 	}
-	error(errno, errno, "%s: '%s'", errmesg, str);
-	_exit(errno ? errno : EXIT_FAILURE);
+	err(errno ? errno : EXIT_FAILURE, "%s: '%s'", errmesg, str);
 }
 
 double strtod_or_err(const char *str, const char *errmesg,
@@ -109,12 +109,11 @@ double strtod_or_err(const char *str, const char *errmesg,
 		if (!(errno || (str == end) || (end && *end))) {
 			if (isgreaterequal(num, min) && islessequal(num, max))
 				return num;
-			error(ERANGE, 0, _("%s: '%s': out of range %g - %g"),
+			errx(ERANGE, _("%s: '%s': out of range %g - %g"),
 			      errmesg, str, min, max);
 		}
 	}
-	error(errno, errno, "%s: %s", errmesg, str);
-	_exit(errno ? errno : EXIT_FAILURE);
+	err(errno ? errno : EXIT_FAILURE, "%s: '%s'", errmesg, str);
 }
 
 #define DX_SHIFT(str) (((str)[0] == '0') && (((str)[1] == 'x') || ((str)[1] == 'X')) ? 2 : 0)
@@ -125,9 +124,9 @@ unsigned parse_flow(const char *str) {
 	unsigned val = strtoul(str + dx, &ep, dx ? 16 : 10);
 	/* doesn't look like decimal or hex, eh? */
 	if (ep && *ep)
-		error(2, 0, _("bad value for flowinfo: %s"), str);
+		errx(2, _("bad value for flowinfo: %s"), str);
 	if (val & ~IPV6_FLOWINFO_FLOWLABEL)
-		error(2, 0, _("flow value is greater than 20 bits: %s"), str);
+		errx(2, _("flow value is greater than 20 bits: %s"), str);
 	return val;
 }
 
@@ -139,9 +138,9 @@ unsigned char parse_tos(const char *str) {
 	unsigned long tos = strtoul(str + dx, &ep, dx ? 16 : 10);
 	/* doesn't look like decimal or hex, eh? */
 	if (ep && *ep)
-		error(2, 0, _("bad TOS value: %s"), str);
+		errx(2, _("bad TOS value: %s"), str);
 	if (tos > UCHAR_MAX)
-		error(2, 0, _("the decimal value of TOS bits must be in range 0-255: %lu"), tos);
+		errx(2, _("the decimal value of TOS bits must be in range 0-255: %lu"), tos);
 	return tos;
 }
 #undef DX_SHIFT
@@ -149,7 +148,7 @@ unsigned char parse_tos(const char *str) {
 inline unsigned if_name2index(const char *ifname) {
 	unsigned rc = if_nametoindex(ifname);
 	if (!rc)
-		error(2, 0, _("unknown iface: %s"), ifname);
+		errx(2, _("unknown iface: %s"), ifname);
 	return rc;
 }
 
@@ -172,7 +171,7 @@ static void set_pktinfo(int level, int name, const void *val, socklen_t len, int
 	ENABLE_CAPABILITY_RAW;
 	if ((setsockopt(fd1, level, name, val, len) < 0) ||
 	    (setsockopt(fd2, level, name, val, len) < 0))
-		error(2, errno, "setsockopt(PKTINFO)");
+		err(errno, "setsockopt(PKTINFO)");
 	DISABLE_CAPABILITY_RAW;
 }
 #endif
@@ -195,7 +194,7 @@ void set_device(bool ip6, const char *device, socklen_t len,
 #endif
 	if ((setsock_bindopt(fd1, device, len, mcast_face) < 0) ||
 	    (setsock_bindopt(fd2, device, len, mcast_face) < 0))
-		error(2, errno, "setsockopt(BINDIFACE=%s)", device);
+		err(errno, "setsockopt(BINDIFACE=%s)", device);
 }
 
 // func_set:receive_error:print_local_ee
@@ -203,9 +202,9 @@ inline void print_local_ee(const struct ping_rts *rts, const struct sock_extende
 	if (rts->opt.flood)
 		write(STDOUT_FILENO, "E", 1);
 	else if (ee->ee_errno != EMSGSIZE)
-		error(0, ee->ee_errno, _("local error"));
+		warnx(_("local error"));
 	else
-		error(0, 0, _("local error: message too long, mtu: %u"), ee->ee_info);
+		warnx(_("local error: message too long, mtu: %u"), ee->ee_info);
 }
 
 void mtudisc_n_bind(struct ping_rts *rts, const struct socket_st *sock) {
@@ -215,7 +214,7 @@ void mtudisc_n_bind(struct ping_rts *rts, const struct socket_st *sock) {
 		int name  = rts->ip6 ? IPV6_MTU_DISCOVER : IP_MTU_DISCOVER;
 		if (setsockopt(sock->fd, level, name,
 				&rts->pmtudisc, sizeof(rts->pmtudisc)) < 0)
-			error(2, errno, "MTU_DISCOVER");
+			err(errno, "MTU_DISCOVER");
 	}
 	bool set_ident = (rts->custom_ident > 0) && !sock->raw;
 	if (set_ident) {
@@ -229,7 +228,7 @@ void mtudisc_n_bind(struct ping_rts *rts, const struct socket_st *sock) {
 			sizeof(struct sockaddr_in6) :
 			sizeof(struct sockaddr_in);
 		if (bind(sock->fd, (struct sockaddr *)&rts->source, socklen) < 0)
-			error(2, errno, "bind icmp socket");
+			err(errno, "bind icmp socket");
 	}
 }
 
@@ -258,7 +257,7 @@ void cmp_srcdev(const struct ping_rts *rts) {
 	// called once before loop
 	struct ifaddrs *list = NULL;
 	if (getifaddrs(&list))
-		error(2, errno, _("getifaddrs failed"));
+		err(errno, _("getifaddrs failed"));
 	uint16_t af = rts->ip6 ? AF_INET6 : AF_INET;
 	size_t len  = rts->ip6 ? 16 : 4;
 	size_t off  = rts->ip6 ?
@@ -273,7 +272,8 @@ void cmp_srcdev(const struct ping_rts *rts) {
 			break;
 	}
 	if (!ifa)
-		error(0, 0, _("Warning: source address might be selected on device other than: %s"), rts->device);
+		warnx(_("%s: source address might be selected on device other than: %s"),
+			_WARN, rts->device);
 	if (list)
 		freeifaddrs(list);
 }

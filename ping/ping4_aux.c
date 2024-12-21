@@ -196,8 +196,6 @@ void print4_ip_options(const struct ping_rts *rts, const uint8_t *cp, int hlen) 
 			printf(_("\nTS: "));
 			cp++;
 			for (;;) {
-				long l;
-
 				if ((flags & 0xF) != IPOPT_TS_TSONLY) {
 					uint32_t address;
 					memcpy(&address, cp, 4);
@@ -215,7 +213,7 @@ void print4_ip_options(const struct ping_rts *rts, const uint8_t *cp, int hlen) 
 					if (i <= 0)
 						break;
 				}
-				l = *cp++;
+				long l = *cp++;
 				l = (l << 8) + *cp++;
 				l = (l << 8) + *cp++;
 				l = (l << 8) + *cp++;
@@ -254,17 +252,15 @@ void print4_ip_options(const struct ping_rts *rts, const uint8_t *cp, int hlen) 
 
 /* Print an IP header with options */
 static void print4_iph(const struct ping_rts *rts, const struct iphdr *ip) {
-	printf(_("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n"));
-	printf(_(" %1x  %1x  %02x %04x %04x"),
-	       ip->version, ip->ihl, ip->tos, ip->tot_len, ip->id);
-	printf(_("   %1x %04x"), ((ip->frag_off) & 0xe000) >> 13,
-	       (ip->frag_off) & 0x1fff);
-	printf(_("  %02x  %02x %04x"), ip->ttl, ip->protocol, ip->check);
+	printf("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n");
+	printf(" %1x  %1x  %02x %04x %04x", ip->version, ip->ihl, ip->tos, ip->tot_len, ip->id);
+	printf("   %1x %04x", ((ip->frag_off) & 0xe000) >> 13, (ip->frag_off) & 0x1fff);
+	printf("  %02x  %02x %04x", ip->ttl, ip->protocol, ip->check);
 	printf(" %s ", inet_ntoa(*(struct in_addr *)&ip->saddr));
 	printf(" %s ", inet_ntoa(*(struct in_addr *)&ip->daddr));
 	printf("\n");
 	int hlen = ip->ihl << 2;
-	const unsigned char *cp = (unsigned char *)ip + 20;	/* point to options */
+	const uint8_t *cp = (uint8_t *)ip + 20;	/* point to options */
 	print4_ip_options(rts, cp, hlen);
 }
 

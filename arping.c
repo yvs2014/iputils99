@@ -13,7 +13,6 @@
 #include "iputils_common.h"
 
 #include <arpa/inet.h>
-#include <errno.h>
 #include <ifaddrs.h>
 #include <linux/if_ether.h>
 #include <linux/if_packet.h>
@@ -26,11 +25,13 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <sys/param.h>
 #include <sys/signalfd.h>
 #include <sys/timerfd.h>
-#include <unistd.h>
+#include <err.h>
+#include <errno.h>
 
 #ifdef HAVE_LIBCAP
 # include <sys/capability.h>
@@ -152,31 +153,31 @@ static void arping_limit_capabilities(struct run_state *ctl) {
 
 	cap_p = cap_get_proc();
 	if (!cap_p)
-		error(-1, errno, "cap_get_proc");
+		err(errno, "cap_get_proc");
 
 	cap_get_flag(cap_p, CAP_NET_RAW, CAP_PERMITTED, &ctl->cap_raw);
 
 	if (ctl->cap_raw != CAP_CLEAR) {
 		if (cap_clear(cap_p) < 0)
-			error(-1, errno, "cap_clear");
+			err(errno, "cap_clear");
 
 		cap_set_flag(cap_p, CAP_PERMITTED, 1, caps, CAP_SET);
 
 		if (cap_set_proc(cap_p) < 0) {
-			error(0, errno, "cap_set_proc");
+			warn("cap_set_proc");
 			if (errno != EPERM)
-				exit(-1);
+				exit(errno);
 		}
 	}
 
 	if (prctl(PR_SET_KEEPCAPS, 1) < 0)
-		error(-1, errno, "prctl");
+		err(errno, "prctl");
 
 	if (setuid(getuid()) < 0)
-		error(-1, errno, "setuid");
+		err(errno, "setuid");
 
 	if (prctl(PR_SET_KEEPCAPS, 0) < 0)
-		error(-1, errno, "prctl");
+		err(errno, "prctl");
 
 	cap_free(cap_p);
 }
@@ -189,12 +190,12 @@ static int arping_modify_capability_raw(struct run_state *ctl, int on) {
 
 	cap_p = cap_get_proc();
 	if (!cap_p)
-		error(-1, errno, "cap_get_proc");
+		err(errno, "cap_get_proc");
 
 	cap_set_flag(cap_p, CAP_EFFECTIVE, 1, caps, on ? CAP_SET : CAP_CLEAR);
 
 	if (cap_set_proc(cap_p) < 0)
-		error(-1, errno, "cap_set_proc");
+		err(errno, "cap_set_proc");
 
 	cap_free(cap_p);
 	return 0;
@@ -204,10 +205,10 @@ static void arping_drop_capabilities(void) {
 	cap_t cap_p = cap_init();
 
 	if (!cap_p)
-		error(-1, errno, "cap_init");
+		err(errno, "cap_init");
 
 	if (cap_set_proc(cap_p) < 0)
-		error(-1, errno, "cap_set_proc");
+		err(errno, "cap_set_proc");
 
 	cap_free(cap_p);
 }
@@ -453,7 +454,7 @@ static int outgoing_device(struct run_state *const ctl, struct nlmsghdr *nh)
 	struct rtattr *ra;
 
 	if (nh->nlmsg_type != RTM_NEWROUTE) {
-		error(0, 0, "NETLINK new route message type");
+		warnx("NETLINK new route message type");
 		return 1;
 	}
 	for (ra = RTM_RTA(rm); RTA_OK(ra, (unsigned short)len); ra = RTA_NEXT(ra, len)) {
@@ -463,7 +464,7 @@ static int outgoing_device(struct run_state *const ctl, struct nlmsghdr *nh)
 
 			ctl->device.ifindex = *oif;
 			if (!if_indextoname(ctl->device.ifindex, dev_name)) {
-				error(0, errno, "if_indextoname failed");
+				warn("if_indextoname failed");
 				return 1;
 			}
 			ctl->device.name = dev_name;
@@ -492,7 +493,7 @@ static void netlink_query(struct run_state *const ctl, const int flags,
 
 	unmodified_nh = nh = calloc(1, buffer_size);
 	if (!nh)
-		error(1, errno, "allocating %zu bytes failed", buffer_size);
+		err(errno, "allocating %zu bytes failed", buffer_size);
 
 	nh->nlmsg_len = NLMSG_LENGTH(len);
 	nh->nlmsg_flags = flags;
@@ -505,11 +506,11 @@ static void netlink_query(struct run_state *const ctl, const int flags,
 
 	fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
 	if (fd < 0) {
-		error(0, errno, "NETLINK_ROUTE socket failed");
+		warn("NETLINK_ROUTE socket failed");
 		goto fail;
 	}
 	if (sendmsg(fd, &mh, 0) < 0) {
-		error(0, errno, "NETLINK_ROUTE socket failed");
+		warn("NETLINK_ROUTE socket failed");
 		goto fail;
 	}
 	do {
@@ -523,7 +524,7 @@ static void netlink_query(struct run_state *const ctl, const int flags,
 		case NLMSG_ERROR:
 		case NLMSG_OVERRUN:
 			errno = EIO;
-			error(0, 0, "NETLINK_ROUTE unexpected iov element");
+			warnx("NETLINK_ROUTE unexpected iov element");
 			goto fail;
 		case NLMSG_DONE:
 			ret = 0;
@@ -558,7 +559,7 @@ static void guess_device(struct run_state *const ctl)
 		addr_len = 16;
 		break;
 	default:
-		error(1, 0, "unknown address family, please, use option -I.");
+		errx(EXIT_FAILURE, "unknown address family, please use -I option");
 		abort();
 	}
 
@@ -617,7 +618,7 @@ static int check_device(struct run_state *ctl)
 
 	rc = getifaddrs(&ctl->ifa0);
 	if (rc) {
-		error(0, errno, "getifaddrs");
+		warn("getifaddrs");
 		return -1;
 	}
 
@@ -646,7 +647,7 @@ static int check_device(struct run_state *ctl)
 	if (n == 1 && ctl->device.ifa) {
 		ctl->device.ifindex = if_nametoindex(ctl->device.ifa->ifa_name);
 		if (!ctl->device.ifindex) {
-			error(0, errno, "if_nametoindex");
+			warn("if_nametoindex");
 			freeifaddrs(ctl->ifa0);
 			return -1;
 		}
@@ -676,7 +677,7 @@ static void find_broadcast_address(struct run_state *ctl)
 		}
 	}
 	if (!ctl->quiet)
-		error(0, 0, "%s: %s", _WARN, _("using default broadcast address"));
+		warnx("%s: %s", _WARN, _("using default broadcast address"));
 	memset(he->sll_addr, -1, he->sll_halen);
 }
 
@@ -723,12 +724,12 @@ static int event_loop(struct run_state *ctl)
 	sigaddset(&mask, SIGQUIT);
 	sigaddset(&mask, SIGTERM);
 	if (sigprocmask(SIG_BLOCK, &mask, NULL) == -1) {
-		error(0, errno, "sigprocmask failed");
+		warn("sigprocmask failed");
 		return 1;
 	}
 	sfd = signalfd(-1, &mask, 0);
 	if (sfd == -1) {
-		error(0, errno, "signalfd");
+		warn("signalfd");
 		return 1;
 	}
 	pfds[POLLFD_SIGNAL].fd = sfd;
@@ -737,11 +738,11 @@ static int event_loop(struct run_state *ctl)
 	/* interval timerfd */
 	tfd = timerfd_create(CLOCK_MONOTONIC, 0);
 	if (tfd == -1) {
-		error(0, errno, "timerfd_create failed");
+		warn("timerfd_create failed");
 		return 1;
 	}
 	if (timerfd_settime(tfd, 0, &timerfd_vals, NULL)) {
-		error(0, errno, "timerfd_settime failed");
+		warn("timerfd_settime failed");
 		return 1;
 	}
 	pfds[POLLFD_TIMER].fd = tfd;
@@ -750,11 +751,11 @@ static int event_loop(struct run_state *ctl)
 	/* timeout timerfd */
 	timeoutfd = timerfd_create(CLOCK_MONOTONIC, 0);
 	if (timeoutfd == -1) {
-		error(0, errno, "timerfd_create failed");
+		warn("timerfd_create failed");
 		return 1;
 	}
 	if (timerfd_settime(timeoutfd, 0, &timeoutfd_vals, NULL)) {
-		error(0, errno, "timerfd_settime failed");
+		warn("timerfd_settime failed");
 		return 1;
 	}
 	pfds[POLLFD_TIMEOUT].fd = timeoutfd;
@@ -774,7 +775,7 @@ static int event_loop(struct run_state *ctl)
 			if (errno == EAGAIN)
 				continue;
 			if (errno)
-				error(0, errno, "poll failed");
+				warn("poll failed");
 			exit_loop = 1;
 			continue;
 		}
@@ -786,19 +787,19 @@ static int event_loop(struct run_state *ctl)
 			case POLLFD_SIGNAL:
 				s = read(sfd, &sigval, sizeof(struct signalfd_siginfo));
 				if (s != sizeof(struct signalfd_siginfo)) {
-					error(0, errno, "could not read signalfd");
+					warn("could not read signalfd");
 					continue;
 				}
 				if (sigval.ssi_signo == SIGINT || sigval.ssi_signo == SIGQUIT ||
 				    sigval.ssi_signo == SIGTERM)
 					exit_loop = 1;
 				else
-					error(0, errno, "unexpected signal: %d", sigval.ssi_signo);
+					warn("unexpected signal: %d", sigval.ssi_signo);
 				break;
 			case POLLFD_TIMER:
 				s = read(tfd, &exp, sizeof(uint64_t));
 				if (s != sizeof(uint64_t)) {
-					error(0, errno, "could not read timerfd");
+					warn("could not read timerfd");
 					continue;
 				}
 				total_expires += exp;
@@ -816,7 +817,7 @@ static int event_loop(struct run_state *ctl)
 				s = recvfrom(ctl->socketfd, packet, sizeof(packet), 0,
 					      (struct sockaddr *)&from, &addr_len);
 				if (s < 0) {
-					error(0, errno, "recvfrom");
+					warn("recvfrom");
 					if (errno == ENETDOWN)
 						rc = 2;
 					continue;
@@ -924,7 +925,7 @@ int main(int argc, char **argv)
 	arping_enable_capability_raw(&ctl);
 	ctl.socketfd = socket(PF_PACKET, SOCK_DGRAM, 0);
 	if (ctl.socketfd < 0)
-		error(2, errno, "socket");
+		err(errno, "socket");
 	arping_disable_capability_raw(&ctl);
 
 	ctl.target = *argv;
@@ -945,7 +946,7 @@ int main(int argc, char **argv)
 
 		status = getaddrinfo(ctl.target, NULL, &hints, &result);
 		if (status)
-			error(2, 0, "%s: %s", ctl.target, gai_strerror(status));
+			errx(2, "%s: %s", ctl.target, gai_strerror(status));
 
 		memcpy(&ctl.gdst, &((struct sockaddr_in *)result->ai_addr)->sin_addr, sizeof ctl.gdst);
 		ctl.gdst_family = result->ai_family;
@@ -961,12 +962,12 @@ int main(int argc, char **argv)
 
 	if (!ctl.device.ifindex) {
 		if (ctl.device.name)
-			error(2, 0, _("Device %s not available."), ctl.device.name);
-		error(0, 0, _("Suitable device could not be determined. Please, use option -I."));
+			errx(2, _("Device %s not available."), ctl.device.name);
+		warnx(_("Suitable device could not be determined. Please, use option -I."));
 	}
 
 	if (ctl.source && inet_aton(ctl.source, &ctl.gsrc) != 1)
-		error(2, 0, "invalid source %s", ctl.source);
+		errx(2, "invalid source %s", ctl.source);
 
 	if (!ctl.dad && ctl.unsolicited && ctl.source == NULL)
 		ctl.gsrc = ctl.gdst;
@@ -974,22 +975,21 @@ int main(int argc, char **argv)
 	if (!ctl.dad || ctl.source) {
 		struct sockaddr_in saddr;
 		int probe_fd = socket(AF_INET, SOCK_DGRAM, 0);
-
 		if (probe_fd < 0)
-			error(2, errno, "socket");
+			err(errno, "socket");
 		if (ctl.device.name) {
 			arping_enable_capability_raw(&ctl);
 			if (setsockopt(probe_fd, SOL_SOCKET, SO_BINDTODEVICE, ctl.device.name,
-				       strlen(ctl.device.name) + 1) == -1)
-				error(0, errno, "%s: %s", _WARN, _("interface is ignored"));
+				       strlen(ctl.device.name) + 1) < 0)
+				warn("%s: %s", _WARN, _("interface is ignored"));
 			arping_disable_capability_raw(&ctl);
 		}
 		memset(&saddr, 0, sizeof(saddr));
 		saddr.sin_family = AF_INET;
 		if (ctl.source || ctl.gsrc.s_addr) {
 			saddr.sin_addr = ctl.gsrc;
-			if (bind(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) == -1)
-				error(2, errno, "bind");
+			if (bind(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
+				err(errno, "bind");
 		} else if (!ctl.dad) {
 			int on = 1;
 			socklen_t alen = sizeof(saddr);
@@ -998,12 +998,12 @@ int main(int argc, char **argv)
 			saddr.sin_addr = ctl.gdst;
 
 			if (!ctl.unsolicited) {
-				if (setsockopt(probe_fd, SOL_SOCKET, SO_DONTROUTE, (char *)&on, sizeof(on)) == -1)
-					error(0, errno, "%s: %s", _WARN, "setsockopt(SO_DONTROUTE)");
-				if (connect(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) == -1)
-					error(2, errno, "connect");
-				if (getsockname(probe_fd, (struct sockaddr *)&saddr, &alen) == -1)
-					error(2, errno, "getsockname");
+				if (setsockopt(probe_fd, SOL_SOCKET, SO_DONTROUTE, (char *)&on, sizeof(on)) < 0)
+					warn("%s: %s", _WARN, "setsockopt(SO_DONTROUTE)");
+				if (connect(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
+					err(errno, "connect");
+				if (getsockname(probe_fd, (struct sockaddr *)&saddr, &alen) < 0)
+					err(errno, "getsockname");
 			}
 			ctl.gsrc = saddr.sin_addr;
 		}
@@ -1013,13 +1013,13 @@ int main(int argc, char **argv)
 	((struct sockaddr_ll *)&ctl.me)->sll_family = AF_PACKET;
 	((struct sockaddr_ll *)&ctl.me)->sll_ifindex = ctl.device.ifindex;
 	((struct sockaddr_ll *)&ctl.me)->sll_protocol = htons(ETH_P_ARP);
-	if (bind(ctl.socketfd, (struct sockaddr *)&ctl.me, sizeof(ctl.me)) == -1)
-		error(2, errno, "bind");
+	if (bind(ctl.socketfd, (struct sockaddr *)&ctl.me, sizeof(ctl.me)) < 0)
+		err(errno, "bind");
 	{
 		socklen_t alen = sizeof(ctl.me);
 
-		if (getsockname(ctl.socketfd, (struct sockaddr *)&ctl.me, &alen) == -1)
-			error(2, errno, "getsockname");
+		if (getsockname(ctl.socketfd, (struct sockaddr *)&ctl.me, &alen) < 0)
+			err(errno, "getsockname");
 	}
 	if (((struct sockaddr_ll *)&ctl.me)->sll_halen == 0) {
 		if (!ctl.quiet)
@@ -1037,7 +1037,7 @@ int main(int argc, char **argv)
 	}
 
 	if (!ctl.source && !ctl.gsrc.s_addr && !ctl.dad)
-		error(2, errno, _("no source address in not-DAD mode"));
+		errx(2, _("no source address in not-DAD mode"));
 
 	arping_drop_capabilities();
 

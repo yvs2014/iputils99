@@ -350,8 +350,8 @@ msgstr "perbedaan scope antar node"
 
 #: ping/ping6_common.c:226 ping/ping.c:878
 #, c-format
-msgid "Warning: source address might be selected on device other than: %s"
-msgstr "Warning: alamat asal mungkin dipilih pada perangkat selain: %s"
+msgid "%s: source address might be selected on device other than: %s"
+msgstr "%s: alamat asal mungkin dipilih pada perangkat selain: %s"
 
 #: ping/ping6_common.c:267
 #, c-format
@@ -370,28 +370,24 @@ msgstr "ping multicast tidak terfragmentasi"
 msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
 msgstr "setsockopt(RAW_CHECKSUM) gagal - coba lanjutkan"
 
-#: ping/ping6_common.c:357
-msgid "can't disable multicast loopback"
-msgstr "tidak dapat menonaktifkan loopback multicast"
-
 #: ping/ping6_common.c:362
-msgid "can't set multicast hop limit"
+msgid "cannot set multicast hop limit"
 msgstr "tidak bisa mengatur batas hop multicast"
 
 #: ping/ping6_common.c:365
-msgid "can't set unicast hop limit"
+msgid "cannot set unicast hop limit"
 msgstr "tidak bisa mengatur batas hop unicast"
 
 #: ping/ping6_common.c:377
-msgid "can't receive hop limit"
+msgid "cannot receive hop limit"
 msgstr "tidak dapat menerima batas hop"
 
 #: ping/ping6_common.c:391
-msgid "can't set flowlabel"
+msgid "cannot set flowlabel"
 msgstr "tidak bisa mengatur flowlabel"
 
 #: ping/ping6_common.c:395
-msgid "can't send flowinfo"
+msgid "cannot send flowinfo"
 msgstr "tidak bisa mengirim flowinfo"
 
 #: ping/ping6_common.c:398 ping/ping.c:1023
@@ -411,8 +407,8 @@ msgstr "dari %s %s: "
 
 #: ping/ping6_common.c:408
 #, c-format
-msgid "%zu data bytes\n"
-msgstr "%zu byte data\n"
+msgid "%zu data bytes"
+msgstr "%zu byte data"
 
 #: ping/ping6_common.c:423
 #, c-format
@@ -705,17 +701,6 @@ msgstr "waktu berlama-lama yang buruk"
 msgid "ident 0 => forcing raw socket"
 msgstr "ident 0 => memaksa soket mentah"
 
-#: ping/ping.c:652
-#, c-format
-msgid ""
-"Warning: IPv6 link-local address on ICMP datagram socket may require ifname "
-"or scope-id => use: address%%<ifname|scope-id>"
-msgstr ""
-
-#: ping/ping.c:829
-msgid "warning: QOS sockopts"
-msgstr "warning: QOS sockopts"
-
 #: ping/ping.c:841
 msgid ""
 "Do you want to ping broadcast? Then -b. If not, check your local firewall "
@@ -733,8 +718,8 @@ msgid "cannot set broadcasting"
 msgstr "tidak bisa mengatur broadcast"
 
 #: ping/ping.c:866
-msgid "gatifaddrs failed"
-msgstr "gatifaddrs gagal"
+msgid "getifaddrs failed"
+msgstr "getifaddrs gagal"
 
 #: ping/ping.c:894
 #, c-format
@@ -837,26 +822,6 @@ msgid ""
 msgstr ""
 "\n"
 "opsi tidak diketahui %x"
-
-#: ping/ping.c:1221
-#, c-format
-msgid "Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n"
-msgstr "Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n"
-
-#: ping/ping.c:1222
-#, c-format
-msgid " %1x  %1x  %02x %04x %04x"
-msgstr " %1x  %1x  %02x %04x %04x"
-
-#: ping/ping.c:1224
-#, c-format
-msgid "   %1x %04x"
-msgstr "   %1x %04x"
-
-#: ping/ping.c:1226
-#, c-format
-msgid "  %02x  %02x %04x"
-msgstr "  %02x  %02x %04x"
 
 #: ping/ping.c:1242
 #, c-format
@@ -1056,7 +1021,7 @@ msgstr "kesalahan lokal: pesan terlalu panjang, mtu=%u"
 #: ping/ping.c:1617
 #, c-format
 msgid "packet too short (%zd bytes) from %s"
-msgstr "packet terlalu singkat (%d byte) dari %s"
+msgstr "packet terlalu singkat (%zd byte) dari %s"
 
 #: ping/ping.c:1696
 #, c-format
@@ -1165,20 +1130,18 @@ msgid "illegal preload and/or interval: %d"
 msgstr "preload dan/atau interval ilegal: %d"
 
 #: ping/ping_common.c:505
-msgid "Warning: no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
-msgstr ""
-"Warning: tidak ada dukungan untuk SO_TIMESTAMP, kembali menggunakan "
-"SIOCGSTAMP"
+msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
+msgstr "tidak ada dukungan untuk SO_TIMESTAMP, kembali menggunakan SIOCGSTAMP"
 
 #: ping/ping_common.c:749
 #, c-format
-msgid "Warning: time of day goes back (%ldus), taking countermeasures"
+msgid "%s: time of day goes back (%ldus), taking countermeasures"
 msgstr ""
 
 #: ping/ping_common.c:799
 #, c-format
 msgid "%zd bytes from %s:"
-msgstr "%d byte dari %s:"
+msgstr "%zd byte dari %s:"
 
 #: ping/ping_common.c:805
 #, c-format
@@ -1232,12 +1195,8 @@ msgstr ""
 
 #: ping/ping_common.c:840
 #, c-format
-msgid ""
-"\n"
-"wrong data byte #%zu should be 0x%x but was 0x%x"
-msgstr ""
-"\n"
-"kesalahan byte data #%zu harusnya 0x%x bukan 0x%x"
+msgid "wrong data byte #%zu should be 0x%x but was 0x%x"
+msgstr "kesalahan byte data #%zu harusnya 0x%x bukan 0x%x"
 
 #: ping/ping_common.c:883
 #, c-format
@@ -1303,24 +1262,6 @@ msgstr "%ld/%ld paket, %d%% loss"
 #, c-format
 msgid ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
 msgstr ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
-
-#: tracepath.c:218
-#, c-format
-msgid ""
-"cmsg6:%d\n"
-" "
-msgstr ""
-"cmsg6:%d\n"
-" "
-
-#: tracepath.c:230
-#, c-format
-msgid ""
-"cmsg4:%d\n"
-" "
-msgstr ""
-"cmsg4:%d\n"
-" "
 
 #: tracepath.c:235
 #, c-format
