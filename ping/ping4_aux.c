@@ -69,14 +69,14 @@
 # define ODDBYTE(v)	htons((unsigned short)(v) << 8)
 #endif
 
-unsigned short in_cksum(const unsigned short *addr, int len, unsigned short csum) {
+uint16_t in_cksum(const uint16_t *addr, int len, uint16_t csum) {
 	/*
 	 *  Our algorithm is simple, using a 32 bit accumulator (sum),
 	 *  we add sequential 16 bit words to it, and at the end, fold
 	 *  back all the carry bits from the top 16 bits into the lower
 	 *  16 bits.
 	 */
-	const unsigned short *w = addr;
+	const uint16_t *w = addr;
 	int nleft = len;
 	int sum   = csum;
 	while (nleft > 1) {
@@ -85,15 +85,15 @@ unsigned short in_cksum(const unsigned short *addr, int len, unsigned short csum
 	}
 	/* mop up an odd byte, if necessary */
 	if (nleft == 1)
-		sum += ODDBYTE(*(unsigned char *)w); /* le16toh() may be unavailable on old systems */
+		sum += ODDBYTE(*(uint16_t *)w);	/* le16toh() may be unavailable on old systems */
 	/* add back carry outs from top 16 bits to low 16 bits */
 	sum  = (sum >> 16) + (sum & USHRT_MAX);	/* add hi 16 to low 16 */
 	sum += (sum >> 16);			/* add carry */
-	unsigned short answer = ~sum;		/* truncate to 16 bits */
+	uint16_t answer = ~sum;			/* truncate to 16 bits */
 	return answer;
 }
 
-void print4_ip_options(const struct ping_rts *rts, const unsigned char *cp, int hlen) {
+void print4_ip_options(const struct ping_rts *rts, const uint8_t *cp, int hlen) {
 	static int old_rrlen;
 	static char old_rr[MAX_IPOPTLEN];
 
@@ -130,11 +130,9 @@ void print4_ip_options(const struct ping_rts *rts, const unsigned char *cp, int 
 					else {
 						struct sockaddr_in sin = {
 							.sin_family = AF_INET,
-							.sin_addr = {
-								address
-							}
+							.sin_addr.s_addr = address,
 						};
-						printf("\t%s", SPRINT_RES_ADDR(rts, &sin, sizeof(sin)));
+						printf("\t%s", sprint_addr(rts, &sin, sizeof(sin)));
 					}
 					j -= 4;
 					putchar('\n');
@@ -175,7 +173,7 @@ void print4_ip_options(const struct ping_rts *rts, const unsigned char *cp, int 
 							address
 						}
 					};
-					printf("\t%s", SPRINT_RES_ADDR(rts, &sin, sizeof(sin)));
+					printf("\t%s", sprint_addr(rts, &sin, sizeof(sin)));
 				}
 				i -= 4;
 				putchar('\n');
@@ -209,11 +207,9 @@ void print4_ip_options(const struct ping_rts *rts, const unsigned char *cp, int 
 					else {
 						struct sockaddr_in sin = {
 							.sin_family = AF_INET,
-							.sin_addr = {
-								address
-							}
+							.sin_addr = { address },
 						};
-						printf("\t%s", SPRINT_RES_ADDR(rts, &sin, sizeof(sin)));
+						printf("\t%s", sprint_addr(rts, &sin, sizeof(sin)));
 					}
 					i -= 4;
 					if (i <= 0)
@@ -275,7 +271,7 @@ static void print4_iph(const struct ping_rts *rts, const struct iphdr *ip) {
 
 /* Print a descriptive string about an ICMP header */
 void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
-	uint32_t info, const struct icmphdr *icp)
+	uint32_t info, const struct icmphdr *icmp)
 {
 	switch (type) {
 	case ICMP_ECHOREPLY:
@@ -336,13 +332,13 @@ void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
 			printf(_("Dest Unreachable, Bad Code: %d"), code);
 			break;
 		}
-		if (icp && rts->opt.verbose)
-			print4_iph(rts, (struct iphdr *)(icp + 1));
+		if (icmp && rts->opt.verbose)
+			print4_iph(rts, (struct iphdr *)(icmp + 1));
 		break;
 	case ICMP_SOURCE_QUENCH:
 		printf(_("Source Quench\n"));
-		if (icp && rts->opt.verbose)
-			print4_iph(rts, (struct iphdr *)(icp + 1));
+		if (icmp && rts->opt.verbose)
+			print4_iph(rts, (struct iphdr *)(icmp + 1));
 		break;
 	case ICMP_REDIRECT:
 		switch (code) {
@@ -364,12 +360,12 @@ void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
 		}
 		{ struct sockaddr_in sin = {
 			.sin_family = AF_INET,
-			.sin_addr   = { .s_addr = icp ? icp->un.gateway : htonl(info) },
+			.sin_addr.s_addr = icmp ? htonl(icmp->un.gateway) : htonl(info),
 		  };
-		  printf(_("(New nexthop: %s)"), SPRINT_RES_ADDR(rts, &sin, sizeof(sin)));
+		  printf(_("(New nexthop: %s)"), sprint_addr(rts, &sin, sizeof(sin)));
 		}
-		if (icp && rts->opt.verbose)
-			print4_iph(rts, (struct iphdr *)(icp + 1));
+		if (icmp && rts->opt.verbose)
+			print4_iph(rts, (struct iphdr *)(icmp + 1));
 		break;
 	case ICMP_ECHO:
 		printf(_("Echo Request"));
@@ -387,14 +383,14 @@ void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
 			printf(_("Time exceeded, Bad Code: %d"), code);
 			break;
 		}
-		if (icp && rts->opt.verbose)
-			print4_iph(rts, (struct iphdr *)(icp + 1));
+		if (icmp && rts->opt.verbose)
+			print4_iph(rts, (struct iphdr *)(icmp + 1));
 		break;
 	case ICMP_PARAMETERPROB:
 		printf(_("Parameter problem: pointer = %u"),
-			icp ? (ntohl(icp->un.gateway) >> 24) : info);
-		if (icp && rts->opt.verbose)
-			print4_iph(rts, (struct iphdr *)(icp + 1));
+			icmp ? (ntohl(icmp->un.gateway) >> 24) : info);
+		if (icmp && rts->opt.verbose)
+			print4_iph(rts, (struct iphdr *)(icmp + 1));
 		break;
 	case ICMP_TIMESTAMP:
 		printf(_("Timestamp"));

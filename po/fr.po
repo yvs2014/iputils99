@@ -143,9 +143,8 @@ msgid "Interface \"%s\" is not ARPable\n"
 msgstr "L’interface « %s » n’est pas ARPable\n"
 
 #: arping.c:690
-#, c-format
-msgid "WARNING: using default broadcast address.\n"
-msgstr "AVERTISSEMENT : utilisation de l’adresse de diffusion par défaut.\n"
+msgid "using default broadcast address"
+msgstr "utilisation de l’adresse de diffusion par défaut"
 
 #: arping.c:901 arping.c:904 arping.c:907 ping/ping.c:378 ping/ping.c:425
 #: ping/ping.c:477 ping/ping.c:485 ping/ping.c:531 ping/ping.c:534
@@ -166,12 +165,8 @@ msgstr ""
 "l'option -l."
 
 #: arping.c:995
-msgid "WARNING: interface is ignored"
-msgstr "AVERTISSEMENT : l’interface est ignorée"
-
-#: arping.c:1014
-msgid "WARNING: setsockopt(SO_DONTROUTE)"
-msgstr "AVERTISSEMENT : setsockopt(SO_DONTROUTE)"
+msgid "interface is ignored"
+msgstr "l’interface est ignorée"
 
 #: arping.c:1038
 #, c-format
@@ -629,9 +624,13 @@ msgstr "paquet trop court : %d bytes"
 msgid "From %s: "
 msgstr "De %s : "
 
+#
+msgid "WARNING"
+msgstr "AVERTISSEMENT"
+
 #: ping/ping6_common.c:964 ping/ping.c:1826
-msgid "WARNING: failed to install socket filter"
-msgstr "AVERTISSEMENT : échec de l’installation du filtre de socket"
+msgid "failed to install socket filter"
+msgstr "échec de l’installation du filtre de socket"
 
 #: ping/ping.c:96 ping/ping.c:684
 #, c-format
@@ -710,8 +709,8 @@ msgid "bad linger time"
 msgstr "mauvais temps de persistance"
 
 #: ping/ping.c:595
-msgid "WARNING: ident 0 => forcing raw socket"
-msgstr "AVERTISSEMENT : ident 0 => raw socket forcé"
+msgid "ident 0 => forcing raw socket"
+msgstr "ident 0 => raw socket forcé"
 
 #: ping/ping.c:652
 #, c-format
@@ -735,9 +734,8 @@ msgstr ""
 "vérifier les règles de votre pare-feu local."
 
 #: ping/ping.c:842
-#, c-format
-msgid "WARNING: pinging broadcast address\n"
-msgstr "AVERTISSEMENT : ping de l’adresse de diffusion\n"
+msgid "pinging broadcast address"
+msgstr "ping de l’adresse de diffusion"
 
 #: ping/ping.c:845 ping/ping.c:1001
 msgid "cannot set broadcasting"
@@ -760,21 +758,9 @@ msgstr ""
 msgid "broadcast ping does not fragment"
 msgstr "le ping diffusé ne fragmente pas"
 
-#: ping/ping.c:929
-msgid "WARNING: setsockopt(ICMP_FILTER)"
-msgstr "AVERTISSEMENT : setsockopt(ICMP_FILTER)"
-
 #: ping/ping.c:934
-msgid "WARNING: your kernel is veeery old. No problems."
-msgstr "AVERTISSEMENT : votre noyau est trèèès vieux. Aucun problème."
-
-#: ping/ping.c:938
-msgid "WARNING: setsockopt(IP_RECVTTL)"
-msgstr "AVERTISSEMENT : setsockopt(IP_RECVTTL)"
-
-#: ping/ping.c:940
-msgid "WARNING: setsockopt(IP_RETOPTS)"
-msgstr "AVERTISSEMENT : setsockopt(IP_RETOPTS)"
+msgid "your kernel is veeery old. No problems."
+msgstr "votre noyau est trèèès vieux. Aucun problème."
 
 #: ping/ping.c:1007
 msgid "cannot disable multicast loopback"
@@ -790,8 +776,8 @@ msgstr "impossible de définir la durée de vie de la monodiffusion"
 
 #: ping/ping.c:1026
 #, c-format
-msgid "%zu(%zu) bytes of data.\n"
-msgstr "%zu(%zu) octets de données.\n"
+msgid "%zu(%zu) data bytes"
+msgstr "%zu(%zu) octets de données"
 
 #: ping/ping.c:1058
 #, c-format
@@ -1227,19 +1213,17 @@ msgid "no answer yet for icmp_seq=%lu\n"
 msgstr "encore aucune réponse pour icmp_seq=%lu\n"
 
 #: ping/ping_common.c:454
-msgid "WARNING: probably, rcvbuf is not enough to hold preload"
+msgid "probably, rcvbuf is not enough to hold preload"
 msgstr ""
-"AVERTISSEMENT : probablement, le rcvbuf n’est pas suffisant pour maintenir "
-"le préchargement"
+"probablement, le rcvbuf n’est pas suffisant pour maintenir le préchargement"
 
 #: ping/ping_common.c:471
-#, c-format
-msgid "WARNING: failed to set mark: %u"
-msgstr "AVERTISSEMENT : échec de définition du repère : %u"
+msgid "failed to set mark"
+msgstr "échec de définition du repère"
 
 #: ping/ping_common.c:473
-msgid "WARNING: SO_MARK not supported"
-msgstr "AVERTISSEMENT : SO_MARK n'est pas pris en charge"
+msgid "SO_MARK not supported"
+msgstr "SO_MARK n'est pas pris en charge"
 
 #: ping/ping_common.c:489
 #, c-format

@@ -143,8 +143,8 @@ msgstr "网络接口 “%s” 不适用 ARP\n"
 
 #: arping.c:690
 #, c-format
-msgid "WARNING: using default broadcast address.\n"
-msgstr "警告：使用默认广播地址。\n"
+msgid "using default broadcast address"
+msgstr "警告：使用默认广播地址"
 
 #: arping.c:901 arping.c:904 arping.c:907 ping/ping.c:378 ping/ping.c:425
 #: ping/ping.c:477 ping/ping.c:485 ping/ping.c:531 ping/ping.c:534
@@ -163,12 +163,8 @@ msgid "Suitable device could not be determined. Please, use option -I."
 msgstr "无法确定合适的设备。请使用选项 -I。"
 
 #: arping.c:995
-msgid "WARNING: interface is ignored"
-msgstr "警告：接口被忽略"
-
-#: arping.c:1014
-msgid "WARNING: setsockopt(SO_DONTROUTE)"
-msgstr "警告：setockopt(SO_DONTROUTE)"
+msgid "interface is ignored"
+msgstr "接口被忽略"
 
 #: arping.c:1038
 #, c-format
@@ -620,9 +616,13 @@ msgstr "过短的包: %d 字节"
 msgid "From %s: "
 msgstr "来自%s ： "
 
+#
+msgid "WARNING"
+msgstr "警告"
+
 #: ping/ping6_common.c:964 ping/ping.c:1826
-msgid "WARNING: failed to install socket filter"
-msgstr "警告：无法安装套接字过滤器"
+msgid "failed to install socket filter"
+msgstr "无法安装套接字过滤器"
 
 #: ping/ping.c:96 ping/ping.c:684
 #, c-format
@@ -700,8 +700,8 @@ msgid "bad linger time"
 msgstr "徘徊时间无效"
 
 #: ping/ping.c:595
-msgid "WARNING: ident 0 => forcing raw socket"
-msgstr "警告：标识 0 => 强制使用原始套接字"
+msgid "ident 0 => forcing raw socket"
+msgstr "标识 0 => 强制使用原始套接字"
 
 #: ping/ping.c:652
 #, c-format
@@ -724,8 +724,8 @@ msgstr "您想要 ping 广播地址吗？若是则加上参数 -b，否则检查
 
 #: ping/ping.c:842
 #, c-format
-msgid "WARNING: pinging broadcast address\n"
-msgstr "警告：正在 ping 广播地址\n"
+msgid "pinging broadcast address"
+msgstr "正在 ping 广播地址"
 
 #: ping/ping.c:845 ping/ping.c:1001
 msgid "cannot set broadcasting"
@@ -746,21 +746,9 @@ msgstr "用户广播 ping 的最小间隔必须 >= %d ms，使用 -i %s （或�
 msgid "broadcast ping does not fragment"
 msgstr "广播 ping 不分段"
 
-#: ping/ping.c:929
-msgid "WARNING: setsockopt(ICMP_FILTER)"
-msgstr "警告：setsockopt(ICMP_FILTER)"
-
 #: ping/ping.c:934
-msgid "WARNING: your kernel is veeery old. No problems."
-msgstr "警告：您的内核非常旧。没有其他问题。"
-
-#: ping/ping.c:938
-msgid "WARNING: setsockopt(IP_RECVTTL)"
-msgstr "警告：setsockopt(IP_RECVTTL)"
-
-#: ping/ping.c:940
-msgid "WARNING: setsockopt(IP_RETOPTS)"
-msgstr "警告：setsockopt(IP_RETOPTS)"
+msgid "your kernel is veeery old. No problems."
+msgstr "您的内核非常旧。没有其他问题。"
 
 #: ping/ping.c:1007
 msgid "cannot disable multicast loopback"
@@ -776,8 +764,8 @@ msgstr "不能设置单拨的 TTL"
 
 #: ping/ping.c:1026
 #, c-format
-msgid "%zu(%zu) bytes of data.\n"
-msgstr "%zu(%zu) 字节的数据。\n"
+msgid "%zu(%zu) data bytes"
+msgstr "%zu(%zu) 字节的数据"
 
 #: ping/ping.c:1058
 #, c-format
@@ -923,7 +911,7 @@ msgstr "源主机隔离"
 #: ping/ping.c:1275
 #, c-format
 msgid "Destination Net Prohibited"
-msgstr "目标网络被禁止。"
+msgstr "目标网络被禁止"
 
 #: ping/ping.c:1278
 #, c-format
@@ -1203,17 +1191,16 @@ msgid "no answer yet for icmp_seq=%lu\n"
 msgstr "icmp_seq=%lu 未响应\n"
 
 #: ping/ping_common.c:454
-msgid "WARNING: probably, rcvbuf is not enough to hold preload"
-msgstr "警告：RCVBUF 可能不足以保持预载"
+msgid "probably, rcvbuf is not enough to hold preload"
+msgstr "RCVBUF 可能不足以保持预载"
 
 #: ping/ping_common.c:471
-#, c-format
-msgid "WARNING: failed to set mark: %u"
-msgstr "警告：无法安装套接字过滤器：%u"
+msgid "failed to set mark"
+msgstr "无法安装套接字过滤器"
 
 #: ping/ping_common.c:473
-msgid "WARNING: SO_MARK not supported"
-msgstr "警告：不支持 SO_MARK"
+msgid "SO_MARK not supported"
+msgstr "不支持 SO_MARK"
 
 #: ping/ping_common.c:489
 #, c-format

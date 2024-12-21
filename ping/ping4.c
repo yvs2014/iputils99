@@ -94,35 +94,35 @@ struct icmp_filter {
 static ssize_t ping4_send_probe(struct ping_rts *rts, int sockfd,
 		void *packet, unsigned packet_size __attribute__((__unused__)))
 {
-	struct icmphdr *icp = (struct icmphdr *)packet;
-	icp->type = ICMP_ECHO;
-	icp->code = 0;
-	icp->checksum = 0;
-	icp->un.echo.sequence = htons(rts->ntransmitted + 1);
-	icp->un.echo.id = rts->ident16;
+	struct icmphdr *icmp = (struct icmphdr *)packet;
+	icmp->type             = ICMP_ECHO;
+	icmp->code             = 0;
+	icmp->checksum         = 0;
+	icmp->un.echo.sequence = htons(rts->ntransmitted + 1);
+	icmp->un.echo.id       = rts->ident16;
 
 	if (rts->timing) {
 		if (rts->opt.latency) {
-			struct timeval tmp_tv;
-			gettimeofday(&tmp_tv, NULL);
-			memcpy(icp + 1, &tmp_tv, sizeof(tmp_tv));
+			struct timeval tv;
+			gettimeofday(&tv, NULL);
+			memcpy(icmp + 1, &tv, sizeof(tv));
 		} else {
-			memset(icp + 1, 0, sizeof(struct timeval));
+			memset(icmp + 1, 0, sizeof(struct timeval));
 		}
 	}
 
 	ssize_t len = rts->datalen + 8;	/* skips ICMP portion */
 	/* compute ICMP checksum here */
-	icp->checksum = in_cksum((unsigned short *)icp, len, 0);
-
+	icmp->checksum = in_cksum((uint16_t *)icmp, len, 0);
 	if (rts->timing && !rts->opt.latency) {
-		struct timeval tmp_tv;
-		gettimeofday(&tmp_tv, NULL);
-		memcpy(icp + 1, &tmp_tv, sizeof(tmp_tv));
-		icp->checksum = in_cksum((unsigned short *)&tmp_tv, sizeof(tmp_tv), ~icp->checksum);
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		memcpy(icmp + 1, &tv, sizeof(tv));
+		icmp->checksum = in_cksum((uint16_t *)&tv, sizeof(tv), ~icmp->checksum);
 	}
 
-	ssize_t rc = sendto(sockfd, icp, len, 0, (struct sockaddr *)&rts->whereto, sizeof(struct sockaddr_in));
+	ssize_t rc = sendto(sockfd, icmp, len, 0,
+		(struct sockaddr *)&rts->whereto, sizeof(struct sockaddr_in));
 	return (rc == len) ? 0 : rc;
 }
 
@@ -170,6 +170,7 @@ static int ping4_receive_error(struct ping_rts *rts, const socket_st *sock) {
 			abort();
 		if (ee->ee_origin == SO_EE_ORIGIN_LOCAL) {
 			local_errors++;
+			rts->nerrors++;
 			if (!rts->opt.quiet)
 				print_local_ee(rts, ee);
 		} else if (ee->ee_origin == SO_EE_ORIGIN_ICMP) {
@@ -182,6 +183,7 @@ static int ping4_receive_error(struct ping_rts *rts, const socket_st *sock) {
 				saved_errno = 0;
 			else {
 				net_errors++;
+				rts->nerrors++;
 				uint16_t seq = ntohs(icmph.un.echo.sequence);
 				acknowledge(rts, seq);
 				if (sock->raw)
@@ -215,8 +217,8 @@ static inline bool ping4_icmp_extra_type(struct ping_rts *rts,
 	if (rts->opt.quiet || rts->opt.flood)
 		return true;
 	PRINT_TIMESTAMP;
-	printf(_("From %s: icmp_seq=%u "),
-	SPRINT_RES_ADDR(rts, from, sizeof(*from)), ntohs(orig->un.echo.sequence));
+	printf(_("From %s: icmp_seq=%u "), sprint_addr(rts, from, sizeof(*from)),
+		ntohs(orig->un.echo.sequence));
 	if (bad)
 		printf(_(" (BAD CHECKSUM!)"));
 	print4_icmph(rts, icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp);
@@ -246,8 +248,8 @@ static bool ping4_parse_reply(struct ping_rts *rts, bool raw,
 		hlen = ip->ihl * 4;
 		if ((received < (hlen + 8)) || (ip->ihl < 5)) {
 			if (rts->opt.verbose)
-				error(0, 0, _("packet too short (%zd bytes) from %s"), received,
-					SPRINT_RES_ADDR(rts, from, sizeof(*from)));
+				error(0, 0, _("packet too short (%zd bytes) from %s"),
+					received, sprint_addr(rts, from, sizeof(*from)));
 			return true;
 		}
 		reply_ttl = ip->ttl;
@@ -284,16 +286,16 @@ static bool ping4_parse_reply(struct ping_rts *rts, bool raw,
 		if (!IS_OURS(rts, raw, icmp->un.echo.id))
 			return true;	/* 'Twas not our ECHO */
 		struct sockaddr_in *sin = (struct sockaddr_in *)&rts->whereto;
-		bool ack  = in_cksum((unsigned short *)icmp, received, 0) == 0;
+		bool ack  = (in_cksum((uint16_t *)icmp, received, 0) == 0);
 		bool okay = (from->sin_addr.s_addr == sin->sin_addr.s_addr)
 			|| rts->multicast || rts->opt.broadcast;
 		if (gather_stats(rts, (uint8_t *)icmp, sizeof(*icmp), received,
 			ntohs(icmp->un.echo.sequence), reply_ttl, at, NULL,
-			SPRINT_RES_ADDR(rts, from, sizeof(*from)), ack, !okay))
+			sprint_addr(rts, from, sizeof(*from)), ack, !okay))
 				return false;
 	} else {
 		/* We fall here when a redirect or source quench arrived */
-		bool bad = in_cksum((unsigned short *)icmp, received, 0) != 0;
+		bool bad = (in_cksum((uint16_t *)icmp, received, 0) != 0);
 		switch (icmp->type) {
 		case ICMP_ECHO:
 			/* MUST NOT */
@@ -318,7 +320,7 @@ static bool ping4_parse_reply(struct ping_rts *rts, bool raw,
 			gettimeofday(&recv_time, NULL);
 			printf("%lu.%06lu ", (unsigned long)recv_time.tv_sec, (unsigned long)recv_time.tv_usec);
 		}
-		printf(_("From %s: "), SPRINT_RES_ADDR(rts, from, sizeof(*from)));
+		printf(_("From %s: "), sprint_addr(rts, from, sizeof(*from)));
 		if (bad) {
 			printf(_(" (BAD CHECKSUM!)"));
 			putchar('\n');
@@ -429,11 +431,7 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv,
 
 		if (rts->device)
 			set_device(false, rts->device, slen, iface, mcast, probe_fd, sock->fd);
-		if (rts->qos) {
-			int opt = rts->qos;
-			if (setsockopt(probe_fd, IPPROTO_IP, IP_TOS, &opt, sizeof(opt)) < 0)
-				error(0, errno, _("warning: QOS sockopts"));
-		}
+		sock_settos(probe_fd, rts->qos, rts->ip6);
 		sock_setmark(rts, probe_fd);
 
 		dst.sin_port = htons(1025);
@@ -445,7 +443,7 @@ int ping4_run(struct ping_rts *rts, int argc, char **argv,
 				if (!rts->opt.broadcast)
 					error(2, 0,
 _("Do you want to ping broadcast? Then -b. If not, check your local firewall rules"));
-				fprintf(stderr, _("WARNING: pinging broadcast address\n"));
+				error(0, 0, "%s: %s", _WARN, _("pinging broadcast address"));
 				int opt = rts->opt.broadcast;
 				if (setsockopt(probe_fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
 					error(2, errno, _("cannot set broadcasting"));
@@ -508,18 +506,18 @@ _("minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or 
 			      (1 << ICMP_REDIRECT)	|
 			      (1 << ICMP_ECHOREPLY));
 		if (setsockopt(sock->fd, SOL_RAW, ICMP_FILTER, &filt, sizeof filt) < 0)
-			error(0, errno, _("WARNING: setsockopt(ICMP_FILTER)"));
+			error(0, errno, "%s: %s", _WARN, "setsockopt(ICMP_FILTER)");
 	}
 
 	{ int hold = 1;
 	  if (setsockopt(sock->fd, SOL_IP, IP_RECVERR, &hold, sizeof(hold)) < 0)
-		error(0, 0, _("WARNING: your kernel is veeery old. No problems."));
+		error(0, 0, "%s: %s", _WARN, _("your kernel is veeery old. No problems."));
 
 	  if (!sock->raw) {
 		if (setsockopt(sock->fd, SOL_IP, IP_RECVTTL, &hold, sizeof(hold)) < 0)
-			error(0, errno, _("WARNING: setsockopt(IP_RECVTTL)"));
+			error(0, errno, "%s: %s", _WARN, "setsockopt(IP_RECVTTL)");
 		if (setsockopt(sock->fd, SOL_IP, IP_RETOPTS, &hold, sizeof(hold)) < 0)
-			error(0, errno, _("WARNING: setsockopt(IP_RETOPTS)"));
+			error(0, errno, "%s: %s", _WARN, "setsockopt(IP_RETOPTS)");
 	  }
 	}
 
@@ -602,13 +600,7 @@ _("minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or 
 	if (!packet)
 		error(2, errno, _("memory allocation failed"));
 
-	printf(_("PING %s (%s) "), rts->hostname, inet_ntoa(whereto->sin_addr));
-	if (rts->device || rts->opt.strictsource)
-		printf(_("from %s %s: "), inet_ntoa(source->sin_addr), rts->device ? rts->device : "");
-	printf(_("%zu(%zu) bytes of data.\n"), rts->datalen, rts->datalen + 8 + rts->optlen + 20);
-
 	ping_setup(rts, sock);
-
 	if (rts->opt.connect_sk)
 		if (connect(sock->fd, (struct sockaddr *)&dst, sizeof(dst)) < 0)
 			error(2, errno, "connect");

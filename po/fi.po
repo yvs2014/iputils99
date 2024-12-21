@@ -141,9 +141,8 @@ msgid "Interface \"%s\" is not ARPable\n"
 msgstr "Liitäntä \"%s\" ei ole ARP-kysyttävä\n"
 
 #: arping.c:690
-#, c-format
-msgid "WARNING: using default broadcast address.\n"
-msgstr "VAROITUS: käytetään oletuskaikkilähetysosoitetta.\n"
+msgid "using default broadcast address"
+msgstr "käytetään oletuskaikkilähetysosoitetta"
 
 #: arping.c:901 arping.c:904 arping.c:907 ping/ping.c:378 ping/ping.c:425
 #: ping/ping.c:477 ping/ping.c:485 ping/ping.c:531 ping/ping.c:534
@@ -162,12 +161,8 @@ msgid "Suitable device could not be determined. Please, use option -I."
 msgstr "Sopivaa laitetta ei voitu määrittää. Ole hyvä ja käytä vaihtoehtoa -I."
 
 #: arping.c:995
-msgid "WARNING: interface is ignored"
-msgstr "VAROITUS: liitäntää ei huomioida"
-
-#: arping.c:1014
-msgid "WARNING: setsockopt(SO_DONTROUTE)"
-msgstr "VAROITUS: setsockopt(SO_DONTROUTE)"
+msgid "interface is ignored"
+msgstr "liitäntää ei huomioida"
 
 #: arping.c:1038
 #, c-format
@@ -622,9 +617,9 @@ msgstr "paketti liian lyhyt: %d tavua"
 msgid "From %s: "
 msgstr "%s:lta: "
 
-#: ping/ping6_common.c:964 ping/ping.c:1826
-msgid "WARNING: failed to install socket filter"
-msgstr "VAROITUS: pistorasiasuodattimen asennus epäonnistui"
+#
+msgid "WARNING"
+msgstr "VAROITUS"
 
 #: ping/ping.c:96 ping/ping.c:684
 #, c-format
@@ -702,8 +697,8 @@ msgid "bad linger time"
 msgstr "huono viipymäaika"
 
 #: ping/ping.c:595
-msgid "WARNING: ident 0 => forcing raw socket"
-msgstr "VAROITUS: ident 0 => pakotetaan raakapistoke"
+msgid "ident 0 => forcing raw socket"
+msgstr "ident 0 => pakotetaan raakapistoke"
 
 #: ping/ping.c:652
 #, c-format
@@ -727,9 +722,8 @@ msgstr ""
 "paikalliset palomuurisäännöt"
 
 #: ping/ping.c:842
-#, c-format
-msgid "WARNING: pinging broadcast address\n"
-msgstr "VAROITUS: laaja-lähetysosoitteen pingaaminen\n"
+msgid "pinging broadcast address"
+msgstr "laaja-lähetysosoitteen pingaaminen"
 
 #: ping/ping.c:845 ping/ping.c:1001
 msgid "cannot set broadcasting"
@@ -752,21 +746,9 @@ msgstr ""
 msgid "broadcast ping does not fragment"
 msgstr "laaja-lähetyksen ping ei pirstoudu"
 
-#: ping/ping.c:929
-msgid "WARNING: setsockopt(ICMP_FILTER)"
-msgstr "VAROITUS: setsockopt(ICMP_FILTER)"
-
 #: ping/ping.c:934
-msgid "WARNING: your kernel is veeery old. No problems."
-msgstr "VAROITUS: Linux-ytimesi on erittäin vanha. Ei ongelmia."
-
-#: ping/ping.c:938
-msgid "WARNING: setsockopt(IP_RECVTTL)"
-msgstr "VAROITUS: setsockopt(IP_RECVTTL)"
-
-#: ping/ping.c:940
-msgid "WARNING: setsockopt(IP_RETOPTS)"
-msgstr "VAROITUS: setsockopt(IP_RETOPTS)"
+msgid "your kernel is veeery old. No problems."
+msgstr "Linux-ytimesi on erittäin vanha. Ei ongelmia."
 
 #: ping/ping.c:1007
 msgid "cannot disable multicast loopback"
@@ -782,8 +764,8 @@ msgstr "yksi-lähetyksen elon aikaa (TTL) ei voi asettaa"
 
 #: ping/ping.c:1026
 #, c-format
-msgid "%zu(%zu) bytes of data.\n"
-msgstr "%zu(%zu) tavua dataa.\n"
+msgid "%zu(%zu) data bytes"
+msgstr "%zu(%zu) tavua dataa"
 
 #: ping/ping.c:1058
 #, c-format
@@ -1213,17 +1195,16 @@ msgid "no answer yet for icmp_seq=%lu\n"
 msgstr "ei vielä vastausta icmp_seq=%lu:lle\n"
 
 #: ping/ping_common.c:454
-msgid "WARNING: probably, rcvbuf is not enough to hold preload"
-msgstr "VAROITUS: luultavasti rcvbuf ei riitä esilatauksen säilyttämiseen"
+msgid "probably, rcvbuf is not enough to hold preload"
+msgstr "luultavasti rcvbuf ei riitä esilatauksen säilyttämiseen"
 
 #: ping/ping_common.c:471
-#, c-format
-msgid "WARNING: failed to set mark: %u"
-msgstr "VAROITUS: merkin asettaminen epäonnistui: %u"
+msgid "failed to set mark"
+msgstr "merkin asettaminen epäonnistui"
 
 #: ping/ping_common.c:473
-msgid "WARNING: SO_MARK not supported"
-msgstr "VAROITUS: SO_MARK ei tueta"
+msgid "SO_MARK not supported"
+msgstr "SO_MARK ei tueta"
 
 #: ping/ping_common.c:489
 #, c-format

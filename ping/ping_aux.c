@@ -73,19 +73,6 @@
 #include <linux/in6.h>
 #include <linux/errqueue.h>
 
-#define CASE_TYPE(x)	case x: return #x;
-
-char *str_family(int family) {
-	switch (family) {
-		CASE_TYPE(AF_UNSPEC)
-		CASE_TYPE(AF_INET)
-		CASE_TYPE(AF_INET6)
-	default:
-		error(2, 0, _("unknown protocol family: %d"), family);
-	}
-	return "";
-}
-
 unsigned long strtoul_or_err(const char *str, const char *errmesg,
 	unsigned long min, unsigned long max)
 {
@@ -212,14 +199,13 @@ void set_device(bool ip6, const char *device, socklen_t len,
 }
 
 // func_set:receive_error:print_local_ee
-inline void print_local_ee(struct ping_rts *rts, const struct sock_extended_err *ee) {
+inline void print_local_ee(const struct ping_rts *rts, const struct sock_extended_err *ee) {
 	if (rts->opt.flood)
 		write(STDOUT_FILENO, "E", 1);
 	else if (ee->ee_errno != EMSGSIZE)
 		error(0, ee->ee_errno, _("local error"));
 	else
 		error(0, 0, _("local error: message too long, mtu: %u"), ee->ee_info);
-	rts->nerrors++;
 }
 
 void mtudisc_n_bind(struct ping_rts *rts, const struct socket_st *sock) {
@@ -248,10 +234,9 @@ void mtudisc_n_bind(struct ping_rts *rts, const struct socket_st *sock) {
 }
 
 // func_set:receive_error:print_addr_seq
-void print_addr_seq(struct ping_rts *rts, uint16_t seq,
+void print_addr_seq(const struct ping_rts *rts, uint16_t seq,
 	const struct sock_extended_err *ee, socklen_t salen)
 {
-	rts->nerrors++;
 	if (rts->opt.quiet)
 		return;
 	if (rts->opt.flood)
@@ -259,7 +244,7 @@ void print_addr_seq(struct ping_rts *rts, uint16_t seq,
 	else {
 		PRINT_TIMESTAMP;
 		const void *sa = ee + 1;
-		printf(_("From %s icmp_seq=%u "), SPRINT_RES_ADDR(rts, sa, salen), seq);
+		printf(_("From %s icmp_seq=%u "), sprint_addr(rts, sa, salen), seq);
 		if (rts->ip6) {
 			print6_icmp(ee->ee_type, ee->ee_code, ee->ee_info);
 			putchar('\n');

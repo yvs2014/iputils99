@@ -146,6 +146,7 @@ static int ping6_receive_error(struct ping_rts *rts, const socket_st *sock) {
 			abort();
 		if (ee->ee_origin == SO_EE_ORIGIN_LOCAL) {
 			local_errors++;
+			rts->nerrors++;
 			if (!rts->opt.quiet)
 				print_local_ee(rts, ee);
 		} else if (ee->ee_origin == SO_EE_ORIGIN_ICMP6) {
@@ -158,6 +159,7 @@ static int ping6_receive_error(struct ping_rts *rts, const socket_st *sock) {
 				saved_errno = 0;
 			else {
 				net_errors++;
+				rts->nerrors++;
 				print_addr_seq(rts, ntohs(icmph.icmp6_seq), ee,
 					sizeof(struct sockaddr_in6));
 			}
@@ -209,7 +211,7 @@ static inline int ping6_icmp_extra_type(struct ping_rts *rts,
 	if (!rts->opt.verbose || rts->uid)
 		return true;
 	PRINT_TIMESTAMP;
-	printf(_("From %s: "), SPRINT_RES_ADDR(rts, src, sizeof(*src)));
+	printf(_("From %s: "), sprint_addr(rts, src, sizeof(*src)));
 	print6_icmp(icmp->icmp6_type, icmp->icmp6_code, ntohl(icmp->icmp6_mtu));
 	return -1;
 }
@@ -260,7 +262,7 @@ static bool ping6_parse_reply(struct ping_rts *rts, bool raw,
 		    || rts->multicast || rts->subnet_router_anycast;
 		if (gather_stats(rts, (uint8_t *)icmp, sizeof(*icmp), received,
 			ntohs(icmp->icmp6_seq), hops, at, NULL,
-			SPRINT_RES_ADDR(rts, from, sizeof(*from)), true, !okay))
+			sprint_addr(rts, from, sizeof(*from)), true, !okay))
 				return false;
 	} else if (icmp->icmp6_type == IPUTILS_NI_ICMP6_REPLY) {
 		struct ni_hdr *nih = (struct ni_hdr *)icmp;
@@ -269,7 +271,7 @@ static bool ping6_parse_reply(struct ping_rts *rts, bool raw,
 			return true;
 		if (gather_stats(rts, (uint8_t *)icmp, sizeof(*icmp), received,
 			seq, hops, at, print6_ni_reply,
-			SPRINT_RES_ADDR(rts, from, sizeof(*from)), true, false))
+			sprint_addr(rts, from, sizeof(*from)), true, false))
 				return false;
 	} else {
 		/* We must not ever fall here. All the messages but
@@ -288,7 +290,7 @@ static bool ping6_parse_reply(struct ping_rts *rts, bool raw,
 
 /* return >= 0: exit with this code, < 0: go on to next addrinfo result */
 int ping6_run(struct ping_rts *rts, int argc, char **argv,
-		const struct addrinfo *ai, const socket_st *sock)
+		struct addrinfo *ai, const socket_st *sock)
 {
 	static ping_func_set_st ping6_func_set = {
 		.send_probe     = ping6_send_probe,
@@ -355,16 +357,9 @@ int ping6_run(struct ping_rts *rts, int argc, char **argv,
 			if (scoped)
 				firsthop->sin6_scope_id = iface;
 		}
-
-		if (rts->qos) {
-			int opt = rts->qos;
-			if (setsockopt(probe_fd, IPPROTO_IPV6, IPV6_TCLASS, &opt, sizeof(opt)) < 0)
-				error(2, errno, "setsockopt(IPV6_TCLASS)");
-		}
-
 		if (!scoped)
 			firsthop->sin6_family = AF_INET6;
-
+		sock_settos(probe_fd, rts->qos, rts->ip6);
 		sock_setmark(rts, probe_fd);
 
 		firsthop->sin6_port = htons(1025);
@@ -521,18 +516,6 @@ _("minimal interval for multicast ping for user must be >= %d ms, use -i %s (or 
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND, &on, sizeof(on)) < 0)
 			error(2, errno, _("can't send flowinfo"));
 	}
-
-	printf(_("PING %s (%s) "), rts->hostname, SPRINT_RAW_ADDR(rts, whereto, sizeof(*whereto)));
-	if (rts->flowlabel)
-		printf(_(", flow 0x%05x, "), ntohl(rts->flowlabel));
-	if (rts->device || rts->opt.strictsource) {
-		int keep = rts->opt.numeric;
-		rts->opt.numeric = true;
-		printf(_("from %s %s: "), SPRINT_RES_ADDR(rts, source, sizeof(*source)),
-			rts->device ? rts->device : "");
-		rts->opt.numeric = keep;
-	}
-	printf(_("%zu data bytes\n"), rts->datalen);
 
 	ping_setup(rts, sock);
 	drop_capabilities();

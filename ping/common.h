@@ -182,10 +182,7 @@ int modify_capability(int);
 #endif
 void drop_capabilities(void);
 
-const char *sprint_addr_common(const struct ping_rts *rts, const void *sa,
-	socklen_t salen, int resolve_name);
-#define SPRINT_RES_ADDR(rts, sastruct, salen) sprint_addr_common((rts), (sastruct), (salen), 1)
-#define SPRINT_RAW_ADDR(rts, sastruct, salen) sprint_addr_common((rts), (sastruct), (salen), 0)
+const char *sprint_addr(const struct ping_rts *rts, const void *sa, socklen_t salen);
 
 void print_timestamp(void);
 #define PRINT_TIMESTAMP do { if (rts->opt.ptimeofday) print_timestamp(); } while(0)
@@ -195,8 +192,10 @@ void print_timestamp(void);
 const char *str_interval(int interval);
 void sock_setbufs(struct ping_rts *rts, int sockfd, int alloc);
 void sock_setmark(struct ping_rts *rts, int sockfd);
+void sock_settos(int sockfd, int qos, bool ip6);
+
 void ping_setup(struct ping_rts *rts, const socket_st *sock);
-int main_loop(struct ping_rts *rts, const ping_func_set_st *fset, const socket_st *sock,
+bool main_loop(struct ping_rts *rts, const ping_func_set_st *fset, const socket_st *sock,
 	uint8_t *packet, int packlen);
 bool gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen,
 	size_t received, uint16_t seq, int hops, const struct timeval *at,

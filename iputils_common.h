@@ -15,9 +15,9 @@
 # define _(Text) gettext (Text)
 #else
 # undef bindtextdomain
-# define bindtextdomain(Domain, Directory) /* empty */
+# define bindtextdomain(Domain, Directory) ((void)0)
 # undef textdomain
-# define textdomain(Domain) /* empty */
+# define textdomain(Domain) ((void)0)
 # define _(Text) Text
 #endif
 
@@ -49,6 +49,11 @@
 # define NI_FLAGS 0
 #endif /* NI_IDN */
 #endif /* USE_IDN */
+
+#define INFO	"INFO"		// verbose output prefix
+#define WARN	"WARNING"	// warning prefix
+#define _INFO	_(INFO)
+#define _WARN	_(WARN)
 
 #ifdef HAVE_ERROR_H
 # include <error.h>

@@ -143,9 +143,8 @@ msgid "Interface \"%s\" is not ARPable\n"
 msgstr "ინტერფეისს \"%s\" ARP ცხრილი არ გააჩნია\n"
 
 #: arping.c:690
-#, c-format
-msgid "WARNING: using default broadcast address.\n"
-msgstr "გაფრთხილება: გამოიყენება გადაცემის ნაგულისხმევი მისამართი.\n"
+msgid "using default broadcast address"
+msgstr "გაფრთხილება: გამოიყენება გადაცემის ნაგულისხმევი მისამართი"
 
 #: arping.c:901 arping.c:904 arping.c:907 ping/ping.c:378 ping/ping.c:425
 #: ping/ping.c:477 ping/ping.c:485 ping/ping.c:531 ping/ping.c:534
@@ -164,12 +163,8 @@ msgid "Suitable device could not be determined. Please, use option -I."
 msgstr "შესატყვისი მოწყობილობის მოძებნა შეუძლებელია. გამოიყენეთ პარამეტრი -l."
 
 #: arping.c:995
-msgid "WARNING: interface is ignored"
-msgstr "გაფრთხილება: ინტერფეისი ინგნორირებულია"
-
-#: arping.c:1014
-msgid "WARNING: setsockopt(SO_DONTROUTE)"
-msgstr "გაფრთხილება: setsockopt(SO_DONTROUTE)"
+msgid "interface is ignored"
+msgstr "ინტერფეისი ინგნორირებულია"
 
 #: arping.c:1038
 #, c-format
@@ -626,9 +621,13 @@ msgstr "პაკეტი ძალიან მოკლეა: %d ბაი�
 msgid "From %s: "
 msgstr "%s-დან: "
 
+#
+msgid "WARNING"
+msgstr "გაფრთხილება"
+
 #: ping/ping6_common.c:964 ping/ping.c:1826
-msgid "WARNING: failed to install socket filter"
-msgstr "გაფრთხილება: სოკეტის ფილტრის დაყენების შეცდომა"
+msgid "failed to install socket filter"
+msgstr "სოკეტის ფილტრის დაყენების შეცდომა"
 
 #: ping/ping.c:96 ping/ping.c:684
 #, c-format
@@ -707,8 +706,8 @@ msgid "bad linger time"
 msgstr "გაწელვის ცუდი დრო"
 
 #: ping/ping.c:595
-msgid "WARNING: ident 0 => forcing raw socket"
-msgstr "გაფრთხილება: ident 0 => raw ტიპის სოკეტის ნაძალადევი არჩევა"
+msgid "ident 0 => forcing raw socket"
+msgstr "ident 0 => raw ტიპის სოკეტის ნაძალადევი არჩევა"
 
 #: ping/ping.c:652
 #, c-format
@@ -732,9 +731,8 @@ msgstr ""
 "შეამოწმეთ ლოკალური ბრანდმაუერის წესები"
 
 #: ping/ping.c:842
-#, c-format
-msgid "WARNING: pinging broadcast address\n"
-msgstr "გაფრთხილება: პინგავთ ტრანსლირების მისამართს\n"
+msgid "pinging broadcast address"
+msgstr "პინგავთ ტრანსლირების მისამართს"
 
 #: ping/ping.c:845 ping/ping.c:1001
 msgid "cannot set broadcasting"
@@ -757,23 +755,10 @@ msgstr ""
 msgid "broadcast ping does not fragment"
 msgstr "ტრანსლირების პინგი არ იხლიჩება"
 
-#: ping/ping.c:929
-msgid "WARNING: setsockopt(ICMP_FILTER)"
-msgstr "გაფრთხილება: setsockopt(ICMP_FILTER)"
-
 #: ping/ping.c:934
-msgid "WARNING: your kernel is veeery old. No problems."
+msgid "your kernel is veeery old. No problems."
 msgstr ""
-"გაფრთხილება: ოპერაციული სისტემის თქვენი ბირთვი ამაზრზენად ძველია. პრობლემა "
-"არაა."
-
-#: ping/ping.c:938
-msgid "WARNING: setsockopt(IP_RECVTTL)"
-msgstr "გაფრთხილება: setsockopt(IP_RECVTTL)"
-
-#: ping/ping.c:940
-msgid "WARNING: setsockopt(IP_RETOPTS)"
-msgstr "გაფრთხილება: setsockopt(IP_RETOPTS)"
+"ოპერაციული სისტემის თქვენი ბირთვი ამაზრზენად ძველია. პრობლემა არაა."
 
 #: ping/ping.c:1007
 msgid "cannot disable multicast loopback"
@@ -789,8 +774,8 @@ msgstr "უნიკასტის TTL-ის დაყენების შ�
 
 #: ping/ping.c:1026
 #, c-format
-msgid "%zu(%zu) bytes of data.\n"
-msgstr "%zu (%zu) ბაიტი მონაცემები.\n"
+msgid "%zu(%zu) data bytes"
+msgstr "%zu (%zu) ბაიტი მონაცემები"
 
 #: ping/ping.c:1058
 #, c-format
@@ -1230,19 +1215,17 @@ msgid "no answer yet for icmp_seq=%lu\n"
 msgstr "პასუხის გარეშე. icmp_sql=%lu\n"
 
 #: ping/ping_common.c:454
-msgid "WARNING: probably, rcvbuf is not enough to hold preload"
+msgid "probably, rcvbuf is not enough to hold preload"
 msgstr ""
-"გაფრთხილება: როგორც ჩანს rcvbuf ძალიან პატარაა წინასწარი ჩატვირთვის "
-"გასაძლებად"
+"როგორც ჩანს rcvbuf ძალიან პატარაა წინასწარი ჩატვირთვის გასაძლებად"
 
 #: ping/ping_common.c:471
-#, c-format
-msgid "WARNING: failed to set mark: %u"
-msgstr "გაფრთხილება: ნიშნულის დასმის შეცდომა: %u"
+msgid "failed to set mark"
+msgstr "ნიშნულის დასმის შეცდომა"
 
 #: ping/ping_common.c:473
-msgid "WARNING: SO_MARK not supported"
-msgstr "გაფრთხილება: SO_MARK მხარდაჭერილი არაა"
+msgid "SO_MARK not supported"
+msgstr "SO_MARK მხარდაჭერილი არაა"
 
 #: ping/ping_common.c:489
 #, c-format

@@ -61,6 +61,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <string.h>
 #include <limits.h>
@@ -83,16 +84,28 @@
 #define V4IN6_WARNING	"Embedded IPv4 Address"
 #define PINGTYPE(raw)	((raw) ? "raw" : "datagram")
 
-static void create_socket(int verbose, socket_st *sock, int family,
-		int socktype, int protocol, int requisite)
-{
-	assert(sock->fd < 0);
-	assert(socktype == SOCK_DGRAM || socktype == SOCK_RAW);
+#define AFTYPE(af)	(af == AF_UNSPEC ? "unspec" : \
+			 af == AF_INET   ? "ip4"    : \
+			 af == AF_INET6  ? "ip6"    : "")
+
+/* This may not be needed if both protocol versions always had the same value,
+ * but since I don't know that, it's better to be safe than sorry */
+#define MTUDISC6(disc6)	{ \
+	(disc6) = (disc6) == IP_PMTUDISC_DO    ? IPV6_PMTUDISC_DO   : \
+		  (disc6) == IP_PMTUDISC_DONT  ? IPV6_PMTUDISC_DONT : \
+		  (disc6) == IP_PMTUDISC_WANT  ? IPV6_PMTUDISC_WANT : \
+		  (disc6) == IP_PMTUDISC_PROBE ? IPV6_PMTUDISC_PROBE: \
+		  (disc6); }
+
+typedef int (*run_fn)(struct ping_rts *rts, int argc, char **argv,
+        struct addrinfo *ai, const socket_st *sock);
+
+static void open_socket(socket_st *sock, int af, int proto, bool verbose) {
+	assert((af == AF_INET) || (af == AF_INET6));
 	/* Attempt to create a ping socket if requested. Attempt to create a raw
 	 * socket otherwise or as a fallback. Well known errno values follow.
 	 *
 	 * 1) EACCES
-	 *
 	 * Kernel returns EACCES for all ping socket creation attempts when the
 	 * user isn't allowed to use ping socket. A range of group ids is
 	 * configured using the `net.ipv4.ping_group_range` sysctl. Fallback
@@ -102,7 +115,6 @@ static void create_socket(int verbose, socket_st *sock, int family,
 	 * process doesn't have the `CAP_NET_RAW` capability.
 	 *
 	 * 2) EAFNOSUPPORT
-	 *
 	 * Kernel returns EAFNOSUPPORT for IPv6 ping or raw socket creation
 	 * attempts when run with IPv6 support disabled (e.g. via `ipv6.disable=1`
 	 * kernel command-line option.
@@ -116,7 +128,6 @@ static void create_socket(int verbose, socket_st *sock, int family,
 	 * https://github.com/iputils/iputils/issues/54
 	 *
 	 * 3) EPROTONOSUPPORT
-	 *
 	 * OpenVZ 2.6.32-042stab113.11 and possibly other older kernels return
 	 * EPROTONOSUPPORT for all IPv6 ping socket creation attempts due to lack
 	 * of support in the kernel [1]. Debian 9.5 based container with kernel 4.10
@@ -127,35 +138,38 @@ static void create_socket(int verbose, socket_st *sock, int family,
 	 * [2] https://github.com/iputils/iputils/issues/129
 	 */
 	errno = 0;
-	if (socktype == SOCK_DGRAM)
-		sock->fd = socket(family, socktype, protocol);
+	int num = 0;
+	if (!sock->raw) {
+		sock->fd = socket(af, SOCK_DGRAM, proto);
+		num = errno;
+	}
 	if (sock->fd < 0) { // kernel doesn't support ping sockets
 		switch (errno) {
 		case EAFNOSUPPORT:
-			if (family == AF_INET)
-				socktype = SOCK_RAW;
+			sock->raw = (af == AF_INET);
 			break;
 		case EPROTONOSUPPORT:
 		case EACCES: // EACCES: not allowed to use ping sockets
-			socktype = SOCK_RAW;
+			sock->raw = true;
 			break;
 		default: break;
 		}
 	}
-	sock->raw = (socktype == SOCK_RAW);
-	if (sock->raw)
-		sock->fd = socket(family, SOCK_RAW, protocol);
-	if (sock->fd < 0) { // failed to create socket
-		if (requisite || verbose) {
-			error(0, 0, "socktype: %s", PINGTYPE(sock->raw));
-			error(0, errno, "socket");
-		}
-		if (requisite) {
-			if (sock->raw && geteuid())
-				error(0, 0, _("=> missing cap_net_raw+p capability or setuid?"));
-			exit(2);
-		}
+	if (sock->raw) {
+		ENABLE_CAPABILITY_RAW;
+		sock->fd = socket(af, SOCK_RAW, proto);
+		num = errno;
+		DISABLE_CAPABILITY_RAW;
 	}
+	if (verbose)
+		error(0, 0, "%s: %s %s socket", _INFO,
+			PINGTYPE(sock->raw), AFTYPE(af));
+	if (sock->fd >= 0)
+		return;
+	// failed
+	if (sock->raw && geteuid())
+		error(0, 0, _("=> missing cap_net_raw+p capability or setuid?"));
+	error(num ? num : 2, num, "socket");
 }
 
 /* Parse command line options */
@@ -167,12 +181,15 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 	int ch;
 	while ((ch = getopt(argc, argv, optstr)) != EOF) {
 		switch(ch) {
-		/* IPv4 specific options */
 		case '4':
-			if (hints->ai_family == AF_INET6)
+		case '6': {
+			int not = (ch == '4') ? AF_INET6 : AF_INET;
+			if (hints->ai_family == not)
 				error(2, 0, _("only one -4 or -6 option may be specified"));
-			hints->ai_family = AF_INET;
+			hints->ai_family = (ch == '4') ? AF_INET : AF_INET6;
+		}
 			break;
+		/* IPv4 specific options */
 		case 'b':
 			rts->opt.broadcast = true;
 			break;
@@ -200,11 +217,6 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 				error(2, 0, _("invalid timestamp type: %s"), optarg);
 			break;
 		/* IPv6 specific options */
-		case '6':
-			if (hints->ai_family == AF_INET)
-				error(2, 0, _("only one -4 or -6 option may be specified"));
-			hints->ai_family = AF_INET6;
-			break;
 		case 'F':
 			rts->flowlabel = parse_flow(optarg);
 			rts->opt.flowinfo = true;
@@ -374,6 +386,8 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, struct ping_rts *r
 
 
 int main(int argc, char **argv) {
+	static run_fn ping_run[2] = { ping4_run, ping6_run };
+	//
 	static struct ping_rts rts = {
 		.interval     = 1000,
 		.preload      = 1,
@@ -439,62 +453,8 @@ int main(int argc, char **argv) {
 	} else if (rts.custom_ident == 0) {
 		/* Current Linux kernel 6.0 doesn't support on SOCK_DGRAM setting ident == 0 */
 		if (rts.opt.verbose)
-			error(0, 0, _("WARNING: ident 0 => forcing raw socket"));
+			error(0, 0, "%s: %s", _INFO, _("ident 0 => forcing raw socket"));
 		hints.ai_socktype = SOCK_RAW;
-	}
-
-	/* Create sockets */
-	socket_st sock4 = { .fd = -1 };
-	socket_st sock6 = { .fd = -1 };
-	ENABLE_CAPABILITY_RAW;
-	if (hints.ai_family != AF_INET6) {
-		create_socket(rts.opt.verbose, &sock4, AF_INET, hints.ai_socktype, IPPROTO_ICMP,
-			      hints.ai_family == AF_INET);
-	}
-	if (hints.ai_family != AF_INET) {
-		create_socket(rts.opt.verbose, &sock6, AF_INET6, hints.ai_socktype, IPPROTO_ICMPV6, sock4.fd < 0);
-		/* This may not be needed if both protocol versions always had the same value,
-		 * but since I don't know that, it's better to be safe than sorry */
-		rts.pmtudisc = rts.pmtudisc == IP_PMTUDISC_DO	? IPV6_PMTUDISC_DO   :
-			       rts.pmtudisc == IP_PMTUDISC_DONT ? IPV6_PMTUDISC_DONT :
-			       rts.pmtudisc == IP_PMTUDISC_WANT ? IPV6_PMTUDISC_WANT :
-			       rts.pmtudisc == IP_PMTUDISC_PROBE? IPV6_PMTUDISC_PROBE: rts.pmtudisc;
-	}
-	DISABLE_CAPABILITY_RAW;
-
-	/* Limit address family on single-protocol systems */
-	if (hints.ai_family == AF_UNSPEC) {
-		if (sock4.fd == -1)
-			hints.ai_family = AF_INET6;
-		else if (sock6.fd == -1)
-			hints.ai_family = AF_INET;
-	}
-
-	if (rts.opt.verbose)
-		error(0, 0, "sock4.fd: %d (socktype: %s), sock6.fd: %d (socktype: %s),"
-			" hints.ai_family: %s",
-			sock4.fd, PINGTYPE(sock4.raw),
-			sock6.fd, PINGTYPE(sock6.raw),
-			str_family(hints.ai_family));
-
-	/* Set TOS/TCLASS */
-	if (rts.qos) {
-		int opt = rts.qos;
-		if (sock4.fd >= 0)
-			if (setsockopt(sock4.fd, IPPROTO_IP,   IP_TOS,      &opt, sizeof(opt)) < 0)
-				error(2, errno, "setsockopt(IP_TOS)");
-		if (sock6.fd >= 0)
-			if (setsockopt(sock6.fd, IPPROTO_IPV6, IPV6_TCLASS, &opt, sizeof(opt)) < 0)
-				error(2, errno, "setsockopt(IPV6_TCLASS)");
-	}
-
-	if (!strchr(target, '%') && !sock6.raw) {
-		struct in6_addr addr = {0};
-		if (inet_pton(AF_INET6, target, &addr) > 0)
-			if (IN6_IS_ADDR_LINKLOCAL(&addr) || IN6_IS_ADDR_MC_LINKLOCAL(&addr))
-				error(0, 0, _(
-"Warning: IPv6 link-local address on ICMP datagram socket may require ifname or scope-id"
-" => use: address%%<ifname|scope-id>"));
 	}
 
 	struct addrinfo *resolv = NULL;
@@ -503,10 +463,15 @@ int main(int argc, char **argv) {
 		error(2, 0, "%s: %s", target, gai_strerror(rcode));
 
 	for (struct addrinfo *ai = resolv; ai; ai = ai->ai_next) {
-		if (rts.opt.verbose)
-			printf("ai->ai_family: %s, ai->ai_canonname: '%s'\n",
-				   str_family(ai->ai_family),
-				   ai->ai_canonname ? ai->ai_canonname : "");
+		if (rts.opt.verbose) {
+			if (ai->ai_canonname)
+				error(0, 0, "%s: %s canonname '%s'", _INFO,
+					AFTYPE(ai->ai_family), ai->ai_canonname);
+			else
+				error(0, 0, "%s: %s gai", _INFO, AFTYPE(ai->ai_family));
+		}
+
+		// ip4-in-ip6-space workaround
 		if ((ai->ai_family == AF_INET6) &&
 		    IN6_IS_ADDR_V4MAPPED(&((struct sockaddr_in6 *)ai->ai_addr)->sin6_addr))
 			switch (hints.ai_family) {
@@ -515,27 +480,31 @@ int main(int argc, char **argv) {
 				break;
 			case AF_UNSPEC:
 				unmap_ai_sa4(ai);
-				error(0, 0, _("Warning: " V4IN6_WARNING));
+				error(0, 0, "%s: %s", WARN, _(V4IN6_WARNING));
 				break;
 			default: break;
 			}
 
 		switch (ai->ai_family) {
 		case AF_INET:
-			rcode = ping4_run(&rts, argc, argv, ai, &sock4);
-			break;
 		case AF_INET6: {
-			int done = 0;
-			struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *)ai->ai_addr;
-			if (sa6 && IN6_IS_ADDR_LINKLOCAL(&sa6->sin6_addr) && !sa6->sin6_scope_id) {
-				// getaddrinfo() workaround
-				rcode = ping6_unspec(target, &sa6->sin6_addr, &hints, &rts, argc, argv, &sock6);
-				if (rcode >= 0)
-					done = 1;
+			rts.ip6 = (ai->ai_family == AF_INET6);
+			if (rts.ip6) { // linklocal scopeid workaround
+				struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *)ai->ai_addr;
+				if (sa6 && IN6_IS_ADDR_LINKLOCAL(&sa6->sin6_addr) && !sa6->sin6_scope_id)
+					ping6_unspec(target, &sa6->sin6_addr, &hints);
 			}
-			if (!done)
-				rcode = ping6_run(&rts, argc, argv, ai, &sock6);
-			} break;
+			socket_st sock = { .fd = -1, .raw = (hints.ai_socktype == SOCK_RAW) };
+			open_socket(&sock, rts.ip6 ? AF_INET6 : AF_INET,
+				rts.ip6 ? IPPROTO_ICMPV6 : IPPROTO_ICMP, rts.opt.verbose);
+			if (rts.ip6) // be sure in pathmtu disc6 constants
+				MTUDISC6(rts.pmtudisc);
+			if (sock.fd >= 0) {
+				sock_settos(sock.fd, rts.qos, rts.ip6);
+				rcode = ping_run[rts.ip6](&rts, argc, argv, ai, &sock);
+				close(sock.fd);
+			}
+		} break;
 		default:
 			error(2, 0, _("unknown protocol family: %d"), ai->ai_family);
 		}

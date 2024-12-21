@@ -478,7 +478,7 @@ void sock_setbufs(struct ping_rts *rts, int sockfd, int alloc) {
 	setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &hold, sizeof(hold));
 	if (getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &hold, &tmplen) == 0) {
 		if (hold < rcvbuf)
-			error(0, 0, _("WARNING: probably, rcvbuf is not enough to hold preload"));
+			error(0, 0, "%s: %s", _WARN, _("probably, rcvbuf is not enough to hold preload"));
 	}
 }
 #undef MAXHOLD
@@ -492,19 +492,49 @@ void sock_setmark(struct ping_rts *rts, int sockfd) {
 	int errno_save = errno;
 	DISABLE_CAPABILITY_ADMIN;
 	if (ret == -1) {
-		error(0, errno_save, _("WARNING: failed to set mark: %u"), rts->mark);
+		error(0, errno_save, "%s: %s: %u", _WARN, _("failed to set mark"), rts->mark);
 		if (errno_save == EPERM)
 			error(0, 0, _("=> missing cap_net_admin+p or cap_net_raw+p (since Linux 5.17) capability?"));
 		rts->opt.mark = false;
 	}
 #else
-	error(0, errno_save, _("WARNING: SO_MARK not supported"));
+	error(0, errno_save, "%s: %s", _WARN, _("SO_MARK not supported"));
 #endif
 }
 
+inline void sock_settos(int fd, int qos, bool ip6) {
+	if (qos && (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
+	    ip6 ? IPV6_TCLASS : IP_TOS, &qos, sizeof(qos)) < 0))
+		error(2, errno, "setsockopt(QoS)");
+}
+
+static void print_headline(struct ping_rts *rts) {
+	// called once at ping setup
+	socklen_t len = rts->ip6 ?
+		sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+	bool res = rts->opt.force_lookup; rts->opt.force_lookup = false;
+	bool num = rts->opt.numeric;      rts->opt.numeric      = true;
+	const char *target = sprint_addr(rts, &rts->whereto, len);
+	printf(_("PING %s (%s) "), rts->hostname, target);
+	if (rts->ip6 && rts->flowlabel)
+		printf(_(", flow 0x%05x, "), ntohl(rts->flowlabel));
+	if (rts->device || rts->opt.strictsource) {
+		const char *from = sprint_addr(rts, &rts->source, len);
+		printf(_("from %s %s: "), from, rts->device ? rts->device : "");
+	}
+	if (rts->ip6)
+		printf(_("%zu data bytes"), rts->datalen);
+	else
+		printf(_("%zu(%zu) data bytes"), rts->datalen, rts->datalen + 8 + rts->optlen + 20);
+	putchar('\n');
+	rts->opt.force_lookup = res;
+	rts->opt.numeric      = num;
+}
 
 /* Protocol independent setup and parameter checks */
 void ping_setup(struct ping_rts *rts, const socket_st *sock) {
+	print_headline(rts);
+
 	if (rts->opt.flood && !rts->opt.interval)
 		rts->interval = 0;
 
@@ -590,7 +620,7 @@ void ping_setup(struct ping_rts *rts, const socket_st *sock) {
 
 
 /* Print out statistics, and give up */
-static int finish(const struct ping_rts *rts) {
+static bool finish(const struct ping_rts *rts) {
 	struct timespec tv = {0};
 	timespecsub(&rts->cur_time, &rts->start_time, &tv);
 
@@ -607,11 +637,8 @@ static int finish(const struct ping_rts *rts) {
 		printf(_(", +%ld errors"),        rts->nerrors);
 
 	if (rts->ntransmitted) {
-#ifdef USE_IDN
-		setlocale(LC_ALL, "C");
-#endif
 		printf(_(", %g%% packet loss"),
-		       (float)((((long long)(rts->ntransmitted - rts->nreceived)) * 100.0) / rts->ntransmitted));
+		       ((rts->ntransmitted - rts->nreceived) * 100.) / rts->ntransmitted);
 		printf(_(", time %ldms"), 1000 * tv.tv_sec + (tv.tv_nsec + 500000) / 1000000);
 	}
 	putchar('\n');
@@ -643,7 +670,7 @@ static int finish(const struct ping_rts *rts) {
 		       comma, ipg / 1000, ipg % 1000, rts->rtt / 8000, (rts->rtt / 8) % 1000);
 	}
 	putchar('\n');
-	return (!rts->nreceived || (rts->deadline && rts->nreceived < rts->npackets));
+	return (!rts->nreceived || (rts->deadline && (rts->nreceived < rts->npackets)));
 }
 
 
@@ -707,7 +734,7 @@ static inline void install_filter(bool ip6, uint16_t ident, int sockfd) {
 	/* Patch bpflet for current identifier */
 	insns[2] = (struct sock_filter)BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, htons(ident), 0, 1);
 	if (setsockopt(sockfd, SOL_SOCKET, SO_ATTACH_FILTER, filter, sizeof(*filter)) < 0)
-		error(0, errno, _("WARNING: failed to install socket filter"));
+		error(0, errno, "%s: %s", _WARN, _("failed to install socket filter"));
 }
 
 #ifdef SO_TIMESTAMP
@@ -721,7 +748,7 @@ static inline struct timeval *msghdr_timeval(struct msghdr *msg) {
 }
 #endif
 
-int main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
+bool main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 		const socket_st *sock, uint8_t *packet, int packlen)
 {
 	char addrbuf[128];
@@ -871,6 +898,7 @@ bool stats_noflush(struct ping_rts *rts, const uint8_t *icmp, int icmplen,
 	void (*print)(bool ip6, const uint8_t *hdr, size_t len),
 	const char *from, bool ack, bool wrong)
 {
+// note: do not use inet_ntoa() and sprint_addr() inside, it requires a static buffer
 	++rts->nreceived;
 	if (ack)
 		acknowledge(rts, seq);
@@ -1025,10 +1053,8 @@ const char *str_interval(int interval) {
 }
 
 /* Return an ascii host address optionally with a hostname */
-const char *sprint_addr_common(const struct ping_rts *rts, const void *sa,
-		socklen_t salen, int resolve_name)
-{
-	static char buffer[4096] = "";
+const char *sprint_addr(const struct ping_rts *rts, const void *sa, socklen_t salen) {
+	static char buffer[2 * NI_MAXHOST + 4] = ""; // "NI_MAXHOST (NI_MAXHOST)"
 	static struct sockaddr_storage last_sa = {0};
 	static socklen_t last_salen = 0;
 	if ((salen == last_salen) && !memcmp(sa, &last_sa, salen))
@@ -1037,12 +1063,12 @@ const char *sprint_addr_common(const struct ping_rts *rts, const void *sa,
 	last_salen = salen;
 	in_print_addr = !setjmp(label_in_print_addr);
 	char address[NI_MAXHOST] = "";
-	getnameinfo(sa, salen, address, sizeof address, NULL, 0, NI_FLAGS | NI_NUMERICHOST);
-
+	getnameinfo(sa, salen, address, sizeof(address), NULL, 0, NI_FLAGS | NI_NUMERICHOST);
+	//
 	char name[NI_MAXHOST] = "";
-	if (!exiting && resolve_name && (rts->opt.force_lookup || !rts->opt.numeric))
-		getnameinfo(sa, salen, name, sizeof name, NULL, 0, NI_FLAGS);
-
+	if (!exiting && (rts->opt.force_lookup || !rts->opt.numeric))
+		getnameinfo(sa, salen, name, sizeof(name), NULL, 0, NI_FLAGS);
+	//
 	int rc = -1;
 	if (*name && strncmp(name, address, NI_MAXHOST))
 		rc = snprintf(buffer, sizeof(buffer), "%s (%s)", name, address);
@@ -1050,7 +1076,7 @@ const char *sprint_addr_common(const struct ping_rts *rts, const void *sa,
 		rc = snprintf(buffer, sizeof(buffer), "%s", address);
 	if (rc < 0)
 		buffer[0] = 0;
-
+	//
 	in_print_addr = false;
 	return buffer;
 }

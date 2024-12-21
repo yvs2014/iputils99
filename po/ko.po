@@ -142,9 +142,8 @@ msgid "Interface \"%s\" is not ARPable\n"
 msgstr "\"%s\" 인터페이스는 주소 변환을 할 수 없습니다\n"
 
 #: arping.c:690
-#, c-format
-msgid "WARNING: using default broadcast address.\n"
-msgstr "경고: 기본 광역 전송 주소를 사용합니다.\n"
+msgid "using default broadcast address"
+msgstr "기본 광역 전송 주소를 사용합니다"
 
 #: arping.c:901 arping.c:904 arping.c:907 ping/ping.c:378 ping/ping.c:425
 #: ping/ping.c:477 ping/ping.c:485 ping/ping.c:531 ping/ping.c:534
@@ -163,12 +162,8 @@ msgid "Suitable device could not be determined. Please, use option -I."
 msgstr "알맞은 장치를 결정 할 수 없습니다. 옵션 -l을 사용하세요."
 
 #: arping.c:995
-msgid "WARNING: interface is ignored"
-msgstr "경고: 연결장치를 무시합니다"
-
-#: arping.c:1014
-msgid "WARNING: setsockopt(SO_DONTROUTE)"
-msgstr "경고: setsockopt(SO_DONTROUTE)"
+msgid "interface is ignored"
+msgstr "연결장치를 무시합니다"
 
 #: arping.c:1038
 #, c-format
@@ -623,9 +618,13 @@ msgstr "패킷이 너무 짧음: %d 바이트"
 msgid "From %s: "
 msgstr "%s에서: "
 
+#
+msgid "WARNING"
+msgstr "경고"
+
 #: ping/ping6_common.c:964 ping/ping.c:1826
-msgid "WARNING: failed to install socket filter"
-msgstr "경고: 소켓 필터를 설치하는데 실패함"
+msgid "failed to install socket filter"
+msgstr "소켓 필터를 설치하는데 실패함"
 
 #: ping/ping.c:96 ping/ping.c:684
 #, c-format
@@ -703,8 +702,8 @@ msgid "bad linger time"
 msgstr "나쁜 체류시간"
 
 #: ping/ping.c:595
-msgid "WARNING: ident 0 => forcing raw socket"
-msgstr "경고: ident 0 => 원시 소켓으로 강제합니다"
+msgid "ident 0 => forcing raw socket"
+msgstr "ident 0 => 원시 소켓으로 강제합니다"
 
 #: ping/ping.c:652
 #, c-format
@@ -728,9 +727,8 @@ msgstr ""
 "점검하세요"
 
 #: ping/ping.c:842
-#, c-format
-msgid "WARNING: pinging broadcast address\n"
-msgstr "경고: 핑하는 광역전송 주소\n"
+msgid "pinging broadcast address"
+msgstr "핑하는 광역전송 주소"
 
 #: ping/ping.c:845 ping/ping.c:1001
 msgid "cannot set broadcasting"
@@ -753,21 +751,9 @@ msgstr ""
 msgid "broadcast ping does not fragment"
 msgstr "광역전송 핑이 조각화되지 않음"
 
-#: ping/ping.c:929
-msgid "WARNING: setsockopt(ICMP_FILTER)"
-msgstr "경고: setsockopt(ICMP_FILTER)"
-
 #: ping/ping.c:934
-msgid "WARNING: your kernel is veeery old. No problems."
-msgstr "경고: 당신의 커널은 아주~ 오래되었습니다. 문제 없습니다."
-
-#: ping/ping.c:938
-msgid "WARNING: setsockopt(IP_RECVTTL)"
-msgstr "경고: setsockopt(IP_RECVTTL)"
-
-#: ping/ping.c:940
-msgid "WARNING: setsockopt(IP_RETOPTS)"
-msgstr "경고: setsockopt(IP_RETOPTS)"
+msgid "your kernel is veeery old. No problems."
+msgstr "당신의 커널은 아주~ 오래되었습니다. 문제 없습니다."
 
 #: ping/ping.c:1007
 msgid "cannot disable multicast loopback"
@@ -783,8 +769,8 @@ msgstr "단일전송 유효기간(ttl)을 설정 할 수 없습니다"
 
 #: ping/ping.c:1026
 #, c-format
-msgid "%zu(%zu) bytes of data.\n"
-msgstr "자료의 %zu(%zu) 바이트.\n"
+msgid "%zu(%zu) data bytes"
+msgstr "자료의 %zu(%zu) 바이트"
 
 #: ping/ping.c:1058
 #, c-format
@@ -1214,17 +1200,16 @@ msgid "no answer yet for icmp_seq=%lu\n"
 msgstr "아직 응답이 없습니다(icmp_seq=%lu)\n"
 
 #: ping/ping_common.c:454
-msgid "WARNING: probably, rcvbuf is not enough to hold preload"
-msgstr "경고: 아마도, rcvbuf는 사전적재를 유지하기에 충분치 않습니다"
+msgid "probably, rcvbuf is not enough to hold preload"
+msgstr "아마도, rcvbuf는 사전적재를 유지하기에 충분치 않습니다"
 
 #: ping/ping_common.c:471
-#, c-format
-msgid "WARNING: failed to set mark: %u"
-msgstr "경고: 표시 설정에 실패함: %u"
+msgid "failed to set mark"
+msgstr "표시 설정에 실패함"
 
 #: ping/ping_common.c:473
-msgid "WARNING: SO_MARK not supported"
-msgstr "경고: SO_MARK는 지원되지 않음"
+msgid "SO_MARK not supported"
+msgstr "SO_MARK는 지원되지 않음"
 
 #: ping/ping_common.c:489
 #, c-format

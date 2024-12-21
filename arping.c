@@ -676,7 +676,7 @@ static void find_broadcast_address(struct run_state *ctl)
 		}
 	}
 	if (!ctl->quiet)
-		fprintf(stderr, _("WARNING: using default broadcast address.\n"));
+		error(0, 0, "%s: %s", _WARN, _("using default broadcast address"));
 	memset(he->sll_addr, -1, he->sll_halen);
 }
 
@@ -981,7 +981,7 @@ int main(int argc, char **argv)
 			arping_enable_capability_raw(&ctl);
 			if (setsockopt(probe_fd, SOL_SOCKET, SO_BINDTODEVICE, ctl.device.name,
 				       strlen(ctl.device.name) + 1) == -1)
-				error(0, errno, _("WARNING: interface is ignored"));
+				error(0, errno, "%s: %s", _WARN, _("interface is ignored"));
 			arping_disable_capability_raw(&ctl);
 		}
 		memset(&saddr, 0, sizeof(saddr));
@@ -999,7 +999,7 @@ int main(int argc, char **argv)
 
 			if (!ctl.unsolicited) {
 				if (setsockopt(probe_fd, SOL_SOCKET, SO_DONTROUTE, (char *)&on, sizeof(on)) == -1)
-					error(0, errno, _("WARNING: setsockopt(SO_DONTROUTE)"));
+					error(0, errno, "%s: %s", _WARN, "setsockopt(SO_DONTROUTE)");
 				if (connect(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) == -1)
 					error(2, errno, "connect");
 				if (getsockname(probe_fd, (struct sockaddr *)&saddr, &alen) == -1)

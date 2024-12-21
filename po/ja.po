@@ -144,9 +144,8 @@ msgid "Interface \"%s\" is not ARPable\n"
 msgstr "インタフェース \"%s\" ではARPを利用できません\n"
 
 #: arping.c:690
-#, c-format
-msgid "WARNING: using default broadcast address.\n"
-msgstr "警告: 既定のブロードキャストアドレスを使用しています。\n"
+msgid "using default broadcast address"
+msgstr "警告: 既定のブロードキャストアドレスを使用しています"
 
 #: arping.c:901 arping.c:904 arping.c:907 ping/ping.c:378 ping/ping.c:425
 #: ping/ping.c:477 ping/ping.c:485 ping/ping.c:531 ping/ping.c:534
@@ -167,12 +166,8 @@ msgstr ""
 "い。"
 
 #: arping.c:995
-msgid "WARNING: interface is ignored"
-msgstr "警告: インタフェースは無視されます"
-
-#: arping.c:1014
-msgid "WARNING: setsockopt(SO_DONTROUTE)"
-msgstr "警告: setsockopt(SO_DONTROUTE)"
+msgid "interface is ignored"
+msgstr "インタフェースは無視されます"
 
 #: arping.c:1038
 #, c-format
@@ -632,9 +627,8 @@ msgid "From %s: "
 msgstr "送信元 %s: "
 
 #
-#: ping/ping6_common.c:964 ping/ping.c:1826
-msgid "WARNING: failed to install socket filter"
-msgstr "警告: ソケットフィルタのインストールに失敗しました"
+msgid "WARNING"
+msgstr "警告"
 
 #: ping/ping.c:96 ping/ping.c:684
 #, c-format
@@ -716,7 +710,7 @@ msgid "bad linger time"
 msgstr "応答待ち時間が正しくありません"
 
 #: ping/ping.c:595
-msgid "WARNING: ident 0 => forcing raw socket"
+msgid "ident 0 => forcing raw socket"
 msgstr ""
 
 #: ping/ping.c:652
@@ -741,9 +735,8 @@ msgstr ""
 "確認してください"
 
 #: ping/ping.c:842
-#, c-format
-msgid "WARNING: pinging broadcast address\n"
-msgstr "警告: ブロードキャストアドレスにpingしています\n"
+msgid "pinging broadcast address"
+msgstr "ブロードキャストアドレスにpingしています"
 
 #
 #: ping/ping.c:845 ping/ping.c:1001
@@ -767,22 +760,10 @@ msgstr ""
 msgid "broadcast ping does not fragment"
 msgstr "ブロードキャストpingパケットは断片化しません"
 
-#: ping/ping.c:929
-msgid "WARNING: setsockopt(ICMP_FILTER)"
-msgstr "警告: setsockopt(ICMP_FILTER)"
-
 #
 #: ping/ping.c:934
-msgid "WARNING: your kernel is veeery old. No problems."
-msgstr "警告: kernelが非常に古いです。問題ありません。"
-
-#: ping/ping.c:938
-msgid "WARNING: setsockopt(IP_RECVTTL)"
-msgstr "警告: setsockopt(IP_RECVTTL)"
-
-#: ping/ping.c:940
-msgid "WARNING: setsockopt(IP_RETOPTS)"
-msgstr "警告: setsockopt(IP_RETOPTS)"
+msgid "your kernel is veeery old. No problems."
+msgstr "kernelが非常に古いです。問題ありません。"
 
 #
 #: ping/ping.c:1007
@@ -801,8 +782,8 @@ msgstr "ユニキャストTTLを設定できません"
 
 #: ping/ping.c:1026
 #, c-format
-msgid "%zu(%zu) bytes of data.\n"
-msgstr "%zu(%zu) バイトのデータ\n"
+msgid "%zu(%zu) data bytes"
+msgstr "%zu(%zu) バイトのデータ"
 
 #: ping/ping.c:1058
 #, c-format
@@ -1177,24 +1158,24 @@ msgstr "icmp_seq=%lu が未応答です\n"
 
 #
 #: ping/ping_common.c:454
-msgid "WARNING: probably, rcvbuf is not enough to hold preload"
-msgstr "警告: おそらく preload のために充分な受信バッファがありません"
+msgid "probably, rcvbuf is not enough to hold preload"
+msgstr "おそらく preload のために充分な受信バッファがありません"
 
 #: ping/ping_common.c:471
-#, fuzzy, c-format
-msgid "WARNING: failed to set mark: %u"
-msgstr "警告: マーク %d の設定に失敗しました"
+#, fuzzy
+msgid "failed to set mark"
+msgstr "マーク の設定に失敗しました"
 
 #: ping/ping_common.c:473
-msgid "WARNING: SO_MARK not supported"
-msgstr "警告: SO_MARKはサポートされていません"
+msgid "SO_MARK not supported"
+msgstr "SO_MARKはサポートされていません"
 
 #: ping/ping_common.c:489
 #, fuzzy, c-format
 msgid ""
 "cannot flood, minimal interval for user must be >= %d ms, use -i %s (or "
 "higher)"
-msgstr "ping floodはできません。インターバルの最低値は %d ミリ秒です"
+msgstr "ping flood はできません。インターバルの最低値は %d ミリ秒です (%s)"
 
 #: ping/ping_common.c:493
 #, c-format

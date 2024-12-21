@@ -3,7 +3,6 @@
 // -- fixups: ip4-in-ip6-space, ip6-link-local-scope
 
 #include "extra.h"
-#include "ping6.h"
 
 #include <string.h>
 #ifdef HAVE_ERROR_H
@@ -23,29 +22,25 @@ void unmap_ai_sa4(struct addrinfo *ai) {
 	ai->ai_family = AF_INET;
 }
 
-int ping6_unspec(const char *target, const struct in6_addr *addr, const struct addrinfo *hints,
-	struct ping_rts *rts, int argc, char **argv, const struct socket_st *sock)
+void ping6_unspec(const char *target, const struct in6_addr *addr,
+	const struct addrinfo *hints)
 {
 	if (!target || !addr || !hints)
-		return -1;
+		return;
 	struct addrinfo *result = NULL, unspec = *hints;
 	unspec.ai_family = AF_UNSPEC;
 	int rc = getaddrinfo(target, NULL, &unspec, &result);
 	if (rc)
 		error(2, 0, "%s: %s", target, gai_strerror(rc));
-	rc = -1;
 	for (struct addrinfo *ai = result; ai; ai = ai->ai_next) {
 		if (ai->ai_family != AF_INET6)
 			continue;
 		struct sockaddr_in6 *sa = (struct sockaddr_in6 *)ai->ai_addr;
-		if (!sa || !sa->sin6_scope_id || memcmp(addr, &sa->sin6_addr, sizeof(struct in6_addr)))
-			continue;
-		rc = ping6_run(rts, argc, argv, ai, sock);
-		if (rc >= 0)
-			break;
+		if (sa && sa->sin6_scope_id)
+			if (!memcmp(addr, &sa->sin6_addr, sizeof(struct in6_addr)))
+				break;
 	}
 	if (result)
 		freeaddrinfo(result);
-	return rc;
 }
 

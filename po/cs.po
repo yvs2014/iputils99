@@ -142,9 +142,8 @@ msgid "Interface \"%s\" is not ARPable\n"
 msgstr "Rozhraní „%s“ nepodporuje protokol ARP\n"
 
 #: arping.c:690
-#, c-format
-msgid "WARNING: using default broadcast address.\n"
-msgstr "POZOR: používá se výchozí všesměrová adresa.\n"
+msgid "using default broadcast address"
+msgstr "používá se výchozí všesměrová adresa"
 
 #: arping.c:901 arping.c:904 arping.c:907 ping/ping.c:378 ping/ping.c:425
 #: ping/ping.c:477 ping/ping.c:485 ping/ping.c:531 ping/ping.c:534
@@ -163,12 +162,8 @@ msgid "Suitable device could not be determined. Please, use option -I."
 msgstr "Vhodné zařízení nebylo možné určit. Prosím, použijte přepínač -I."
 
 #: arping.c:995
-msgid "WARNING: interface is ignored"
-msgstr "POZOR: rozhraní je ignorováno"
-
-#: arping.c:1014
-msgid "WARNING: setsockopt(SO_DONTROUTE)"
-msgstr "POZOR: setsockopt(SO_DONTROUTE)"
+msgid "interface is ignored"
+msgstr "rozhraní je ignorováno"
 
 #: arping.c:1038
 #, c-format
@@ -623,9 +618,13 @@ msgstr "paket je příliš krátký: %d bajtů"
 msgid "From %s: "
 msgstr "Od %s: "
 
+#
+msgid "WARNING"
+msgstr "POZOR"
+
 #: ping/ping6_common.c:964 ping/ping.c:1826
-msgid "WARNING: failed to install socket filter"
-msgstr "POZOR: soketový filtr se nepodařilo nainstalovat"
+msgid "failed to install socket filter"
+msgstr "soketový filtr se nepodařilo nainstalovat"
 
 #: ping/ping.c:96 ping/ping.c:684
 #, c-format
@@ -703,8 +702,8 @@ msgid "bad linger time"
 msgstr "chybný čas čekání"
 
 #: ping/ping.c:595
-msgid "WARNING: ident 0 => forcing raw socket"
-msgstr "POZOR: ident 0 => vyžadován raw socket"
+msgid "ident 0 => forcing raw socket"
+msgstr "ident 0 => vyžadován raw socket"
 
 #: ping/ping.c:652
 #, c-format
@@ -728,9 +727,8 @@ msgstr ""
 "místní brány firewall"
 
 #: ping/ping.c:842
-#, c-format
-msgid "WARNING: pinging broadcast address\n"
-msgstr "POZOR: jedná se o ping na adresu všesměrového vysílání\n"
+msgid "pinging broadcast address"
+msgstr "jedná se o ping na adresu všesměrového vysílání"
 
 #: ping/ping.c:845 ping/ping.c:1001
 msgid "cannot set broadcasting"
@@ -753,23 +751,11 @@ msgstr ""
 msgid "broadcast ping does not fragment"
 msgstr "všesměrový ping se nefragmentuje"
 
-#: ping/ping.c:929
-msgid "WARNING: setsockopt(ICMP_FILTER)"
-msgstr "POZOR: setsockopt(ICMP_FILTER)"
-
 #: ping/ping.c:934
-msgid "WARNING: your kernel is veeery old. No problems."
+msgid "your kernel is veeery old. No problems."
 msgstr ""
-"POZOR: jádro vámi používaného systému je ale opravdu staré verze. Nicméně "
+"jádro vámi používaného systému je ale opravdu staré verze. Nicméně "
 "zatím žádné problémy."
-
-#: ping/ping.c:938
-msgid "WARNING: setsockopt(IP_RECVTTL)"
-msgstr "POZOR: setsockopt(IP_RECVTTL)"
-
-#: ping/ping.c:940
-msgid "WARNING: setsockopt(IP_RETOPTS)"
-msgstr "POZOR: setsockopt(IP_RETOPTS)"
 
 #: ping/ping.c:1007
 msgid "cannot disable multicast loopback"
@@ -785,8 +771,8 @@ msgstr "délku životnosti nelze u unicastu nastavit"
 
 #: ping/ping.c:1026
 #, c-format
-msgid "%zu(%zu) bytes of data.\n"
-msgstr "%zu (%zu) datových bajtů.\n"
+msgid "%zu(%zu) data bytes"
+msgstr "%zu (%zu) datových bajtů"
 
 #: ping/ping.c:1058
 #, c-format
@@ -1219,19 +1205,18 @@ msgid "no answer yet for icmp_seq=%lu\n"
 msgstr "žádná odpověď pro pořadí=%lu\n"
 
 #: ping/ping_common.c:454
-msgid "WARNING: probably, rcvbuf is not enough to hold preload"
+msgid "probably, rcvbuf is not enough to hold preload"
 msgstr ""
-"POZOR: vyrovnávací paměť příjmu pravděpodobně není dost velká, aby pojala "
+"vyrovnávací paměť příjmu pravděpodobně není dost velká, aby pojala "
 "přednačítané"
 
 #: ping/ping_common.c:471
-#, c-format
-msgid "WARNING: failed to set mark: %u"
-msgstr "Pozor: Značku se nepodařilo nastavit: %u"
+msgid "failed to set mark"
+msgstr "Značku se nepodařilo nastavit"
 
 #: ping/ping_common.c:473
-msgid "WARNING: SO_MARK not supported"
-msgstr "Pozor: SO_MARK není podporováno"
+msgid "SO_MARK not supported"
+msgstr "SO_MARK není podporováno"
 
 #: ping/ping_common.c:489
 #, c-format

@@ -145,9 +145,8 @@ msgid "Interface \"%s\" is not ARPable\n"
 msgstr "Інтерфейс «%s» є непридатним для аналізу ARP\n"
 
 #: arping.c:690
-#, c-format
-msgid "WARNING: using default broadcast address.\n"
-msgstr "Попередження: використовуємо типову адресу трансляції.\n"
+msgid "using default broadcast address"
+msgstr "використовуємо типову адресу трансляції"
 
 #: arping.c:901 arping.c:904 arping.c:907 ping/ping.c:378 ping/ping.c:425
 #: ping/ping.c:477 ping/ping.c:485 ping/ping.c:531 ping/ping.c:534
@@ -168,12 +167,8 @@ msgstr ""
 "параметром -I."
 
 #: arping.c:995
-msgid "WARNING: interface is ignored"
-msgstr "Попередження: інтерфейс проігноровано"
-
-#: arping.c:1014
-msgid "WARNING: setsockopt(SO_DONTROUTE)"
-msgstr "Попередження: setsockopt(SO_DONTROUTE)"
+msgid "interface is ignored"
+msgstr "інтерфейс проігноровано"
 
 #: arping.c:1038
 #, c-format
@@ -632,9 +627,13 @@ msgstr "занадто короткий пакет: %d байтів"
 msgid "From %s: "
 msgstr "Від %s: "
 
+#
+msgid "WARNING"
+msgstr "УВАГА"
+
 #: ping/ping6_common.c:964 ping/ping.c:1826
-msgid "WARNING: failed to install socket filter"
-msgstr "Попередження: не вдалося встановити фільтрування сокетів"
+msgid "failed to install socket filter"
+msgstr "не вдалося встановити фільтрування сокетів"
 
 #: ping/ping.c:96 ping/ping.c:684
 #, c-format
@@ -714,8 +713,8 @@ msgid "bad linger time"
 msgstr "помилковий час затягування"
 
 #: ping/ping.c:595
-msgid "WARNING: ident 0 => forcing raw socket"
-msgstr "УВАГА: ident 0 => примусово сокет без обробки"
+msgid "ident 0 => forcing raw socket"
+msgstr "ident 0 => примусово сокет без обробки"
 
 #: ping/ping.c:652
 #, c-format
@@ -740,9 +739,8 @@ msgstr ""
 "правильно вказано правила вашого локального брандмауера"
 
 #: ping/ping.c:842
-#, c-format
-msgid "WARNING: pinging broadcast address\n"
-msgstr "УВАГА: перевірка пінгом адреси трансляції\n"
+msgid "pinging broadcast address"
+msgstr "перевірка пінгом адреси трансляції"
 
 #: ping/ping.c:845 ping/ping.c:1001
 msgid "cannot set broadcasting"
@@ -765,21 +763,9 @@ msgstr ""
 msgid "broadcast ping does not fragment"
 msgstr "пінг трансляції не фрагментується"
 
-#: ping/ping.c:929
-msgid "WARNING: setsockopt(ICMP_FILTER)"
-msgstr "Попередження: setsockopt(ICMP_FILTER)"
-
 #: ping/ping.c:934
-msgid "WARNING: your kernel is veeery old. No problems."
-msgstr "Попередження: ваше ядро є надто застарілим. Немає проблем."
-
-#: ping/ping.c:938
-msgid "WARNING: setsockopt(IP_RECVTTL)"
-msgstr "Попередження: setsockopt(IP_RECVTTL)"
-
-#: ping/ping.c:940
-msgid "WARNING: setsockopt(IP_RETOPTS)"
-msgstr "Попередження: setsockopt(IP_RETOPTS)"
+msgid "your kernel is veeery old. No problems."
+msgstr "ваше ядро є надто застарілим. Немає проблем."
 
 #: ping/ping.c:1007
 msgid "cannot disable multicast loopback"
@@ -796,8 +782,8 @@ msgstr ""
 
 #: ping/ping.c:1026
 #, c-format
-msgid "%zu(%zu) bytes of data.\n"
-msgstr "%zu(%zu) байтів даних.\n"
+msgid "%zu(%zu) data bytes"
+msgstr "%zu(%zu) байтів даних"
 
 #: ping/ping.c:1058
 #, c-format
@@ -1233,19 +1219,16 @@ msgid "no answer yet for icmp_seq=%lu\n"
 msgstr "відповідь для icmp_seq=%lu ще не отримано\n"
 
 #: ping/ping_common.c:454
-msgid "WARNING: probably, rcvbuf is not enough to hold preload"
-msgstr ""
-"Попередження: ймовірно, rcvbuf недостатньо для зберігання попереднього "
-"завантаження"
+msgid "probably, rcvbuf is not enough to hold preload"
+msgstr "ймовірно, rcvbuf замалий для попереднього завантаження"
 
 #: ping/ping_common.c:471
-#, c-format
-msgid "WARNING: failed to set mark: %u"
-msgstr "Попередження: не вдалося встановити позначку: %u"
+msgid "failed to set mark"
+msgstr "не вдалося встановити позначку"
 
 #: ping/ping_common.c:473
-msgid "WARNING: SO_MARK not supported"
-msgstr "Попередження: підтримки SO_MARK не передбачено"
+msgid "SO_MARK not supported"
+msgstr "SO_MARK не підтримується"
 
 #: ping/ping_common.c:489
 #, c-format
