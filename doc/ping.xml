@@ -159,7 +159,7 @@ xml:id="man.ping">
           <para>Adaptive ping. Interpacket interval adapts to
           round-trip time, so that effectively not more than one
           (or more, if preload is set) unanswered probe is present
-          in the network. The default interval is 2 ms,
+          in the network. The default interval is 10 ms,
           for more info see option <option>-i</option>.
           On networks with low RTT this mode is
           essentially equivalent to flood mode.</para>
@@ -297,7 +297,7 @@ xml:id="man.ping">
           The default is to wait for one second between each packet
           normally, or not to wait in flood mode.
           Only super-user may set interval to values
-          less than 2 ms. Broadcast and multicast ping have even
+          less than 10 ms. Broadcast and multicast ping have even
           higher limitation for regular user: minimum is 1 sec.</para>
         </listitem>
       </varlistentry>

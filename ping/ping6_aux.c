@@ -75,21 +75,6 @@
 #define ICMP6_DST_UNREACH_REJECTROUTE 6
 #endif
 
-ssize_t build_niquery(struct ping_rts *rts, uint8_t *_nih,
-		unsigned packet_size __attribute__((__unused__)))
-{
-	struct ni_hdr *nih = (struct ni_hdr *)_nih;
-	nih->ni_cksum = 0;
-	nih->ni_type  = IPUTILS_NI_ICMP6_QUERY;
-	rts->datalen = 0;
-	niquery_fill_nonce(&rts->ni, rts->ntransmitted + 1, nih->ni_nonce);
-	nih->ni_code  = rts->ni.subject_type;
-	nih->ni_qtype = htons(rts->ni.query);
-	nih->ni_flags = rts->ni.flag;
-	memcpy(nih + 1, rts->ni.subject, rts->ni.subject_len);
-	return (sizeof(*nih) + rts->ni.subject_len);
-}
-
 /*
  * 	Compose and transmit an ICMP ECHO REQUEST packet.  The IP packet
  * will be added on by the kernel.  The ID field is our UNIX process ID,
@@ -97,17 +82,17 @@ ssize_t build_niquery(struct ping_rts *rts, uint8_t *_nih,
  * of the data portion are used to hold a UNIX "timeval" struct in VAX
  * byte-order, to compute the round-trip time.
  */
-ssize_t build_echo(const struct ping_rts *rts, uint8_t *hdr) {
-	struct icmp6_hdr *icmph;
-	icmph = (struct icmp6_hdr *)hdr;
-	icmph->icmp6_type  = ICMP6_ECHO_REQUEST;
-	icmph->icmp6_code  = 0;
-	icmph->icmp6_cksum = 0;
-	icmph->icmp6_seq   = htons(rts->ntransmitted + 1);
-	icmph->icmp6_id    = rts->ident16;
+ssize_t build_echo_hdr(const state_t *rts, uint8_t *hdr) {
+	struct icmp6_hdr *icmp = (struct icmp6_hdr *)hdr;
+	icmp->icmp6_type  = ICMP6_ECHO_REQUEST;
+	icmp->icmp6_code  = 0;
+	icmp->icmp6_cksum = 0;
+	icmp->icmp6_seq   = htons(rts->ntransmitted + 1);
+	icmp->icmp6_id    = rts->ident16;
 	if (rts->timing)
-		gettimeofday((struct timeval *)(hdr + 8), NULL);
-	return (rts->datalen + 8);	/* skips ICMP portion */
+		gettimeofday((struct timeval *)(icmp + 1), NULL);
+	// note: timestamp is accounted in data area
+	return sizeof(struct icmp6_hdr);
 }
 
 void print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
@@ -158,14 +143,14 @@ void print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
 	case ICMP6_PARAM_PROB:
 		printf(_("Parameter problem: "));
 		if (code == ICMP6_PARAMPROB_HEADER)
-			printf(_("Wrong header field "));
+			printf(_("Wrong header field"));
 		else if (code == ICMP6_PARAMPROB_NEXTHEADER)
-			printf(_("Unknown header "));
+			printf(_("Unknown header"));
 		else if (code == ICMP6_PARAMPROB_OPTION)
-			printf(_("Unknown option "));
+			printf(_("Unknown option"));
 		else
-			printf(_("code %d "), code);
-		printf(_("at %u"), info);
+			printf(_("code %d"), code);
+		printf(_(" at %u"), info);
 		break;
 	case ICMP6_ECHO_REQUEST:
 		printf(_("Echo request"));
@@ -183,16 +168,25 @@ void print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
 		printf(_("MLD Reduction"));
 		break;
 	default:
-		printf(_("unknown icmp type: %u"), type);
+		printf("%s: %u", _("Unknown icmp type"), type);
 	}
 	// note: no \n, no stdout flush
 }
 
+ssize_t build_ni_hdr(struct ping_ni *ni, long ntransmitted, uint8_t *hdr) {
+	struct ni_hdr *nih = (struct ni_hdr *)hdr;
+	nih->ni_cksum = 0;
+	nih->ni_type  = IPUTILS_NI_ICMP6_QUERY;
+	niquery_fill_nonce(ni, ntransmitted + 1, nih->ni_nonce);
+	nih->ni_code  = ni->subject_type;
+	nih->ni_qtype = htons(ni->query);
+	nih->ni_flags = ni->flag;
+	memcpy(nih + 1, ni->subject, ni->subject_len);
+	return (sizeof(*nih) + ni->subject_len);
+}
+
 static inline void putchar_safe(char c) {
-	if (isprint(c))
-		putchar(c);
-	else
-		printf("\\%03o", c);
+	isprint(c) ? putchar(c) : printf("\\%03o", c);
 }
 
 static void print_ni_name(const struct ni_hdr *hdr, size_t len) {
@@ -207,7 +201,7 @@ static void print_ni_name(const struct ni_hdr *hdr, size_t len) {
 	bool continued = false;
 	char buf[1024];
 	while (p < end) {
-		memset(buf, 0xff, sizeof(buf));
+		memset(buf, -1, sizeof(buf));
 		if (continued)
 			putchar(',');
 		//
@@ -229,7 +223,6 @@ static void print_ni_name(const struct ni_hdr *hdr, size_t len) {
 	}
 }
 
-
 static void print_ni_addr(const struct ni_hdr *nih, size_t len) {
 	int af, truncated;
 	size_t addrlen;
@@ -248,13 +241,13 @@ static void print_ni_addr(const struct ni_hdr *nih, size_t len) {
 		/* should not happen */
 		af = addrlen = truncated = 0;
 	}
-
+	//
 	size_t afaddr_len = sizeof(uint32_t) + addrlen;
 	if (len < afaddr_len) {
 		printf(_(" parse error (too short)"));
 		return;
 	}
-
+	//
 	char buf[1024];
 	int comma = 0;
 	const uint8_t *p = (const uint8_t *)(nih + 1);

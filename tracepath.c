@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -37,8 +38,8 @@
 #include <linux/icmpv6.h>
 #include <linux/types.h>
 
-#if defined(USE_IDN) || defined(ENABLE_NLS)
-# include <locale.h>
+#ifdef ENABLE_NLS
+#include <locale.h>
 #endif
 
 #if defined(USE_IDN) && defined(NI_IDN)
@@ -394,12 +395,13 @@ static int probe_ttl(struct run_state *const ctl)
 	return 0;
 }
 
-static void usage(void)
-{
+NORETURN static void usage(int rc) {
 	fprintf(stderr, _(
-		"\nUsage\n"
+		"\n"
+		"Usage\n"
 		"  tracepath [options] <destination>\n"
-		"\nOptions:\n"
+		"\n"
+		"Options:\n"
 		"  -4             use IPv4\n"
 		"  -6             use IPv6\n"
 		"  -b             print both name and IP\n"
@@ -409,8 +411,10 @@ static void usage(void)
 		"  -p <port>      use destination <port>\n"
 		"  -V             print version and exit\n"
 		"  <destination>  DNS name or IP address\n"
-		"\nFor more details see tracepath(8).\n"));
-	exit(-1);
+		"\n"
+		"For more details see tracepath(8)\n"
+	));
+	exit(rc);
 }
 
 int main(int argc, char **argv)
@@ -439,12 +443,10 @@ int main(int argc, char **argv)
 #endif
 
 	atexit(close_stdout);
-#if defined(USE_IDN) || defined(ENABLE_NLS)
-	setlocale(LC_ALL, "");
 #ifdef ENABLE_NLS
-	bindtextdomain (PACKAGE_NAME, LOCALEDIR);
-	textdomain (PACKAGE_NAME);
-#endif
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE_NAME, LOCALEDIR);
+	textdomain(PACKAGE_NAME);
 #endif
 
 	/* Support being called using `tracepath4` or `tracepath6` symlinks */
@@ -456,14 +458,13 @@ int main(int argc, char **argv)
 	while ((ch = getopt(argc, argv, "46nbh?l:m:p:V")) != EOF) {
 		switch (ch) {
 		case '4':
-			if (hints.ai_family == AF_INET6)
-				errx(2, _("Only one -4 or -6 option may be specified"));
-			hints.ai_family = AF_INET;
-			break;
-		case '6':
-			if (hints.ai_family == AF_INET)
-				errx(2, _("Only one -4 or -6 option may be specified"));
-			hints.ai_family = AF_INET6;
+		case '6': {
+			bool ip6 = (ch == '6');
+			int not = ip6 ? AF_INET : AF_INET6;
+			if (hints.ai_family == not)
+				OPTEXCL('4', '6');
+			hints.ai_family = ip6 ? AF_INET6 : AF_INET;
+		}
 			break;
 		case 'n':
 			ctl.no_resolve = 1;
@@ -484,16 +485,22 @@ int main(int argc, char **argv)
 			printf(IPUTILS_VERSION("tracepath"));
 			print_config();
 			return 0;
+		case 'h':
+		case '?':
+			usage(EXIT_SUCCESS);
 		default:
-			usage();
+			usage(EXIT_FAILURE);
 		}
 	}
 
 	argc -= optind;
 	argv += optind;
-
-	if (argc != 1)
-		usage();
+	if (argc <= 0) {
+		errno = EDESTADDRREQ;
+		warn(_("No goal"));
+		usage(EDESTADDRREQ);
+	} else if (argc != 1)
+		usage(EINVAL);
 
 	/* Backward compatibility */
 	if (!ctl.base_port) {
@@ -619,7 +626,7 @@ int main(int argc, char **argv)
 	if (ctl.hops_from >= 0)
 		printf(_("back %d "), ctl.hops_from);
 	printf("\n");
-	exit(0);
+	exit(EXIT_SUCCESS);
 
  pktlen_error:
 	errx(EXIT_FAILURE, _("pktlen must be within: %d < value <= %d"), ctl.overhead, INT_MAX);

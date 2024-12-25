@@ -46,6 +46,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <err.h>
+#include <errno.h>
 #include <resolv.h>
 #include <net/if.h>
 
@@ -111,7 +112,7 @@ void niquery_init_nonce(struct ping_ni *ni)
 	iputils_srand();
 	ni->nonce_ptr = calloc(NI_NONCE_SIZE, MAX_DUP_CHK);
 	if (!ni->nonce_ptr)
-		error(2, errno, "calloc");
+		err(errno, "calloc");
 
 	ni->nonce_ptr[0] = ~0;
 #else
@@ -320,7 +321,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 	{ // glibc: internal libidn2 lookup
 	  int rc = __idna_to_dns_encoding(name, &idn);
 	  if (rc)
-		errx(2, _("IDN encoding error: %s"), gai_strerror(rc)); }
+		errx(EINVAL, _("IDN encoding error: %s"), gai_strerror(rc)); }
 #else
 	idn = strdup(name);
 	if (!idn)
@@ -402,7 +403,7 @@ errexit:
 	free(buf);
 	free(canonname);
 	free(idn);
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 
 int niquery_option_help_handler(struct ping_ni *ni __attribute__((__unused__)),
@@ -429,7 +430,7 @@ int niquery_option_help_handler(struct ping_ni *ni __attribute__((__unused__)),
 			"  subject-name=name\n"
 			"  subject-fqdn=name\n"
 		));
-	index ? exit(0) : exit(2);
+	exit(index ? EXIT_SUCCESS : EINVAL);
 }
 
 int niquery_option_handler(struct ping_ni *ni, const char *opt_arg)

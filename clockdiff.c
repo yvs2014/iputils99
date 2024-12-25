@@ -78,7 +78,10 @@
 #include <errno.h>
 
 #ifdef HAVE_LIBCAP
-# include <sys/capability.h>
+#include <sys/capability.h>
+#endif
+#ifdef ENABLE_NLS
+#include <locale.h>
 #endif
 
 enum {
@@ -441,13 +444,14 @@ static void drop_rights(void)
 		err(errno, "setuid");
 }
 
-static void usage(int exit_status)
-{
+NORETURN static void usage(int rc) {
 	drop_rights();
 	fprintf(stderr, _(
-		"\nUsage:\n"
+		"\n"
+		"Usage:\n"
 		"  clockdiff [options] <destination>\n"
-		"\nOptions:\n"
+		"\n"
+		"Options:\n"
 		"                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
 		"  -o            use IP timestamp and icmp echo\n"
 		"  -o1           use three-term IP timestamp and icmp echo\n"
@@ -457,8 +461,10 @@ static void usage(int exit_status)
 		"  -h, --help    display this help\n"
 		"  -V, --version print version and exit\n"
 		"  <destination> DNS name or IP address\n"
-		"\nFor more details see clockdiff(8).\n"));
-	exit(exit_status);
+		"\n"
+		"For more details see clockdiff(8)\n"
+	));
+	exit(rc);
 }
 
 static void parse_opts(struct run_state *ctl, int argc, char **argv) {
@@ -493,10 +499,9 @@ static void parse_opts(struct run_state *ctl, int argc, char **argv) {
 		case 'V':
 			printf(IPUTILS_VERSION("clockdiff"));
 			print_config();
-			exit(0);
+			exit(EXIT_SUCCESS);
 		case 'h':
-			usage(0);
-			abort();
+			usage(EXIT_SUCCESS);
 		default:
 			printf("Try '%s --help' for more information\n",
 #ifdef HAVE_GETPROGNAME
@@ -504,10 +509,10 @@ static void parse_opts(struct run_state *ctl, int argc, char **argv) {
 #elif  HAVE_PROGRAM_INVOCATION_SHORT_NAME
 				program_invocation_short_name
 #else
-				""
+				argv[0]
 #endif
 			);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 }
 
@@ -529,12 +534,21 @@ int main(int argc, char **argv)
 	int status;
 
 	atexit(close_stdout);
+#ifdef ENABLE_NLS
+        setlocale(LC_ALL, "");
+        bindtextdomain(PACKAGE_NAME, LOCALEDIR);
+        textdomain(PACKAGE_NAME);
+#endif
 
 	parse_opts(&ctl, argc, argv);
 	argc -= optind;
 	argv += optind;
-	if (argc != 1)
-		usage(1);
+	if (argc <= 0) {
+		errno = EDESTADDRREQ;
+		warn(_("No goal"));
+		usage(EDESTADDRREQ);
+	} else if (argc != 1)
+		usage(EINVAL);
 
 	ctl.sock_raw = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (ctl.sock_raw < 0)
@@ -628,6 +642,6 @@ int main(int argc, char **argv)
 			printf("%ld %d %d\n", now, ctl.measure_delta, ctl.measure_delta1);
 		}
 	}
-	exit(0);
+	exit(EXIT_SUCCESS);
 }
 

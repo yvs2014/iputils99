@@ -11,14 +11,10 @@
 #include <netdb.h>
 
 #ifdef ENABLE_NLS
-# include <libintl.h>
-# define _(Text) gettext (Text)
+#include <libintl.h>
+#define _(Text) gettext (Text)
 #else
-# undef bindtextdomain
-# define bindtextdomain(Domain, Directory) ((void)0)
-# undef textdomain
-# define textdomain(Domain) ((void)0)
-# define _(Text) Text
+#define _(Text) Text
 #endif
 
 #ifndef SOL_IPV6
@@ -55,6 +51,10 @@
 #define _INFO	_(INFO)
 #define _WARN	_(WARN)
 
+#define OPTEXCL(optA, optB) do { errx(EINVAL, \
+	_("Only one -%c or -%c option may be specified"), (optA), (optB)); } \
+	while (0)
+
 long strtol_or_err(const char *str, const char *errmesg, long min, long max);
 void close_stdout(void);
 void print_config(void);
@@ -64,6 +64,17 @@ void timespecsub(const struct timespec *a, const struct timespec *b, struct time
 #endif
 #ifndef timersub
 void timersub(const struct timeval *a, const struct timeval *b, struct timeval *res);
+#endif
+
+// wrapper: __has_attribute
+#ifndef __has_attribute
+#define __has_attribute(attr) 0
+#endif
+// attribute: noreturn
+#if __has_attribute(__noreturn__)
+#define NORETURN __attribute__((__noreturn__))
+#else
+#define NORETURN
 #endif
 
 #endif

@@ -680,7 +680,7 @@ pregenerated from the Docbook sources. One could argue it is redundant
 when the Docbook sources are also there, but the argument of not having
 to install Docbook on a very small system to get the man pages was
 convinving enough to me. To quote Mads Martin: "How would a system
-be without a man page for ping?" 
+be without a man page for ping?"
   As a chilidish revenge from my side enjoy with cyrillic date in these
   man pages. :-)
 * Ken Cox <jkc@redhat.com>. Bogus definition of SOCK_DRGAM&SOCK_STREAM on mips.
@@ -701,7 +701,7 @@ be without a man page for ping?"
   > ping (as well as other utilities) may open raw socket with descriptor <=2;
   > In case of suid-root, it can be used by malicious user to send data to
   > this raw socket.
-  > 
+  >
   > Yes, modern glibc and some kernels have workaround for it, but
   > IMHO iputils shouldn't rely on this feature.
   Taken into account, but no changes made.
@@ -821,7 +821,7 @@ be without a man page for ping?"
 * ping: audible ping by Patrik Schilt <patrik@bnc.ch>
   Patrick's option renamed to -a to align to freebsd.
 * ping: react to device queue overflows using IP_RECVERR. me.
-* ping: option -S allows to change sndbuf 
+* ping: option -S allows to change sndbuf
 * rarpd is moved from separate package here (people asked)
 * ping6: kernel style bitops are not used more.
 * Option -A to adapt to network rtt.
@@ -939,7 +939,7 @@ New:
 * short man pages (Oleg M. Shumsky <oms@cp.tomsk.su>)
 * ping6: get and print hop limit of reply packets (ME)
 * rdisc deletes routes before exit with -TERM
-* ping/ping6: option -w TIMEOUT 
+* ping/ping6: option -w TIMEOUT
 * arping: exit with error, if received no replies in normal
   (not DAD and not unsilicited ARP) mode.
 

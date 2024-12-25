@@ -18,7 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.3.1\n"
 
-#: arping.c:123
 #, c-format
 msgid ""
 "\n"
@@ -55,20 +54,19 @@ msgstr ""
 "  -i <interval> atur interval antar paket (bawaan: 1 detik)\n"
 "  -I <device>   perangkat ethernet"
 
-#: arping.c:142
 #, c-format
 msgid ""
 "\n"
 "  -s <source>   source IP address\n"
 "  <destination> DNS name or IP address\n"
 "\n"
-"For more details see arping(8).\n"
+"For more details see arping(8)\n"
 msgstr ""
 "\n"
 "  -s <asal>          alamat IP asal\n"
 "  <tujuan>           nama DNS atau alamat IP\n"
 "\n"
-"Untuk lebih jelasnya lihat arping(8).\n"
+"Untuk lebih jelasnya lihat arping(8)\n"
 
 #: arping.c:305
 #, c-format
@@ -199,7 +197,6 @@ msgstr "Overflow %d hop\n"
 msgid "wrong timestamps\n"
 msgstr "kesalahan timestamp\n"
 
-#: clockdiff.c:453
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -217,7 +214,7 @@ msgid ""
 "  -V, --version print version and exit\n"
 "  <destination> DNS name or IP address\n"
 "\n"
-"For more details see clockdiff(8).\n"
+"For more details see clockdiff(8)\n"
 msgstr ""
 "\n"
 "Penggunaan:\n"
@@ -235,7 +232,7 @@ msgstr ""
 "  -V, --version tampilkan versi\n"
 "  <destination> nama DNS atau alamat IP\n"
 "\n"
-"Untuk lebih jelasnya lihat clockdiff(8).\n"
+"Untuk lebih jelasnya lihat clockdiff(8)\n"
 
 #: clockdiff.c:592
 msgid "measure: unknown failure"
@@ -353,18 +350,29 @@ msgstr "perbedaan scope antar node"
 msgid "%s: source address might be selected on device other than: %s"
 msgstr "%s: alamat asal mungkin dipilih pada perangkat selain: %s"
 
-#: ping/ping6_common.c:267
-#, c-format
-msgid ""
-"minimal interval for multicast ping for user must be >= %d ms, use -i %s (or "
-"higher)"
-msgstr ""
-"interval minimum bagi ping multicast untuk pengguna harus >= %d ms, gunakan -"
-"i %s (atau lebih tinggi)"
+#
+msgid "Minimal interval for multicast ping"
+msgstr "Interval minimum bagi ping multicast"
 
-#: ping/ping6_common.c:272
-msgid "multicast ping does not fragment"
-msgstr "ping multicast tidak terfragmentasi"
+#
+msgid "Minimal interval for broadcast ping"
+msgstr "Interval minimum bagi ping broadcast"
+
+#, c-format
+msgid "%s for user must be >= %u ms, use -i %.*f (or higher)"
+msgstr "%s untuk pengguna harus >= %u ms, gunakan - i %.*f (atau lebih tinggi)"
+
+#
+msgid "Multicast ping"
+msgstr "Ping multicast"
+
+#
+msgid "Broadcast ping"
+msgstr "Ping broadcast"
+
+#, c-format
+msgid "%s does not fragment"
+msgstr "%s tidak terfragmentasi"
 
 #: ping/ping6_common.c:331
 msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
@@ -404,11 +412,6 @@ msgstr ", flow 0x%05x, "
 #, c-format
 msgid "from %s %s: "
 msgstr "dari %s %s: "
-
-#: ping/ping6_common.c:408
-#, c-format
-msgid "%zu data bytes"
-msgstr "%zu byte data"
 
 #: ping/ping6_common.c:423
 #, c-format
@@ -480,48 +483,35 @@ msgstr "Batas hop"
 msgid "Defragmentation failure"
 msgstr "Kegagalan defragmentasi"
 
-#: ping/ping6_common.c:463
 #, c-format
 msgid "code %d"
 msgstr "kode %d"
 
-#: ping/ping6_common.c:466
-#, c-format
+#
 msgid "Parameter problem: "
 msgstr "Masalah parameter: "
 
-#: ping/ping6_common.c:468
-#, c-format
-msgid "Wrong header field "
-msgstr "Kolom header salah "
+#
+msgid "Wrong header field"
+msgstr "Kolom header salah"
 
-#: ping/ping6_common.c:470
-#, c-format
-msgid "Unknown header "
-msgstr "Header tidak diketahui "
+#
+msgid "Unknown header"
+msgstr "Header tidak diketahui"
 
-#: ping/ping6_common.c:472
-#, c-format
-msgid "Unknown option "
-msgstr "Opsi tidak diketahui "
+#
+msgid "Unknown option"
+msgstr "Opsi tidak diketahui"
 
-#: ping/ping6_common.c:474
 #, c-format
-msgid "code %d "
-msgstr "kode %d "
+msgid " at %u"
+msgstr " pada %u"
 
-#: ping/ping6_common.c:475
-#, c-format
-msgid "at %u"
-msgstr "pada %u"
-
-#: ping/ping6_common.c:478
-#, c-format
+#
 msgid "Echo request"
 msgstr "Echo permintaan"
 
-#: ping/ping6_common.c:481
-#, c-format
+#
 msgid "Echo reply"
 msgstr "Echo balasan"
 
@@ -530,31 +520,26 @@ msgstr "Echo balasan"
 msgid "MLD Query"
 msgstr "Query MLD"
 
-#: ping/ping6_common.c:487
-#, c-format
+#
 msgid "MLD Report"
 msgstr "Laporan MLD"
 
-#: ping/ping6_common.c:490
-#, c-format
+#
 msgid "MLD Reduction"
 msgstr "Reduksi MLD"
 
-#: ping/ping6_common.c:493
-#, c-format
-msgid "unknown icmp type: %u"
-msgstr "tipe icmp tidak diketahui: %u"
+#
+msgid "Unknown icmp type"
+msgstr "Tipe icmp tidak diketahui"
 
-#: ping/ping6_common.c:547
+#
 msgid "local error"
 msgstr "kesalahan lokal"
 
-#: ping/ping6_common.c:549
 #, c-format
 msgid "local error: message too long, mtu: %u"
 msgstr "kesalahan lokal: pesan terlalu panjang, mtu: %u"
 
-#: ping/ping6_common.c:571 ping/ping.c:1478
 #, c-format
 msgid "From %s icmp_seq=%u "
 msgstr "Dari %s icmp_seq=%u "
@@ -646,25 +631,14 @@ msgstr "nilai buruk untuk flowinfo: %s"
 msgid "flow value is greater than 20 bits: %s"
 msgstr "nilai flow lebih besar dari 20 bit: %s"
 
-#: ping/ping.c:297
 #, c-format
 msgid "bad TOS value: %s"
 msgstr "nilai TOS buruk: %s"
 
-#: ping/ping.c:300
 #, c-format
 msgid "the decimal value of TOS bits must be in range 0-255: %lu"
 msgstr "nilai desimal dari bit TOS harus dalam kisaran 0-255: %lu"
 
-#: ping/ping.c:371 ping/ping.c:402
-msgid "only one -4 or -6 option may be specified"
-msgstr "hanya satu opsi -4 atau -6 yang dapat ditentukan"
-
-#: ping/ping.c:383 ping/ping.c:388
-msgid "only one of -T or -R may be used"
-msgstr "hanya satu dari -T atau -R yang dapat digunakan"
-
-#: ping/ping.c:397
 #, c-format
 msgid "invalid timestamp type: %s"
 msgstr "tipe timestamp tidak valid: %s"
@@ -673,12 +647,10 @@ msgstr "tipe timestamp tidak valid: %s"
 msgid "bad timing interval"
 msgstr "interval waktu yang buruk"
 
-#: ping/ping.c:456
 #, c-format
 msgid "cannot copy: %s"
 msgstr "tidak bisa menyalin: %s"
 
-#: ping/ping.c:465
 #, c-format
 msgid "invalid source address: %s"
 msgstr "alamat asal tidak valid: %s"
@@ -721,21 +693,6 @@ msgstr "tidak bisa mengatur broadcast"
 msgid "getifaddrs failed"
 msgstr "getifaddrs gagal"
 
-#: ping/ping.c:894
-#, c-format
-msgid ""
-"minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or "
-"higher)"
-msgstr ""
-
-#: ping/ping.c:899
-msgid "broadcast ping does not fragment"
-msgstr "ping broadcast tidak terfragmentasi"
-
-#: ping/ping.c:934
-msgid "your kernel is veeery old. No problems."
-msgstr "kernel Anda terlalu tua. Tidak ada masalah."
-
 #: ping/ping.c:1007
 msgid "cannot disable multicast loopback"
 msgstr "tidak bisa menonaktifkan loopback multicast"
@@ -748,83 +705,31 @@ msgstr "tidak bisa mengatur time-to-live multicast"
 msgid "cannot set unicast time-to-live"
 msgstr "tidak bisa mengatur time-to-live unicast"
 
-#: ping/ping.c:1026
 #, c-format
 msgid "%zu(%zu) data bytes"
 msgstr "%zu(%zu) byte data"
 
-#: ping/ping.c:1058
-#, c-format
-msgid ""
-"\n"
-"NOP"
-msgstr ""
-"\n"
-"NOP"
+#
+msgid "(same route)"
+msgstr "(route yang sama)"
 
-#: ping/ping.c:1069
-#, c-format
-msgid ""
-"\n"
-"%cSRR: "
-msgstr ""
-"\n"
-"%cSRR: "
+#
+msgid "absolute not-standard"
+msgstr "mutlak tidak standar"
 
-#: ping/ping.c:1107
-#, c-format
-msgid "\t(same route)"
-msgstr "\t(route yang sama)"
+#
+msgid "not-standard"
+msgstr "tidak standar"
 
-#: ping/ping.c:1112
-#, c-format
-msgid ""
-"\n"
-"RR: "
-msgstr ""
-"\n"
-"RR: "
+#
+msgid "absolute"
+msgstr "mutlak"
 
-#: ping/ping.c:1148
-#, c-format
-msgid ""
-"\n"
-"TS: "
-msgstr ""
-"\n"
-"TS: "
+#
+msgid "Unrecorded hops"
+msgstr "Hop tidak tercatat"
 
-#: ping/ping.c:1180
-#, c-format
-msgid "\t%ld absolute not-standard"
-msgstr "\t%ld mutlak tidak standar"
-
-#: ping/ping.c:1182
-#, c-format
-msgid "\t%ld not-standard"
-msgstr "\t%ld tidak standar"
-
-#: ping/ping.c:1186
-#, c-format
-msgid "\t%ld absolute"
-msgstr "\t%ld mutlak"
-
-#: ping/ping.c:1197
-#, c-format
-msgid "Unrecorded hops: %d\n"
-msgstr "Hop tidak tercatat: %d\n"
-
-#: ping/ping.c:1201
-#, c-format
-msgid ""
-"\n"
-"unknown option %x"
-msgstr ""
-"\n"
-"opsi tidak diketahui %x"
-
-#: ping/ping.c:1242
-#, c-format
+#
 msgid "Echo Reply"
 msgstr "Echo Balasan"
 
@@ -943,10 +848,9 @@ msgstr "Alihkan TOS dan Host"
 msgid "Redirect, Bad Code: %d"
 msgstr ""
 
-#: ping/ping.c:1333
-#, c-format
-msgid "(New nexthop: %s)"
-msgstr "(Nexthop baru: %s)"
+#
+msgid "New nexthop"
+msgstr "Nexthop baru"
 
 #: ping/ping.c:1339
 #, c-format
@@ -1028,7 +932,6 @@ msgstr "packet terlalu singkat (%zd byte) dari %s"
 msgid "From %s: icmp_seq=%u "
 msgstr "Dari %s: icmp_seq=%u "
 
-#: ping/ping_common.c:49
 #, c-format
 msgid ""
 "\n"
@@ -1086,18 +989,24 @@ msgid ""
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 "\n"
-"For more details see ping(8).\n"
+"For more details see ping(8)\n"
 msgstr ""
 
-#: ping/ping_common.c:217
-#, c-format
-msgid "patterns must be specified as hex digits: %s"
-msgstr "pola harus ditentukan sebagai digit heksa: %s"
+#
+msgid "Pattern must be specified as hex digits"
+msgstr "Pola harus ditentukan sebagai digit heksa"
 
-#: ping/ping_common.c:234
-#, c-format
-msgid "PATTERN: 0x"
-msgstr "POLA: 0x"
+#
+msgid "Blank pattern"
+msgstr ""
+
+#
+msgid "PATTERN"
+msgstr "POLA"
+
+#
+msgid "PAYLOAD"
+msgstr ""
 
 #: ping/ping_common.c:354
 #, c-format
@@ -1117,11 +1026,10 @@ msgstr "Gagal untuk mengatur tanda"
 msgid "SO_MARK not supported"
 msgstr ""
 
-#: ping/ping_common.c:489
 #, c-format
 msgid ""
-"cannot flood, minimal interval for user must be >= %d ms, use -i %s (or "
-"higher)"
+"Cannot flood, minimal interval for user must be >= %u ms, use -i %.*f "
+"(or higher)"
 msgstr ""
 
 #: ping/ping_common.c:493
@@ -1311,7 +1219,6 @@ msgstr "%2d?: balasan diterima 8)\n"
 msgid "%2d:  send failed\n"
 msgstr "%2d:  gagal mengirim\n"
 
-#: tracepath.c:400
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -1329,7 +1236,7 @@ msgid ""
 "  -V             print version and exit\n"
 "  <destination>  DNS name or IP address\n"
 "\n"
-"For more details see tracepath(8).\n"
+"For more details see tracepath(8)\n"
 msgstr ""
 "\n"
 "Penggunaan\n"
@@ -1346,158 +1253,29 @@ msgstr ""
 "  -V             tampilkan versi\n"
 "  <tujuan>  nama DNS atau alamat IP\n"
 "\n"
-"Untuk lebih jelasnya lihat tracepath(8).\n"
+"Untuk lebih jelasnya lihat tracepath(8)\n"
 
-#: tracepath.c:458 tracepath.c:463
-msgid "Only one -4 or -6 option may be specified"
-msgstr "Hanya satu opsi -4 atau -6 yang dapat ditentukan"
+#, c-format
+msgid "Only one -%c or -%c option may be specified"
+msgstr "Hanya satu opsi -%c atau -%c yang dapat ditentukan"
 
-#: tracepath.c:606
 #, c-format
 msgid "%2d:  no reply\n"
 msgstr "%2d:  tidak ada balasan\n"
 
-#: tracepath.c:613
 #, c-format
 msgid "     Resume: pmtu %d "
 msgstr ""
 
-#: tracepath.c:615
 #, c-format
 msgid "hops %d "
 msgstr "hop %d "
 
-#: tracepath.c:617
 #, c-format
 msgid "back %d "
 msgstr "kembali %d "
 
-#: tracepath.c:622
 #, c-format
 msgid "pktlen must be within: %d < value <= %d"
 msgstr "panjang paket harus dalam: %d < nilai <= %d"
 
-#, c-format
-#~ msgid "multicast ping with too short interval: %d"
-#~ msgstr "ping multicast dengan interval terlalu pendek: %d"
-
-#~ msgid "setsockopt(IPV6_TCLASS)"
-#~ msgstr "setsockopt(IPV6_TCLASS)"
-
-#~ msgid "traffic class is not supported"
-#~ msgstr "kelas traffic tidak didukung"
-
-#, c-format
-#~ msgid "PING %s(%s) "
-#~ msgstr "PING %s(%s) "
-
-#, c-format
-#~ msgid "broadcast ping with too short interval: %d"
-#~ msgstr "ping broadcast dengan interval terlalu pendek: %d"
-
-#~ msgid "unknown interface"
-#~ msgstr "interface tidak diketahui"
-
-#, c-format
-#~ msgid "traceroute: wrote %s %d chars, ret=%d\n"
-#~ msgstr "traceroute: ditulis %s %d karakter, ret=%d\n"
-
-#~ msgid "Error"
-#~ msgstr "Kesalahan"
-
-#~ msgid "Destination Unreachable"
-#~ msgstr "Tujuan Tidak Dapat Dijangkau"
-
-#~ msgid "Packet Too Big"
-#~ msgstr "Paket Terlalu Besar"
-
-#~ msgid "Time Exceeded in Transit"
-#~ msgstr "Waktu Terlampaui dalam Pengiriman"
-
-#~ msgid "Parameter Problem"
-#~ msgstr "Masalah Parameter"
-
-#~ msgid "Membership Query"
-#~ msgstr "Query Membership"
-
-#~ msgid "Membership Report"
-#~ msgstr "Laporan Membership"
-
-#~ msgid "Membership Reduction"
-#~ msgstr "Reduksi Membership"
-
-#~ msgid "Neighbor Query"
-#~ msgstr "Query Neighbor"
-
-#~ msgid "Neighbor Reply"
-#~ msgstr "Balasan Neighbor"
-
-#~ msgid "OUT-OF-RANGE"
-#~ msgstr "DILUAR-JANGKAUAN"
-
-#, c-format
-#~ msgid ""
-#~ "\n"
-#~ "Usage:\n"
-#~ "  traceroute6 [options] <destination>\n"
-#~ "\n"
-#~ "Options:\n"
-#~ "  -d            use SO_DEBUG socket option\n"
-#~ "  -i <device>   bind to <device>\n"
-#~ "  -m <hops>     use maximum <hops>\n"
-#~ "  -n            no dns name resolution\n"
-#~ "  -p <port>     use destination <port>\n"
-#~ "  -q <nprobes>  number of probes\n"
-#~ "  -r            use SO_DONTROUTE socket option\n"
-#~ "  -s <address>  use source <address>\n"
-#~ "  -v            verbose output\n"
-#~ "  -V            print version and exit\n"
-#~ "  -w <timeout>  time to wait for response\n"
-#~ "\n"
-#~ "For more details see traceroute6(8).\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Penggunaan:\n"
-#~ "  traceroute6 [opsi] <tujuan>\n"
-#~ "\n"
-#~ "Opsi:\n"
-#~ "  -d            menggunakan opsi socket SO_DEBUG\n"
-#~ "  -i <device>   bind ke <perangkat>\n"
-#~ "  -m <hops>     gunakan <hop> maksimum\n"
-#~ "  -n            tidak ada resolusi nama dns\n"
-#~ "  -p <port>     gunakan <port> tujuan\n"
-#~ "  -q <nprobes>  jumlah probe\n"
-#~ "  -r            gunakan opsi socket SO_DONTROUTE\n"
-#~ "  -s <address>  gunakan <alamat> asal\n"
-#~ "  -v            lebih detail\n"
-#~ "  -V            tampilkan versi\n"
-#~ "  -w <timeout>  waktu untuk menunggu respons\n"
-#~ "\n"
-#~ "Untuk lebih detail lihat traceroute6(8).\n"
-
-#~ msgid "wait must be >1 sec"
-#~ msgstr "'wait' harus >1 detik"
-
-#, c-format
-#~ msgid "setsockopt(RAW_CHECKSUM) failed - try to continue."
-#~ msgstr "setsockopt(RAW_CHECKSUM) gagal - coba lanjutkan."
-
-#, c-format
-#~ msgid "unknown addr %s"
-#~ msgstr "alamat tidak diketahui %s"
-
-#, c-format
-#~ msgid "traceroute to %s (%s)"
-#~ msgstr "traceroute ke %s (%s)"
-
-#, c-format
-#~ msgid " from %s"
-#~ msgstr " dari %s"
-
-#, c-format
-#~ msgid ", %d hops max, %d byte packets\n"
-#~ msgstr ", %d hop maks, %d byte paket\n"
-
-#, c-format
-#~ msgid "  %.4f ms"
-#~ msgstr "  %.4f ms"

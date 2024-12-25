@@ -49,8 +49,8 @@
 #include <assert.h>
 #include <err.h>
 
-#if defined(USE_IDN)
-# include <locale.h>
+#ifdef ENABLE_NLS
+#include <locale.h>
 #endif
 
 #ifndef HZ
@@ -67,32 +67,34 @@ static uid_t euid;
 #include <linux/sockios.h>
 #include <linux/filter.h>
 
-#define MIN_USER_INTERVAL_MS	2	// Minimal allowed interval for non-root for single host ping
-#define MIN_INTERVAL_MS		10	// Minimal interpacket gap
-#define SCHINT(a)	(((a) <= MIN_INTERVAL_MS) ? MIN_INTERVAL_MS : (a))
+#define MIN_USER_MS		10	// Minimal interval for non-root users, in milliseconds
+#define MIN_GAP_MS		10	// Minimal interpacket gap, in milliseconds
+#define SCHINT(a)	(((a) < MIN_GAP_MS) ? MIN_GAP_MS : (a))
 
 #define	BITMAP_ARR(bit)	(rts->rcvd_tbl.bitmap[(bit) >> BITMAP_SHIFT])		// Identify word in array
 #define	BITMAP_BIT(bit)	(((bitmap_t)1) << ((bit) & ((1 << BITMAP_SHIFT) - 1)))	// Identify bit in word
 
-static inline bitmap_t rcvd_test(const struct ping_rts *rts, uint16_t seq) {
+static inline bitmap_t rcvd_test(const state_t *rts, uint16_t seq) {
 	unsigned bit = seq % MAX_DUP_CHK;
 	return BITMAP_ARR(bit) & BITMAP_BIT(bit);
 }
-static inline void rcvd_set(struct ping_rts *rts, uint16_t seq) {
+static inline void rcvd_set(state_t *rts, uint16_t seq) {
 	unsigned bit = seq % MAX_DUP_CHK;
 	BITMAP_ARR(bit) |= BITMAP_BIT(bit);
 }
 
-static inline void rcvd_clear(struct ping_rts *rts, uint16_t seq) {
+static inline void rcvd_clear(state_t *rts, uint16_t seq) {
 	unsigned bit = seq % MAX_DUP_CHK;
 	BITMAP_ARR(bit) &= ~BITMAP_BIT(bit);
 }
 
-void usage(void) {
+void usage(int rc) {
 	fprintf(stderr, _(
-		"\nUsage\n"
+		"\n"
+		"Usage\n"
 		"  ping [options] <destination>\n"
-		"\nOptions:\n"
+		"\n"
+		"Options:\n"
 		"  <destination>      DNS name or IP address\n"
 		"  -a                 use audible ping\n"
 		"  -A                 use adaptive ping\n"
@@ -127,21 +129,24 @@ void usage(void) {
 		"  -V                 print version and exit\n"
 		"  -w <deadline>      reply wait <deadline> in seconds\n"
 		"  -W <timeout>       time to wait for response\n"
-		"\nIPv4 options:\n"
+		"\n"
+		"IPv4 options:\n"
 		"  -4                 use IPv4\n"
 		"  -b                 allow pinging broadcast\n"
 		"  -R                 record route\n"
 		"  -T <timestamp>     define timestamp, can be one of <tsonly|tsandaddr|tsprespec>\n"
-		"\nIPv6 options:\n"
+		"\n"
+		"IPv6 options:\n"
 		"  -6                 use IPv6\n"
 		"  -F <flowlabel>     define flow label, default is random\n"
 		"  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
-		"\nFor more details see ping(8).\n"
+		"\n"
+		"For more details see ping(8)\n"
 	));
-	exit(2);
+	exit(rc);
 }
 
-uid_t limit_capabilities(const struct ping_rts *rts) {
+uid_t limit_capabilities(const state_t *rts) {
 #ifdef HAVE_LIBCAP
 	// set proc
 	cap_t proc = cap_get_proc();
@@ -177,7 +182,7 @@ uid_t limit_capabilities(const struct ping_rts *rts) {
 	uid_t uid = getuid();
 #ifndef HAVE_LIBCAP
 	if (seteuid(uid))
-		error(-1, errno, "setuid");
+		err(errno, "setuid");
 #endif
 	return uid;
 }
@@ -206,7 +211,7 @@ int modify_capability(cap_value_t cap, cap_flag_value_t on) {
 int modify_capability(int on) {
 	int rc = seteuid(on ? euid : getuid());
 	if (rc)
-		error(0, errno, "seteuid");
+		err(errno, "seteuid");
 	return rc;
 }
 #endif
@@ -223,39 +228,46 @@ void drop_capabilities(void) {
 #endif
 }
 
-/*
- * Fills all the outpack, excluding ICMP header,
- * but _including_ timestamp area with supplied pattern
- */
-void fill_packet(int quiet, const char *patp, unsigned char *packet, size_t packet_size) {
-#ifdef USE_IDN
-	setlocale(LC_ALL, "C");
+// Fill payload area (supposed to be without timestamp area) with supplied pattern
+void fill_payload(int quiet, const char *str, uint8_t *payload, size_t len) {
+#ifdef ENABLE_NLS
+	setlocale(LC_NUMERIC, "C");
 #endif
-	for (const char *cp = patp; *cp; cp++) {
+	for (const char *cp = str; *cp; cp++)
 		if (!isxdigit(*cp))
-			errx(2, _("patterns must be specified as hex digits: %s"), cp);
-	}
-	unsigned pat[16];
-	int items = sscanf(patp,
-		    "%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x%2x",
-		    &pat[0], &pat[1], &pat[2], &pat[3], &pat[4], &pat[5],
-		    &pat[6], &pat[7], &pat[8], &pat[9], &pat[10], &pat[11],
-		    &pat[12], &pat[13], &pat[14], &pat[15]);
-	unsigned char *bp = packet + 8;
-	if (items > 0) {
-		size_t max = (packet_size < ((size_t)items + 8)) ? 0 : (packet_size - (size_t)items + 8);
-		for (size_t i = 0; i <= max; i += items)
-			for (int j = 0; j < items; ++j)
-				bp[i + j] = pat[j];
-		if (!quiet) {
-			printf(_("PATTERN: 0x"));
-			for (int j = 0; j < items; j++)
-				printf("%02x", bp[j] & 0xFF);
-			printf("\n");
+			errx(EINVAL, "%s: %s", _("Pattern must be specified as hex digits"), cp);
+#define PAD_BYTES	16
+	unsigned pad[PAD_BYTES];
+	errno = 0;
+	int items = sscanf(str,
+		"%2x%2x%2x%2x"
+		"%2x%2x%2x%2x"
+		"%2x%2x%2x%2x"
+		"%2x%2x%2x%2x",
+		&pad[0],  &pad[1],  &pad[2],  &pad[3],
+		&pad[4],  &pad[5],  &pad[6],  &pad[7],
+		&pad[8],  &pad[9],  &pad[10], &pad[11],
+		&pad[12], &pad[13], &pad[14], &pad[15]);
+	if (errno)
+		errx(errno, "sscanf()");
+	if (items <= 0)
+		errx(EINVAL, _("Blank pattern"));
+	size_t max = (items > PAD_BYTES) ? PAD_BYTES : items;
+	for (size_t i = 0; i <= len; i++)
+		payload[i] = pad[i % max];
+	if (!quiet) {
+		printf("%s: 0x", _("PATTERN"));
+		for (size_t i = 0; i < max; i++)
+			printf("%02x", pad[i]);
+		if (max > len) { // if it's known already (-s before -p)
+			printf(", %s: 0x", _("PAYLOAD"));
+			for (size_t i = 0; i < len; i++)
+				printf("%02x", payload[i]);
 		}
+		printf("\n");
 	}
-#ifdef USE_IDN
-	setlocale(LC_ALL, "");
+#ifdef ENABLE_NLS
+	setlocale(LC_NUMERIC, "");
 #endif
 }
 
@@ -282,7 +294,7 @@ static void sig_handler(int signo) {
 	}
 }
 
-static int schedule_exit(const struct ping_rts *rts, int next) {
+static int schedule_exit(const state_t *rts, int next) {
 	static unsigned long long waittime;
 	if (waittime)
 		return next;
@@ -303,12 +315,12 @@ static int schedule_exit(const struct ping_rts *rts, int next) {
 	return next;
 }
 
-static inline int get_interval(const struct ping_rts *rts) {
+static inline int get_interval(const state_t *rts) {
 	int interval = rts->interval;
 	int est = rts->rtt ? (rts->rtt / 8) : (interval * 1000);
 	interval = (est + rts->rtt_addend + 500) / 1000;
-	if (rts->uid && (interval < MIN_USER_INTERVAL_MS))
-		interval = MIN_USER_INTERVAL_MS;
+	if (rts->uid && (interval < MIN_USER_MS))
+		interval = MIN_USER_MS;
 	return interval;
 }
 
@@ -320,12 +332,12 @@ void print_timestamp(void) {
 	       (unsigned long)tv.tv_sec, (unsigned long)tv.tv_usec);
 }
 
-static inline int in_flight(const struct ping_rts *rts) {
+static inline int in_flight(const state_t *rts) {
 	uint16_t diff = rts->ntransmitted - rts->acked;
 	return (diff <= 0x7FFF) ? diff : (rts->ntransmitted - rts->nreceived - rts->nerrors);
 }
 
-static inline void advance_ntransmitted(struct ping_rts *rts) {
+static inline void advance_ntransmitted(state_t *rts) {
 	rts->ntransmitted++;
 	/* Invalidate acked, if 16 bit seq overflows */
 	if (((uint16_t)rts->ntransmitted - rts->acked) > 0x7FFF)
@@ -340,12 +352,12 @@ static inline void advance_ntransmitted(struct ping_rts *rts) {
  * of the data portion are used to hold a UNIX "timeval" struct in VAX
  * byte-order, to compute the round-trip time.
  */
-static int pinger(struct ping_rts *rts, const ping_func_set_st *fset, const socket_st *sock) {
+static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 	static int oom_count;
 	static int tokens;
 
 	/* Have we already sent enough? If we have, return an arbitrary positive value */
-	if (exiting || (rts->npackets && rts->ntransmitted >= rts->npackets && !rts->deadline))
+	if (exiting || (rts->npackets && (rts->ntransmitted >= rts->npackets) && !rts->deadline))
 		return 1000;
 
 	/* Check that packets < rate*time + preload */
@@ -360,8 +372,9 @@ static int pinger(struct ping_rts *rts, const ping_func_set_st *fset, const sock
 		if (!rts->interval) {
 			/* Case of unlimited flood is special;
 			 * if we see no reply, they are limited to 100pps */
-			if (ntokens < MIN_INTERVAL_MS && in_flight(rts) >= rts->preload)
-				return MIN_INTERVAL_MS - ntokens;
+			long rest = MIN_GAP_MS - ntokens;
+			if ((rest > 0) && (in_flight(rts) >= rts->preload))
+				return rest;
 		}
 		ntokens += tokens;
 		long tmp = (long)rts->interval * rts->preload;
@@ -386,7 +399,7 @@ static int pinger(struct ping_rts *rts, const ping_func_set_st *fset, const sock
 	int hard_local_error = 0;
 	do {
 		rcvd_clear(rts, rts->ntransmitted + 1);
-		rc = fset->send_probe(rts, sock->fd, rts->outpack, sizeof(rts->outpack));
+		rc = fnset->send_probe(rts, sock->fd, rts->outpack);
 		if (rc == 0) {	// No error
 			oom_count = 0;
 			advance_ntransmitted(rts);
@@ -430,11 +443,11 @@ static int pinger(struct ping_rts *rts, const ping_func_set_st *fset, const sock
 		case EAGAIN:
 			/* Socket buffer is full */
 			tokens += rts->interval;
-			return MIN_INTERVAL_MS;
+			return MIN_GAP_MS;
 			break;
 		default:
 			/* Proceed a received error */
-			rc = fset->receive_error(rts, sock);
+			rc = fnset->receive_error(rts, sock);
 			if (rc > 0) {
 				/* An ICMP error arrived. In this case, we've received
 				 * an error from sendto(), but we've also received an
@@ -465,30 +478,12 @@ static int pinger(struct ping_rts *rts, const ping_func_set_st *fset, const sock
 	return SCHINT(rts->interval);
 }
 
-/* Set socket buffers, "alloc" is an estimate of memory taken by single packet */
-#define MAXHOLD 65536
-void sock_setbufs(struct ping_rts *rts, int sockfd, int alloc) {
-	int rcvbuf, hold;
-	socklen_t tmplen = sizeof(hold);
-	if (!rts->sndbuf)
-		rts->sndbuf = alloc;
-	setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &rts->sndbuf, sizeof(rts->sndbuf));
-	rcvbuf = hold = alloc * rts->preload;
-	if (hold < MAXHOLD)
-		hold = MAXHOLD;
-	setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &hold, sizeof(hold));
-	if (getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &hold, &tmplen) == 0)
-		if (hold < rcvbuf)
-			warnx("%s: %s", _WARN, _("probably, rcvbuf is not enough to hold preload"));
-}
-#undef MAXHOLD
-
-void sock_setmark(struct ping_rts *rts, int sockfd) {
+void sock_setmark(state_t *rts, int fd) {
 #ifdef SO_MARK
 	if (!rts->opt.mark)
 		return;
 	ENABLE_CAPABILITY_ADMIN;
-	int rc = setsockopt(sockfd, SOL_SOCKET, SO_MARK, &rts->mark, sizeof(rts->mark));
+	int rc = setsockopt(fd, SOL_SOCKET, SO_MARK, &rts->mark, sizeof(rts->mark));
 	int keep = errno;
 	DISABLE_CAPABILITY_ADMIN;
 	if (rc < 0) {
@@ -510,42 +505,41 @@ inline void sock_settos(int fd, int qos, bool ip6) {
 		err(errno, "setsockopt(QoS)");
 }
 
-static void print_headline(struct ping_rts *rts) {
+void print_headline(const state_t *rts, size_t nodatalen) {
 	// called once at ping setup
 	socklen_t len = rts->ip6 ?
 		sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
-	bool res = rts->opt.force_lookup; rts->opt.force_lookup = false;
-	bool num = rts->opt.numeric;      rts->opt.numeric      = true;
-	const char *target = sprint_addr(rts, &rts->whereto, len);
+	const char *target = sprint_addr(&rts->whereto, len, false);
 	printf(_("PING %s (%s) "), rts->hostname, target);
 	if (rts->ip6 && rts->flowlabel)
 		printf(_(", flow 0x%05x, "), ntohl(rts->flowlabel));
 	if (rts->device || rts->opt.strictsource) {
-		const char *from = sprint_addr(rts, &rts->source, len);
+		const char *from = sprint_addr(&rts->source, len, false);
 		printf(_("from %s %s: "), from, rts->device ? rts->device : "");
 	}
-	if (rts->ip6)
-		printf(_("%zu data bytes"), rts->datalen);
-	else
-		printf(_("%zu(%zu) data bytes"), rts->datalen, rts->datalen + 8 + rts->optlen + 20);
+	printf(_("%zu(%zu) data bytes"), rts->datalen, rts->datalen + nodatalen);
 	putchar('\n');
-	rts->opt.force_lookup = res;
-	rts->opt.numeric      = num;
 }
 
 /* Protocol independent setup and parameter checks */
-void ping_setup(struct ping_rts *rts, const socket_st *sock) {
-	print_headline(rts);
-
+static void ping_setup(state_t *rts, const sock_t *sock) {
 	if (rts->opt.flood && !rts->opt.interval)
 		rts->interval = 0;
 
 	// interval restrictions
-	if (rts->uid && (rts->interval < MIN_USER_INTERVAL_MS))
-		errx(2, _("cannot flood, minimal interval for user must be >= %d ms, use -i %s (or higher)"),
-			  MIN_USER_INTERVAL_MS, str_interval(MIN_USER_INTERVAL_MS));
-	if (rts->interval >= INT_MAX / rts->preload)
-		errx(2, _("illegal preload and/or interval: %d"), rts->interval);
+	if (rts->uid && (rts->interval < MIN_USER_MS)) {
+#ifdef ENABLE_NLS
+		setlocale(LC_NUMERIC, "C");
+#endif
+		errx(EINVAL,
+_("Cannot flood, minimal interval for user must be >= %u ms, use -i %.*f (or higher)"),
+			MIN_USER_MS, MS2LEN(MIN_USER_MS % 1000), MIN_USER_MS / 1000.);
+#ifdef ENABLE_NLS
+		setlocale(LC_NUMERIC, ""); // for symmetry
+#endif
+	}
+	if (rts->interval >= (INT_MAX / rts->preload))
+		errx(EINVAL, _("illegal preload and/or interval: %d"), rts->interval);
 
 	// socket options
 	if (rts->opt.so_debug) {
@@ -588,7 +582,7 @@ void ping_setup(struct ping_rts *rts, const socket_st *sock) {
 	}
 
 	if (!rts->opt.pingfilled) {
-		unsigned char *p = rts->outpack + 8;
+		unsigned char *p = rts->outpack + sizeof(struct icmphdr);
 		/* Do not forget about case of small datalen, fill timestamp area too! */
 		for (size_t i = 0; i < rts->datalen; ++i)
 			*p++ = i;
@@ -622,7 +616,7 @@ void ping_setup(struct ping_rts *rts, const socket_st *sock) {
 
 
 /* Print out statistics, and give up */
-static bool finish(const struct ping_rts *rts) {
+static bool finish(const state_t *rts) {
 	struct timespec tv = {0};
 	timespecsub(&rts->cur_time, &rts->start_time, &tv);
 
@@ -676,7 +670,7 @@ static bool finish(const struct ping_rts *rts) {
 }
 
 
-static void fin_status(const struct ping_rts *rts) {
+static void fin_status(const state_t *rts) {
 	static bool in_fin_status;
 	if (in_fin_status)
 		return;
@@ -696,7 +690,7 @@ static void fin_status(const struct ping_rts *rts) {
 	in_fin_status = false;
 }
 
-static inline void install_filter(bool ip6, uint16_t ident, int sockfd) {
+static inline void install_filter(bool ip6, uint16_t ident, int fd) {
 	static struct sock_filter insns4[] = {
 		BPF_STMT(BPF_LDX | BPF_B   | BPF_MSH, 0),	/* Skip IP header due BSD, see ping6 */
 		BPF_STMT(BPF_LD  | BPF_H   | BPF_IND, 4),	/* Load icmp echo ident */
@@ -735,7 +729,7 @@ static inline void install_filter(bool ip6, uint16_t ident, int sockfd) {
 	struct sock_fprog *filter = ip6 ? &filter6 : &filter4;
 	/* Patch bpflet for current identifier */
 	insns[2] = (struct sock_filter)BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, htons(ident), 0, 1);
-	if (setsockopt(sockfd, SOL_SOCKET, SO_ATTACH_FILTER, filter, sizeof(*filter)) < 0)
+	if (setsockopt(fd, SOL_SOCKET, SO_ATTACH_FILTER, filter, sizeof(*filter)) < 0)
 		warn("%s: %s", _WARN, _("failed to install socket filter"));
 }
 
@@ -750,12 +744,12 @@ static inline struct timeval *msghdr_timeval(struct msghdr *msg) {
 }
 #endif
 
-bool main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
-		const socket_st *sock, uint8_t *packet, int packlen)
+static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
+		uint8_t *packet, size_t packlen)
 {
+	struct iovec iov = { .iov_base = packet };
 	char addrbuf[128];
 	char ans_data[4096];
-	struct iovec iov = { .iov_base = (char *)packet };
 
 	for (;;) {
 		/* Check exit conditions. */
@@ -774,7 +768,7 @@ bool main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 		/* Send probes scheduled to this time */
 		int next;
 		do {
-			next = pinger(rts, fset, sock);
+			next = pinger(rts, fnset, sock);
 			if (rts->npackets && (rts->ntransmitted >= rts->npackets) && !rts->deadline)
 				next = schedule_exit(rts, next);
 		} while (next <= 0);
@@ -801,7 +795,7 @@ bool main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 				 * something, we sleep for MIN_INTERVAL_MS.
 				 * Otherwise, spin! */
 				if (recv_expected) {
-					next = MIN_INTERVAL_MS;
+					next = MIN_GAP_MS;
 				} else {
 					next = 0;
 					/* When spinning, no reasons to poll.
@@ -853,7 +847,7 @@ bool main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 					break;
 				int keep = errno;
 				recv_error = 0;
-				if (!fset->receive_error(rts, sock)) {
+				if (!fnset->receive_error(rts, sock)) {
 					errno = keep;
 					if (errno) {
 						warn("recvmsg");
@@ -877,7 +871,7 @@ bool main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 					recv_tv = &timeval;
 				}
 				assert(received >= 0); // be sure in ssize_t to size_t conversion at one place
-				not_ours = fset->parse_reply(rts, sock->raw, &msg, received, addrbuf, recv_tv);
+				not_ours = fnset->parse_reply(rts, sock->raw, &msg, received, addrbuf, recv_tv);
 			}
 
 			/* See? ... someone runs another ping on this host */
@@ -897,7 +891,28 @@ bool main_loop(struct ping_rts *rts, const ping_func_set_st *fset,
 	return finish(rts);
 }
 
-bool stats_noflush(struct ping_rts *rts, const uint8_t *icmp, int icmplen,
+
+int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
+		const fnset_t* fnset)
+{
+	/* can we time transfer */
+	rts->timing = (rts->datalen >= sizeof(struct timeval));
+	if (rts->ip6 && rts->ni && rts->timing)
+		rts->timing = (rts->ni->query < 0);
+	//
+	size_t packlen = hlen + rts->datalen;
+	uint8_t *packet = malloc(packlen);
+	if (packet) {
+		ping_setup(rts, sock);
+		drop_capabilities();
+		int rc = main_loop(rts, fnset, sock, packet, packlen);
+		free(packet);
+		return rc;
+	}
+	err(errno ? errno : EXIT_FAILURE, _("memory allocation failed"));
+}
+
+bool stats_noflush(state_t *rts, const uint8_t *icmp, int icmplen,
 	size_t received, uint16_t seq, int hops, const struct timeval *at,
 	void (*print)(bool ip6, const uint8_t *hdr, size_t len),
 	const char *from, bool ack, bool wrong)
@@ -910,7 +925,7 @@ bool stats_noflush(struct ping_rts *rts, const uint8_t *icmp, int icmplen,
 	const uint8_t *ptr = icmp + icmplen;
 	long triptime = 0;
 
-	if (rts->timing && (received >= (8 + sizeof(struct timeval)))) {
+	if (rts->timing && (received >= (sizeof(struct icmphdr) + sizeof(struct timeval)))) {
 		struct timeval peer;
 		memcpy(&peer, ptr, sizeof(peer));
 		struct timeval tv;
@@ -1002,13 +1017,13 @@ bool stats_noflush(struct ping_rts *rts, const uint8_t *icmp, int icmplen,
 	if (dup && (!rts->multicast || rts->opt.verbose))
 		printf(_(" (DUP!)"));
 	if (!ack)
-		printf(_(" (BAD CHECKSUM)"));
+		printf(_(" (BAD CHECKSUM!)"));
 	if (wrong)
 		printf(_(" (DIFFERENT ADDRESS!)"));
 
 	/* check the data */
 	const uint8_t *cp = ptr + sizeof(struct timeval);
-	const uint8_t *dp = &rts->outpack[8 + sizeof(struct timeval)];
+	const uint8_t *dp = &rts->outpack[sizeof(struct icmphdr) + sizeof(struct timeval)];
 	for (size_t i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp, ++dp) {
 		if (*cp != *dp) {
 			putchar('\n');
@@ -1027,38 +1042,20 @@ bool stats_noflush(struct ping_rts *rts, const uint8_t *icmp, int icmplen,
 	return false;
 }
 
-inline bool gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen,
+inline bool gather_stats(state_t *rts, const void *icmp, int icmplen,
 	size_t received, uint16_t seq, int hops, const struct timeval *at,
 	void (*print)(bool ip6, const uint8_t *hdr, size_t len),
 	const char *from, bool ack, bool wrong)
 {
-	bool finished = stats_noflush(rts, icmph, icmplen, received, seq, hops,
+	bool finished = stats_noflush(rts, icmp, icmplen, received, seq, hops,
 		at, print, from, ack, wrong);
 	if (finished)
 		fflush(stdout);
 	return finished;
 }
 
-const char *str_interval(int interval) {
-	static char buf[14];
-	/*
-	 * Avoid messing with locales and floating point due the different decimal
-	 * point depending on locales.
-	 */
-	int rc = -1;
-	int ms = interval / 1000;
-	int us = interval % 1000;
-	if (us)
-		rc = snprintf(buf, sizeof(buf), "%1i.%03i", ms, us);
-	else
-		rc = snprintf(buf, sizeof(buf), "%i", ms);
-	if (rc < 0)
-		buf[0] = 0;
-	return buf;
-}
-
-/* Return an ascii host address optionally with a hostname */
-const char *sprint_addr(const struct ping_rts *rts, const void *sa, socklen_t salen) {
+/* Return a host address optionally with a hostname */
+const char *sprint_addr(const void *sa, socklen_t salen, bool resolve) {
 	static char buffer[2 * NI_MAXHOST + 4] = ""; // "NI_MAXHOST (NI_MAXHOST)"
 	static struct sockaddr_storage last_sa = {0};
 	static socklen_t last_salen = 0;
@@ -1071,7 +1068,7 @@ const char *sprint_addr(const struct ping_rts *rts, const void *sa, socklen_t sa
 	getnameinfo(sa, salen, address, sizeof(address), NULL, 0, NI_FLAGS | NI_NUMERICHOST);
 	//
 	char name[NI_MAXHOST] = "";
-	if (!exiting && (rts->opt.force_lookup || !rts->opt.numeric))
+	if (resolve && !exiting)
 		getnameinfo(sa, salen, name, sizeof(name), NULL, 0, NI_FLAGS);
 	//
 	int rc = -1;
@@ -1086,7 +1083,7 @@ const char *sprint_addr(const struct ping_rts *rts, const void *sa, socklen_t sa
 	return buffer;
 }
 
-inline void acknowledge(struct ping_rts *rts, uint16_t seq) {
+inline void acknowledge(state_t *rts, uint16_t seq) {
 	uint16_t diff = (uint16_t)rts->ntransmitted - seq;
 	if (diff <= 0x7FFF) {
 		if ((int)diff + 1 > rts->pipesize)

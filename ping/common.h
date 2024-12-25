@@ -22,8 +22,13 @@
 # define SCOPE_DELIMITER '%'
 #endif
 
-#define MAXWAIT			10	/* Max seconds to wait for response */
-#define MIN_MCAST_INTERVAL_MS	1000	/* Minimal allowed interval for non-root for broadcast/multicast ping */
+#define DEFIPPAYLOAD	64
+#define MAXWAIT		10	/* Max seconds to wait for response */
+#define MIN_MCAST_MS	1000	/* Min milliseconds to broadcast/multicast by non-root users */
+#define MS2LEN(val)	(((val) % 10) ? 3 : ((val) % 100) ? 2 : 1)
+
+/* Min reserve for outpack */
+#define	PACKHDRLEN	(sizeof(struct icmphdr) + sizeof(struct timeval))
 
 /*
  * MAX_DUP_CHK is the number of bits in received table
@@ -48,10 +53,22 @@ struct rcvd_table {
 	bitmap_t bitmap[MAX_DUP_CHK / (sizeof(bitmap_t) * 8)];
 };
 
-typedef struct socket_st {
+typedef struct ping_sock {
 	int fd;
 	bool raw;
-} socket_st;
+} sock_t;
+
+#define MAX_ROUTES	9
+typedef struct route_data {
+	unsigned n;
+	uint32_t data[MAX_ROUTES + 1];
+} route_t;
+
+#define MAX_CMSG_SIZE	4096
+typedef struct cmsg_data {
+	size_t len;
+	uint8_t data[MAX_CMSG_SIZE];
+} cmsg_t;
 
 typedef struct ping_bool_opts {
 	bool adaptive;
@@ -59,15 +76,14 @@ typedef struct ping_bool_opts {
 	bool flood;
 	bool flood_poll;
 	bool flowinfo;
-	bool force_lookup;
 	bool interval;
 	bool latency;
 	bool mark;
 	bool noloop;
-	bool numeric;
 	bool outstanding;
 	bool pingfilled;
 	bool ptimeofday;
+	bool resolve;
 	bool quiet;
 	bool rroute;
 	bool so_debug;
@@ -82,7 +98,7 @@ typedef struct ping_bool_opts {
 } ping_bool_opts;
 
 /* ping runtime state */
-struct ping_rts {
+typedef struct ping_state {
 	size_t datalen;
 	char *hostname;
 	uid_t uid;
@@ -107,7 +123,7 @@ struct ping_rts {
 	struct timespec start_time, cur_time;
 	int confirm;
 	int confirm_flag;
-	char *device;
+	const char *device;
 	int pmtudisc;
 	int ttl;
 	unsigned mark;
@@ -126,44 +142,39 @@ struct ping_rts {
 	struct sockaddr_storage source;
 	struct sockaddr_storage whereto;	/* who to ping */
 	struct sockaddr_storage firsthop;
-	uint32_t flowlabel;
 	uint8_t qos;				/* TOS/TCLASS */
-	uint8_t ipt_flg;			/* IP option: timestamp flags */
 	bool multicast;
 	//
-	/* Used only in ping.c */
-	int nroute;
-	uint32_t route[10];
-	int optlen;
-	//
-	/* Used only in common.c */
-	int screen_width;
 #ifdef HAVE_LIBCAP
 	cap_value_t cap_raw;
 	cap_value_t cap_admin;
 #endif
 	//
-	/* Used only in ping6_common.c */
-	int subnet_router_anycast; /* Subnet-Router anycast (RFC 4291) */
-	unsigned char cmsgbuf[4096];
-	size_t cmsglen;
-	struct ping_ni ni;
-	//
 	// boolean options
 	struct ping_bool_opts opt;
-};
+	//
+	/* Used by ping4 only */
+	uint8_t ipt_flg;		// ip option: timestamp flags
+	unsigned short screen_width;	// termios.h: ws_col type
+	route_t *route;     // allocated in ping4
+	//
+	/* Used by ping6 only */
+	uint32_t flowlabel;
+	bool subnet_router_anycast;
+	cmsg_t *cmsg;       // allocated in ping6
+	struct ping_ni *ni; // allocated with -N option
+} state_t;
 
-typedef struct ping_func_set_st {
-	ssize_t (*send_probe)(struct ping_rts *rts, int sockfd,
-		void *packet, unsigned packet_size);
-	int (*receive_error)(struct ping_rts *rts, const socket_st *sock);
-	bool (*parse_reply)(struct ping_rts *rts, bool rawsock,
-		struct msghdr *msg, size_t received, void *addr, const struct timeval *at);
-} ping_func_set_st;
+typedef struct fnset_t {
+	ssize_t (*send_probe)(state_t *rts, int fd, uint8_t *packet);
+	int (*receive_error)(state_t *rts, const sock_t *sock);
+	bool (*parse_reply)(state_t *rts, bool rawsock, struct msghdr *msg,
+		size_t received, void *addr, const struct timeval *at);
+} fnset_t;
 
-void acknowledge(struct ping_rts *rts, uint16_t seq);
+void acknowledge(state_t *rts, uint16_t seq);
 
-uid_t limit_capabilities(const struct ping_rts *rts);
+uid_t limit_capabilities(const state_t *rts);
 #ifdef HAVE_LIBCAP
 # include <sys/capability.h>
 int modify_capability(cap_value_t, cap_flag_value_t);
@@ -182,26 +193,23 @@ int modify_capability(int);
 #endif
 void drop_capabilities(void);
 
-const char *sprint_addr(const struct ping_rts *rts, const void *sa, socklen_t salen);
+const char *sprint_addr(const void *sa, socklen_t salen, bool resolve);
 
 void print_timestamp(void);
 #define PRINT_TIMESTAMP do { if (rts->opt.ptimeofday) print_timestamp(); } while(0)
 
 #define IS_OURS(rts, rawsock, rcvd_id) (!(rawsock) || ((rcvd_id) == (rts)->ident16))
 
-const char *str_interval(int interval);
-void sock_setbufs(struct ping_rts *rts, int sockfd, int alloc);
-void sock_setmark(struct ping_rts *rts, int sockfd);
-void sock_settos(int sockfd, int qos, bool ip6);
-
-void ping_setup(struct ping_rts *rts, const socket_st *sock);
-bool main_loop(struct ping_rts *rts, const ping_func_set_st *fset, const socket_st *sock,
-	uint8_t *packet, int packlen);
-bool gather_stats(struct ping_rts *rts, const uint8_t *icmph, int icmplen,
+void sock_setmark(state_t *rts, int fd);
+void sock_settos(int fd, int qos, bool ip6);
+void print_headline(const state_t *rts, size_t nodatalen);
+int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
+	 const fnset_t* fnset);
+bool gather_stats(state_t *rts, const void *icmp, int icmplen,
 	size_t received, uint16_t seq, int hops, const struct timeval *at,
 	void (*print)(bool ip6, const uint8_t *hdr, size_t len),
 	const char *from, bool ack, bool wrong);
-void fill_packet(int quiet, const char *patp, unsigned char *packet, size_t packet_size);
+void fill_payload(int quiet, const char *str, unsigned char *payload, size_t len);
 
 // wrapper: __has_attribute
 #ifndef __has_attribute
@@ -214,6 +222,6 @@ void fill_packet(int quiet, const char *patp, unsigned char *packet, size_t pack
 #define NORETURN
 #endif
 
-void usage(void) NORETURN;
+void usage(int rc) NORETURN;
 
 #endif

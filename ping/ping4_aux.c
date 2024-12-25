@@ -69,13 +69,13 @@
 # define ODDBYTE(v)	htons((unsigned short)(v) << 8)
 #endif
 
+/*
+ *  Our algorithm is simple, using a 32 bit accumulator (sum),
+ *  we add sequential 16 bit words to it, and at the end, fold
+ *  back all the carry bits from the top 16 bits into the lower
+ *  16 bits
+ */
 uint16_t in_cksum(const uint16_t *addr, int len, uint16_t csum) {
-	/*
-	 *  Our algorithm is simple, using a 32 bit accumulator (sum),
-	 *  we add sequential 16 bit words to it, and at the end, fold
-	 *  back all the carry bits from the top 16 bits into the lower
-	 *  16 bits.
-	 */
 	const uint16_t *w = addr;
 	int nleft = len;
 	int sum   = csum;
@@ -85,7 +85,7 @@ uint16_t in_cksum(const uint16_t *addr, int len, uint16_t csum) {
 	}
 	/* mop up an odd byte, if necessary */
 	if (nleft == 1)
-		sum += ODDBYTE(*(uint16_t *)w);	/* le16toh() may be unavailable on old systems */
+		sum += ODDBYTE(*(uint8_t *)w);	/* le16toh() may be unavailable on old systems */
 	/* add back carry outs from top 16 bits to low 16 bits */
 	sum  = (sum >> 16) + (sum & USHRT_MAX);	/* add hi 16 to low 16 */
 	sum += (sum >> 16);			/* add carry */
@@ -93,7 +93,17 @@ uint16_t in_cksum(const uint16_t *addr, int len, uint16_t csum) {
 	return answer;
 }
 
-void print4_ip_options(const struct ping_rts *rts, const uint8_t *cp, int hlen) {
+static inline void puts_addr(in_addr_t addr, bool resolve) {
+	putchar('\t');
+	if (addr) {
+		struct sockaddr_in sin = { .sin_family = AF_INET,
+			.sin_addr.s_addr = addr };
+		fputs(sprint_addr(&sin, sizeof(sin), resolve), stdout);
+	} else
+		fputs("0.0.0.0", stdout);
+}
+
+void print4_ip_options(const state_t *rts, const uint8_t *cp, int hlen) {
 	static int old_rrlen;
 	static char old_rr[MAX_IPOPTLEN];
 
@@ -117,28 +127,12 @@ void print4_ip_options(const struct ping_rts *rts, const uint8_t *cp, int hlen) 
 		switch (*cp) {
 		case IPOPT_SSRR:
 		case IPOPT_LSRR: {
-			printf(_("\n%cSRR: "), (*cp == IPOPT_SSRR) ? 'S' : 'L');
+			printf("\n%cSRR: ", (*cp == IPOPT_SSRR) ? 'S' : 'L');
 			int j = *++cp;
 			cp++;
-			if (j > IPOPT_MINOFF) {
-				for (;;) {
-					uint32_t address;
-					memcpy(&address, cp, 4);
-					cp += 4;
-					if (address == 0)
-						printf("\t0.0.0.0");
-					else {
-						struct sockaddr_in sin = {
-							.sin_family = AF_INET,
-							.sin_addr.s_addr = address,
-						};
-						printf("\t%s", sprint_addr(rts, &sin, sizeof(sin)));
-					}
-					j -= 4;
-					putchar('\n');
-					if (j <= IPOPT_MINOFF)
-						break;
-				}
+			for (; j > IPOPT_MINOFF; j -= 4, cp += 4) {
+				puts_addr(*(in_addr_t *)cp, rts->opt.resolve);
+				putchar('\n');
 			}
 		}
 			break;
@@ -153,38 +147,21 @@ void print4_ip_options(const struct ping_rts *rts, const uint8_t *cp, int hlen) 
 			if (i == old_rrlen
 			    && !memcmp(cp, old_rr, i)
 			    && !rts->opt.flood) {
-				printf(_("\t(same route)"));
+				putchar('\t');
+				fputs(_("(same route)"), stdout);
 				break;
 			}
 			old_rrlen = i;
 			memcpy(old_rr, (char *)cp, i);
-			printf(_("\nRR: "));
+			printf("\nRR: ");
 			cp++;
-			for (;;) {
-				uint32_t address;
-				memcpy(&address, cp, 4);
-				cp += 4;
-				if (address == 0)
-					printf("\t0.0.0.0");
-				else {
-					struct sockaddr_in sin = {
-						.sin_family = AF_INET,
-						.sin_addr = {
-							address
-						}
-					};
-					printf("\t%s", sprint_addr(rts, &sin, sizeof(sin)));
-				}
-				i -= 4;
+			for (; i > 0; i -= 4, cp += 4) {
+				puts_addr(*(in_addr_t *)cp, rts->opt.resolve);
 				putchar('\n');
-				if (i <= 0)
-					break;
 			}
 		}
 			break;
 		case IPOPT_TS: {
-			int stdtime = 0, nonstdtime = 0;
-			uint8_t flags;
 			int j = *++cp;		/* get length */
 			int i = *++cp;		/* and pointer */
 			if (i > j)
@@ -192,24 +169,15 @@ void print4_ip_options(const struct ping_rts *rts, const uint8_t *cp, int hlen) 
 			i -= 5;
 			if (i <= 0)
 				break;
-			flags = *++cp;
-			printf(_("\nTS: "));
+			printf("\nTS: ");
+			uint8_t flags = *++cp;
 			cp++;
-			for (;;) {
+			int stdtime = 0, nonstdtime = 0;
+			for (; i > 0; i -= 4) {
 				if ((flags & 0xF) != IPOPT_TS_TSONLY) {
-					uint32_t address;
-					memcpy(&address, cp, 4);
+					puts_addr(*(in_addr_t *)cp, rts->opt.resolve);
 					cp += 4;
-					if (address == 0)
-						printf("\t0.0.0.0");
-					else {
-						struct sockaddr_in sin = {
-							.sin_family = AF_INET,
-							.sin_addr = { address },
-						};
-						printf("\t%s", sprint_addr(rts, &sin, sizeof(sin)));
-					}
-					i -= 4;
+					i  -= 4;
 					if (i <= 0)
 						break;
 				}
@@ -217,31 +185,26 @@ void print4_ip_options(const struct ping_rts *rts, const uint8_t *cp, int hlen) 
 				l = (l << 8) + *cp++;
 				l = (l << 8) + *cp++;
 				l = (l << 8) + *cp++;
-
+				long ld = l;
+				const char *comment = NULL;
 				if (l & 0x80000000) {
-					if (nonstdtime == 0)
-						printf(_("\t%ld absolute not-standard"), l & 0x7fffffff);
-					else
-						printf(_("\t%ld not-standard"), (l & 0x7fffffff) - nonstdtime);
-					nonstdtime = l & 0x7fffffff;
+					comment = _(nonstdtime ? "not-standard" : "absolute not-standard");
+					ld &= 0x7fffffff;
+					nonstdtime = ld;
+					ld -= nonstdtime;
 				} else {
-					if (stdtime == 0)
-						printf(_("\t%ld absolute"), l);
-					else
-						printf("\t%ld", l - stdtime);
-					stdtime = l;
+					comment = stdtime ? "" : _("absolute");
+					stdtime = ld;
+					ld -= stdtime;
 				}
-				i -= 4;
-				putchar('\n');
-				if (i <= 0)
-					break;
+				printf("\t%ld %s\n", ld, comment);
 			}
 			if (flags >> 4)
-				printf(_("Unrecorded hops: %d\n"), flags >> 4);
+				printf("%s: %d\n", _("Unrecorded hops"), flags >> 4);
 			break;
 		}
 		default:
-			printf(_("\nunknown option %x"), *cp);
+			printf("\n%s %x", _("Unknown option"), *cp);
 			break;
 		}
 		totlen -= olen;
@@ -251,7 +214,7 @@ void print4_ip_options(const struct ping_rts *rts, const uint8_t *cp, int hlen) 
 
 
 /* Print an IP header with options */
-static void print4_iph(const struct ping_rts *rts, const struct iphdr *ip) {
+static void print4_iph(const state_t *rts, const struct iphdr *ip) {
 	printf("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n");
 	printf(" %1x  %1x  %02x %04x %04x", ip->version, ip->ihl, ip->tos, ip->tot_len, ip->id);
 	printf("   %1x %04x", ((ip->frag_off) & 0xe000) >> 13, (ip->frag_off) & 0x1fff);
@@ -266,8 +229,8 @@ static void print4_iph(const struct ping_rts *rts, const struct iphdr *ip) {
 
 
 /* Print a descriptive string about an ICMP header */
-void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
-	uint32_t info, const struct icmphdr *icmp)
+void print4_icmph(const state_t *rts, uint8_t type, uint8_t code, uint32_t info,
+		const struct icmphdr *icmp)
 {
 	switch (type) {
 	case ICMP_ECHOREPLY:
@@ -358,7 +321,8 @@ void print4_icmph(const struct ping_rts *rts, uint8_t type, uint8_t code,
 			.sin_family = AF_INET,
 			.sin_addr.s_addr = icmp ? htonl(icmp->un.gateway) : htonl(info),
 		  };
-		  printf(_("(New nexthop: %s)"), sprint_addr(rts, &sin, sizeof(sin)));
+		  printf("(%s: %s)", _("New nexthop"),
+			sprint_addr(&sin, sizeof(sin), rts->opt.resolve));
 		}
 		if (icmp && rts->opt.verbose)
 			print4_iph(rts, (struct iphdr *)(icmp + 1));

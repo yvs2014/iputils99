@@ -65,7 +65,6 @@
 #include <errno.h>
 #include <err.h>
 #include <math.h>
-#include <locale.h>
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <sys/types.h>
@@ -73,6 +72,10 @@
 #include <net/if.h>
 #include <linux/in6.h>
 #include <linux/errqueue.h>
+
+#ifdef ENABLE_NLS
+#include <locale.h>
+#endif
 
 unsigned long strtoul_or_err(const char *str, const char *errmesg,
 	unsigned long min, unsigned long max)
@@ -101,10 +104,14 @@ double strtod_or_err(const char *str, const char *errmesg,
 		 * because it handles decimal point of -i/-W input options
 		 */
 		char *end = NULL;
-		setlocale(LC_ALL, "C");
+#ifdef ENABLE_NLS
+		setlocale(LC_NUMERIC, "C");
+#endif
 		double num = strtod(str, &end);
 		int keep = errno;
-		setlocale(LC_ALL, "");
+#ifdef ENABLE_NLS
+		setlocale(LC_NUMERIC, "");
+#endif
 		errno = keep;
 		if (!(errno || (str == end) || (end && *end))) {
 			if (isgreaterequal(num, min) && islessequal(num, max))
@@ -124,9 +131,9 @@ unsigned parse_flow(const char *str) {
 	unsigned val = strtoul(str + dx, &ep, dx ? 16 : 10);
 	/* doesn't look like decimal or hex, eh? */
 	if (ep && *ep)
-		errx(2, _("bad value for flowinfo: %s"), str);
+		errx(EINVAL, _("bad value for flowinfo: %s"), str);
 	if (val & ~IPV6_FLOWINFO_FLOWLABEL)
-		errx(2, _("flow value is greater than 20 bits: %s"), str);
+		errx(EINVAL, _("flow value is greater than 20 bits: %s"), str);
 	return val;
 }
 
@@ -138,9 +145,9 @@ unsigned char parse_tos(const char *str) {
 	unsigned long tos = strtoul(str + dx, &ep, dx ? 16 : 10);
 	/* doesn't look like decimal or hex, eh? */
 	if (ep && *ep)
-		errx(2, _("bad TOS value: %s"), str);
+		errx(EINVAL, _("bad TOS value: %s"), str);
 	if (tos > UCHAR_MAX)
-		errx(2, _("the decimal value of TOS bits must be in range 0-255: %lu"), tos);
+		errx(EINVAL, _("the decimal value of TOS bits must be in range 0-255: %lu"), tos);
 	return tos;
 }
 #undef DX_SHIFT
@@ -148,7 +155,7 @@ unsigned char parse_tos(const char *str) {
 inline unsigned if_name2index(const char *ifname) {
 	unsigned rc = if_nametoindex(ifname);
 	if (!rc)
-		errx(2, _("unknown iface: %s"), ifname);
+		errx(EINVAL, _("unknown iface: %s"), ifname);
 	return rc;
 }
 
@@ -164,6 +171,61 @@ int setsock_bindopt(int fd, const char *device, socklen_t slen, unsigned mcast_f
 		rc = setsockopt(fd, SOL_IP, IP_MULTICAST_IF, &imr, sizeof(imr));
 	}
 	return rc;
+}
+
+inline void setsock_recverr(int fd, bool ip6) {
+	int on = 1;
+	if (setsockopt(fd, ip6 ? IPPROTO_IPV6 : SOL_IP,
+		ip6 ? IPV6_RECVERR : IP_RECVERR, &on, sizeof(on)) < 0)
+			warn("%s: setsockopt(%s)", _WARN,
+		ip6 ? "IPV6_RECVERR" : "IP_RECVERR");
+}
+
+inline void setsock_noloop(int fd, bool ip6) {
+	int off = 0;
+	if (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
+		ip6 ? IPV6_MULTICAST_LOOP : IP_MULTICAST_LOOP,
+		&off, sizeof(off)) < 0)
+			err(errno, _("cannot disable multicast loopback"));
+}
+
+void setsock_ttl(int fd, bool ip6, int ttl) {
+	int level = ip6 ? IPPROTO_IPV6 : IPPROTO_IP;
+	if (setsockopt(fd, level, ip6 ? IPV6_MULTICAST_HOPS : IP_MULTICAST_TTL,
+		&ttl, sizeof(ttl)) < 0)
+			err(errno, _("cannot set multicast time-to-live"));
+	int uni = ip6 ? ttl : 1;
+	if (setsockopt(fd, level, ip6 ? IPV6_UNICAST_HOPS : IP_TTL,
+		&uni, sizeof(uni)) < 0)
+			err(errno, ip6 ?
+		_("cannot set unicast hop limit") :
+		_("cannot set unicast time-to-live"));
+}
+
+void pmtu_interval(state_t *rts) {
+	rts->multicast = true;
+	int pmtudo = rts->ip6 ? IPV6_PMTUDISC_DO : IP_PMTUDISC_DO;
+	if (rts->uid) {
+		if (rts->interval < MIN_MCAST_MS) {
+#ifdef ENABLE_NLS
+			setlocale(LC_NUMERIC, "C");
+#endif
+			errx(EINVAL,
+				_("%s for user must be >= %u ms, use -i %.*f (or higher)"),
+				_(rts->ip6 ?
+					"Minimal interval for multicast ping" :
+					"Minimal interval for broadcast ping"),
+				MIN_MCAST_MS, MS2LEN(MIN_MCAST_MS % 1000), MIN_MCAST_MS / 1000.);
+#ifdef ENABLE_NLS
+			setlocale(LC_NUMERIC, ""); // for symmetry
+#endif
+		}
+		if ((rts->pmtudisc >= 0) && (rts->pmtudisc != pmtudo))
+			errx(EINVAL, _("%s does not fragment"), _(rts->ip6 ?
+				"Multicast ping" : "Broadcast ping"));
+	}
+	if (rts->pmtudisc < 0)
+		rts->pmtudisc = pmtudo;
 }
 
 #if defined(IP_PKTINFO) || defined(IPV6_PKTINFO)
@@ -197,17 +259,7 @@ void set_device(bool ip6, const char *device, socklen_t len,
 		err(errno, "setsockopt(BINDIFACE=%s)", device);
 }
 
-// func_set:receive_error:print_local_ee
-inline void print_local_ee(const struct ping_rts *rts, const struct sock_extended_err *ee) {
-	if (rts->opt.flood)
-		write(STDOUT_FILENO, "E", 1);
-	else if (ee->ee_errno != EMSGSIZE)
-		warnx(_("local error"));
-	else
-		warnx(_("local error: message too long, mtu: %u"), ee->ee_info);
-}
-
-void mtudisc_n_bind(struct ping_rts *rts, const struct socket_st *sock) {
+void mtudisc_n_bind(state_t *rts, const sock_t *sock) {
 	// called once at setup
 	if (rts->pmtudisc >= 0) {
 		int level = rts->ip6 ? IPPROTO_IPV6      : SOL_IP;
@@ -232,28 +284,7 @@ void mtudisc_n_bind(struct ping_rts *rts, const struct socket_st *sock) {
 	}
 }
 
-// func_set:receive_error:print_addr_seq
-void print_addr_seq(const struct ping_rts *rts, uint16_t seq,
-	const struct sock_extended_err *ee, socklen_t salen)
-{
-	if (rts->opt.quiet)
-		return;
-	if (rts->opt.flood)
-		write(STDOUT_FILENO, "\bE", 2);
-	else {
-		PRINT_TIMESTAMP;
-		const void *sa = ee + 1;
-		printf(_("From %s icmp_seq=%u "), sprint_addr(rts, sa, salen), seq);
-		if (rts->ip6) {
-			print6_icmp(ee->ee_type, ee->ee_code, ee->ee_info);
-			putchar('\n');
-		} else
-			print4_icmph(rts, ee->ee_type, ee->ee_code, ee->ee_info, NULL);
-		fflush(stdout);
-	}
-}
-
-void cmp_srcdev(const struct ping_rts *rts) {
+void cmp_srcdev(const state_t *rts) {
 	// called once before loop
 	struct ifaddrs *list = NULL;
 	if (getifaddrs(&list))
@@ -276,5 +307,62 @@ void cmp_srcdev(const struct ping_rts *rts) {
 			_WARN, rts->device);
 	if (list)
 		freeifaddrs(list);
+}
+
+/* Estimate memory eaten by single packet. It is rough estimate.
+ * Actually, for small datalen's it depends on kernel side a lot. */
+void set_estimate_buf(state_t *rts, int fd,
+	size_t iplen, size_t extra, size_t icmplen)
+{
+	if (!rts->sndbuf)
+/* Set socket buffers, "alloc" is an estimate of memory taken by single packet */
+		rts->sndbuf = ((icmplen + rts->datalen + 511) / 512) *
+			(iplen + extra + 2 * icmplen + DEFIPPAYLOAD + 160);
+	if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &rts->sndbuf, sizeof(rts->sndbuf)) < 0)
+		warn("setsockopt(SO_SNDBUF)");
+	//
+	int hold = rts->sndbuf * rts->preload;
+	socklen_t size = sizeof(hold);
+	if (hold < (IP_MAXPACKET + 1))
+		hold = (IP_MAXPACKET + 1);
+	if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &hold, size) < 0)
+		warn("setsockopt(SO_RCVBUF)");
+	//
+	int rcvbuf = hold;
+	if (!getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &hold, &size))
+		if (hold < rcvbuf)
+			warnx("%s: %s", _WARN, _("probably, rcvbuf is not enough to hold preload"));
+}
+
+// func_set:receive_error:print_addr_seq
+void print_addr_seq(const state_t *rts, uint16_t seq,
+	const struct sock_extended_err *ee, socklen_t salen)
+{
+	if (rts->opt.quiet)
+		return;
+	if (rts->opt.flood)
+		write(STDOUT_FILENO, "\bE", 2);
+	else {
+		PRINT_TIMESTAMP;
+		const void *sa = ee + 1;
+		printf(_("From %s icmp_seq=%u "),
+			sprint_addr(sa, salen, rts->opt.resolve), seq);
+		if (rts->ip6) {
+			print6_icmp(ee->ee_type, ee->ee_code, ee->ee_info);
+			putchar('\n');
+		} else
+			print4_icmph(rts, ee->ee_type, ee->ee_code, ee->ee_info, NULL);
+		fflush(stdout);
+	}
+}
+
+// func_set:receive_error:print_local_ee
+inline void print_local_ee(const state_t *rts, const struct sock_extended_err *ee) {
+	if (rts->opt.flood)
+		write(STDOUT_FILENO, "E", 1);
+	else if (ee->ee_errno != EMSGSIZE)
+		warnx(_("local error"));
+	else
+		warnx(_("local error: message too long, mtu: %u"), ee->ee_info);
 }
 

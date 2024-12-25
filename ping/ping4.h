@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-int ping4_run(struct ping_rts *rts, int argc, char **argv,
-	struct addrinfo *ai, const socket_st *sock);
+int ping4_run(state_t *rts, int argc, char **argv,
+	struct addrinfo *ai, const sock_t *sock);
 
 #endif

@@ -18,7 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 5.3\n"
 
-#: arping.c:123
 #, c-format
 msgid ""
 "\n"
@@ -56,20 +55,19 @@ msgstr ""
 "1 seconde)\n"
 "  -I <device>   périphérique Ethernet à utiliser"
 
-#: arping.c:142
 #, c-format
 msgid ""
 "\n"
 "  -s <source>   source IP address\n"
 "  <destination> DNS name or IP address\n"
 "\n"
-"For more details see arping(8).\n"
+"For more details see arping(8)\n"
 msgstr ""
 "\n"
 "  -s <source>   adresse IP source\n"
 "  <destination> nom DNS ou adresse IP\n"
 "\n"
-"Pour plus de détails, consultez arping(8).\n"
+"Pour plus de détails, consultez arping(8)\n"
 
 #: arping.c:305
 #, c-format
@@ -202,7 +200,6 @@ msgstr "Dépasse %d sauts\n"
 msgid "wrong timestamps\n"
 msgstr "mauvais timestamps\n"
 
-#: clockdiff.c:453
 #, c-format
 msgid ""
 "\n"
@@ -220,7 +217,7 @@ msgid ""
 "  -V, --version print version and exit\n"
 "  <destination> DNS name or IP address\n"
 "\n"
-"For more details see clockdiff(8).\n"
+"For more details see clockdiff(8)\n"
 msgstr ""
 "\n"
 "Utilisation :\n"
@@ -239,7 +236,7 @@ msgstr ""
 "  -V, --version afficher la version et quitter\n"
 "  <destination> nom DNS ou adresse IP\n"
 "\n"
-"Pour plus de détails, consultez clockdiff(8).\n"
+"Pour plus de détails, consultez clockdiff(8)\n"
 
 #: clockdiff.c:592
 msgid "measure: unknown failure"
@@ -359,18 +356,29 @@ msgstr ""
 "%s : l'adresse source pourrait être sélectionnée sur un périphérique autre que"
 " : %s"
 
-#: ping/ping6_common.c:267
-#, c-format
-msgid ""
-"minimal interval for multicast ping for user must be >= %d ms, use -i %s (or "
-"higher)"
-msgstr ""
-"l'intervalle minimal de ping multidiffusion pour l'utilisateur doit être "
-">=%d ms, utilisez -i %s (ou plus)"
+#
+msgid "Minimal interval for multicast ping"
+msgstr "L'intervalle minimal de ping multidiffusion"
 
-#: ping/ping6_common.c:272
-msgid "multicast ping does not fragment"
-msgstr "le ping multidiffusion ne fragmente pas"
+#
+msgid "Minimal interval for broadcast ping"
+msgstr "L'intervalle minimal de ping diffusé"
+
+#, c-format
+msgid "%s for user must be >= %u ms, use -i %.*f (or higher)"
+msgstr "%s pour l'utilisateur doit être >=%u ms, utilisez -i %.*f (ou plus)"
+
+#
+msgid "Multicast ping"
+msgstr "Le ping multidiffusion"
+
+#
+msgid "Broadcast ping"
+msgstr "Le ping diffusé"
+
+#, c-format
+msgid "%s does not fragment"
+msgstr "%s ne fragmente pas"
 
 #: ping/ping6_common.c:331
 msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
@@ -410,11 +418,6 @@ msgstr ", flux 0x%05x, "
 #, c-format
 msgid "from %s %s: "
 msgstr "de %s %s : "
-
-#: ping/ping6_common.c:408
-#, c-format
-msgid "%zu data bytes"
-msgstr "%zu octets de données"
 
 #: ping/ping6_common.c:423
 #, c-format
@@ -476,53 +479,39 @@ msgstr ", code=%d"
 msgid "Time exceeded: "
 msgstr "Temps dépassé : "
 
-#: ping/ping6_common.c:459
-#, c-format
+#
 msgid "Hop limit"
 msgstr "Limite de saut"
 
-#: ping/ping6_common.c:461
-#, c-format
+#
 msgid "Defragmentation failure"
 msgstr "Échec de la défragmentation"
 
-#: ping/ping6_common.c:463
 #, c-format
 msgid "code %d"
 msgstr "code %d"
 
-#: ping/ping6_common.c:466
-#, c-format
+#
 msgid "Parameter problem: "
 msgstr "Problème de paramètre : "
 
-#: ping/ping6_common.c:468
-#, c-format
-msgid "Wrong header field "
-msgstr "Champ d'entête incorrect "
+#
+msgid "Wrong header field"
+msgstr "Champ d'entête incorrect"
 
-#: ping/ping6_common.c:470
-#, c-format
-msgid "Unknown header "
-msgstr "Entête inconnu "
+#
+msgid "Unknown header"
+msgstr "Entête inconnu"
 
-#: ping/ping6_common.c:472
-#, c-format
-msgid "Unknown option "
-msgstr "Option inconnue "
+#
+msgid "Unknown option"
+msgstr "Option inconnue"
 
-#: ping/ping6_common.c:474
 #, c-format
-msgid "code %d "
-msgstr "code %d "
+msgid " at %u"
+msgstr " à %u"
 
-#: ping/ping6_common.c:475
-#, c-format
-msgid "at %u"
-msgstr "à %u"
-
-#: ping/ping6_common.c:478
-#, c-format
+#
 msgid "Echo request"
 msgstr "Requête Echo"
 
@@ -536,31 +525,26 @@ msgstr "Réponse Echo"
 msgid "MLD Query"
 msgstr "Requête MLD"
 
-#: ping/ping6_common.c:487
-#, c-format
+#
 msgid "MLD Report"
 msgstr "Rapport MLD"
 
-#: ping/ping6_common.c:490
-#, c-format
+#
 msgid "MLD Reduction"
 msgstr "Réduction MLD"
 
-#: ping/ping6_common.c:493
-#, c-format
-msgid "unknown icmp type: %u"
-msgstr "type ICMP inconnu : %u"
+#
+msgid "Unknown icmp type"
+msgstr "Type ICMP inconnu"
 
-#: ping/ping6_common.c:547
+#
 msgid "local error"
 msgstr "erreur locale"
 
-#: ping/ping6_common.c:549
 #, c-format
 msgid "local error: message too long, mtu: %u"
 msgstr "erreur locale : le message est trop long : %u"
 
-#: ping/ping6_common.c:571 ping/ping.c:1478
 #, c-format
 msgid "From %s icmp_seq=%u "
 msgstr "De %s icmp_seq=%u "
@@ -652,25 +636,14 @@ msgstr "mauvaise valeur pour les information de flux : %s"
 msgid "flow value is greater than 20 bits: %s"
 msgstr "la valeur de flux est plus grande que 20 bits : %s"
 
-#: ping/ping.c:297
 #, c-format
 msgid "bad TOS value: %s"
 msgstr "mauvaise valeur de TOS : %s"
 
-#: ping/ping.c:300
 #, c-format
 msgid "the decimal value of TOS bits must be in range 0-255: %lu"
 msgstr "la valeur décimale des bits TOS doit être entre 0 et 255 : %lu"
 
-#: ping/ping.c:371 ping/ping.c:402
-msgid "only one -4 or -6 option may be specified"
-msgstr "une seule option -4 ou -6 peut être renseignée"
-
-#: ping/ping.c:383 ping/ping.c:388
-msgid "only one of -T or -R may be used"
-msgstr "un seul parmi -T ou -R peut être utilisé"
-
-#: ping/ping.c:397
 #, c-format
 msgid "invalid timestamp type: %s"
 msgstr "type de timestamp invalide : %s"
@@ -679,12 +652,10 @@ msgstr "type de timestamp invalide : %s"
 msgid "bad timing interval"
 msgstr "mauvais intervalle de timing"
 
-#: ping/ping.c:456
 #, c-format
 msgid "cannot copy: %s"
 msgstr "impossible de copier : %s"
 
-#: ping/ping.c:465
 #, c-format
 msgid "invalid source address: %s"
 msgstr "adresse source invalide : %s"
@@ -708,13 +679,9 @@ msgstr "mauvais temps de persistance"
 msgid "ident 0 => forcing raw socket"
 msgstr "ident 0 => raw socket forcé"
 
-#, c-format
-#~ msgid ""
-#~ "IPv6 link-local address on ICMP datagram socket may require ifname "
-#~ "or scope-id => use: address%%<ifname|scope-id>"
-#~ msgstr ""
-#~ "une adresse IPv6 link-local sur socket datagramme ICMP peut "
-#~ "nécessité un ifname ou scope-id => utilisez : adresse%%<ifname|scope-id>"
+#
+msgid "No goal"
+msgstr "Aucun objectif"
 
 #: ping/ping.c:841
 msgid ""
@@ -736,23 +703,6 @@ msgstr "impossible de définir la multidiffusion"
 msgid "getifaddrs failed"
 msgstr "échec de getifaddrs"
 
-#: ping/ping.c:894
-#, c-format
-msgid ""
-"minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or "
-"higher)"
-msgstr ""
-"l'intervalle minimal de ping diffusé pour l'utilisateur doit être >=%d ms, "
-"utilisez -i %s (ou plus)"
-
-#: ping/ping.c:899
-msgid "broadcast ping does not fragment"
-msgstr "le ping diffusé ne fragmente pas"
-
-#: ping/ping.c:934
-msgid "your kernel is veeery old. No problems."
-msgstr "votre noyau est trèèès vieux. Aucun problème."
-
 #: ping/ping.c:1007
 msgid "cannot disable multicast loopback"
 msgstr "impossible de désactiver la boucle de retour pour la multidiffusion"
@@ -765,80 +715,29 @@ msgstr "impossible de définir la durée de vie de la multidiffusion"
 msgid "cannot set unicast time-to-live"
 msgstr "impossible de définir la durée de vie de la monodiffusion"
 
-#: ping/ping.c:1026
 #, c-format
 msgid "%zu(%zu) data bytes"
 msgstr "%zu(%zu) octets de données"
 
-#: ping/ping.c:1058
-#, c-format
-msgid ""
-"\n"
-"NOP"
-msgstr ""
-"\n"
-"NOP"
+#
+msgid "(same route)"
+msgstr "(route identique)"
 
-#: ping/ping.c:1069
-#, c-format
-msgid ""
-"\n"
-"%cSRR: "
-msgstr ""
-"\n"
-"%c SRR : "
+#
+msgid "absolute not-standard"
+msgstr "absolut non standard"
 
-#: ping/ping.c:1107
-#, c-format
-msgid "\t(same route)"
-msgstr "\t(route identique)"
+#
+msgid "not-standard"
+msgstr "non standard"
 
-#: ping/ping.c:1112
-#, c-format
-msgid ""
-"\n"
-"RR: "
-msgstr ""
-"\n"
-"RR : "
+#
+msgid "absolute"
+msgstr "absolut"
 
-#: ping/ping.c:1148
-#, c-format
-msgid ""
-"\n"
-"TS: "
-msgstr ""
-"\n"
-"TS : "
-
-#: ping/ping.c:1180
-#, c-format
-msgid "\t%ld absolute not-standard"
-msgstr "\t%ld absolut non standard"
-
-#: ping/ping.c:1182
-#, c-format
-msgid "\t%ld not-standard"
-msgstr "\t%ld non standard"
-
-#: ping/ping.c:1186
-#, c-format
-msgid "\t%ld absolute"
-msgstr "\t%ld absolut"
-
-#: ping/ping.c:1197
-#, c-format
-msgid "Unrecorded hops: %d\n"
-msgstr "Sauts non comptabilités :%d\n"
-
-#: ping/ping.c:1201
-#, c-format
-msgid ""
-"\n"
-"unknown option %x"
-msgstr ""
-"\n"
-"option inconnue %x"
+#
+msgid "Unrecorded hops"
+msgstr "Sauts non comptabilités"
 
 #: ping/ping.c:1242
 #, c-format
@@ -960,10 +859,9 @@ msgstr "Rediriger le type de service et l'hôte"
 msgid "Redirect, Bad Code: %d"
 msgstr "Redirection, mauvais code : %d"
 
-#: ping/ping.c:1333
-#, c-format
-msgid "(New nexthop: %s)"
-msgstr "(Nouveau sautsuivant : %s)"
+#
+msgid "New nexthop"
+msgstr "Nouveau sautsuivant"
 
 #: ping/ping.c:1339
 #, c-format
@@ -1045,7 +943,6 @@ msgstr "paquet trop court (%zd bytes) de %s"
 msgid "From %s: icmp_seq=%u "
 msgstr "De %s : icmp_seq=%u "
 
-#: ping/ping_common.c:49
 #, c-format
 msgid ""
 "\n"
@@ -1103,7 +1000,7 @@ msgid ""
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 "\n"
-"For more details see ping(8).\n"
+"For more details see ping(8)\n"
 msgstr ""
 "\n"
 "Usage\n"
@@ -1166,17 +1063,23 @@ msgstr ""
 "   -N <nodeinfo opt> utilise la requête d'informations sur le nœud IPv6, "
 "essayez <help> comme argument\n"
 "\n"
-"Pour plus de détails, voir ping(8).\n"
+"Pour plus de détails, voir ping(8)\n"
 
-#: ping/ping_common.c:217
-#, c-format
-msgid "patterns must be specified as hex digits: %s"
-msgstr "les patterns doivent être définis en lettres hexadécimales : %s"
+#
+msgid "Pattern must be specified as hex digits"
+msgstr "Motif doivent être défini en lettres hexadécimales"
 
-#: ping/ping_common.c:234
-#, c-format
-msgid "PATTERN: 0x"
-msgstr "MOTIF : 0x"
+#
+msgid "Blank pattern"
+msgstr "Motif vierge"
+
+#
+msgid "PATTERN"
+msgstr "MOTIF"
+
+#
+msgid "PAYLOAD"
+msgstr ""
 
 #: ping/ping_common.c:354
 #, c-format
@@ -1196,14 +1099,13 @@ msgstr "échec de définition du repère"
 msgid "SO_MARK not supported"
 msgstr "SO_MARK n'est pas pris en charge"
 
-#: ping/ping_common.c:489
 #, c-format
 msgid ""
-"cannot flood, minimal interval for user must be >= %d ms, use -i %s (or "
-"higher)"
+"Cannot flood, minimal interval for user must be >= %u ms, use -i %.*f "
+"(or higher)"
 msgstr ""
-"impossible d'inonder, intervalle minimal pour l'utilisateur doit être >= %d "
-"ms, utilisez -i %s (ou plus)"
+"Impossible d'inonder, intervalle minimal pour l'utilisateur doit être >= %u "
+"ms, utilisez -i %.*f (ou plus)"
 
 #: ping/ping_common.c:493
 #, c-format
@@ -1392,7 +1294,6 @@ msgstr "%2d ? : réponse reçue 8)\n"
 msgid "%2d:  send failed\n"
 msgstr "%2d :  échec envoi\n"
 
-#: tracepath.c:400
 #, c-format
 msgid ""
 "\n"
@@ -1410,7 +1311,7 @@ msgid ""
 "  -V             print version and exit\n"
 "  <destination>  DNS name or IP address\n"
 "\n"
-"For more details see tracepath(8).\n"
+"For more details see tracepath(8)\n"
 msgstr ""
 "\n"
 "Utilisation\n"
@@ -1427,114 +1328,29 @@ msgstr ""
 "  -V             afficher la version et quitter\n"
 "  <destination>  nom DNS ou adresse IP\n"
 "\n"
-"Pour plus de détails, consultez tracepath(8).\n"
+"Pour plus de détails, consultez tracepath(8)\n"
 
-#: tracepath.c:458 tracepath.c:463
-msgid "Only one -4 or -6 option may be specified"
-msgstr "Seule l’option -4 ou -6 peut être spécifiée"
+#, c-format
+msgid "Only one -%c or -%c option may be specified"
+msgstr "Seule l’option -%c ou -%c peut être spécifiée"
 
-#: tracepath.c:606
 #, c-format
 msgid "%2d:  no reply\n"
 msgstr "%2d :  aucune réponse\n"
 
-#: tracepath.c:613
 #, c-format
 msgid "     Resume: pmtu %d "
 msgstr "     Reprise : pmtu %d "
 
-#: tracepath.c:615
 #, c-format
 msgid "hops %d "
 msgstr "sauts %d "
 
-#: tracepath.c:617
 #, c-format
 msgid "back %d "
 msgstr "retour %d "
 
-#: tracepath.c:622
 #, c-format
 msgid "pktlen must be within: %d < value <= %d"
 msgstr "pktlen doit être entre : %d < valeur <= %d"
 
-#, c-format
-#~ msgid "PING %s(%s) "
-#~ msgstr "PING %s(%s) "
-
-#, c-format
-#~ msgid ""
-#~ "\n"
-#~ "Usage:\n"
-#~ "  traceroute6 [options] <destination>\n"
-#~ "\n"
-#~ "Options:\n"
-#~ "  -d            use SO_DEBUG socket option\n"
-#~ "  -i <device>   bind to <device>\n"
-#~ "  -m <hops>     use maximum <hops>\n"
-#~ "  -n            no dns name resolution\n"
-#~ "  -p <port>     use destination <port>\n"
-#~ "  -q <nprobes>  number of probes\n"
-#~ "  -r            use SO_DONTROUTE socket option\n"
-#~ "  -s <address>  use source <address>\n"
-#~ "  -v            verbose output\n"
-#~ "  -w <timeout>  time to wait for response\n"
-#~ "\n"
-#~ "For more details see traceroute6(8).\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Utilisation :\n"
-#~ "  traceroute6 [options] <destination>\n"
-#~ "\n"
-#~ "Options :\n"
-#~ "  -d            utiliser l’option de socket SO_DEBUG\n"
-#~ "  -i <périphérique>   lier à <périphérique>\n"
-#~ "  -m <sauts>     utiliser au maximum <sauts>\n"
-#~ "  -n            pas de résolution de nom DNS\n"
-#~ "  -p <port>     utiliser le <port> de destionation\n"
-#~ "  -q <nessai>  nombre d’essais\n"
-#~ "  -r            utiliser l’option de socket SO_DONTROUTE\n"
-#~ "  -s <adresse>  utiliser l’<adresse> source\n"
-#~ "  -v            affichage verbeux\n"
-#~ "  -w <délai>  délai d’attente pour la réponse\n"
-#~ "\n"
-#~ "Pour plus de détails, consultez traceroute6(8).\n"
-
-#, c-format
-#~ msgid "  %.4f ms"
-#~ msgstr "  %.4f ms"
-
-#, c-format
-#~ msgid " from %s"
-#~ msgstr " de %s"
-
-#, c-format
-#~ msgid ", %d hops max, %d byte packets\n"
-#~ msgstr ", %d sauts max, %d paquets d’octets\n"
-
-#~ msgid "Destination Unreachable"
-#~ msgstr "Destination injoignable"
-
-#~ msgid "Error"
-#~ msgstr "Erreur"
-
-#~ msgid "Home Agent Address Discovery Reply message"
-#~ msgstr "Message de réponse de découverte de l'adresse de l'agent d'origine"
-
-#~ msgid "Home Agent Address Discovery Request Message"
-#~ msgstr "Message de demande de découverte de l'adresse de l'agent d'origine"
-
-#~ msgid "Membership Query"
-#~ msgstr "Requête d'appartenance"
-
-#~ msgid "Membership Reduction"
-#~ msgstr "Réduction d'appartenance"
-
-#~ msgid "Membership Report"
-#~ msgstr "Rapport d'appartenance"
-
-#~ msgid "OUT-OF-RANGE"
-#~ msgstr "HORS DE PORTÉE"
-
-#~ msgid "Packet Too Big"
-#~ msgstr "Paquet trop grand"

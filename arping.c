@@ -38,8 +38,8 @@
 # include <sys/prctl.h>
 #endif
 
-#if defined(USE_IDN) || defined(ENABLE_NLS)
-# include <locale.h>
+#ifdef ENABLE_NLS
+#include <locale.h>
 #endif
 
 /*
@@ -117,8 +117,7 @@ static inline size_t sll_len(size_t halen)
 		sizeof(struct sockaddr_ll) : len;
 }
 
-static void usage(void)
-{
+NORETURN static void usage(int rc) {
 	fprintf(stderr, _(
 		"\nUsage:\n"
 		"  arping [options] <destination>\n"
@@ -139,12 +138,13 @@ static void usage(void)
 	fprintf(stderr, "(" DEFAULT_DEVICE_STR ")");
 #endif
 	fprintf(stderr, _(
-				"\n"
+		"\n"
 		"  -s <source>   source IP address\n"
 		"  <destination> DNS name or IP address\n"
-		"\nFor more details see arping(8).\n"
+		"\n"
+		"For more details see arping(8)\n"
 	));
-	exit(2);
+	exit(rc);
 }
 
 #ifdef HAVE_LIBCAP
@@ -219,13 +219,13 @@ static inline void arping_limit_capabilities(struct run_state *ctl) {
 
 static int arping_modify_capability_raw(struct run_state *ctl, int on) {
 	if (setuid(on ? ctl->euid : getuid()))
-		error(-1, errno, "setuid");
+		err(errno, "setuid");
 	return 0;
 }
 
 static inline void arping_drop_capabilities(void) {
-	if (setuid(getuid()) < 0)
-		error(-1, errno, "setuid");
+	if (setuid(getuid()))
+		err(errno, "setuid");
 }
 #endif	/* HAVE_LIBCAP */
 
@@ -539,7 +539,7 @@ static void netlink_query(struct run_state *const ctl, const int flags,
 	if (0 <= fd)
 		close(fd);
 	if (ret)
-		exit(1);
+		exit(EXIT_FAILURE);
 }
 
 static void guess_device(struct run_state *const ctl)
@@ -577,7 +577,7 @@ static int check_ifflags(struct run_state const *const ctl, unsigned ifflags) {
 		if (ctl->device.name != NULL) {
 			if (!ctl->quiet)
 				printf(_("Interface \"%s\" is down\n"), ctl->device.name);
-			exit(2);
+			exit(EINVAL);
 		}
 		return -1;
 	}
@@ -585,7 +585,7 @@ static int check_ifflags(struct run_state const *const ctl, unsigned ifflags) {
 		if (ctl->device.name != NULL) {
 			if (!ctl->quiet)
 				printf(_("Interface \"%s\" is not ARPable\n"), ctl->device.name);
-			exit(ctl->dad ? 0 : 2);
+			exit(ctl->dad ? EXIT_SUCCESS : EINVAL);
 		}
 		return -1;
 	}
@@ -862,12 +862,10 @@ int main(int argc, char **argv)
 
 	atexit(close_stdout);
 	arping_limit_capabilities(&ctl);
-#if defined(USE_IDN) || defined(ENABLE_NLS)
-	setlocale(LC_ALL, "");
 #ifdef ENABLE_NLS
-	bindtextdomain (PACKAGE_NAME, LOCALEDIR);
-	textdomain (PACKAGE_NAME);
-#endif
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE_NAME, LOCALEDIR);
+	textdomain(PACKAGE_NAME);
 #endif
 	while ((ch = getopt(argc, argv, "h?bfDUAqc:w:i:s:I:V")) != EOF) {
 		switch (ch) {
@@ -909,18 +907,23 @@ int main(int argc, char **argv)
 		case 'V':
 			printf(IPUTILS_VERSION("arping"));
 			print_config();
-			exit(0);
+			exit(EXIT_SUCCESS);
 		case 'h':
 		case '?':
+			usage(EXIT_SUCCESS);
 		default:
-			usage();
+			usage(EXIT_FAILURE);
 		}
 	}
 	argc -= optind;
 	argv += optind;
 
-	if (argc != 1)
-		usage();
+	if (argc <= 0) {
+		errno = EDESTADDRREQ;
+		warn(_("No goal"));
+		usage(EDESTADDRREQ);
+	} else if (argc != 1)
+		usage(EINVAL);
 
 	arping_enable_capability_raw(&ctl);
 	ctl.socketfd = socket(PF_PACKET, SOCK_DGRAM, 0);
@@ -946,7 +949,7 @@ int main(int argc, char **argv)
 
 		status = getaddrinfo(ctl.target, NULL, &hints, &result);
 		if (status)
-			errx(2, "%s: %s", ctl.target, gai_strerror(status));
+			errx(EINVAL, "%s: %s", ctl.target, gai_strerror(status));
 
 		memcpy(&ctl.gdst, &((struct sockaddr_in *)result->ai_addr)->sin_addr, sizeof ctl.gdst);
 		ctl.gdst_family = result->ai_family;
@@ -958,22 +961,21 @@ int main(int argc, char **argv)
 		guess_device(&ctl);
 
 	if (check_device(&ctl) < 0)
-		exit(2);
+		exit(EINVAL);
 
 	if (!ctl.device.ifindex) {
 		if (ctl.device.name)
-			errx(2, _("Device %s not available."), ctl.device.name);
+			errx(EINVAL, _("Device %s not available."), ctl.device.name);
 		warnx(_("Suitable device could not be determined. Please, use option -I."));
 	}
 
 	if (ctl.source && inet_aton(ctl.source, &ctl.gsrc) != 1)
-		errx(2, "invalid source %s", ctl.source);
+		errx(EINVAL, "invalid source %s", ctl.source);
 
 	if (!ctl.dad && ctl.unsolicited && ctl.source == NULL)
 		ctl.gsrc = ctl.gdst;
 
 	if (!ctl.dad || ctl.source) {
-		struct sockaddr_in saddr;
 		int probe_fd = socket(AF_INET, SOCK_DGRAM, 0);
 		if (probe_fd < 0)
 			err(errno, "socket");
@@ -984,8 +986,7 @@ int main(int argc, char **argv)
 				warn("%s: %s", _WARN, _("interface is ignored"));
 			arping_disable_capability_raw(&ctl);
 		}
-		memset(&saddr, 0, sizeof(saddr));
-		saddr.sin_family = AF_INET;
+		struct sockaddr_in saddr = { .sin_family = AF_INET };
 		if (ctl.source || ctl.gsrc.s_addr) {
 			saddr.sin_addr = ctl.gsrc;
 			if (bind(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
@@ -1037,9 +1038,9 @@ int main(int argc, char **argv)
 	}
 
 	if (!ctl.source && !ctl.gsrc.s_addr && !ctl.dad)
-		errx(2, _("no source address in not-DAD mode"));
+		errx(EINVAL, _("no source address in not-DAD mode"));
 
 	arping_drop_capabilities();
-
 	return event_loop(&ctl);
 }
+

@@ -1,7 +1,12 @@
 arping.c
 clockdiff.c
+iputils_common.c
+ping/common.c
 ping/node_info.c
-ping/ping6_common.c
+ping/ping4_aux.c
+ping/ping4.c
+ping/ping6_aux.c
+ping/ping6.c
+ping/ping_aux.c
 ping/ping.c
-ping/ping_common.c
 tracepath.c

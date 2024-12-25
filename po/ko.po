@@ -18,7 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.3\n"
 
-#: arping.c:123
 #, c-format
 msgid ""
 "\n"
@@ -55,20 +54,19 @@ msgstr ""
 "  -i <주기시간> 패킷 전송 주기를 설정합니다(기본: 1초)\n"
 "  -I <장치>     사용 하려는 이더넷 장치"
 
-#: arping.c:142
 #, c-format
 msgid ""
 "\n"
 "  -s <source>   source IP address\n"
 "  <destination> DNS name or IP address\n"
 "\n"
-"For more details see arping(8).\n"
+"For more details see arping(8)\n"
 msgstr ""
 "\n"
 "  -s <원천>   원천 IP 주소\n"
 "  <대상> DNS 이름 또는 IP 주소\n"
 "\n"
-"자세한 정보는 arping(8)를 참고하세요.\n"
+"자세한 정보는 arping(8)를 참고하세요\n"
 
 #: arping.c:305
 #, c-format
@@ -199,7 +197,6 @@ msgstr "%d 건너뛰기 초과\n"
 msgid "wrong timestamps\n"
 msgstr "잘못된 시간 표기\n"
 
-#: clockdiff.c:453
 #, c-format
 msgid ""
 "\n"
@@ -217,7 +214,7 @@ msgid ""
 "  -V, --version print version and exit\n"
 "  <destination> DNS name or IP address\n"
 "\n"
-"For more details see clockdiff(8).\n"
+"For more details see clockdiff(8)\n"
 msgstr ""
 "\n"
 "사용법:\n"
@@ -235,7 +232,7 @@ msgstr ""
 "  -V, --version 버전을 출력하고 나갑니다\n"
 "  <대상>         DNS 이름 또는 IP 주소 \n"
 "\n"
-"자세한 정보는 clockdiff(8)를 참고하세요.\n"
+"자세한 정보는 clockdiff(8)를 참고하세요\n"
 
 #: clockdiff.c:592
 msgid "measure: unknown failure"
@@ -353,18 +350,29 @@ msgstr "노드 사이의 범위 불일치"
 msgid "%s: source address might be selected on device other than: %s"
 msgstr "%s: 원천 주소는 다른 이외의 장치에서 선택될 수 있습니다: %s"
 
-#: ping/ping6_common.c:267
-#, c-format
-msgid ""
-"minimal interval for multicast ping for user must be >= %d ms, use -i %s (or "
-"higher)"
+#
+msgid "Minimal interval for multicast ping"
 msgstr ""
-"사용자의 멀티캐스트 핑을 위한 최소 간격은 %d ms이며, -i %s (또는 그 이상)를 "
-"사용합니다"
 
-#: ping/ping6_common.c:272
-msgid "multicast ping does not fragment"
-msgstr "다중 전송 ping이 조각화되지 않음"
+#
+msgid "Minimal interval for broadcast ping"
+msgstr ""
+
+#, c-format
+msgid "%s for user must be >= %u ms, use -i %.*f (or higher)"
+msgstr ""
+
+#
+msgid "Multicast ping"
+msgstr ""
+
+#
+msgid "Broadcast ping"
+msgstr ""
+
+#, c-format
+msgid "%s does not fragment"
+msgstr ""
 
 #: ping/ping6_common.c:331
 msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
@@ -404,11 +412,6 @@ msgstr ", flow 0x%05x, "
 #, c-format
 msgid "from %s %s: "
 msgstr "%s %s에서: "
-
-#: ping/ping6_common.c:408
-#, c-format
-msgid "%zu data bytes"
-msgstr "%zu 자료 바이트"
 
 #: ping/ping6_common.c:423
 #, c-format
@@ -480,43 +483,31 @@ msgstr "건너뛰기 제한"
 msgid "Defragmentation failure"
 msgstr "조각모음 실패"
 
-#: ping/ping6_common.c:463
 #, c-format
 msgid "code %d"
 msgstr "코드 %d번"
 
-#: ping/ping6_common.c:466
-#, c-format
+#
 msgid "Parameter problem: "
 msgstr "매개변수 문제: "
 
-#: ping/ping6_common.c:468
-#, c-format
-msgid "Wrong header field "
-msgstr "잘못된 헤더 부분 "
+#
+msgid "Wrong header field"
+msgstr "잘못된 헤더 부분"
 
-#: ping/ping6_common.c:470
-#, c-format
-msgid "Unknown header "
-msgstr "알 수 없는 헤더 "
+#
+msgid "Unknown header"
+msgstr "알 수 없는 헤더"
 
-#: ping/ping6_common.c:472
-#, c-format
-msgid "Unknown option "
-msgstr "알 수 없는 옵션 "
+#
+msgid "Unknown option"
+msgstr "알 수 없는 옵션"
 
-#: ping/ping6_common.c:474
 #, c-format
-msgid "code %d "
-msgstr "코드 %d "
+msgid " at %u"
+msgstr " %u에서"
 
-#: ping/ping6_common.c:475
-#, c-format
-msgid "at %u"
-msgstr "%u에서"
-
-#: ping/ping6_common.c:478
-#, c-format
+#
 msgid "Echo request"
 msgstr "반향 요청"
 
@@ -530,31 +521,26 @@ msgstr "반향 응답"
 msgid "MLD Query"
 msgstr "MLD 요청"
 
-#: ping/ping6_common.c:487
-#, c-format
+#
 msgid "MLD Report"
 msgstr "MLD 보고"
 
-#: ping/ping6_common.c:490
-#, c-format
+#
 msgid "MLD Reduction"
 msgstr "MLD 축소"
 
-#: ping/ping6_common.c:493
-#, c-format
-msgid "unknown icmp type: %u"
-msgstr "알 수 없는 icmp 형식: %u"
+#
+msgid "Unknown icmp type"
+msgstr "알 수 없는 icmp 형식"
 
-#: ping/ping6_common.c:547
+#
 msgid "local error"
 msgstr "로컬 오류"
 
-#: ping/ping6_common.c:549
 #, c-format
 msgid "local error: message too long, mtu: %u"
 msgstr "로컬 오류: 메시지가 너무 길음, mtu: %u"
 
-#: ping/ping6_common.c:571 ping/ping.c:1478
 #, c-format
 msgid "From %s icmp_seq=%u "
 msgstr "%s에서 icmp_seq=%u "
@@ -646,25 +632,14 @@ msgstr "흐름정보에 잘못된 값: %s"
 msgid "flow value is greater than 20 bits: %s"
 msgstr "흐름 값은 20 비트보다 커야 합니다: %s"
 
-#: ping/ping.c:297
 #, c-format
 msgid "bad TOS value: %s"
 msgstr "잘못된 TOS 값: %s"
 
-#: ping/ping.c:300
 #, c-format
 msgid "the decimal value of TOS bits must be in range 0-255: %lu"
 msgstr "TOS 비트의 십진수 값은 범위가 0-255 이어야 합니다: %lu"
 
-#: ping/ping.c:371 ping/ping.c:402
-msgid "only one -4 or -6 option may be specified"
-msgstr "-4 또는 -6 선택은 하나만 지정 할 수 있습니다"
-
-#: ping/ping.c:383 ping/ping.c:388
-msgid "only one of -T or -R may be used"
-msgstr "-T 또는 -R 중의 하나만 사용 될 수 있습니다"
-
-#: ping/ping.c:397
 #, c-format
 msgid "invalid timestamp type: %s"
 msgstr "부적절한 타임스탬프 형식: %s"
@@ -673,12 +648,10 @@ msgstr "부적절한 타임스탬프 형식: %s"
 msgid "bad timing interval"
 msgstr "나쁜 시간 간격"
 
-#: ping/ping.c:456
 #, c-format
 msgid "cannot copy: %s"
 msgstr "복사 할 수 없음: %s"
 
-#: ping/ping.c:465
 #, c-format
 msgid "invalid source address: %s"
 msgstr "부적절한 원시 주소: %s"
@@ -700,14 +673,6 @@ msgstr "나쁜 체류시간"
 #: ping/ping.c:595
 msgid "ident 0 => forcing raw socket"
 msgstr "ident 0 => 원시 소켓으로 강제합니다"
-
-#, c-format
-#~ msgid ""
-#~ "IPv6 link-local address on ICMP datagram socket may require ifname "
-#~ "or scope-id => use: address%%<ifname|scope-id>"
-#~ msgstr ""
-#~ "ICMP 데이타그램에서 IPv6 연결-로컬 주소는 ifname 또는 scope-id가 요구 "
-#~ "될 수 있습니다 => use: address%%<ifname|scope-id>"
 
 #: ping/ping.c:829
 msgid "warning: QOS sockopts"
@@ -733,23 +698,6 @@ msgstr "광역전송 중에 설정 할 수 없습니다"
 msgid "getifaddrs failed"
 msgstr "getifaddrs 실패함"
 
-#: ping/ping.c:894
-#, c-format
-msgid ""
-"minimal interval for broadcast ping for user must be >= %d ms, use -i %s (or "
-"higher)"
-msgstr ""
-"사용자의 브로드캐스팅 핑을 위한 최소 허용 간격은 %d ms이며, -i %s (또는 그 이"
-"상)를 사용합니다"
-
-#: ping/ping.c:899
-msgid "broadcast ping does not fragment"
-msgstr "광역전송 핑이 조각화되지 않음"
-
-#: ping/ping.c:934
-msgid "your kernel is veeery old. No problems."
-msgstr "당신의 커널은 아주~ 오래되었습니다. 문제 없습니다."
-
 #: ping/ping.c:1007
 msgid "cannot disable multicast loopback"
 msgstr "광역전송 루프백을 비활성화 할 수 없습니다"
@@ -762,93 +710,39 @@ msgstr "광역전송 유효기간(ttl)을 설정 할 수 없습니다"
 msgid "cannot set unicast time-to-live"
 msgstr "단일전송 유효기간(ttl)을 설정 할 수 없습니다"
 
-#: ping/ping.c:1026
 #, c-format
 msgid "%zu(%zu) data bytes"
 msgstr "자료의 %zu(%zu) 바이트"
 
-#: ping/ping.c:1058
-#, c-format
-msgid ""
-"\n"
-"NOP"
-msgstr ""
-"\n"
-"NOP"
+#
+msgid "(same route)"
+msgstr "(동일 경로)"
 
-#: ping/ping.c:1069
-#, c-format
-msgid ""
-"\n"
-"%cSRR: "
-msgstr ""
-"\n"
-"%cSRR: "
+#
+msgid "absolute not-standard"
+msgstr "절대 비-표준"
 
-#: ping/ping.c:1107
-#, c-format
-msgid "\t(same route)"
-msgstr "\t(동일 경로)"
+#
+msgid "not-standard"
+msgstr "비-표준"
 
-#: ping/ping.c:1112
-#, c-format
-msgid ""
-"\n"
-"RR: "
-msgstr ""
-"\n"
-"RR: "
+#
+msgid "absolute"
+msgstr "절대의"
 
-#: ping/ping.c:1148
-#, c-format
-msgid ""
-"\n"
-"TS: "
-msgstr ""
-"\n"
-"TS: "
+#
+msgid "Unrecorded hops"
+msgstr "기록되지 않는 건너뛰기"
 
-#: ping/ping.c:1180
-#, c-format
-msgid "\t%ld absolute not-standard"
-msgstr "\t%ld 절대 비-표준"
-
-#: ping/ping.c:1182
-#, c-format
-msgid "\t%ld not-standard"
-msgstr "\t%ld 비-표준"
-
-#: ping/ping.c:1186
-#, c-format
-msgid "\t%ld absolute"
-msgstr "\t%ld 절대의"
-
-#: ping/ping.c:1197
-#, c-format
-msgid "Unrecorded hops: %d\n"
-msgstr "기록되지 않는 건너뛰기: %d\n"
-
-#: ping/ping.c:1201
-#, c-format
-msgid ""
-"\n"
-"unknown option %x"
-msgstr ""
-"\n"
-"알지 못하는 옵션 %x"
-
-#: ping/ping.c:1242
-#, c-format
+#
 msgid "Echo Reply"
 msgstr "반향 응답"
 
-#: ping/ping.c:1248
-#, c-format
+#
 msgid "Destination Net Unreachable"
 msgstr "대상 넷에 도달 할 수 없음"
 
-#: ping/ping.c:1251
-#, c-format
+#
 msgid "Destination Host Unreachable"
 msgstr "대상 호스트에 도달 할 수 없음"
 
@@ -957,10 +851,9 @@ msgstr "서비스 및 호스트의 경로 재지정 형식"
 msgid "Redirect, Bad Code: %d"
 msgstr "넘겨주기, 잘못된 코드: %d"
 
-#: ping/ping.c:1333
-#, c-format
-msgid "(New nexthop: %s)"
-msgstr "(신규 다음 건너뛰기: %s)"
+#
+msgid "New nexthop"
+msgstr "신규 다음 건너뛰기"
 
 #: ping/ping.c:1339
 #, c-format
@@ -1042,7 +935,6 @@ msgstr "패킷이 너무 짧음(%zd 바이트) (%s에서)"
 msgid "From %s: icmp_seq=%u "
 msgstr "%s에서: icmp_seq=%u "
 
-#: ping/ping_common.c:49
 #, c-format
 msgid ""
 "\n"
@@ -1100,7 +992,7 @@ msgid ""
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 "\n"
-"For more details see ping(8).\n"
+"For more details see ping(8)\n"
 msgstr ""
 "\n"
 "사용법\n"
@@ -1159,15 +1051,21 @@ msgstr ""
 "\n"
 "더 자세한 정보를 위해 ping(8)을 참고하세요\n"
 
-#: ping/ping_common.c:217
-#, c-format
-msgid "patterns must be specified as hex digits: %s"
-msgstr "패턴은 16진수로 지정해야 합니다: %s"
+#
+msgid "Pattern must be specified as hex digits"
+msgstr "패턴은 16진수로 지정해야 합니다"
 
-#: ping/ping_common.c:234
-#, c-format
-msgid "PATTERN: 0x"
-msgstr "패턴: 0x"
+#
+msgid "Blank pattern"
+msgstr ""
+
+#
+msgid "PATTERN"
+msgstr "패턴"
+
+#
+msgid "PAYLOAD"
+msgstr ""
 
 #: ping/ping_common.c:354
 #, c-format
@@ -1186,14 +1084,13 @@ msgstr "표시 설정에 실패함"
 msgid "SO_MARK not supported"
 msgstr "SO_MARK는 지원되지 않음"
 
-#: ping/ping_common.c:489
 #, c-format
 msgid ""
-"cannot flood, minimal interval for user must be >= %d ms, use -i %s (or "
-"higher)"
+"Cannot flood, minimal interval for user must be >= %u ms, use -i %.*f "
+"(or higher)"
 msgstr ""
-"넘쳐흐를 수 없고, 사용자를 위한 최소 허용 간격은 %d ms이며, -i %s (또는 그 이"
-"상)를 사용합니다"
+"넘쳐흐를 수 없고, 사용자를 위한 최소 허용 간격은 %u ms이며, -i %.*f "
+"(또는 그 이상)를 사용합니다"
 
 #: ping/ping_common.c:493
 #, c-format
@@ -1384,7 +1281,6 @@ msgstr "%2d?: 응답 8 받았습니다)\n"
 msgid "%2d:  send failed\n"
 msgstr "%2d:  전송 실패함\n"
 
-#: tracepath.c:400
 #, c-format
 msgid ""
 "\n"
@@ -1402,7 +1298,7 @@ msgid ""
 "  -V             print version and exit\n"
 "  <destination>  DNS name or IP address\n"
 "\n"
-"For more details see tracepath(8).\n"
+"For more details see tracepath(8)\n"
 msgstr ""
 "\n"
 "사용법\n"
@@ -1419,188 +1315,29 @@ msgstr ""
 "  -V             버전을 출력하고 종료합니다\n"
 "  <destination>  DNS 이름 또는 IP 주소\n"
 "\n"
-"보다 자세한 정보를 위하여 tracepath(8)를 참고하세요.\n"
+"보다 자세한 정보를 위하여 tracepath(8)를 참고하세요\n"
 
-#: tracepath.c:458 tracepath.c:463
-msgid "Only one -4 or -6 option may be specified"
-msgstr "-4 또는 -6 선택은 하나만 지정 할 수 있습니다"
+#, c-format
+msgid "Only one -%c or -%c option may be specified"
+msgstr "-%c 또는 -%c 선택은 하나만 지정 할 수 있습니다"
 
-#: tracepath.c:606
 #, c-format
 msgid "%2d:  no reply\n"
 msgstr "%2d:  응답 없음\n"
 
-#: tracepath.c:613
 #, c-format
 msgid "     Resume: pmtu %d "
 msgstr "     재시도: pmtu %d "
 
-#: tracepath.c:615
 #, c-format
 msgid "hops %d "
 msgstr "건너뛰기 %d "
 
-#: tracepath.c:617
 #, c-format
 msgid "back %d "
 msgstr "%d 뒤로 "
 
-#: tracepath.c:622
 #, c-format
 msgid "pktlen must be within: %d < value <= %d"
 msgstr "pktlen은 다음 값 안에 있어야 합니다: %d < 값 <= %d"
 
-#, c-format
-#~ msgid "multicast ping with too short interval: %d"
-#~ msgstr "너무 짧은 간격을 갖는 다중 전송 ping: %d"
-
-#~ msgid "setsockopt(IPV6_TCLASS)"
-#~ msgstr "setsockopt(IPV6_TCLASS)"
-
-#~ msgid "traffic class is not supported"
-#~ msgstr "트래픽 클래스는 지원되지 않습니다"
-
-#, c-format
-#~ msgid "PING %s(%s) "
-#~ msgstr "PING %s(%s) "
-
-#, c-format
-#~ msgid "broadcast ping with too short interval: %d"
-#~ msgstr "너무 짧은 시간 간격으로 광역전송 ping: %d"
-
-#~ msgid "unknown interface"
-#~ msgstr "알지 못하는 연결장치"
-
-#, c-format
-#~ msgid "traceroute: wrote %s %d chars, ret=%d\n"
-#~ msgstr "traceroute: %s %d 문자가 작성되었으며, 반환됨=%d\n"
-
-#~ msgid "Error"
-#~ msgstr "오류"
-
-#~ msgid "Destination Unreachable"
-#~ msgstr "대상에 도달할 수 없음"
-
-#~ msgid "Packet Too Big"
-#~ msgstr "패킷이 너무 큽니다"
-
-#~ msgid "Time Exceeded in Transit"
-#~ msgstr "전송 시간 초과"
-
-#~ msgid "Parameter Problem"
-#~ msgstr "매개변수 문제"
-
-#~ msgid "Membership Query"
-#~ msgstr "구성원 요청"
-
-#~ msgid "Membership Report"
-#~ msgstr "구성원 보고"
-
-#~ msgid "Membership Reduction"
-#~ msgstr "구성원 축소"
-
-#~ msgid "Router Solicitation"
-#~ msgstr "라우터 요청"
-
-#~ msgid "Router Advertisement"
-#~ msgstr "라우터 공지"
-
-#~ msgid "Neighbor Solicitation"
-#~ msgstr "이웃(인접 또는 인근) 요청"
-
-#~ msgid "Neighbor Advertisement"
-#~ msgstr "이웃(인근 또는 인접) 공지"
-
-#~ msgid "Redirect"
-#~ msgstr "넘겨주기(redirect)"
-
-#~ msgid "Neighbor Query"
-#~ msgstr "이웃 요청"
-
-#~ msgid "Neighbor Reply"
-#~ msgstr "이웃 응답"
-
-#~ msgid "Multicast Listener Report packet"
-#~ msgstr "다중 전송 감청 보고 패킷"
-
-#~ msgid "Home Agent Address Discovery Request Message"
-#~ msgstr "Home Agent 주소 검색 요청 메시지"
-
-#~ msgid "Home Agent Address Discovery Reply message"
-#~ msgstr "Home Agent 주소 검색 응답 메시지"
-
-#~ msgid "Mobile Prefix Solicitation Message"
-#~ msgstr "모바일 접두사 요청 메시지"
-
-#~ msgid "Mobile Prefix Solicitation Advertisement"
-#~ msgstr "모바일 접두사 요청 공지"
-
-#~ msgid "OUT-OF-RANGE"
-#~ msgstr "범위-초과"
-
-#, c-format
-#~ msgid ""
-#~ "\n"
-#~ "Usage:\n"
-#~ "  traceroute6 [options] <destination>\n"
-#~ "\n"
-#~ "Options:\n"
-#~ "  -d            use SO_DEBUG socket option\n"
-#~ "  -i <device>   bind to <device>\n"
-#~ "  -m <hops>     use maximum <hops>\n"
-#~ "  -n            no dns name resolution\n"
-#~ "  -p <port>     use destination <port>\n"
-#~ "  -q <nprobes>  number of probes\n"
-#~ "  -r            use SO_DONTROUTE socket option\n"
-#~ "  -s <address>  use source <address>\n"
-#~ "  -v            verbose output\n"
-#~ "  -V            print version and exit\n"
-#~ "  -w <timeout>  time to wait for response\n"
-#~ "\n"
-#~ "For more details see traceroute6(8).\n"
-#~ msgstr ""
-#~ "\n"
-#~ "사용법:\n"
-#~ "  traceroute6 [<옵션>] <대상>\n"
-#~ "\n"
-#~ "옵션:\n"
-#~ "  -d            SO_DEBUG 소켓 옵션을 활용합니다\n"
-#~ "  -i <장치>   <장치>에 바인딩합니다\n"
-#~ "  -m <홉수>     최대 홉수를 <홉수>로 지정합니다\n"
-#~ "  -n            DNS 이름 해석을 하지 않습니다\n"
-#~ "  -p <포트>     대상 <포트>를 사용합니다\n"
-#~ "  -q <프루브수>  프루브 갯수를 지정합니다\n"
-#~ "  -r             SO_DONTROUTE 소켓 옵션을 활용합니다\n"
-#~ "  -s <주소>  원본 <주소>를 활용합니다\n"
-#~ "  -v            자세한 출력\n"
-#~ "  -V            버전 정보를 출력하고 나갑니다\n"
-#~ "  -w <제한시간>  응답 대기 시간\n"
-#~ "\n"
-#~ "자세한 내용은 traceroute6(8)를 참고하십시오.\n"
-
-#~ msgid "wait must be >1 sec"
-#~ msgstr "대기가 1초보다 커야 합니다"
-
-#, c-format
-#~ msgid "setsockopt(RAW_CHECKSUM) failed - try to continue."
-#~ msgstr "setsockopt(RAW_CHECKSUM) 실패 - 계속 진행 시도."
-
-#, c-format
-#~ msgid "unknown addr %s"
-#~ msgstr "알 수 없는 주소 %s"
-
-#, c-format
-#~ msgid "traceroute to %s (%s)"
-#~ msgstr "%s 경로 추적 (%s)"
-
-#, c-format
-#~ msgid " from %s"
-#~ msgstr " %s에서"
-
-#, c-format
-#~ msgid ", %d hops max, %d byte packets\n"
-#~ msgstr ", 최대 %d홉, 패킷당 %d 바이트\n"
-
-#, c-format
-#~ msgid "  %.4f ms"
-#~ msgstr "  %.4f 밀리초"
