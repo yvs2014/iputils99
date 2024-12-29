@@ -89,61 +89,54 @@ static inline void rcvd_clear(state_t *rts, uint16_t seq) {
 }
 
 void usage(int rc) {
-	fprintf(stderr, _(
-		"\n"
-		"Usage\n"
-		"  ping [options] <destination>\n"
-		"\n"
-		"Options:\n"
-		"  <destination>      DNS name or IP address\n"
-		"  -a                 use audible ping\n"
-		"  -A                 use adaptive ping\n"
-		"  -B                 sticky source address\n"
-		"  -c <count>         stop after <count> replies\n"
-		"  -C                 call connect() syscall on socket creation\n"
-		"  -D                 print timestamps\n"
-		"  -d                 use SO_DEBUG socket option\n"
-		"  -e <identifier>    define identifier for ping session, default is random for\n"
-		"                     SOCK_RAW and kernel defined for SOCK_DGRAM\n"
-		"                     Imply using SOCK_RAW (for IPv4 only for identifier 0)\n"
-		"  -f                 flood ping\n"
-		"  -h                 print help and exit\n"
-		"  -H                 force reverse DNS name resolution (useful for numeric\n"
-		"                     destinations or for -f), override -n\n"
-		"  -I <interface>     either interface name or address\n"
-		"  -i <interval>      seconds between sending each packet\n"
-		"  -L                 suppress loopback of multicast packets\n"
-		"  -l <preload>       send <preload> number of packages while waiting replies\n"
-		"  -m <mark>          tag the packets going out\n"
-		"  -M <pmtud opt>     define path MTU discovery, can be one of <do|dont|want|probe>\n"
-		"  -n                 no reverse DNS name resolution, override -H\n"
-		"  -O                 report outstanding replies\n"
-		"  -p <pattern>       contents of padding byte\n"
-		"  -q                 quiet output\n"
-		"  -Q <tclass>        use quality of service <tclass> bits\n"
-		"  -s <size>          use <size> as number of data bytes to be sent\n"
-		"  -S <size>          use <size> as SO_SNDBUF socket option value\n"
-		"  -t <ttl>           define time to live\n"
-		"  -U                 print user-to-user latency\n"
-		"  -v                 verbose output\n"
-		"  -V                 print version and exit\n"
-		"  -w <deadline>      reply wait <deadline> in seconds\n"
-		"  -W <timeout>       time to wait for response\n"
-		"\n"
-		"IPv4 options:\n"
-		"  -4                 use IPv4\n"
-		"  -b                 allow pinging broadcast\n"
-		"  -R                 record route\n"
-		"  -T <timestamp>     define timestamp, can be one of <tsonly|tsandaddr|tsprespec>\n"
-		"\n"
-		"IPv6 options:\n"
-		"  -6                 use IPv6\n"
-		"  -F <flowlabel>     define flow label, default is random\n"
-		"  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
-		"\n"
-		"For more details see ping(8)\n"
-	));
-	exit(rc);
+	const char *options =
+"  <destination>      DNS name or IP address\n"
+"  -a                 use audible ping\n"
+"  -A                 use adaptive ping\n"
+"  -B                 sticky source address\n"
+"  -c <count>         stop after <count> replies\n"
+"  -C                 call connect() syscall on socket creation\n"
+"  -D                 print timestamps\n"
+"  -d                 use SO_DEBUG socket option\n"
+"  -e <identifier>    define identifier for ping session, default is random for\n"
+"                     SOCK_RAW and kernel defined for SOCK_DGRAM\n"
+"                     Imply using SOCK_RAW (for IPv4 only for identifier 0)\n"
+"  -f                 flood ping\n"
+"  -h                 print help and exit\n"
+"  -H                 force reverse DNS name resolution (useful for numeric\n"
+"                     destinations or for -f), override -n\n"
+"  -I <interface>     either interface name or address\n"
+"  -i <interval>      seconds between sending each packet\n"
+"  -L                 suppress loopback of multicast packets\n"
+"  -l <preload>       send <preload> number of packages while waiting replies\n"
+"  -m <mark>          tag the packets going out\n"
+"  -M <pmtud opt>     define path MTU discovery, can be one of <do|dont|want|probe>\n"
+"  -n                 no reverse DNS name resolution, override -H\n"
+"  -O                 report outstanding replies\n"
+"  -p <pattern>       contents of padding byte\n"
+"  -q                 quiet output\n"
+"  -Q <tclass>        use quality of service <tclass> bits\n"
+"  -s <size>          use <size> as number of data bytes to be sent\n"
+"  -S <size>          use <size> as SO_SNDBUF socket option value\n"
+"  -t <ttl>           define time to live\n"
+"  -U                 print user-to-user latency\n"
+"  -v                 verbose output\n"
+"  -V                 print version and exit\n"
+"  -w <deadline>      reply wait <deadline> in seconds\n"
+"  -W <timeout>       time to wait for response\n"
+"\n"
+"IPv4 options:\n"
+"  -4                 use IPv4\n"
+"  -b                 allow pinging broadcast\n"
+"  -R                 record route\n"
+"  -T <timestamp>     define timestamp, can be one of <tsonly|tsandaddr|tsprespec>\n"
+"\n"
+"IPv6 options:\n"
+"  -6                 use IPv6\n"
+"  -F <flowlabel>     define flow label, default is random\n"
+"  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
+;
+	usage_common(rc, options);
 }
 
 uid_t limit_capabilities(const state_t *rts) {
@@ -251,7 +244,7 @@ void fill_payload(int quiet, const char *str, uint8_t *payload, size_t len) {
 	if (errno)
 		errx(errno, "sscanf()");
 	if (items <= 0)
-		errx(EINVAL, _("Blank pattern"));
+		errx(EINVAL, "%s", _("Blank pattern"));
 	size_t max = (items > PAD_BYTES) ? PAD_BYTES : items;
 	for (size_t i = 0; i <= len; i++)
 		payload[i] = pad[i % max];
@@ -390,7 +383,7 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 	if (rts->opt.outstanding) {
 		if ((rts->ntransmitted > 0) && !rcvd_test(rts, rts->ntransmitted)) {
 			PRINT_TIMESTAMP;
-			printf(_("no answer yet for icmp_seq=%lu\n"), (rts->ntransmitted % MAX_DUP_CHK));
+			printf("%s (%s%lu)\n", _("No answer yet"), _("icmp_seq="), rts->ntransmitted % MAX_DUP_CHK);
 			fflush(stdout);
 		}
 	}
@@ -491,7 +484,7 @@ void sock_setmark(state_t *rts, int fd) {
 		warn("%s: %s: %u", _WARN, _("failed to set mark"), rts->mark);
 		errno = keep;
 		if (errno == EPERM)
-			warnx(_("=> missing cap_net_admin+p or cap_net_raw+p (since Linux 5.17) capability?"));
+			warnx("%s", _("=> missing cap_net_admin+p capability"));
 		rts->opt.mark = false;
 	}
 #else
@@ -510,15 +503,14 @@ void print_headline(const state_t *rts, size_t nodatalen) {
 	socklen_t len = rts->ip6 ?
 		sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
 	const char *target = sprint_addr(&rts->whereto, len, false);
-	printf(_("PING %s (%s) "), rts->hostname, target);
+	printf("%s %s (%s)", _("PING"), rts->hostname, target);
 	if (rts->ip6 && rts->flowlabel)
-		printf(_(", flow 0x%05x, "), ntohl(rts->flowlabel));
+		printf(", %s 0x%05x", _("flow"), ntohl(rts->flowlabel));
 	if (rts->device || rts->opt.strictsource) {
 		const char *from = sprint_addr(&rts->source, len, false);
-		printf(_("from %s %s: "), from, rts->device ? rts->device : "");
+		printf(", %s %s %s:", _("from"), from, rts->device ? rts->device : "");
 	}
-	printf(_("%zu(%zu) data bytes"), rts->datalen, rts->datalen + nodatalen);
-	putchar('\n');
+	printf(" %zu(%zu) %s\n", rts->datalen, rts->datalen + nodatalen, _("data bytes"));
 }
 
 /* Protocol independent setup and parameter checks */
@@ -531,15 +523,16 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 #ifdef ENABLE_NLS
 		setlocale(LC_NUMERIC, "C");
 #endif
-		errx(EINVAL,
-_("Cannot flood, minimal interval for user must be >= %u ms, use -i %.*f (or higher)"),
-			MIN_USER_MS, MS2LEN(MIN_USER_MS % 1000), MIN_USER_MS / 1000.);
+		errx(EINVAL, "%s: %s %u%s, %s", _("Cannot flood"),
+			_("Minimal user interval must be >="), MIN_USER_MS, _(" ms"),
+			_("see -i option for details"));
+
 #ifdef ENABLE_NLS
 		setlocale(LC_NUMERIC, ""); // for symmetry
 #endif
 	}
 	if (rts->interval >= (INT_MAX / rts->preload))
-		errx(EINVAL, _("illegal preload and/or interval: %d"), rts->interval);
+		errx(EINVAL, "%s: %d", _("Illegal preload and/or interval"), rts->interval);
 
 	// socket options
 	if (rts->opt.so_debug) {
@@ -622,24 +615,26 @@ static bool finish(const state_t *rts) {
 
 	putchar('\n');
 	fflush(stdout);
-	printf(_("--- %s ping statistics ---\n"), rts->hostname);
-	printf(_("%ld packets transmitted, "),    rts->ntransmitted);
-	printf(_("%ld received"),                 rts->nreceived);
+	printf("--- %s%s ---\n", rts->hostname, _(" ping statistics"));
+	printf("%ld %s", rts->ntransmitted, _("packets transmitted"));
+	printf(", %ld %s",  rts->nreceived, _("received"));
 	if (rts->nrepeats)
-		printf(_(", +%ld duplicates"),    rts->nrepeats);
+		printf(", +%ld %s", rts->nrepeats,  _("duplicates"));
 	if (rts->nchecksum)
-		printf(_(", +%ld corrupted"),     rts->nchecksum);
+		printf(", +%ld %s", rts->nchecksum, _("corrupted"));
 	if (rts->nerrors)
-		printf(_(", +%ld errors"),        rts->nerrors);
+		printf(", +%ld %s", rts->nerrors,   _("errors"));
 
 	if (rts->ntransmitted) {
-		printf(_(", %g%% packet loss"),
-		       ((rts->ntransmitted - rts->nreceived) * 100.) / rts->ntransmitted);
-		printf(_(", time %ldms"), 1000 * tv.tv_sec + (tv.tv_nsec + 500000) / 1000000);
+		printf(", %g%% %s",
+			((rts->ntransmitted - rts->nreceived) * 100.) / rts->ntransmitted,
+			_("packet loss"));
+		printf(", %s %ld%s", _("time"),
+			1000 * tv.tv_sec + (tv.tv_nsec + 500000) / 1000000, _(" ms"));
 	}
 	putchar('\n');
 
-	char *comma = "";
+	char comma = ',';
 	if (rts->nreceived && rts->timing) {
 		long total = rts->nreceived + rts->nrepeats;
 		long tmavg = rts->tsum / total;
@@ -649,21 +644,31 @@ static bool finish(const state_t *rts) {
 			(rts->tsum2 - ((rts->tsum * rts->tsum) / total)) / total :
 			(rts->tsum2 / total) - tmavg * tmavg;
 		double tmdev = sqrt((tmvar < 0) ? -tmvar : tmvar);
-		printf(_("rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms"),
-		       rts->tmin / 1000, rts->tmin % 1000, (unsigned long)(tmavg / 1000), tmavg % 1000,
-		       rts->tmax / 1000, rts->tmax % 1000, (long)tmdev / 1000, (long)tmdev % 1000);
-		comma = ", ";
+		printf("%s = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld%s",
+			_("rtt min/avg/max/mdev"),
+			rts->tmin             / 1000,   rts->tmin % 1000,
+			(unsigned long)(tmavg / 1000),      tmavg % 1000,
+			rts->tmax             / 1000,   rts->tmax % 1000,
+			(long)tmdev           / 1000, (long)tmdev % 1000,
+			_(" ms"));
+		comma = ',';
 	}
 	if (rts->pipesize > 1) {
-		printf(_("%spipe %d"), comma, rts->pipesize);
-		comma = ", ";
+		if (comma)
+			printf("%c ", comma);
+		printf("%s %d", _("pipe"), rts->pipesize);
+		comma = ',';
 	}
 
 	if ((!rts->interval || rts->opt.flood || rts->opt.adaptive)
 			&& rts->nreceived && (rts->ntransmitted > 1)) {
+		if (comma)
+			printf("%c ", comma);
 		int ipg = (1000000 * (long long)tv.tv_sec + tv.tv_nsec / 1000) / (rts->ntransmitted - 1);
-		printf(_("%sipg/ewma %d.%03d/%d.%03d ms"),
-		       comma, ipg / 1000, ipg % 1000, rts->rtt / 8000, (rts->rtt / 8) % 1000);
+		printf("%s = %d.%03d/%d.%03d%s", _("ipg/ewma"),
+		       ipg      / 1000,            ipg % 1000,
+		       rts->rtt / 8000, (rts->rtt / 8) % 1000,
+		       _(" ms"));
 	}
 	putchar('\n');
 	return (!rts->nreceived || (rts->deadline && (rts->nreceived < rts->npackets)));
@@ -678,15 +683,20 @@ static void fin_status(const state_t *rts) {
 	int loss = rts->ntransmitted ?
 		(100ll * (rts->ntransmitted - rts->nreceived)) / rts->ntransmitted
 		: 0;
-	fprintf(stderr, "\r");
-	fprintf(stderr, _("%ld/%ld packets, %d%% loss"), rts->nreceived, rts->ntransmitted, loss);
+	// stderr due to signals
+	fprintf(stderr, "%ld/%ld %s", rts->nreceived, rts->ntransmitted, _("packets"));
+	fprintf(stderr, ", %d%% %s", loss, _("loss"));
 	if (rts->nreceived && rts->timing) {
 		long tavg = rts->tsum / (rts->nreceived + rts->nrepeats);
-		fprintf(stderr, _(", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"),
-			rts->tmin / 1000, rts->tmin % 1000, tavg / 1000, tavg % 1000,
-			rts->rtt / 8000, (rts->rtt / 8) % 1000, rts->tmax / 1000, rts->tmax % 1000);
+		fprintf(stderr, ", %s = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld%s",
+			_("min/avg/ewma/max"),
+			rts->tmin / 1000, rts->tmin      % 1000,
+			tavg      / 1000, tavg           % 1000,
+			rts->rtt  / 8000, (rts->rtt / 8) % 1000,
+			rts->tmax / 1000, rts->tmax      % 1000,
+			_(" ms"));
 	}
-	fprintf(stderr, "\n");
+	putc('\n', stderr);
 	in_fin_status = false;
 }
 
@@ -909,7 +919,7 @@ int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
 		free(packet);
 		return rc;
 	}
-	err(errno ? errno : EXIT_FAILURE, _("memory allocation failed"));
+	err(errno ? errno : EXIT_FAILURE, "%s", _("Memory allocation failed"));
 }
 
 bool stats_noflush(state_t *rts, const uint8_t *icmp, int icmplen,
@@ -935,7 +945,9 @@ bool stats_noflush(state_t *rts, const uint8_t *icmp, int icmplen,
 			triptime = tv.tv_sec * 1000000 + tv.tv_usec;
 			if (triptime >= 0)
 				break;
-			warnx(_("%s: time of day goes back (%ldus), taking countermeasures"), _WARN, triptime);
+			warnx("%s: %s: %ldus", _WARN,
+				_("Time of day goes back, taking countermeasures"),
+				triptime);
 			if (rts->opt.latency) {
 				triptime = 0;
 				break;
@@ -984,58 +996,59 @@ bool stats_noflush(state_t *rts, const uint8_t *icmp, int icmplen,
 	}
 
 	PRINT_TIMESTAMP;
-	printf(_("%zd bytes from %s:"), received, from);
-
+	printf("%zd %s%s %s: ", received, _("bytes"), _(" from"), from);
 	if (print) /* seq */
 		print(rts->ip6, icmp, received);
 	else
-		printf(_(" icmp_seq=%u"), seq);
-
+		printf("%s%u", _("icmp_seq="), seq);
 	if (rts->opt.verbose)
-		printf(_(" ident=%u"), ntohs(rts->ident16));
+		printf(" %s%u", _("ident="), ntohs(rts->ident16));
 	if (hops >= 0)
-		printf(_(" ttl=%d"), hops);
-	if (received < (rts->datalen + 8)) {
-		printf(_(" (truncated)"));
-		putchar('\n');
+		printf(" %s%d", _("ttl="), hops);
+	if (received < (sizeof(struct icmphdr) + rts->datalen)) {
+		printf(" (%s)\n", _("truncated"));
 		return true;
 	}
 
 	if (rts->timing) {
+		fputs(_(" time="), stdout);
 		if      (triptime >= (100000 - 50))
-			printf(_(" time=%ld ms"),       (triptime + 500) / 1000);
-		else if (triptime >= ( 10000 -  5))
-			printf(_(" time=%ld.%01ld ms"), (triptime +  50) / 1000,
+			printf("%ld", (triptime + 500) / 1000);
+		else if (triptime >= (10000 - 5))
+			printf("%ld.%01ld", (triptime + 50) / 1000,
 			       ((triptime + 50) % 1000) / 100);
-		else if (triptime >= (  1000     ))
-			printf(_(" time=%ld.%02ld ms"), (triptime +   5) / 1000,
-			       ((triptime +  5) % 1000) /  10);
+		else if (triptime >= 1000)
+			printf("%ld.%02ld", (triptime + 5) / 1000,
+			       ((triptime + 5) % 1000) / 10);
 		else
-			printf(_(" time=%ld.%03ld ms"), triptime / 1000,
-				       triptime % 1000);
+			printf("%ld.%03ld", triptime / 1000, triptime % 1000);
+		fputs(_(" ms"), stdout);
 	}
-	if (dup && (!rts->multicast || rts->opt.verbose))
-		printf(_(" (DUP!)"));
-	if (!ack)
-		printf(_(" (BAD CHECKSUM!)"));
-	if (wrong)
-		printf(_(" (DIFFERENT ADDRESS!)"));
+	char* exclame[3] = {
+		(dup && (!rts->multicast || rts->opt.verbose)) ? "DUP" : NULL,
+		ack ? NULL : "BAD CHECKSUM",
+		wrong ? "DIFFERENT ADDRESS" : NULL,
+	};
+	for (int i = 0; i < 3; i++)
+		if (exclame[i])
+			printf(" (%s!)", exclame[i]);
 
 	/* check the data */
 	const uint8_t *cp = ptr + sizeof(struct timeval);
 	const uint8_t *dp = &rts->outpack[sizeof(struct icmphdr) + sizeof(struct timeval)];
 	for (size_t i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp, ++dp) {
-		if (*cp != *dp) {
-			putchar('\n');
-			printf(_("wrong data byte #%zu should be 0x%x but was 0x%x"),
-			       i, *dp, *cp);
-			cp = ptr + sizeof(struct timeval);
-			for (i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp) {
-				if ((i % 32) == sizeof(struct timeval))
-					printf("\n#%zu\t", i);
-				printf("%x ", *cp);
-			}
-			break;
+		if (*cp == *dp)
+			continue;
+		putchar('\n');
+		printf("\n%s %zu (%s%02x, %s%02x) ",
+			_("wrong byte #"),  i,
+			_("expected 0x"), *dp,
+			_("got 0x"),      *cp);
+		cp = ptr + sizeof(struct timeval);
+		for (i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp) {
+			if ((i % 32) == sizeof(struct timeval))
+				printf("\n#%zu\t", i);
+			printf("%x ", *cp);
 		}
 	}
 

@@ -116,7 +116,7 @@ void print4_ip_options(const state_t *rts, const uint8_t *cp, int hlen) {
 		if (*optptr == IPOPT_NOP) {
 			totlen--;
 			optptr++;
-			printf(_("\nNOP"));
+			printf("\nNOP");
 			continue;
 		}
 		cp = optptr;
@@ -204,7 +204,7 @@ void print4_ip_options(const state_t *rts, const uint8_t *cp, int hlen) {
 			break;
 		}
 		default:
-			printf("\n%s %x", _("Unknown option"), *cp);
+			printf("\n%s 0x%02x", _("Unknown option"), *cp);
 			break;
 		}
 		totlen -= olen;
@@ -234,87 +234,87 @@ void print4_icmph(const state_t *rts, uint8_t type, uint8_t code, uint32_t info,
 {
 	switch (type) {
 	case ICMP_ECHOREPLY:
-		printf(_("Echo Reply"));
+		fputs(_("Echo Reply"), stdout);
 		/* XXX ID + Seq + Data */
 		break;
 	case ICMP_DEST_UNREACH:
 		switch (code) {
 		case ICMP_NET_UNREACH:
-			printf(_("Destination Net Unreachable"));
+			fputs(_("Destination Net Unreachable"), stdout);
 			break;
 		case ICMP_HOST_UNREACH:
-			printf(_("Destination Host Unreachable"));
+			fputs(_("Destination Host Unreachable"), stdout);
 			break;
 		case ICMP_PROT_UNREACH:
-			printf(_("Destination Protocol Unreachable"));
+			fputs(_("Destination Protocol Unreachable"), stdout);
 			break;
 		case ICMP_PORT_UNREACH:
-			printf(_("Destination Port Unreachable"));
+			fputs(_("Destination Port Unreachable"), stdout);
 			break;
 		case ICMP_FRAG_NEEDED:
-			printf(_("Frag needed and DF set (mtu = %u)"), info);
+			printf("%s (mtu = %u)", _("Frag needed and DF set"), info);
 			break;
 		case ICMP_SR_FAILED:
-			printf(_("Source Route Failed"));
+			fputs(_("Source Route Failed"), stdout);
 			break;
 		case ICMP_NET_UNKNOWN:
-			printf(_("Destination Net Unknown"));
+			fputs(_("Destination Net Unknown"), stdout);
 			break;
 		case ICMP_HOST_UNKNOWN:
-			printf(_("Destination Host Unknown"));
+			fputs(_("Destination Host Unknown"), stdout);
 			break;
 		case ICMP_HOST_ISOLATED:
-			printf(_("Source Host Isolated"));
+			fputs(_("Source Host Isolated"), stdout);
 			break;
 		case ICMP_NET_ANO:
-			printf(_("Destination Net Prohibited"));
+			fputs(_("Destination Net Prohibited"), stdout);
 			break;
 		case ICMP_HOST_ANO:
-			printf(_("Destination Host Prohibited"));
+			fputs(_("Destination Host Prohibited"), stdout);
 			break;
 		case ICMP_NET_UNR_TOS:
-			printf(_("Destination Net Unreachable for Type of Service"));
+			fputs(_("Destination Net Unreachable for Type of Service"), stdout);
 			break;
 		case ICMP_HOST_UNR_TOS:
-			printf(_("Destination Host Unreachable for Type of Service"));
+			fputs(_("Destination Host Unreachable for Type of Service"), stdout);
 			break;
 		case ICMP_PKT_FILTERED:
-			printf(_("Packet filtered"));
+			fputs(_("Packet filtered"), stdout);
 			break;
 		case ICMP_PREC_VIOLATION:
-			printf(_("Precedence Violation"));
+			fputs(_("Precedence Violation"), stdout);
 			break;
 		case ICMP_PREC_CUTOFF:
-			printf(_("Precedence Cutoff"));
+			fputs(_("Precedence Cutoff"), stdout);
 			break;
 		default:
-			printf(_("Dest Unreachable, Bad Code: %d"), code);
+			printf("%s, %s: %d", _("Dest Unreachable"), _("Bad Code"), code);
 			break;
 		}
 		if (icmp && rts->opt.verbose)
 			print4_iph(rts, (struct iphdr *)(icmp + 1));
 		break;
 	case ICMP_SOURCE_QUENCH:
-		printf(_("Source Quench\n"));
+		fputs(_("Source Quench"), stdout);
 		if (icmp && rts->opt.verbose)
 			print4_iph(rts, (struct iphdr *)(icmp + 1));
 		break;
 	case ICMP_REDIRECT:
 		switch (code) {
 		case ICMP_REDIR_NET:
-			printf(_("Redirect Network"));
+			fputs(_("Redirect Network"), stdout);
 			break;
 		case ICMP_REDIR_HOST:
-			printf(_("Redirect Host"));
+			fputs(_("Redirect Host"), stdout);
 			break;
 		case ICMP_REDIR_NETTOS:
-			printf(_("Redirect Type of Service and Network"));
+			fputs(_("Redirect Type of Service and Network"), stdout);
 			break;
 		case ICMP_REDIR_HOSTTOS:
-			printf(_("Redirect Type of Service and Host"));
+			fputs(_("Redirect Type of Service and Host"), stdout);
 			break;
 		default:
-			printf(_("Redirect, Bad Code: %d"), code);
+			printf("%s, %s: %d", _("Redirect"), _("Bad Code"), code);
 			break;
 		}
 		{ struct sockaddr_in sin = {
@@ -328,58 +328,58 @@ void print4_icmph(const state_t *rts, uint8_t type, uint8_t code, uint32_t info,
 			print4_iph(rts, (struct iphdr *)(icmp + 1));
 		break;
 	case ICMP_ECHO:
-		printf(_("Echo Request"));
+		fputs(_("Echo Request"), stdout);
 		/* XXX ID + Seq + Data */
 		break;
 	case ICMP_TIME_EXCEEDED:
 		switch(code) {
 		case ICMP_EXC_TTL:
-			printf(_("Time to live exceeded"));
+			fputs(_("Time to live exceeded"), stdout);
 			break;
 		case ICMP_EXC_FRAGTIME:
-			printf(_("Frag reassembly time exceeded"));
+			fputs(_("Frag reassembly time exceeded"), stdout);
 			break;
 		default:
-			printf(_("Time exceeded, Bad Code: %d"), code);
+			printf("%s, %s: %d", _("Time exceeded"), _("Bad Code"), code);
 			break;
 		}
 		if (icmp && rts->opt.verbose)
 			print4_iph(rts, (struct iphdr *)(icmp + 1));
 		break;
 	case ICMP_PARAMETERPROB:
-		printf(_("Parameter problem: pointer = %u"),
+		printf("%s: %u", _("Parameter problem"),
 			icmp ? (ntohl(icmp->un.gateway) >> 24) : info);
 		if (icmp && rts->opt.verbose)
 			print4_iph(rts, (struct iphdr *)(icmp + 1));
 		break;
 	case ICMP_TIMESTAMP:
-		printf(_("Timestamp"));
+		fputs(_("Timestamp"), stdout);
 		/* XXX ID + Seq + 3 timestamps */
 		break;
 	case ICMP_TIMESTAMPREPLY:
-		printf(_("Timestamp Reply"));
+		fputs(_("Timestamp Reply"), stdout);
 		/* XXX ID + Seq + 3 timestamps */
 		break;
 	case ICMP_INFO_REQUEST:
-		printf(_("Information Request"));
+		fputs(_("Information Request"), stdout);
 		/* XXX ID + Seq */
 		break;
 	case ICMP_INFO_REPLY:
-		printf(_("Information Reply"));
+		fputs(_("Information Reply"), stdout);
 		/* XXX ID + Seq */
 		break;
 #ifdef ICMP_MASKREQ
 	case ICMP_MASKREQ:
-		printf(_("Address Mask Request"));
+		fputs(_("Address Mask Request"), stdout);
 		break;
 #endif
 #ifdef ICMP_MASKREPLY
 	case ICMP_MASKREPLY:
-		printf(_("Address Mask Reply"));
+		fputs(_("Address Mask Reply"), stdout);
 		break;
 #endif
 	default:
-		printf(_("Bad ICMP type: %d"), type);
+		printf("%s: %d", _("Bad ICMP type"), type);
 	}
 	putchar('\n');
 }

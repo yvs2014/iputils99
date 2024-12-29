@@ -50,8 +50,7 @@ long strtol_or_err(const char *str, const char *errmesg, long min, long max) {
 		if (!(errno || (str == end) || (end && *end))) {
 			if ((min <= num) && (num <= max))
 				return num;
-			errx(ERANGE, _("%s: '%s': out of range %ld - %ld"),
-				errmesg, str, min, max);
+			err(ERANGE, "%s: '%s': %ld - %ld", errmesg, str, min, max);
 		}
 	}
 	err(errno ? errno : EXIT_FAILURE, "%s: '%s'", errmesg, str);
@@ -99,5 +98,30 @@ inline void print_config(void) {
 	'-'
 #endif
 	);
+}
+
+static const char *myname;
+
+void setmyname(const char *argv0) {
+	myname =
+#ifdef HAVE_GETPROGNAME
+	getprogname();
+#elif  HAVE_PROGRAM_INVOCATION_SHORT_NAME
+	program_invocation_short_name;
+#else
+	NULL;
+#endif
+	if (!myname)
+		myname = argv0 ? argv0 : "";
+}
+
+void usage_common(int rc, const char *options) {
+	printf(	"\n%s:\n  %s %s\n"
+		"\n%s:\n%s"
+		"\n%s %s(8)\n",
+_("Usage"), myname, _( "[options] <destination>"),
+_("Options"), _(options),
+_("For more details see"), myname);
+	exit(rc);
 }
 

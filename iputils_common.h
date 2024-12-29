@@ -51,20 +51,9 @@
 #define _INFO	_(INFO)
 #define _WARN	_(WARN)
 
-#define OPTEXCL(optA, optB) do { errx(EINVAL, \
-	_("Only one -%c or -%c option may be specified"), (optA), (optB)); } \
+#define OPTEXCL(optA, optB) do { errx(EINVAL, "%s: -%c -%c", \
+	_("Mutually exclusive options"), (optA), (optB)); } \
 	while (0)
-
-long strtol_or_err(const char *str, const char *errmesg, long min, long max);
-void close_stdout(void);
-void print_config(void);
-
-#ifndef timespecsub
-void timespecsub(const struct timespec *a, const struct timespec *b, struct timespec *res);
-#endif
-#ifndef timersub
-void timersub(const struct timeval *a, const struct timeval *b, struct timeval *res);
-#endif
 
 // wrapper: __has_attribute
 #ifndef __has_attribute
@@ -75,6 +64,19 @@ void timersub(const struct timeval *a, const struct timeval *b, struct timeval *
 #define NORETURN __attribute__((__noreturn__))
 #else
 #define NORETURN
+#endif
+
+long strtol_or_err(const char *str, const char *errmesg, long min, long max);
+void close_stdout(void);
+void print_config(void);
+void setmyname(const char *argv0);
+NORETURN void usage_common(int rc, const char *options);
+
+#ifndef timespecsub
+void timespecsub(const struct timespec *a, const struct timespec *b, struct timespec *res);
+#endif
+#ifndef timersub
+void timersub(const struct timeval *a, const struct timeval *b, struct timeval *res);
 #endif
 
 #endif

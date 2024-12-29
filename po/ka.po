@@ -15,16 +15,27 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.3\n"
 
-#, c-format
+# iputils99 edition
+
+#
+msgid "Usage"
+msgstr "გამოყენება"
+
+#
+msgid "[options] <destination>"
+msgstr "[პარამეტრები] <დანიშნულება>"
+
+#
+msgid "Options"
+msgstr "პარამეტრები"
+
+#
+msgid "For more details see"
+msgstr "მეტი დეტალების სანახავად იხილეთ"
+
+# arping options
 msgid ""
-"\n"
-"Usage:\n"
-"  arping [options] <destination>\n"
-"\n"
-"Options:\n"
 "  -f            quit on first reply\n"
 "  -q            be quiet\n"
 "  -b            keep on broadcasting, do not unicast\n"
@@ -35,913 +46,49 @@ msgid ""
 "  -c <count>    how many packets to send\n"
 "  -w <timeout>  how long to wait for a reply\n"
 "  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use"
-msgstr ""
-"\n"
-"გამოყენება:\n"
-"arping [პარამეტრები] <დანიშნულება>\n"
-"\n"
-"პარამეტრები:\n"
-"  -f    პირველივე პასუხზე გამოსვლა\n"
-"  -q    ჩუმად ყოფნა\n"
-"  -b    გადაცემის გაგრძელება უნიკასტის გარეშე\n"
-"  -D    დუბლირებული მისამართის დადგენის რეჟიმი\n"
-"  -A    ARP პასუხის რეჟიმი. განაახლეთ თქვენი მეზობლები\n"
-"  -U    ARP რეჟიმი. განაახლეთ თქვენი მეზობლები\n"
-"  -V     ვერსიის დაბეჭდვა და გასვლა\n"
-"  -c <რაოდენობა>  რამდენი პაკეტი გაიგზავნოს\n"
-"  -w <დრო>    რამდენ ხანს დაველოდო პასუხის\n"
-"  -i <ინტერვალი>    პაკეტებს შორის ინტერვალის დაყენება (ნაგულისხმევი: 1 "
-"წამი)\n"
-"  -l <მოწყობილობა>    გამოყენებადი ქსელის ინტერფეისის სახელი"
-
-#, c-format
-msgid ""
-"\n"
+"  -I <device>   which ethernet device to use\n"
 "  -s <source>   source IP address\n"
 "  <destination> DNS name or IP address\n"
-"\n"
-"For more details see arping(8)\n"
 msgstr ""
-"\n"
-"  -s <წყარო>   წყაროს IP მისამართი\n"
-"  <დანიშნულება> DNS სახელი ან IP მისამართი\n"
-"\n"
-"მეტი დეტალების სანახავად იხილეთ arping(8)\n"
+"  -f               პირველივე პასუხზე გამოსვლა\n"
+"  -q               ჩუმად ყოფნა\n"
+"  -b               გადაცემის გაგრძელება უნიკასტის გარეშე\n"
+"  -D               დუბლირებული მისამართის დადგენის რეჟიმი\n"
+"  -A               ARP პასუხის რეჟიმი. განაახლეთ თქვენი მეზობლები\n"
+"  -U               ARP რეჟიმი. განაახლეთ თქვენი მეზობლები\n"
+"  -V               ვერსიის დაბეჭდვა და გასვლა\n"
+"  -c <რაოდენობა>   რამდენი პაკეტი გაიგზავნოს\n"
+"  -w <დრო>         რამდენ ხანს დაველოდო პასუხის\n"
+"  -i <ინტერვალი>   პაკეტებს შორის ინტერვალის დაყენება (ნაგულისხმევი: 1 წამი)\n"
+"  -l <მოწყობილობა> გამოყენებადი ქსელის ინტერფეისის სახელი\n"
+"  -s <წყარო>       წყაროს IP მისამართი\n"
+"  <დანიშნულება>    DNS სახელი ან IP მისამართი\n"
 
-#: arping.c:305
-#, c-format
-msgid "Sent %d probes (%d broadcast(s))\n"
-msgstr "გაგზავნილია %d სინჯი(%d ტრანსლაცია)\n"
-
-#: arping.c:306
-#, c-format
-msgid "Received %d response(s)"
-msgstr "მიღებულია %d პასუხი"
-
-#: arping.c:310
-#, c-format
-msgid "%d request(s)"
-msgstr "%d მოთხოვნა"
-
-#: arping.c:312
-#, c-format
-msgid "%s%d broadcast(s)"
-msgstr "%s%d გადაცემა"
-
-#: arping.c:415
-msgid "Unicast"
-msgstr "ერთმხრივი გადაცემა"
-
-#: arping.c:415
-msgid "Broadcast"
-msgstr "გადაცემა"
-
-#: arping.c:416
-#, c-format
-msgid "%s from "
-msgstr "%s-ის წყარო "
-
-#: arping.c:416
-msgid "reply"
-msgstr "პასუხი"
-
-#: arping.c:416
-msgid "request"
-msgstr "მოთხოვნა"
-
-#: arping.c:421
-#, c-format
-msgid "for %s "
-msgstr "%s-თვის "
-
-#: arping.c:426
-#, c-format
-msgid "for "
-msgstr "დანიშნულება "
-
-#: arping.c:436
-#, c-format
-msgid " %ld.%03ldms\n"
-msgstr " %ld.%03ldმწმ\n"
-
-#: arping.c:438
-#, c-format
-msgid " UNSOLICITED?\n"
-msgstr " საკუთარი ინიციატივით?\n"
-
-#: arping.c:589
-#, c-format
-msgid "Interface \"%s\" is down\n"
-msgstr "ინტერფეისი \"%s\" გამორთულია\n"
-
-#: arping.c:597
-#, c-format
-msgid "Interface \"%s\" is not ARPable\n"
-msgstr "ინტერფეისს \"%s\" ARP ცხრილი არ გააჩნია\n"
-
-#: arping.c:690
-msgid "using default broadcast address"
-msgstr "გაფრთხილება: გამოიყენება გადაცემის ნაგულისხმევი მისამართი"
-
-#: arping.c:901 arping.c:904 arping.c:907 ping/ping.c:378 ping/ping.c:425
-#: ping/ping.c:477 ping/ping.c:485 ping/ping.c:531 ping/ping.c:534
-#: ping/ping.c:537 ping/ping.c:551 tracepath.c:473 tracepath.c:476
-#: tracepath.c:479 tracepath.c:501
-msgid "invalid argument"
-msgstr "არასწორი არგუმენტი"
-
-#: arping.c:974
-#, c-format
-msgid "Device %s not available."
-msgstr "მოწყობილობა %s ხელმიუწვდომელია."
-
-#: arping.c:975
-msgid "Suitable device could not be determined. Please, use option -I."
-msgstr "შესატყვისი მოწყობილობის მოძებნა შეუძლებელია. გამოიყენეთ პარამეტრი -l."
-
-#: arping.c:995
-msgid "interface is ignored"
-msgstr "ინტერფეისი ინგნორირებულია"
-
-#: arping.c:1038
-#, c-format
-msgid "Interface \"%s\" is not ARPable (no ll address)\n"
-msgstr ""
-"ინტერფეის \"%s\"-ს არ გააჩნია ARP ცხრილი (ll მისამართის მოძებნის შეცდომა)\n"
-
-#: arping.c:1047
-#, c-format
-msgid "ARPING %s "
-msgstr "ARPING %s "
-
-#: arping.c:1048
-#, c-format
-msgid "from %s %s\n"
-msgstr "გამომგზავნელი %s%s\n"
-
-#: arping.c:1052
-msgid "no source address in not-DAD mode"
-msgstr "არა-DAD რეჟიმში საწყისი მისამართი არ მიეთითება"
-
-#: clockdiff.c:242
-#, c-format
-msgid "Wrong timestamp %d\n"
-msgstr "დროის არასწორი სანიშნი %d\n"
-
-#: clockdiff.c:247
-#, c-format
-msgid "Overflow %d hops\n"
-msgstr "გადავსებულია %d ჰოპით\n"
-
-#: clockdiff.c:272
-#, c-format
-msgid "wrong timestamps\n"
-msgstr "დროის არასწორი სანიშნი\n"
-
-#, c-format
+# clockdiff options
 msgid ""
-"\n"
-"Usage:\n"
-"  clockdiff [options] <destination>\n"
-"\n"
-"Options:\n"
 "                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
 "  -o            use IP timestamp and icmp echo\n"
 "  -o1           use three-term IP timestamp and icmp echo\n"
 "  -T, --time-format <ctime|iso>\n"
-"                  specify display time format, ctime is the default\n"
+"                specify display time format, ctime is the default\n"
 "  -I            alias of --time-format=iso\n"
 "  -h, --help    display this help\n"
 "  -V, --version print version and exit\n"
 "  <destination> DNS name or IP address\n"
-"\n"
-"For more details see clockdiff(8)\n"
 msgstr ""
-"\n"
-"გამოყენება:\n"
-"  clockdiff [პარამეტრები] <დანიშნულება>\n"
-"\n"
-"პარამეტრები:\n"
 "                -o -ის გარეშე გამოიყენება მხოლოდ icmp დროის სანიშნი (იხ "
 "RFC0792, გვ 16)\n"
 "  -o            IP დროის შტამპისა და icmp ექოს გამოყენება\n"
-"  -o1     3 IP დროის შტამპისა და icmp ექოს გამოყენება\n"
+"  -o1           3 IP დროის შტამპისა და icmp ექოს გამოყენება\n"
 "  -T, --time-format <ctime|iso>\n"
-"                  მიუთითეთ დროის საჩვენებელი ფორმატი. ნაგულისხმევად ctime\n"
-"  -I          იგივე, რაც --time-format=iso\n"
-"  -h , --help    ამ შეტყობინების გამოტანა\n"
+"                მიუთითეთ დროის საჩვენებელი ფორმატი. ნაგულისხმევად ctime\n"
+"  -I            იგივე, რაც --time-format=iso\n"
+"  -h , --help   ამ შეტყობინების გამოტანა\n"
 "  -V, --version ვერსიის გამოტანა და მუშაობის დასრულება\n"
 "  <დანიშნულება> DNS სახელი ან IP მისამართი\n"
-"\n"
-"მეტი დეტალებისთვის იხილეთ clockdiff(8)\n"
 
-#: clockdiff.c:592
-msgid "measure: unknown failure"
-msgstr "გაზომვა: უცნობი შეცდომა"
-
-#: clockdiff.c:597
-#, c-format
-msgid "%s is down"
-msgstr "%s გათიშულია"
-
-#: clockdiff.c:600
-#, c-format
-msgid "%s time transmitted in a non-standard format"
-msgstr "%s დრო გადმოცემულია არასტანდარტულ ფორმატში"
-
-#: clockdiff.c:603
-#, c-format
-msgid "%s is unreachable"
-msgstr "%s მიუწვდომელია"
-
-#: clockdiff.c:622
-#, c-format
+# ping options
 msgid ""
-"\n"
-"host=%s rtt=%ld(%ld)ms/%ldms delta=%dms/%dms %s\n"
-msgstr ""
-"\n"
-"ჰოსტი=%s rtt=%ld(%ld)მწმ/%ldმწმ დელტა=%dმწმ/%dმწმ %s\n"
-
-#: ping/node_info.c:169
-#, c-format
-msgid "Qtype conflict\n"
-msgstr "Qtype-ის კონფლიქტი\n"
-
-#: ping/node_info.c:221
-#, c-format
-msgid "Subject type conflict\n"
-msgstr "თემის ტიპების კონფლიქტი\n"
-
-#: ping/node_info.c:312
-#, c-format
-msgid "IDN encoding error: %s"
-msgstr "IDN-ის დაშიფვრის შეცდომა: %s"
-
-#: ping/node_info.c:323
-msgid "too long scope name"
-msgstr "რეგიონის მეტისმეტად გრძელი სახელი"
-
-#: ping/node_info.c:347 ping/node_info.c:389 ping/ping6_common.c:309
-#: ping/ping.c:518 ping/ping.c:580 ping/ping.c:1021
-msgid "memory allocation failed"
-msgstr "მეხსიერების გამოყოფის შეცდომა"
-
-#: ping/node_info.c:359
-#, c-format
-msgid "inappropriate subject name: %s"
-msgstr "თემის არასწორი დასახელება: %s"
-
-#: ping/node_info.c:362
-msgid "dn_comp() returned too long result"
-msgstr "dn_comp()-მა ძალიან გრძელი პასუხი დააბრუნა"
-
-#: ping/node_info.c:402
-#, c-format
-msgid ""
-"ping -6 -N <nodeinfo opt>\n"
-"Help:\n"
-"  help\n"
-"Query:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Subject:\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=name\n"
-"  subject-fqdn=name\n"
-msgstr ""
-"ping -6 -N <nodeinfo opt>\n"
-"დახმარება:\n"
-"  help\n"
-"მოთხოვნა:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"თემა:\n"
-"  subject-ipv6=მისამართი\n"
-"  subject-ipv4=მისამართი\n"
-"  subject-name=სახელი\n"
-"  subject-fqdn=სახელი\n"
-
-#: ping/ping6_common.c:99 ping/ping.c:708
-#, c-format
-msgid "unknown iface: %s"
-msgstr "უცნობი ინტერფეისი: %s"
-
-#: ping/ping6_common.c:146
-msgid "scope discrepancy among the nodes"
-msgstr "ფარგლების შეუსაბამობა კვანძებს შორის"
-
-#: ping/ping6_common.c:226 ping/ping.c:878
-#, c-format
-msgid "%s: source address might be selected on device other than: %s"
-msgstr "%s: საწყისი მისამართი სეიძლება აირჩიოთ მოწყობილობებზე %s-ის გარდა"
-
-#
-msgid "Minimal interval for multicast ping"
-msgstr "მინიმალური ნტერვალი მულტიკასტის პინგისთვის"
-
-#
-msgid "Minimal interval for broadcast ping"
-msgstr "მინიმალური ინტერვალი მაუწყებლობის პინგისთვის"
-
-#, c-format
-msgid "%s for user must be >= %u ms, use -i %.*f (or higher)"
-msgstr "%s მომხმარებლისთვის უნდა იყოს >= %u მწმ, გამოიყენეთ -i %.*f (ან უფრო მაღალი)"
-
-#
-msgid "Multicast ping"
-msgstr "გადაცემის პინგი"
-
-#
-msgid "Broadcast ping"
-msgstr "ტრანსლირების პინგი"
-
-#, c-format
-msgid "%s does not fragment"
-msgstr "%s არ იხლიჩება"
-
-#: ping/ping6_common.c:331
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "setsockopt(RAW_CHECKSUM) -ის შეცდომა - გაგრძელების მცდელობა"
-
-#: ping/ping6_common.c:362
-msgid "cannot set multicast hop limit"
-msgstr "ტრანსლაციის ჰოპების ლიმიტის დაყენების შეცდომა"
-
-#: ping/ping6_common.c:365
-msgid "cannot set unicast hop limit"
-msgstr "უნიკასტ პაკეტის ჰოპების ლიმიტის დაყენების შეცდომა"
-
-#: ping/ping6_common.c:377
-msgid "cannot receive hop limit"
-msgstr "ჰოპების ლიმიტის მიღების შეცდომა"
-
-#: ping/ping6_common.c:391
-msgid "cannot set flowlabel"
-msgstr "დინების ჭდის დადების შეცდომა"
-
-#: ping/ping6_common.c:395
-msgid "cannot send flowinfo"
-msgstr "დინების ინფორმაციის გაგზავნის შეცდომა"
-
-#: ping/ping6_common.c:398 ping/ping.c:1023
-#, c-format
-msgid "PING %s (%s) "
-msgstr "PING %s (%s) "
-
-#: ping/ping6_common.c:400
-#, c-format
-msgid ", flow 0x%05x, "
-msgstr ", დინება 0x%05x, "
-
-#: ping/ping6_common.c:405 ping/ping.c:1025
-#, c-format
-msgid "from %s %s: "
-msgstr "%s%s-დან: "
-
-#: ping/ping6_common.c:423
-#, c-format
-msgid "Destination unreachable: "
-msgstr "სამიზნე მიუწვდომელია: "
-
-#: ping/ping6_common.c:426
-#, c-format
-msgid "No route"
-msgstr "გზის გარეშე"
-
-#: ping/ping6_common.c:429
-#, c-format
-msgid "Administratively prohibited"
-msgstr "ხელით აკრძალული"
-
-#: ping/ping6_common.c:432
-#, c-format
-msgid "Beyond scope of source address"
-msgstr "საწყისი მისამართის რეგიონის გარეთ"
-
-#: ping/ping6_common.c:435
-#, c-format
-msgid "Address unreachable"
-msgstr "მისამართი მიუწვდომელია"
-
-#: ping/ping6_common.c:438
-#, c-format
-msgid "Port unreachable"
-msgstr "პორტი მიუწვდომელია"
-
-#: ping/ping6_common.c:441
-#, c-format
-msgid "Source address failed ingress/egress policy"
-msgstr "საწყისი მისამართის ingress/egress პოლიტიკის შეცდომა"
-
-#: ping/ping6_common.c:444
-#, c-format
-msgid "Reject route to destination"
-msgstr "სამიზნემდე რაუტის უარყოფა"
-
-#: ping/ping6_common.c:447
-#, c-format
-msgid "Unknown code %d"
-msgstr "უცნობი კოდი %d"
-
-#: ping/ping6_common.c:452
-#, c-format
-msgid "Packet too big: mtu=%u"
-msgstr "პაკეტი მეტისმეტად დიდია: mtu=%u"
-
-#: ping/ping6_common.c:454
-#, c-format
-msgid ", code=%d"
-msgstr ", კოდი=%d"
-
-#: ping/ping6_common.c:457
-#, c-format
-msgid "Time exceeded: "
-msgstr "დრო გადასცდა: "
-
-#: ping/ping6_common.c:459
-#, c-format
-msgid "Hop limit"
-msgstr "ჰოპების ლიმიტი"
-
-#: ping/ping6_common.c:461
-#, c-format
-msgid "Defragmentation failure"
-msgstr "დეფრაგმენტაციის შეცდომა"
-
-#, c-format
-msgid "code %d"
-msgstr "კოდი %d"
-
-#
-msgid "Parameter problem: "
-msgstr "პარამეტრის პრობლემა: "
-
-#
-msgid "Wrong header field"
-msgstr "თავსართის არასწორი ველი"
-
-#
-msgid "Unknown header"
-msgstr "უცნობი თავსართი"
-
-#
-msgid "Unknown option"
-msgstr "უცნობი პარამეტრი"
-
-#, c-format
-msgid " at %u"
-msgstr " %u-თან"
-
-#
-msgid "Echo request"
-msgstr "ექოს მოთხოვნა"
-
-#
-msgid "Echo reply"
-msgstr "ექოს პასუხი"
-
-#: ping/ping6_common.c:484
-#, c-format
-msgid "MLD Query"
-msgstr "MLD მოთხოვნა"
-
-#
-msgid "MLD Report"
-msgstr "MLD ანგარიში"
-
-#
-msgid "MLD Reduction"
-msgstr "MLD შემცირება"
-
-#
-msgid "Unknown icmp type"
-msgstr "icmp-ის უცნობი ტიპი"
-
-#
-msgid "local error"
-msgstr "ლოკალური შეცდომა"
-
-#, c-format
-msgid "local error: message too long, mtu: %u"
-msgstr "ლოკალური შეცდომა: შეტყობინება ძალიან გრძელია. mtu: %u"
-
-#, c-format
-msgid "From %s icmp_seq=%u "
-msgstr "%s -დან icm_seq=%u "
-
-#: ping/ping6_common.c:677 ping/ping.c:1592
-#, c-format
-msgid " icmp_seq=%u"
-msgstr " icmp_seq =%u"
-
-#: ping/ping6_common.c:701 ping/ping6_common.c:762
-#, c-format
-msgid " parse error (too short)"
-msgstr " დამუშავების შეცდომა (ძალიან მოკლეა)"
-
-#: ping/ping6_common.c:715 ping/ping6_common.c:771
-#, c-format
-msgid " parse error (truncated)"
-msgstr " დამუშავების შეცდომა (წაკვეთილია)"
-
-#: ping/ping6_common.c:775
-#, c-format
-msgid " unexpected error in inet_ntop(%s)"
-msgstr " მოულოდნელი შეცდომა inet_ntop(%s)-ში"
-
-#: ping/ping6_common.c:803
-#, c-format
-msgid " unknown qtype(0x%02x)"
-msgstr " უცნობი qtype(0x%02x)"
-
-#: ping/ping6_common.c:807
-#, c-format
-msgid " refused"
-msgstr " უარყოფილია"
-
-#: ping/ping6_common.c:810
-#, c-format
-msgid " unknown"
-msgstr " უცნობი"
-
-#: ping/ping6_common.c:813
-#, c-format
-msgid " unknown code(%02x)"
-msgstr " უცნობი კოდი(%02x)"
-
-#: ping/ping6_common.c:815
-#, c-format
-msgid "; seq=%u;"
-msgstr "; seq =%u;"
-
-#: ping/ping6_common.c:856
-#, c-format
-msgid "packet too short: %d bytes"
-msgstr "პაკეტი ძალიან მოკლეა: %d ბაიტი"
-
-#: ping/ping6_common.c:923 ping/ping.c:1721
-#, c-format
-msgid "From %s: "
-msgstr "%s-დან: "
-
-#
-msgid "WARNING"
-msgstr "გაფრთხილება"
-
-#: ping/ping6_common.c:964 ping/ping.c:1826
-msgid "failed to install socket filter"
-msgstr "სოკეტის ფილტრის დაყენების შეცდომა"
-
-#: ping/ping.c:96 ping/ping.c:684
-#, c-format
-msgid "unknown protocol family: %d"
-msgstr "პროტოკოლის არასწორი ოჯახი: %d"
-
-#: ping/ping.c:111
-#, c-format
-msgid "unknown sock type: %d"
-msgstr "სოკეტის უცნობი ტიპი: %d"
-
-#: ping/ping.c:198
-msgid "=> missing cap_net_raw+p capability or setuid?"
-msgstr "=> აკლია cap_net_raw+p შესაძლებლობა ან setuid-ი?"
-
-#: ping/ping.c:272
-#, c-format
-msgid "bad value for flowinfo: %s"
-msgstr "flowinfo-ის არასწორი მნიშვნელობა: %s"
-
-#: ping/ping.c:275
-#, c-format
-msgid "flow value is greater than 20 bits: %s"
-msgstr "დინების მნიშვნელობა 20 ბიტზე დიდია: %s"
-
-#, c-format
-msgid "bad TOS value: %s"
-msgstr "TOS-ის არასწორი მნიშვნელობა: %s"
-
-#, c-format
-msgid "the decimal value of TOS bits must be in range 0-255: %lu"
-msgstr ""
-"TOS-ის ბიტების რიცხვის მთელი მნიშვნელობა 0-255 დიაპაზონში უნდა იყოს: %lu"
-
-#, c-format
-msgid "invalid timestamp type: %s"
-msgstr "დროის სანიშნის არასწორი ტიპი: %s"
-
-#: ping/ping.c:443
-msgid "bad timing interval"
-msgstr "ინტერვალის არასწორი დრო"
-
-#, c-format
-msgid "cannot copy: %s"
-msgstr "%s-ის კოპირება შეუძლებელია"
-
-#, c-format
-msgid "invalid source address: %s"
-msgstr "არასწორი საწყისი მისამართი: %s"
-
-#: ping/ping.c:479
-#, c-format
-msgid "cannot set preload to value greater than 3: %d"
-msgstr "წინასწარი ჩატვირთვის მნიშვნელობა არ შეიძლება 3-ზე დიდი იყოს: %d"
-
-#: ping/ping.c:498
-#, c-format
-msgid "invalid -M argument: %s"
-msgstr "-M-ის არასწორი არგუმენტი: %s"
-
-#: ping/ping.c:557
-msgid "bad linger time"
-msgstr "გაწელვის ცუდი დრო"
-
-#: ping/ping.c:595
-msgid "ident 0 => forcing raw socket"
-msgstr "ident 0 => raw ტიპის სოკეტის ნაძალადევი არჩევა"
-
-#: ping/ping.c:841
-msgid ""
-"Do you want to ping broadcast? Then -b. If not, check your local firewall "
-"rules"
-msgstr ""
-"ტრანსლირების მისამართის დასაპინგად გამოიყენეთ პარამეტრი -b. თუ არა, "
-"შეამოწმეთ ლოკალური ბრანდმაუერის წესები"
-
-#: ping/ping.c:842
-msgid "pinging broadcast address"
-msgstr "პინგავთ ტრანსლირების მისამართს"
-
-#: ping/ping.c:845 ping/ping.c:1001
-msgid "cannot set broadcasting"
-msgstr "გადაცემის დაყენების შეცდომა"
-
-#: ping/ping.c:866
-msgid "getifaddrs failed"
-msgstr "getifaddrs-ის შეცდომა"
-
-#: ping/ping.c:1007
-msgid "cannot disable multicast loopback"
-msgstr "გადაცემის მარყუჟის გათიშვის შეცდომა"
-
-#: ping/ping.c:1012
-msgid "cannot set multicast time-to-live"
-msgstr "გადაცემის TTL-ის დაყენების შეცდომა"
-
-#: ping/ping.c:1014
-msgid "cannot set unicast time-to-live"
-msgstr "უნიკასტის TTL-ის დაყენების შეცდომა"
-
-#, c-format
-msgid "%zu(%zu) data bytes"
-msgstr "%zu(%zu) ბაიტი მონაცემები"
-
-#
-msgid "(same route)"
-msgstr "(იგივე გზა)"
-
-#
-msgid "absolute not-standard"
-msgstr "აბსოლუტური არასტანდარტული"
-
-#
-msgid "not-standard"
-msgstr "არასტანდარტული"
-
-#
-msgid "absolute"
-msgstr "ზუსტი"
-
-#
-msgid "Unrecorded hops"
-msgstr "ჩაუწერელი ჰოპები"
-
-#
-msgid "Echo Reply"
-msgstr "პასუხი ექოზე"
-
-#: ping/ping.c:1248
-#, c-format
-msgid "Destination Net Unreachable"
-msgstr "სამიზნე ქსელი მიუწვდომელია"
-
-#: ping/ping.c:1251
-#, c-format
-msgid "Destination Host Unreachable"
-msgstr "სამიზნე ჰოსტი ხელმიუწვდომელია"
-
-#: ping/ping.c:1254
-#, c-format
-msgid "Destination Protocol Unreachable"
-msgstr "სამიზნე პროტოკოლი ხელმიუწვდომელია"
-
-#: ping/ping.c:1257
-#, c-format
-msgid "Destination Port Unreachable"
-msgstr "სამიზნე პორტი ხელმიუწვდომელია"
-
-#: ping/ping.c:1260
-#, c-format
-msgid "Frag needed and DF set (mtu = %u)"
-msgstr "საჭიროა DF ბიტისა და დახლეჩვის ჩართვა (mtu = %u)"
-
-#: ping/ping.c:1263
-#, c-format
-msgid "Source Route Failed"
-msgstr "საწყისი რაუტის შეცდომა"
-
-#: ping/ping.c:1266
-#, c-format
-msgid "Destination Net Unknown"
-msgstr "სამიზნე ქსელი უცნობია"
-
-#: ping/ping.c:1269
-#, c-format
-msgid "Destination Host Unknown"
-msgstr "სამიზნე ჰოსტი უცნობია"
-
-#: ping/ping.c:1272
-#, c-format
-msgid "Source Host Isolated"
-msgstr "საწყისი ჰოსტი იზოლირებულია"
-
-#: ping/ping.c:1275
-#, c-format
-msgid "Destination Net Prohibited"
-msgstr "სამიზნე ქსელი აკრძალულია"
-
-#: ping/ping.c:1278
-#, c-format
-msgid "Destination Host Prohibited"
-msgstr "სამიზნე ჰოსტი აკრძალულია"
-
-#: ping/ping.c:1281
-#, c-format
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "TOS-ის სამიზნე ქსელი მიუწვდომელია"
-
-#: ping/ping.c:1284
-#, c-format
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "ToS-ისთვის სამიზნე ჰოსტი მიუწვდომელია"
-
-#: ping/ping.c:1287
-#, c-format
-msgid "Packet filtered"
-msgstr "პაკეტი გაიფილტრა"
-
-#: ping/ping.c:1290
-#, c-format
-msgid "Precedence Violation"
-msgstr "თანამიმდევრობის დარღვევა"
-
-#: ping/ping.c:1293
-#, c-format
-msgid "Precedence Cutoff"
-msgstr "თანამიმდევრობის ამოჭრა"
-
-#: ping/ping.c:1296
-#, c-format
-msgid "Dest Unreachable, Bad Code: %d"
-msgstr "სამიზნე მიუწვდომელია. კოდი: %d"
-
-#: ping/ping.c:1303
-#, c-format
-msgid "Source Quench"
-msgstr "წყაროს შეწყვეტა"
-
-#: ping/ping.c:1310
-#, c-format
-msgid "Redirect Network"
-msgstr "ქსელის გადამისამართება"
-
-#: ping/ping.c:1313
-#, c-format
-msgid "Redirect Host"
-msgstr "ჰოსტის გადამისამართება"
-
-#: ping/ping.c:1316
-#, c-format
-msgid "Redirect Type of Service and Network"
-msgstr "გადამისამართების ToS და ქსელი"
-
-#: ping/ping.c:1319
-#, c-format
-msgid "Redirect Type of Service and Host"
-msgstr "გადამისამართების ToS და ჰოსტი"
-
-#: ping/ping.c:1322
-#, c-format
-msgid "Redirect, Bad Code: %d"
-msgstr "გადამისამართება ცუდი კოდით: %d"
-
-#
-msgid "New nexthop"
-msgstr "ახალი შემდგომი ჰოპია"
-
-#: ping/ping.c:1339
-#, c-format
-msgid "Echo Request"
-msgstr "ექოს მოთხოვნა"
-
-#: ping/ping.c:1345
-#, c-format
-msgid "Time to live exceeded"
-msgstr "TTL გადაჭარბებულია"
-
-#: ping/ping.c:1348
-#, c-format
-msgid "Frag reassembly time exceeded"
-msgstr "დანახლეჩის აწყობის დრო გავიდა"
-
-#: ping/ping.c:1351
-#, c-format
-msgid "Time exceeded, Bad Code: %d"
-msgstr "დრო გასულია. ცუდი კოდი: %d"
-
-#: ping/ping.c:1358
-#, c-format
-msgid "Parameter problem: pointer = %u"
-msgstr "პარამეტრის პრობლემა: მაჩვენებელი = %u"
-
-#: ping/ping.c:1364
-#, c-format
-msgid "Timestamp"
-msgstr "დროის სანიშნი"
-
-#: ping/ping.c:1368
-#, c-format
-msgid "Timestamp Reply"
-msgstr "დროის სანიშნის პასუხი"
-
-#: ping/ping.c:1372
-#, c-format
-msgid "Information Request"
-msgstr "ინფორმაციის მოთხოვნა"
-
-#: ping/ping.c:1376
-#, c-format
-msgid "Information Reply"
-msgstr "საპასუხო ინფორმაცია"
-
-#: ping/ping.c:1381
-#, c-format
-msgid "Address Mask Request"
-msgstr "მისამართის ნიღბის მოთხოვნა"
-
-#: ping/ping.c:1386
-#, c-format
-msgid "Address Mask Reply"
-msgstr "მისამართის ნიღბის პასუხი"
-
-#: ping/ping.c:1390
-#, c-format
-msgid "Bad ICMP type: %d"
-msgstr "ICMP-ის არასწორი ტიპი: %d"
-
-#: ping/ping.c:1442
-#, c-format
-msgid "local error: %s"
-msgstr "ლოკალური შეცდომა: %s"
-
-#: ping/ping.c:1444
-#, c-format
-msgid "local error: message too long, mtu=%u"
-msgstr "ლოკალური შეცდომა: შეტყობინება ძალიან გრძელია. mtu=%u"
-
-#: ping/ping.c:1617
-#, c-format
-msgid "packet too short (%zd bytes) from %s"
-msgstr "პაკეტი ძალიან მოკლეა (%zd ბაიტი). გამომგზავნი:%s"
-
-#: ping/ping.c:1696
-#, c-format
-msgid "From %s: icmp_seq=%u "
-msgstr "%s-დან: icmp_seq=%u "
-
-#, c-format
-msgid ""
-"\n"
-"Usage\n"
-"  ping [options] <destination>\n"
-"\n"
-"Options:\n"
 "  <destination>      DNS name or IP address\n"
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
@@ -991,74 +138,745 @@ msgid ""
 "  -6                 use IPv6\n"
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
-"\n"
-"For more details see ping(8)\n"
 msgstr ""
-"\n"
-"გამოყენება\n"
-"  ping [პარამეტრები] <სამიზნე>\n"
-"\n"
-"პარამეტრები:\n"
-"  <სამიზნე>      \t\t DNS სახელი ან IP მისამართი\n"
-"  -a                 audible ping-ის გამოყენება\n"
-"  -A                 adaptive ping-ის გამოყენება\n"
-"  -B                 წებოვანი წყაროს მისამართი\n"
-"  -c <რაოდენობა>       შეჩერება მითითებული რაოდენობის მქონე პასუხების "
-"შემდეგ\n"
-"  -C                 სოკეტის შექმნისას connect() სისტემური ფუნქციის "
-"გამოძახება\n"
-"  -D                 დროის შტამპების გამოტანა\n"
-"  -d                 სოკეტის SO_DEBUG პარამეტრის გამოყენება\n"
-"  -e <იდენტიფიკატორი>  ping-ის სესიის იდენტიფიკატორის განსაზღვრა. "
-"ნაგულისხმებია შემთხვევითი რიცხვი\n"
-"                     SOCK_RAW-სთვის და ბირთვის მიერ აღწერილი SOCK_DGRAM-"
-"სთვის\n"
-"                     SOCK_RAW-ის გამოყენება (IPv4-სთვის მხოლოდ "
-"იდენტიფიკატორისთვის 0)\n"
-"  -f                 უსასრულო ping\n"
-"  -h                 დახმარების გამოტანა და გასვლა\n"
-"  -H                 უკუDNS-ის ნაძალადევი ამოხსნა. (სასარგებლოა რიცხვითი IP "
-"მისამართებისთვის\n"
-"                       და პარამეტრისთვის -f). გადაფარავს პარამეტრს -n\n"
-"  -I <ინტერფეისი>      ინტერფეისის სახელი ან მისამართი\n"
-"  -i <ინტერვალი>       წამები პაკეტების გაგზანის შორის\n"
-"  -L                 მულტიკასტის პაკეტებისთვის loopback ინტერფეისის "
-"გამოტოვება\n"
-"  -l <წინჩატვ>         პასუხის მოლოდინისას <წინჩატვ> რაოდენობის პაკეტების "
-"გაგზავნა\n"
+"  <სამიზნე>           DNS სახელი ან IP მისამართი\n"
+"  -a                  audible ping-ის გამოყენება\n"
+"  -A                  adaptive ping-ის გამოყენება\n"
+"  -B                  წებოვანი წყაროს მისამართი\n"
+"  -c <რაოდენობა>      შეჩერება მითითებული რაოდენობის მქონე პასუხების შემდეგ\n"
+"  -C                  სოკეტის შექმნისას connect() სისტემური ფუნქციის გამოძახება\n"
+"  -D                  დროის შტამპების გამოტანა\n"
+"  -d                  სოკეტის SO_DEBUG პარამეტრის გამოყენება\n"
+"  -e <იდენტიფიკატორი> ping-ის სესიის იდენტიფიკატორის განსაზღვრა. ნაგულისხმებია\n"
+"                      შემთხვევითი რიცხვი\n"
+"                      SOCK_RAW-სთვის და ბირთვის მიერ აღწერილი SOCK_DGRAM-სთვის\n"
+"                      SOCK_RAW-ის გამოყენება (IPv4-სთვის მხოლოდ იდენტიფიკატორისთვის 0)\n"
+"  -f                  უსასრულო ping\n"
+"  -h                  დახმარების გამოტანა და გასვლა\n"
+"  -H                  უკუDNS-ის ნაძალადევი ამოხსნა.\n"
+"                      (სასარგებლოა რიცხვითი IP მისამართებისთვის და პარამეტრისთვის -f).\n"
+"                      გადაფარავს პარამეტრს -n\n"
+"  -I <ინტერფეისი>     ინტერფეისის სახელი ან მისამართი\n"
+"  -i <ინტერვალი>      წამები პაკეტების გაგზანის შორის\n"
+"  -L                  მულტიკასტის პაკეტებისთვის loopback ინტერფეისის გამოტოვება\n"
+"  -l <წინჩატვ>        პასუხის მოლოდინისას <წინჩატვ> რაოდენობის პაკეტების გაგზავნა\n"
 "  -m <ჭდე>            გამავალი პაკეტებისთვის მითითებული ჭდის დასმა\n"
-"  -M <pmtud opt>     MTU-ის აღმოჩენის აღწერა. შეიძლება იყოს ერთ-ერთი სიიდან "
-"<do|dont|want|probe>\n"
-"  -n                 DNS-ის გამორთვა\n"
-"  -O                 გადასარევი პასუხების გამოტანა\n"
-"  -p <pattern>       contents of padding byte\n"
-"  -q                 ნაკლები გამოტანა\n"
-"  -Q <tclass>        QoS ბიტების გამოყენება <tclass>\n"
-"  -s <size>          მონაცემების პაკეტებისთვის მითითებული ზომის გამოყენება\n"
-"  -S <size>          SO_SNDBUF სოკეტის პარამეტრის მნიშვნელობად მითითებულ "
-"ზომის გამოყენება\n"
-"  -t <ttl>           სიცოცხლის დროის მითითება\n"
-"  -U                 მომხმარებლიდან-მომხმარებლამდე დაყოვნების გამოტანა\n"
-"  -v                 მეტი შეტყობინების გამოტანა\n"
-"  -V                 ვერსიის გამოტანა და გასვლა\n"
-"  -w <deadline>      მითითებული რაოდენობა წამით მოცდა\n"
-"  -W <timeout>       პასუხის მოლოდინის დრო\n"
+"  -M <pmtud opt>      MTU-ის აღმოჩენის აღწერა. შეიძლება იყოს ერთ-ერთი\n"
+"                      სიიდან <do|dont|want|probe>\n"
+"  -n                  DNS-ის გამორთვა\n"
+"  -O                  გადასარევი პასუხების გამოტანა\n"
+"  -p <pattern>        contents of padding byte\n"
+"  -q                  ნაკლები გამოტანა\n"
+"  -Q <tclass>         QoS ბიტების გამოყენება <tclass>\n"
+"  -s <size>           მონაცემების პაკეტებისთვის მითითებული ზომის გამოყენება\n"
+"  -S <size>           SO_SNDBUF სოკეტის პარამეტრის მნიშვნელობად მითითებულ \n"
+"                      ზომის გამოყენება\n"
+"  -t <ttl>            სიცოცხლის დროის მითითება\n"
+"  -U                  მომხმარებლიდან-მომხმარებლამდე დაყოვნების გამოტანა\n"
+"  -v                  მეტი შეტყობინების გამოტანა\n"
+"  -V                  ვერსიის გამოტანა და გასვლა\n"
+"  -w <deadline>       მითითებული რაოდენობა წამით მოცდა\n"
+"  -W <timeout>        პასუხის მოლოდინის დრო\n"
 "\n"
 "IPv4 პარამეტრები:\n"
-"  -4                 IPv4-ის გამოყენება\n"
-"  -b                 broadcast-ის ping-ის დაშვება\n"
-"  -R                 რაუტის ჩაწერა\n"
-"  -T <timestamp>     დროის შტამპის აღწერა. შეიძლება იყოს ერთ-ერთი სიიდან "
-"<tsonly|tsandaddr|tsprespec>\n"
+"  -4                  IPv4-ის გამოყენება\n"
+"  -b                  broadcast-ის ping-ის დაშვება\n"
+"  -R                  რაუტის ჩაწერა\n"
+"  -T <timestamp>      დროის შტამპის აღწერა. შეიძლება იყოს ერთ-ერთი\n"
+"                      სიიდან <tsonly|tsandaddr|tsprespec>\n"
 "\n"
 "IPv6 პარამეტრები:\n"
-"  -6                 IPv6-ის გამოყენება\n"
-"  -F <flowlabel>     დინების ჭდის გამოყენება. ნაგულისხმები მნიშვნელობა "
-"შემთხვევითია\n"
-"  -N <nodeinfo opt>  icmp6 ჭდის ინფორმაციის გამოთხოვის გამოყენება. სცადეთ "
-"help, როგორც არგუმენტი\n"
-"\n"
-"მეტი დეტალებისთვის იხილეთ ping(8)\n"
+"  -6                  IPv6-ის გამოყენება\n"
+"  -F <flowlabel>      დინების ჭდის გამოყენება. ნაგულისხმები მნიშვნელობა\n"
+"                      შემთხვევითია\n"
+"  -N <nodeinfo opt>   icmp6 ჭდის ინფორმაციის გამოთხოვის გამოყენება.\n"
+"                      სცადეთ help, როგორც არგუმენტი\n"
+
+# tracepath options
+msgid ""
+"  -4             use IPv4\n"
+"  -6             use IPv6\n"
+"  -b             print both name and IP\n"
+"  -l <length>    use packet <length>\n"
+"  -m <hops>      use maximum <hops>\n"
+"  -n             no reverse DNS name resolution\n"
+"  -p <port>      use destination <port>\n"
+"  -V             print version and exit\n"
+"  <destination>  DNS name or IP address\n"
+msgstr ""
+"  -4            IPv4-ის გამოყენება\n"
+"  -6            IPv6-ის გამოყენება\n"
+"  -b            სახელისა და მისამართის დაბეჭდვა\n"
+"  -l <სიგრძე>   პაკეტის სიგრძის დაყენება\n"
+"  -m <ჰოპები>   ჰოპების რაოდენობის მაქსიმუმი\n"
+"  -n            DNS-ის გადაწყვეტის გამორთვა\n"
+"  -p  <პორტი>   დანიშნულების <პორტის> გამოყენება\n"
+"  -V            ვერსიის დაბეჭდვა და გამოსვლა\n"
+"  <დანიშნულება> DNS სახელი ან IP მისამართი\n"
+
+#
+msgid "Sent probes"
+msgstr "გაგზავნილია სინჯი"
+
+#
+msgid "Received responses"
+msgstr "მიღებულია პასუხი"
+
+# %d requests
+msgid "requests"
+msgstr "მოთხოვნა"
+
+# %d broadcasts
+msgid "broadcasts"
+msgstr "გადაცემა"
+
+#
+msgid "Unicast"
+msgstr "ერთმხრივი გადაცემა"
+
+#
+msgid "Broadcast"
+msgstr "გადაცემა"
+
+#
+msgid "reply"
+msgstr "პასუხი"
+
+#
+msgid "request"
+msgstr "მოთხოვნა"
+
+# for %s
+msgid "for"
+msgstr "განკუთვნილია"
+
+#
+msgid "UNSOLICITED"
+msgstr "საკუთარი ინიციატივით"
+
+#
+msgid "Interface is down"
+msgstr "ინტერფეისი გამორთულია"
+
+#
+msgid "Interface is not ARPable"
+msgstr "ინტერფეისს ARP ცხრილი არ გააჩნია"
+
+#
+msgid "Using default broadcast address"
+msgstr "გამოიყენება გადაცემის ნაგულისხმევი მისამართი"
+
+#
+msgid "Invalid argument"
+msgstr "არასწორი არგუმენტი"
+
+#
+msgid "Device is not available"
+msgstr "მოწყობილობა ხელმიუწვდომელია"
+
+#
+msgid "No suitable device found, please use -I option"
+msgstr "შესაფერისი მოწყობილობა ვერ მოიძებნა, გამოიყენეთ პარამეტრი -I"
+
+#
+msgid "Interface is ignored"
+msgstr "ინტერფეისი ინგნორირებულია"
+
+#
+msgid "no ll address"
+msgstr "ll მისამართის მოძებნის შეცდომა"
+
+#
+msgid "ARPING"
+msgstr ""
+
+# From %s
+msgid "From"
+msgstr "წყარო"
+
+# from %s
+msgid " from"
+msgstr ", წყარო"
+
+#
+msgid "No source address in not-DAD mode"
+msgstr "არა-DAD რეჟიმში საწყისი მისამართი არ მიეთითება"
+
+#
+msgid "Wrong timestamp"
+msgstr "დროის არასწორი სანიშნი"
+
+#
+msgid "Overflow hops"
+msgstr "გადავსებულია ჰოპით"
+
+#
+msgid "measure"
+msgstr "გაზომვა"
+
+#
+msgid "Unknown failure"
+msgstr "უცნობი შეცდომა"
+
+#
+msgid "Non-standard time format"
+msgstr "დრო არასტანდარტულ ფორმატში"
+
+#
+msgid "host="
+msgstr "ჰოსტი="
+
+#
+msgid "rtt="
+msgstr ""
+
+#
+msgid "ms"
+msgstr "მწმ"
+
+#
+msgid "delta="
+msgstr "დელტა="
+
+#
+msgid "Qtype conflict"
+msgstr "Qtype-ის კონფლიქტი"
+
+#
+msgid "Subject type conflict"
+msgstr "თემის ტიპების კონფლიქტი"
+
+#
+msgid "IDN encoding error"
+msgstr "IDN-ის დაშიფვრის შეცდომა"
+
+#
+msgid "Too long scope name"
+msgstr "რეგიონის მეტისმეტად გრძელი სახელი"
+
+#
+msgid "Memory allocation failed"
+msgstr "მეხსიერების გამოყოფის შეცდომა"
+
+#
+msgid "Inappropriate subject name"
+msgstr "თემის არასწორი დასახელება"
+
+#
+msgid "dn_comp() returned too long result"
+msgstr "dn_comp()-მა ძალიან გრძელი პასუხი დააბრუნა"
+
+#, c-format
+msgid ""
+"ping -6 -N <nodeinfo opt>\n"
+"Help:\n"
+"  help\n"
+"Query:\n"
+"  name\n"
+"  ipv6\n"
+"  ipv6-all\n"
+"  ipv6-compatible\n"
+"  ipv6-global\n"
+"  ipv6-linklocal\n"
+"  ipv6-sitelocal\n"
+"  ipv4\n"
+"  ipv4-all\n"
+"Subject:\n"
+"  subject-ipv6=addr\n"
+"  subject-ipv4=addr\n"
+"  subject-name=name\n"
+"  subject-fqdn=name\n"
+msgstr ""
+"ping -6 -N <nodeinfo opt>\n"
+"დახმარება:\n"
+"  help\n"
+"მოთხოვნა:\n"
+"  name\n"
+"  ipv6\n"
+"  ipv6-all\n"
+"  ipv6-compatible\n"
+"  ipv6-global\n"
+"  ipv6-linklocal\n"
+"  ipv6-sitelocal\n"
+"  ipv4\n"
+"  ipv4-all\n"
+"თემა:\n"
+"  subject-ipv6=მისამართი\n"
+"  subject-ipv4=მისამართი\n"
+"  subject-name=სახელი\n"
+"  subject-fqdn=სახელი\n"
+
+#, fuzzy
+msgid "Unknown network interface"
+msgstr "უცნობი ინტერფეისი"
+
+#
+msgid "Scope discrepancy among the nodes"
+msgstr "ფარგლების შეუსაბამობა კვანძებს შორის"
+
+#, fuzzy
+msgid "Source address might be selected on device other than:"
+msgstr "საწყისი მისამართი სეიძლება აირჩიოთ მოწყობილობებზე გარდა:"
+
+#
+msgid "Minimal user interval for multicast ping must be >="
+msgstr "მომხმარებლის მინიმალური ინტერვალი მულტიკასტის პინგისთვის უნდა იყოს >="
+
+#
+msgid "Minimal user interval for broadcast ping must be >="
+msgstr "მომხმარებლის მინიმალური ინტერვალი მაუწყებლობის პინგისთვის უნდა იყოს >="
+
+#
+msgid "Multicast ping"
+msgstr "გადაცემის პინგი"
+
+#
+msgid "Broadcast ping"
+msgstr "ტრანსლირების პინგი"
+
+#
+msgid "does not fragment"
+msgstr "არ იხლიჩება"
+
+#
+msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
+msgstr "setsockopt(RAW_CHECKSUM) -ის შეცდომა - გაგრძელების მცდელობა"
+
+#
+msgid "Cannot set multicast hop limit"
+msgstr "ტრანსლაციის ჰოპების ლიმიტის დაყენების შეცდომა"
+
+#
+msgid "Cannot set unicast hop limit"
+msgstr "უნიკასტ პაკეტის ჰოპების ლიმიტის დაყენების შეცდომა"
+
+#
+msgid "Cannot receive hop limit"
+msgstr "ჰოპების ლიმიტის მიღების შეცდომა"
+
+#
+msgid "Cannot set flowlabel"
+msgstr "დინების ჭდის დადების შეცდომა"
+
+#
+msgid "Cannot send flowinfo"
+msgstr "დინების ინფორმაციის გაგზავნის შეცდომა"
+
+#
+msgid "PING"
+msgstr ""
+
+# flow 0x%05x
+msgid "flow"
+msgstr "დინება"
+
+#
+msgid "Destination unreachable"
+msgstr "სამიზნე მიუწვდომელია"
+
+#
+msgid "No route"
+msgstr "გზის გარეშე"
+
+#
+msgid "Administratively prohibited"
+msgstr "ხელით აკრძალული"
+
+#
+msgid "Beyond scope of source address"
+msgstr "საწყისი მისამართის რეგიონის გარეთ"
+
+#
+msgid "Address unreachable"
+msgstr "მისამართი მიუწვდომელია"
+
+#
+msgid "Port unreachable"
+msgstr "პორტი მიუწვდომელია"
+
+#
+msgid "Source address failed ingress/egress policy"
+msgstr "საწყისი მისამართის ingress/egress პოლიტიკის შეცდომა"
+
+#
+msgid "Reject route to destination"
+msgstr "სამიზნემდე რაუტის უარყოფა"
+
+#
+msgid "Packet too big"
+msgstr "პაკეტი მეტისმეტად დიდია"
+
+#
+msgid "Time exceeded"
+msgstr "დრო გასულია"
+
+#
+msgid "Hop limit"
+msgstr "ჰოპების ლიმიტი"
+
+#
+msgid "Defragmentation failure"
+msgstr "დეფრაგმენტაციის შეცდომა"
+
+#
+msgid "code"
+msgstr "კოდი"
+
+#
+msgid "Parameter problem"
+msgstr "პარამეტრის პრობლემა"
+
+#
+msgid "Wrong header field"
+msgstr "თავსართის არასწორი ველი"
+
+#
+msgid "Unknown header"
+msgstr "უცნობი თავსართი"
+
+#
+msgid "Unknown option"
+msgstr "უცნობი პარამეტრი"
+
+#, fuzzy
+msgid "info"
+msgstr "ინფორმაცია"
+
+#
+msgid "Echo request"
+msgstr "ექოს მოთხოვნა"
+
+#
+msgid "Echo reply"
+msgstr "ექოს პასუხი"
+
+#
+msgid "MLD Query"
+msgstr "MLD მოთხოვნა"
+
+#
+msgid "MLD Report"
+msgstr "MLD ანგარიში"
+
+#
+msgid "MLD Reduction"
+msgstr "MLD შემცირება"
+
+#
+msgid "Unknown icmp type"
+msgstr "icmp-ის უცნობი ტიპი"
+
+#
+msgid "Local error"
+msgstr "ლოკალური შეცდომა"
+
+#
+msgid "Message too long"
+msgstr "შეტყობინება ძალიან გრძელია"
+
+#
+msgid "parse error"
+msgstr "დამუშავების შეცდომა"
+
+#
+msgid "too short"
+msgstr "ძალიან მოკლეა"
+
+#
+msgid "truncated"
+msgstr "წაკვეთილია"
+
+#
+msgid "unexpected error"
+msgstr "მოულოდნელი შეცდომა"
+
+#
+msgid "unknown qtype"
+msgstr "უცნობი qtype"
+
+#
+msgid "refused"
+msgstr "უარყოფილია"
+
+#
+msgid "unknown"
+msgstr "უცნობი"
+
+#
+msgid "unknown code"
+msgstr "უცნობი კოდი"
+
+#
+msgid "seq="
+msgstr "seq="
+
+#
+msgid "Packet too short"
+msgstr "პაკეტი ძალიან მოკლეა"
+
+#
+msgid "WARNING"
+msgstr "გაფრთხილება"
+
+#
+msgid "failed to install socket filter"
+msgstr "სოკეტის ფილტრის დაყენების შეცდომა"
+
+#
+msgid "=> missing cap_net_raw+p capability"
+msgstr "=> აკლია cap_net_raw+p შესაძლებლობა"
+
+#
+msgid "=> missing cap_net_admin+p capability"
+msgstr "=> აკლია cap_net_admin+p შესაძლებლობა"
+
+#
+msgid "Bad value for flowinfo"
+msgstr "Flowinfo-ის არასწორი მნიშვნელობა"
+
+#
+msgid "Flow value is greater than 20 bits"
+msgstr "დინების მნიშვნელობა 20 ბიტზე დიდია"
+
+#
+msgid "Bad TOS value"
+msgstr "TOS-ის არასწორი მნიშვნელობა"
+
+#
+msgid "Decimal value of TOS bits must be in range 0-255"
+msgstr "TOS-ის ბიტების რიცხვის მთელი მნიშვნელობა 0-255 დიაპაზონში უნდა იყოს"
+
+#
+msgid "Invalid timestamp type"
+msgstr "დროის სანიშნის არასწორი ტიპი"
+
+#
+msgid "Bad timing interval"
+msgstr "ინტერვალის არასწორი დრო"
+
+#
+msgid "Cannot copy"
+msgstr "კოპირება შეუძლებელია"
+
+#
+msgid "Invalid source address"
+msgstr "არასწორი საწყისი მისამართი"
+
+#
+msgid "Invalid source"
+msgstr ""
+
+#
+msgid "Cannot set preload to value greater than 3"
+msgstr "წინასწარი ჩატვირთვის მნიშვნელობა არ შეიძლება 3-ზე დიდი იყოს"
+
+#
+msgid "Bad linger time"
+msgstr "გაწელვის ცუდი დრო"
+
+#
+msgid "ident 0 => forcing raw socket"
+msgstr "ident 0 => raw ტიპის სოკეტის ნაძალადევი არჩევა"
+
+#
+msgid ""
+"Do you want to ping broadcast? Then -b. If not, check your local firewall "
+"rules"
+msgstr ""
+"ტრანსლირების მისამართის დასაპინგად გამოიყენეთ პარამეტრი -b. თუ არა, "
+"შეამოწმეთ ლოკალური ბრანდმაუერის წესები"
+
+#
+msgid "Pinging broadcast address"
+msgstr "პინგავთ ტრანსლირების მისამართს"
+
+#
+msgid "Cannot set broadcasting"
+msgstr "გადაცემის დაყენების შეცდომა"
+
+#
+msgid "getifaddrs() failed"
+msgstr "getifaddrs()-ის შეცდომა"
+
+#
+msgid "Cannot disable multicast loopback"
+msgstr "გადაცემის მარყუჟის გათიშვის შეცდომა"
+
+#
+msgid "Cannot set multicast time-to-live"
+msgstr "გადაცემის TTL-ის დაყენების შეცდომა"
+
+#
+msgid "Cannot set unicast time-to-live"
+msgstr "უნიკასტის TTL-ის დაყენების შეცდომა"
+
+# %ld data bytes
+msgid "data bytes"
+msgstr "ბაიტი მონაცემები"
+
+#
+msgid "(same route)"
+msgstr "(იგივე გზა)"
+
+#
+msgid "absolute not-standard"
+msgstr "აბსოლუტური არასტანდარტული"
+
+#
+msgid "not-standard"
+msgstr "არასტანდარტული"
+
+#
+msgid "absolute"
+msgstr "ზუსტი"
+
+#
+msgid "Unrecorded hops"
+msgstr "ჩაუწერელი ჰოპები"
+
+#
+msgid "Echo Reply"
+msgstr "პასუხი ექოზე"
+
+#
+msgid "Destination Net Unreachable"
+msgstr "სამიზნე ქსელი მიუწვდომელია"
+
+#
+msgid "Destination Host Unreachable"
+msgstr "სამიზნე ჰოსტი ხელმიუწვდომელია"
+
+#
+msgid "Destination Protocol Unreachable"
+msgstr "სამიზნე პროტოკოლი ხელმიუწვდომელია"
+
+#
+msgid "Destination Port Unreachable"
+msgstr "სამიზნე პორტი ხელმიუწვდომელია"
+
+#
+msgid "Frag needed and DF set"
+msgstr "საჭიროა DF ბიტისა და დახლეჩვის ჩართვა"
+
+#
+msgid "Source Route Failed"
+msgstr "საწყისი რაუტის შეცდომა"
+
+#
+msgid "Destination Net Unknown"
+msgstr "სამიზნე ქსელი უცნობია"
+
+#
+msgid "Destination Host Unknown"
+msgstr "სამიზნე ჰოსტი უცნობია"
+
+#
+msgid "Source Host Isolated"
+msgstr "საწყისი ჰოსტი იზოლირებულია"
+
+#
+msgid "Destination Net Prohibited"
+msgstr "სამიზნე ქსელი აკრძალულია"
+
+#
+msgid "Destination Host Prohibited"
+msgstr "სამიზნე ჰოსტი აკრძალულია"
+
+#
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "TOS-ის სამიზნე ქსელი მიუწვდომელია"
+
+#
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "ToS-ისთვის სამიზნე ჰოსტი მიუწვდომელია"
+
+#
+msgid "Packet filtered"
+msgstr "პაკეტი გაიფილტრა"
+
+#
+msgid "Precedence Violation"
+msgstr "თანამიმდევრობის დარღვევა"
+
+#
+msgid "Precedence Cutoff"
+msgstr "თანამიმდევრობის ამოჭრა"
+
+#
+msgid "Dest Unreachable"
+msgstr "სამიზნე მიუწვდომელია"
+
+#
+msgid "Bad Code"
+msgstr "ცუდი კოდი"
+
+#
+msgid "Source Quench"
+msgstr "წყაროს შეწყვეტა"
+
+#
+msgid "Redirect Network"
+msgstr "ქსელის გადამისამართება"
+
+#
+msgid "Redirect Host"
+msgstr "ჰოსტის გადამისამართება"
+
+#
+msgid "Redirect Type of Service and Network"
+msgstr "გადამისამართების ToS და ქსელი"
+
+#
+msgid "Redirect Type of Service and Host"
+msgstr "გადამისამართების ToS და ჰოსტი"
+
+#
+msgid "Redirect"
+msgstr "გადამისამართება"
+
+#
+msgid "New nexthop"
+msgstr "ახალი შემდგომი ჰოპია"
+
+#
+msgid "Echo Request"
+msgstr "ექოს მოთხოვნა"
+
+#
+msgid "Time to live exceeded"
+msgstr "TTL გადაჭარბებულია"
+
+#
+msgid "Frag reassembly time exceeded"
+msgstr "დანახლეჩის აწყობის დრო გავიდა"
+
+#
+msgid "Timestamp"
+msgstr "დროის სანიშნი"
+
+#
+msgid "Timestamp Reply"
+msgstr "დროის სანიშნის პასუხი"
+
+#
+msgid "Information Request"
+msgstr "ინფორმაციის მოთხოვნა"
+
+#
+msgid "Information Reply"
+msgstr "საპასუხო ინფორმაცია"
+
+#
+msgid "Address Mask Request"
+msgstr "მისამართის ნიღბის მოთხოვნა"
+
+#
+msgid "Address Mask Reply"
+msgstr "მისამართის ნიღბის პასუხი"
+
+#
+msgid "Bad ICMP type"
+msgstr "ICMP-ის არასწორი ტიპი"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -1076,276 +894,215 @@ msgstr "შაბლონი"
 msgid "PAYLOAD"
 msgstr ""
 
-#: ping/ping_common.c:354
-#, c-format
-msgid "no answer yet for icmp_seq=%lu\n"
-msgstr "პასუხის გარეშე. icmp_sql=%lu\n"
+#
+msgid "No answer yet"
+msgstr "პასუხის გარეშე"
 
-#: ping/ping_common.c:454
-msgid "probably, rcvbuf is not enough to hold preload"
-msgstr ""
-"როგორც ჩანს rcvbuf ძალიან პატარაა წინასწარი ჩატვირთვის გასაძლებად"
+#
+msgid "Probably, rcvbuf is not enough to hold preload"
+msgstr "როგორც ჩანს rcvbuf ძალიან პატარაა წინასწარი ჩატვირთვის გასაძლებად"
 
-#: ping/ping_common.c:471
+#
 msgid "failed to set mark"
 msgstr "ნიშნულის დასმის შეცდომა"
 
-#: ping/ping_common.c:473
+#
 msgid "SO_MARK not supported"
 msgstr "SO_MARK მხარდაჭერილი არაა"
 
-#, c-format
-msgid ""
-"Cannot flood, minimal interval for user must be >= %u ms, use -i %.*f "
-"(or higher)"
-msgstr ""
-"ფლუდის მოწყობა შეუძლებელია. მომხმარებლისთვის მინიმალური ინტერვალი უნდა იყოს "
-">= %u მწმ. გამოიყენეთ -i %.*f (ან უფრო მაღალი)"
+#
+msgid "Cannot flood"
+msgstr "ფლუდის მოწყობა შეუძლებელია"
 
-#: ping/ping_common.c:493
-#, c-format
-msgid "illegal preload and/or interval: %d"
-msgstr "არასწორი წინასწარი ჩატვირთვა ან/და ინტერვალი: %d"
+#
+msgid "Minimal user interval must be >="
+msgstr "მომხმარებლისთვის მინიმალური ინტერვალი უნდა იყოს >="
 
-#: ping/ping_common.c:505
+#
+msgid "see -i option for details"
+msgstr "მეტი დეტალების სანახავად იხილეთ პარამეტრი -i"
+
+#
+msgid "Illegal preload and/or interval"
+msgstr "არასწორი წინასწარი ჩატვირთვა ან/და ინტერვალი"
+
+#
 msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
 msgstr "SO_TIMESTAMP-ის მხარდაჭერის გარეშე. SIOCGSTAMP-ზე გადართვა"
 
-#: ping/ping_common.c:749
-#, c-format
-msgid "%s: time of day goes back (%ldus), taking countermeasures"
-msgstr "%s: დრო უკან დაბრუნდა (%ldus), მიიღება საწინააღმდეგო ზომები"
+#
+msgid "Time of day goes back, taking countermeasures"
+msgstr "დრო უკან დაბრუნდა, მიიღება საწინააღმდეგო ზომები"
 
-#: ping/ping_common.c:799
-#, c-format
-msgid "%zd bytes from %s:"
-msgstr "%zd ბაიტი %s-დან:"
+# %ld bytes
+msgid "bytes"
+msgstr "ბაიტი"
 
-#: ping/ping_common.c:805
-#, c-format
-msgid " ident=%d"
-msgstr " ident=%d"
+#
+msgid "icmp_seq="
+msgstr ""
 
-#: ping/ping_common.c:808
-#, c-format
-msgid " ttl=%d"
-msgstr " ttl =%d"
+#
+msgid "ident="
+msgstr ""
 
-#: ping/ping_common.c:811
-#, c-format
-msgid " (truncated)"
-msgstr " (მოკვეცილია)"
+#
+msgid "ttl="
+msgstr ""
 
-#: ping/ping_common.c:816
-#, c-format
-msgid " time=%ld ms"
-msgstr " დრო = %ld მწმ"
+#
+msgid " time="
+msgstr " დრო="
 
-#: ping/ping_common.c:818
-#, c-format
-msgid " time=%ld.%01ld ms"
-msgstr " დრო=%ld.%01ld მწმ"
+#
+msgid " ms"
+msgstr " მწმ"
 
-#: ping/ping_common.c:821
-#, c-format
-msgid " time=%ld.%02ld ms"
-msgstr " დრო=%ld.%02ld მწმ"
+#
+msgid "DUP"
+msgstr ""
 
-#: ping/ping_common.c:824
-#, c-format
-msgid " time=%ld.%03ld ms"
-msgstr " დრო=%ld.%03ld მწმ"
+#
+msgid "BAD CHECKSUM"
+msgstr "ცუდი საკონტროლო ჯამი"
 
-#: ping/ping_common.c:829
-#, c-format
-msgid " (DUP!)"
-msgstr " (DUP!)"
+#
+msgid "DIFFERENT ADDRESS"
+msgstr "განსხვავებული მისამართი"
 
-#: ping/ping_common.c:831
-#, c-format
-msgid " (BAD CHECKSUM!)"
-msgstr " (ცუდი საკონტროლო ჯამი!)"
+#
+msgid "wrong byte #"
+msgstr "არასწორი ბაიტი #"
 
-#: ping/ping_common.c:833
-#, c-format
-msgid " (DIFFERENT ADDRESS!)"
-msgstr " (განსხვავებული მისამართი)"
+#
+msgid "expected 0x"
+msgstr "უნდა იყოს: 0x"
 
-#: ping/ping_common.c:840
-#, c-format
-msgid "wrong data byte #%zu should be 0x%x but was 0x%x"
-msgstr "მონაცემების არასწორი ბაიტი #%zu უნდა იყოს 0ხ%x მაგრამ იყო 0x%x"
+#
+msgid "got 0x"
+msgstr "მიიღო: 0x"
 
-#: ping/ping_common.c:883
-#, c-format
-msgid "--- %s ping statistics ---\n"
-msgstr "--- %s-ის პინგის სტატისტიკა ----\n"
+# hostname ping statistics
+msgid " ping statistics"
+msgstr "-ის პინგის სტატისტიკა"
 
-#: ping/ping_common.c:884
-#, c-format
-msgid "%ld packets transmitted, "
-msgstr "გადაცემულია %ld პაკეტი, "
+# %ld packets transmitted
+msgid "packets transmitted"
+msgstr "პაკეტი გადაცემულია"
 
-#: ping/ping_common.c:885
-#, c-format
-msgid "%ld received"
-msgstr "მიღებულია %ld"
+# %ld received
+msgid "received"
+msgstr "მიღებულია"
 
-#: ping/ping_common.c:887
-#, c-format
-msgid ", +%ld duplicates"
-msgstr ", +%ld ასლი"
+# %ld duplicates
+msgid "duplicates"
+msgstr "ასლი"
 
-#: ping/ping_common.c:889
-#, c-format
-msgid ", +%ld corrupted"
-msgstr ", +%ld გაფუჭებული"
+# %ld corrupted
+msgid "corrupted"
+msgstr "გაფუჭებული"
 
-#: ping/ping_common.c:891
-#, c-format
-msgid ", +%ld errors"
-msgstr ", +%ld შეცდომა"
+# %ld errors
+msgid "errors"
+msgstr "შეცდომა"
 
-#: ping/ping_common.c:897
-#, c-format
-msgid ", %g%% packet loss"
-msgstr ", %g%% პაკეტი დაიკარგა"
+# %g%% packet loss
+msgid "packet loss"
+msgstr "პაკეტი დაიკარგა"
 
-#: ping/ping_common.c:899
-#, c-format
-msgid ", time %ldms"
-msgstr ", დრო %ldმწმ"
+# time %ld ms
+msgid "time"
+msgstr "დრო"
 
-#: ping/ping_common.c:919
-#, c-format
-msgid "rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms"
-msgstr "rtt მინ/საშ/მაქს/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld მწმ"
+# rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
+msgid "rtt min/avg/max/mdev"
+msgstr "rtt მინ/საშ/მაქს/mdev"
 
-#: ping/ping_common.c:927
-#, c-format
-msgid "%spipe %d"
-msgstr "%s არხი %d"
+# pipe %d
+msgid "pipe"
+msgstr "არხი"
 
-#: ping/ping_common.c:934
-#, c-format
-msgid "%sipg/ewma %d.%03d/%d.%03d ms"
-msgstr "%sipg/ewma %d.%03d/%d.%03d მწმ"
+# ipg/ewma = %d.%03d/%d.%03d ms
+msgid "ipg/ewma"
+msgstr ""
 
-#: ping/ping_common.c:952
-#, c-format
-msgid "%ld/%ld packets, %d%% loss"
-msgstr "%ld/%ld პაკეტი, %d%% დაკარგულია"
+# %ld/%ld packets
+msgid "packets"
+msgstr "პაკეტი"
 
-#: ping/ping_common.c:957
-#, c-format
-msgid ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
-msgstr ", მინ/საშ/ewma/მაქს = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld მწმ"
+# %d%% loss
+msgid "loss"
+msgstr "დაკარგულია"
 
-#: tracepath.c:235
-#, c-format
-msgid "no info\n"
-msgstr "ინფორმაციის გარეშე\n"
+# min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
+msgid "min/avg/ewma/max"
+msgstr "მინ/საშ/ewma/მაქს"
 
-#: tracepath.c:239
-msgid "[LOCALHOST]"
-msgstr "[LOCALHOST]"
+#
+msgid "No info"
+msgstr "ინფორმაციის გარეშე"
 
-#: tracepath.c:287
-#, c-format
-msgid "%3ld.%03ldms "
-msgstr "%3ld.%03ldმწმ "
+#
+msgid "LOCALHOST"
+msgstr ""
 
-#: tracepath.c:290
-#, c-format
-msgid "(This broken router returned corrupted payload) "
-msgstr "(გაფუჭებულმა რაუტერმა არასწორი პაკეტი დააბრუნა) "
+#
+msgid "(This broken router returned corrupted payload)"
+msgstr "(გაფუჭებულმა რაუტერმა არასწორი პაკეტი დააბრუნა)"
 
-#: tracepath.c:305
-#, c-format
-msgid "pmtu %d\n"
-msgstr "PMTU %d\n"
+#
+msgid "pmtu"
+msgstr "PMTU"
 
-#: tracepath.c:310
-#, c-format
-msgid "reached\n"
-msgstr "მიღწეულია\n"
+#
+msgid "reached"
+msgstr "მიღწეულია"
 
-#: tracepath.c:327
-#, c-format
-msgid "asymm %2d "
-msgstr "ასიმ %2d "
+#
+msgid "asymm"
+msgstr "ასიმ"
 
-#: tracepath.c:342
+#
 msgid "NET ERROR"
 msgstr "ქსელის შეცდომა"
 
-#: tracepath.c:387
-#, c-format
-msgid "%2d?: reply received 8)\n"
-msgstr "%2d?: პაკეტი დაბრუნდა 8)\n"
+#
+msgid "reply received 8"
+msgstr "პაკეტი დაბრუნდა 8"
 
-#: tracepath.c:393
-#, c-format
-msgid "%2d:  send failed\n"
-msgstr "%2d:  გაგზავნის შეცდომა\n"
+#
+msgid "send failed"
+msgstr "გაგზავნის შეცდომა"
 
-#, c-format
-msgid ""
-"\n"
-"Usage\n"
-"  tracepath [options] <destination>\n"
-"\n"
-"Options:\n"
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -V             print version and exit\n"
-"  <destination>  DNS name or IP address\n"
-"\n"
-"For more details see tracepath(8)\n"
+#
+msgid "Mutually exclusive options"
 msgstr ""
-"\n"
-"გამოყენება\n"
-"  tracepath [პარამეტრები] <დანიშნულება>\n"
-"\n"
-"პარამეტრები:\n"
-"  -4        IPv4-ის გამოყენება\n"
-"  -6        IPv6-ის გამოყენება\n"
-"  -b        სახელისა და მისამართის დაბეჭდვა\n"
-"  -l <სიგრძე>     პაკეტის სიგრძის დაყენება\n"
-"  -m <ჰოპები>   ჰოპების რაოდენობის მაქსიმუმი\n"
-"  -n                DNS-ის გადაწყვეტის გამორთვა\n"
-"  -p  <პორტი>    დანიშნულების <პორტის> გამოყენება\n"
-"  -V          ვერსიის დაბეჭდვა და გამოსვლა\n"
-"  <დანიშნულება>  DNS სახელი ან IP მისამართი\n"
-"\n"
-"მეტი დეტალებისთვის იხილეთ tracepath(8)\n"
 
-#, c-format
-msgid "Only one -%c or -%c option may be specified"
-msgstr "შეიძლება მიუთითოთ ერთერთი -%c ან -%c"
+#
+msgid "no reply"
+msgstr "პასუხის გარეშე"
 
-#, c-format
-msgid "%2d:  no reply\n"
-msgstr "%2d:  პასუხის გარეშე\n"
+#
+msgid "Resume"
+msgstr "რეზიუმე"
 
-#, c-format
-msgid "     Resume: pmtu %d "
-msgstr "     რეზიუმე: pmtu %d "
+#
+msgid "Too many hops"
+msgstr ""
 
-#, c-format
-msgid "hops %d "
-msgstr "ჰოპები %d "
+#
+msgid "pmtu="
+msgstr ""
 
-#, c-format
-msgid "back %d "
-msgstr "უკან %d "
+#
+msgid "hops="
+msgstr "ჰოპები="
 
-#, c-format
-msgid "pktlen must be within: %d < value <= %d"
-msgstr "pktlen-ის დიაპაზონი: %d < მნიშვნელობა <=%d"
+#
+msgid "back="
+msgstr "უკან="
+
+#
+msgid "Packet length"
+msgstr ""
 

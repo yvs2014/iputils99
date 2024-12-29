@@ -213,7 +213,7 @@ static inline int ping6_icmp_extra_type(state_t *rts,
 	if (!rts->opt.verbose || rts->uid)
 		return true;
 	PRINT_TIMESTAMP;
-	printf(_("From %s: "), sprint_addr(from, sizeof(*from), rts->opt.resolve));
+	printf("%s %s: ", _("From"), sprint_addr(from, sizeof(*from), rts->opt.resolve));
 	print6_icmp(icmp->icmp6_type, icmp->icmp6_code, ntohl(icmp->icmp6_mtu));
 	return -1;
 }
@@ -248,7 +248,7 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 
 	if (received < 8) {
 		if (rts->opt.verbose)
-			warnx(_("packet too short: %zd bytes"), received);
+			warnx("%s: %zd %s", _("Packet too short"), received, _("bytes"));
 		return true;
 	}
 
@@ -354,7 +354,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		firsthop->sin6_scope_id = whereto->sin6_scope_id;
 		/* Verify scope_id is the same as intermediate nodes */
 		if (firsthop->sin6_scope_id && scope_id && (firsthop->sin6_scope_id != scope_id))
-			errx(EINVAL, _("scope discrepancy among the nodes"));
+			errx(EINVAL, "%s", _("Scope discrepancy among the nodes"));
 		else if (!scope_id)
 			scope_id = firsthop->sin6_scope_id;
 	}
@@ -432,7 +432,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		int csum_offset = 2;
 		if (setsockopt(sock->fd, SOL_RAW, IPV6_CHECKSUM, &csum_offset, sizeof(csum_offset)) < 0)
 		/* checksum should be enabled by default and setting this option might fail anyway */
-			warn(_("setsockopt(RAW_CHECKSUM) failed - try to continue"));
+			warn("%s", _("setsockopt(RAW_CHECKSUM) failed - try to continue"));
 		/* select icmp echo reply as icmp type to receive */
 		struct icmp6_filter filter = {0};
 		ICMP6_FILTER_SETBLOCKALL(&filter);
@@ -457,7 +457,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 #else
 	(setsockopt(sock->fd, IPPROTO_IPV6, IPV6_HOPLIMIT,     &on, sizeof(on)) < 0)
 #endif
-	  ) err(errno, _("cannot receive hop limit"));
+	  ) err(errno, "%s", _("Cannot receive hop limit"));
 	}
 
 	if (rts->opt.flowinfo) {
@@ -470,11 +470,11 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		freq->flr_share  = IPV6_FL_S_EXCL;
 		memcpy(&freq->flr_dst, &whereto->sin6_addr, sizeof(whereto->sin6_addr));
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWLABEL_MGR, freq, sizeof(*freq)) < 0)
-			err(errno, _("cannot set flowlabel"));
+			err(errno, "%s", _("Cannot set flowlabel"));
 		whereto->sin6_flowinfo = rts->flowlabel = freq->flr_label;
 		int on = 1;
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND, &on, sizeof(on)) < 0)
-			err(errno, _("cannot send flowinfo"));
+			err(errno, "%s", _("Cannot send flowinfo"));
 	}
 
 	rts->subnet_router_anycast = get_subnet_anycast(whereto);

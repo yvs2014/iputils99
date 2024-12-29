@@ -171,7 +171,7 @@ static void open_socket(sock_t *sock, int af, int proto, bool verbose) {
 		return;
 	// failed
 	if (sock->raw && geteuid())
-		warnx(_("=> missing cap_net_raw+p capability or setuid?"));
+		warnx("%s", _("=> missing cap_net_raw+p capability"));
 	err(num ? num : EXIT_FAILURE, "socket");
 }
 
@@ -189,7 +189,7 @@ static inline void opt_I(state_t *rts, const char *str) {
 	if (strchr(str, ':')) {
 		char *addr = strdup(str);
 		if (!addr)
-			err(errno, _("cannot copy: %s"), str);
+			err(errno, "%s: %s", _("Cannot copy"), str);
 		char *scope = strchr(addr, SCOPE_DELIMITER);
 		if (scope) {
 			*scope++ = 0;
@@ -197,14 +197,14 @@ static inline void opt_I(state_t *rts, const char *str) {
 		}
 		struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&rts->source;
 		if (inet_pton(AF_INET6, addr, &sin6->sin6_addr) <= 0)
-			errx(EINVAL, _("invalid source address: %s"), str);
+			errx(EINVAL, "%s: %s", _("Invalid source address"), str);
 		rts->opt.strictsource = true;
 		free(addr);
 	} else {
 		struct sockaddr_in *sin = (struct sockaddr_in *)&rts->source;
 		int rc = inet_pton(AF_INET, str, &sin->sin_addr);
 		if (rc < 0)
-			errx(EINVAL, _("invalid source: %s"), str);
+			errx(EINVAL, "%s: %s", _("Invalid source"), str);
 		if (rc)
 			rts->opt.strictsource = true;
 		else
@@ -222,7 +222,7 @@ static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) 
 	if (!rts->ni) {
 		rts->ni = calloc(1, sizeof(struct ping_ni));
 		if (!rts->ni)
-			err(errno, _("memory allocation failed"));
+			err(errno, "%s", _("Memory allocation failed"));
 		rts->ni->query        = -1;
 		rts->ni->subject_type = -1;
 		if (niquery_option_handler(rts->ni, str) < 0)
@@ -237,11 +237,11 @@ static inline void opt_s(state_t *rts, const char *str) {
 	if (rts->ni)
 		errx(EXIT_FAILURE, "%s: %s", _WARN,
 			_("NodeInfo packet can only have a header"));
-	unsigned long len = strtoul_or_err(str, _("invalid argument"),
+	unsigned long len = strtoul_or_err(str, _("Invalid argument"),
 		0, MAXPAYLOAD);
 	unsigned char *pack = calloc(1, PACKHDRLEN + len);
 	if (!pack)
-		err(errno, _("memory allocation failed"));
+		err(errno, "%s", _("Memory allocation failed"));
 	if (rts->outpack)
 		free(rts->outpack);
 	rts->outpack = pack;
@@ -267,7 +267,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			break;
 		case 'e':
 			rts->ident16 = htons(strtoul_or_err(optarg,
-				_("invalid argument"), 0, USHRT_MAX));
+				_("Invalid argument"), 0, USHRT_MAX));
 			rts->custom_ident = rts->ident16;
 			break;
 		case 'R':
@@ -286,7 +286,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			else if (strcmp(optarg, "tsprespec") == 0)
 				rts->ipt_flg = IPOPT_TS_PRESPEC;
 			else
-				errx(EINVAL, _("invalid timestamp type: %s"), optarg);
+				errx(EINVAL, "%s: %s", _("Invalid timestamp type"), optarg);
 			break;
 		/* IPv6 specific options */
 		case 'F':
@@ -307,7 +307,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->opt.strictsource = true;
 			break;
 		case 'c':
-			rts->npackets = strtol_or_err(optarg, _("invalid argument"), 1, LONG_MAX);
+			rts->npackets = strtol_or_err(optarg, _("Invalid argument"), 1, LONG_MAX);
 			break;
 		case 'C':
 			rts->opt.connect_sk = true;
@@ -324,7 +324,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->opt.resolve = true;
 			break;
 		case 'i': {
-			double value = strtod_or_err(optarg, _("bad timing interval"),
+			double value = strtod_or_err(optarg, _("Bad timing interval"),
 				0, (double)INT_MAX / 1000);
 			rts->interval = (int)(value * 1000);
 			rts->opt.interval = true;
@@ -334,15 +334,15 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			opt_I(rts, optarg);
 			break;
 		case 'l':
-			rts->preload = strtol_or_err(optarg, _("invalid argument"), 1, MAX_DUP_CHK);
+			rts->preload = strtol_or_err(optarg, _("Invalid argument"), 1, MAX_DUP_CHK);
 			if (rts->uid && (rts->preload > 3))
-				errx(EINVAL, _("cannot set preload to value greater than 3: %d"), rts->preload);
+				errx(EINVAL, "%s: %d", _("Cannot set preload to value greater than 3"), rts->preload);
 			break;
 		case 'L':
 			rts->opt.noloop = true;
 			break;
 		case 'm':
-			rts->mark = strtoul_or_err(optarg, _("invalid argument"), 0, UINT_MAX);
+			rts->mark = strtoul_or_err(optarg, _("Invalid argument"), 0, UINT_MAX);
 			rts->opt.mark = true;
 			break;
 		case 'M':
@@ -355,7 +355,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			else if (strcmp(optarg, "probe") == 0)
 				rts->pmtudisc = IP_PMTUDISC_PROBE;
 			else
-				errx(EINVAL, _("invalid -M argument: %s"), optarg);
+				errx(EINVAL, "%s: %c %s", _("Invalid argument"), ch, optarg);
 			break;
 		case 'n':
 			rts->opt.resolve = false;
@@ -391,10 +391,10 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			opt_s(rts, optarg);
 			break;
 		case 'S':
-			rts->sndbuf = strtol_or_err(optarg, _("invalid argument"), 1, INT_MAX);
+			rts->sndbuf = strtol_or_err(optarg, _("Invalid argument"), 1, INT_MAX);
 			break;
 		case 't':
-			rts->ttl = strtol_or_err(optarg, _("invalid argument"), 0, UCHAR_MAX);
+			rts->ttl = strtol_or_err(optarg, _("Invalid argument"), 0, UCHAR_MAX);
 			rts->opt.ttl = true;
 			break;
 		case 'U':
@@ -408,10 +408,10 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			print_config();
 			exit(EXIT_SUCCESS);
 		case 'w':
-			rts->deadline = strtol_or_err(optarg, _("invalid argument"), 0, INT_MAX);
+			rts->deadline = strtol_or_err(optarg, _("Invalid argument"), 0, INT_MAX);
 			break;
 		case 'W': {
-			double value = strtod_or_err(optarg, _("bad linger time"),
+			double value = strtod_or_err(optarg, _("Bad linger time"),
 				0, (double)INT_MAX / 1000);
 			/* lingertime will be converted to usec later */
 			rts->lingertime = (int)(value * 1000);
@@ -447,10 +447,11 @@ int main(int argc, char **argv) {
 #endif
 		.pmtudisc     = -1,
 	};
+	setmyname(argv[0]);
 
 	rts.outpack = calloc(1, PACKHDRLEN + rts.datalen);
 	if (!rts.outpack)
-		err(errno, _("memory allocation failed"));
+		err(errno, "%s", _("Memory allocation failed"));
 
 	atexit(close_stdout);
 	rts.uid = limit_capabilities(&rts);
@@ -481,7 +482,7 @@ int main(int argc, char **argv) {
 	argv += optind;
 	if (argc <= 0) {
 		errno = EDESTADDRREQ;
-		warn(_("No goal"));
+		warn("%s", _("No goal"));
 		usage(EDESTADDRREQ);
 	}
 	const char *target = argv[argc - 1];
@@ -548,7 +549,8 @@ int main(int argc, char **argv) {
 			}
 		} break;
 		default:
-			errx(EINVAL, _("unknown protocol family: %d"), ai->ai_family);
+			errno = EAFNOSUPPORT;
+			err(errno, "%d", ai->ai_family);
 		}
 
 		if (rcode >= 0)

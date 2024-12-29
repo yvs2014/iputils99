@@ -14,16 +14,27 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0.2\n"
 
-#, c-format
+# iputils99 edition
+
+#
+msgid "Usage"
+msgstr "Käyttö"
+
+#
+msgid "[options] <destination>"
+msgstr "[valinnat] <kohde>"
+
+#
+msgid "Options"
+msgstr "Valinnat"
+
+#
+msgid "For more details see"
+msgstr "Katso lisätietoja"
+
+# arping options
 msgid ""
-"\n"
-"Usage:\n"
-"  arping [options] <destination>\n"
-"\n"
-"Options:\n"
 "  -f            quit on first reply\n"
 "  -q            be quiet\n"
 "  -b            keep on broadcasting, do not unicast\n"
@@ -34,911 +45,51 @@ msgid ""
 "  -c <count>    how many packets to send\n"
 "  -w <timeout>  how long to wait for a reply\n"
 "  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use"
+"  -I <device>   which ethernet device to use\n"
+"  -s <source>   source IP address\n"
+"  <destination> DNS name or IP address\n"
 msgstr ""
-"\n"
-"Käyttö:\n"
-"  arping [valinnat] <kohde>\n"
-"\n"
-"Valinnat:\n"
-"  -f             lopeta ensimmäisellä vastauksella\n"
+"  -f            lopeta ensimmäisellä vastauksella\n"
 "  -q            ole hiljaa\n"
 "  -b            jatka laaja-lähetystä, ei yksi-lähetystä\n"
 "  -D            tee kaksoiskappale osoitteentunnistustilaa\n"
-"  -U           ei-toivottu ARP-tila, päivitä naapurisi\n"
+"  -U            ei-toivottu ARP-tila, päivitä naapurisi\n"
 "  -A            ARP-vastaustila, päivitä naapurisi\n"
 "  -V            tulosta versio ja poistu\n"
-"  -c <count>          lähetettävien pakettien lukumäärä\n"
-"  -w <timeout>    odotettavaa aika vastaukseen\n"
-"  -i <interval>       aseta pakettien välinen aika (oletus: yksi sekunti)\n"
-"  -I <device>          käytettävää ethernet-laitetta"
-
-#, fuzzy, c-format
-msgid ""
-"\n"
-"  -s <source>   source IP address\n"
-"  <destination> DNS name or IP address\n"
-"\n"
-"For more details see arping(8)\n"
-msgstr ""
-"\n"
-"  -s <source>  IP-osoitteen lähde\n"
+"  -c <count>    lähetettävien pakettien lukumäärä\n"
+"  -w <timeout>  odotettavaa aika vastaukseen\n"
+"  -i <interval> aseta pakettien välinen aika (oletus: yksi sekunti)\n"
+"  -I <device>   käytettävää ethernet-laitetta\n"
+"  -s <source>   IP-osoitteen lähde\n"
 "  <destination> DNS-nimi tai IP-osoite\n"
-"\n"
-"Katso lisätietoja arping(8)\n"
 
-#: arping.c:305
-#, c-format
-msgid "Sent %d probes (%d broadcast(s))\n"
-msgstr "Lähetetty %d tutkimusta (%d laaja-lähetys(tä))\n"
-
-#: arping.c:306
-#, c-format
-msgid "Received %d response(s)"
-msgstr "Vastaanotettu %d vastaus(ta)"
-
-#: arping.c:310
-#, c-format
-msgid "%d request(s)"
-msgstr "%d pyyntöä"
-
-#: arping.c:312
-#, c-format
-msgid "%s%d broadcast(s)"
-msgstr "%s%d kaikkilähetys(tä)"
-
-#: arping.c:415
-msgid "Unicast"
-msgstr "Yksilähetys"
-
-#: arping.c:415
-msgid "Broadcast"
-msgstr "Kaikkilähetys"
-
-#: arping.c:416
-#, c-format
-msgid "%s from "
-msgstr "%s lähteestä "
-
-#: arping.c:416
-msgid "reply"
-msgstr "vastaus"
-
-#: arping.c:416
-msgid "request"
-msgstr "pyyntö"
-
-#: arping.c:421
-#, c-format
-msgid "for %s "
-msgstr "kohteelle %s "
-
-#: arping.c:426
-#, c-format
-msgid "for "
-msgstr "kohteelle "
-
-#: arping.c:436
-#, c-format
-msgid " %ld.%03ldms\n"
-msgstr " %ld.%03ldms\n"
-
-#: arping.c:438
-#, c-format
-msgid " UNSOLICITED?\n"
-msgstr " PYYTÄMÄTTÄ?\n"
-
-#: arping.c:589
-#, c-format
-msgid "Interface \"%s\" is down\n"
-msgstr "Liitäntä \"%s\" on poissa käytöstä\n"
-
-#: arping.c:597
-#, c-format
-msgid "Interface \"%s\" is not ARPable\n"
-msgstr "Liitäntä \"%s\" ei ole ARP-kysyttävä\n"
-
-#: arping.c:690
-msgid "using default broadcast address"
-msgstr "käytetään oletuskaikkilähetysosoitetta"
-
-#: arping.c:901 arping.c:904 arping.c:907 ping/ping.c:378 ping/ping.c:425
-#: ping/ping.c:477 ping/ping.c:485 ping/ping.c:531 ping/ping.c:534
-#: ping/ping.c:537 ping/ping.c:551 tracepath.c:473 tracepath.c:476
-#: tracepath.c:479 tracepath.c:501
-msgid "invalid argument"
-msgstr "virheellinen argumentti"
-
-#: arping.c:974
-#, c-format
-msgid "Device %s not available."
-msgstr "Laite %s ei ole käytettävissä."
-
-#: arping.c:975
-msgid "Suitable device could not be determined. Please, use option -I."
-msgstr "Sopivaa laitetta ei voitu määrittää. Ole hyvä ja käytä vaihtoehtoa -I."
-
-#: arping.c:995
-msgid "interface is ignored"
-msgstr "liitäntää ei huomioida"
-
-#: arping.c:1038
-#, c-format
-msgid "Interface \"%s\" is not ARPable (no ll address)\n"
-msgstr "Liitäntä \"%s\" ei ole ARP-kelpoinen (ei ll-osoitetta)\n"
-
-#: arping.c:1047
-#, c-format
-msgid "ARPING %s "
-msgstr "ARPING %s "
-
-#: arping.c:1048
-#, c-format
-msgid "from %s %s\n"
-msgstr "%s %s:lta\n"
-
-#: arping.c:1052
-msgid "no source address in not-DAD mode"
-msgstr "ei lähdeosoitetta ei-DAD-tilassa"
-
-#: clockdiff.c:242
-#, c-format
-msgid "Wrong timestamp %d\n"
-msgstr "Väärä aikaleima %d\n"
-
-#: clockdiff.c:247
-#, c-format
-msgid "Overflow %d hops\n"
-msgstr "Ylivirta %d hyppyä\n"
-
-#: clockdiff.c:272
-#, c-format
-msgid "wrong timestamps\n"
-msgstr "väärät aikaleimat\n"
-
-#, fuzzy, c-format
+# clockdiff options
+#, fuzzy
 msgid ""
-"\n"
-"Usage:\n"
-"  clockdiff [options] <destination>\n"
-"\n"
-"Options:\n"
 "                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
 "  -o            use IP timestamp and icmp echo\n"
 "  -o1           use three-term IP timestamp and icmp echo\n"
 "  -T, --time-format <ctime|iso>\n"
-"                  specify display time format, ctime is the default\n"
+"                specify display time format, ctime is the default\n"
 "  -I            alias of --time-format=iso\n"
 "  -h, --help    display this help\n"
 "  -V, --version print version and exit\n"
 "  <destination> DNS name or IP address\n"
-"\n"
-"For more details see clockdiff(8)\n"
 msgstr ""
-"\n"
-"Käyttö:\n"
-"  clockdiff [valinnat] <kohde>\n"
-"\n"
-"Valinnat:\n"
-"                ilman '-o':ta, käytä vain icmp-aikaleimaa (katso RFC0792, "
-"sivu 16)\n"
-"  -o             käytä IP-aikaleimaa ja icmp-echoa\n"
-"  -o1          käytä kolmen aikavälin IP-aikaleimaa ja icmp-kaikua\n"
-"  -T, --time-format <ctime|iso>  määritä näyttöajan muoto, ctime on "
-"oletusarvo\n"
-"  -I                           alias '--time-format=iso':ta\n"
-"  -h, --help           näytä tämä ohje\n"
-"  -V, --version      tulosta versio ja poistu\n"
-"  <kohde> DNS-nimi tai IP-osoite\n"
-"\n"
-"Katso lisätietoja clockdiff(8)\n"
+"                ilman '-o':ta, käytä vain icmp-aikaleimaa\n"
+"                (katso RFC0792, sivu 16)\n"
+"  -o            käytä IP-aikaleimaa ja icmp-echoa\n"
+"  -o1           käytä kolmen aikavälin IP-aikaleimaa ja icmp-kaikua\n"
+"  -T, --time-format <ctime|iso>\n"
+"                määritä näyttöajan muoto, ctime on oletusarvo\n"
+"  -I            alias '--time-format=iso':ta\n"
+"  -h, --help    näytä tämä ohje\n"
+"  -V, --version tulosta versio ja poistu\n"
+"  <kohde>       DNS-nimi tai IP-osoite\n"
 
-#: clockdiff.c:592
-msgid "measure: unknown failure"
-msgstr "mitta: tuntematon vika"
-
-#: clockdiff.c:597
-#, c-format
-msgid "%s is down"
-msgstr "%s on alas"
-
-#: clockdiff.c:600
-#, c-format
-msgid "%s time transmitted in a non-standard format"
-msgstr "%s aika lähetetty epästandardissa muodossa"
-
-#: clockdiff.c:603
-#, c-format
-msgid "%s is unreachable"
-msgstr "%s on tavoittamaton"
-
-#: clockdiff.c:622
-#, c-format
+# ping options
+#, fuzzy
 msgid ""
-"\n"
-"host=%s rtt=%ld(%ld)ms/%ldms delta=%dms/%dms %s\n"
-msgstr ""
-"\n"
-"isäntä=%s rtt=%ld(%ld) ms/%ld ms delta=%d ms/%d ms %s\n"
-
-#: ping/node_info.c:169
-#, c-format
-msgid "Qtype conflict\n"
-msgstr "Qtype-ristiriita\n"
-
-#: ping/node_info.c:221
-#, c-format
-msgid "Subject type conflict\n"
-msgstr "Aihetyypin ristiriita\n"
-
-#: ping/node_info.c:312
-#, c-format
-msgid "IDN encoding error: %s"
-msgstr "IDN-koodausvirhe: %s"
-
-#: ping/node_info.c:323
-msgid "too long scope name"
-msgstr "liian pitkä laajuuden nimi"
-
-#: ping/node_info.c:347 ping/node_info.c:389 ping/ping6_common.c:309
-#: ping/ping.c:518 ping/ping.c:580 ping/ping.c:1021
-msgid "memory allocation failed"
-msgstr "muistin varaus ei onnistunut"
-
-#: ping/node_info.c:359
-#, c-format
-msgid "inappropriate subject name: %s"
-msgstr "ei kelpavaa aihenimi: %s"
-
-#: ping/node_info.c:362
-msgid "dn_comp() returned too long result"
-msgstr "dn_comp() palautti liian pitkän tuloksen"
-
-#: ping/node_info.c:402
-#, c-format
-msgid ""
-"ping -6 -N <nodeinfo opt>\n"
-"Help:\n"
-"  help\n"
-"Query:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Subject:\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=name\n"
-"  subject-fqdn=name\n"
-msgstr ""
-"ping -6 -N <nodeinfo opt>\n"
-"Apu:\n"
-"  help\n"
-"Kysely:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Aihe:\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=name\n"
-"  subject-fqdn=name\n"
-
-#: ping/ping6_common.c:99 ping/ping.c:708
-#, c-format
-msgid "unknown iface: %s"
-msgstr "tuntematon iface: %s"
-
-#: ping/ping6_common.c:146
-msgid "scope discrepancy among the nodes"
-msgstr "laajuuden ero solmujen joukossa"
-
-#: ping/ping6_common.c:226 ping/ping.c:878
-#, c-format
-msgid "%s: source address might be selected on device other than: %s"
-msgstr "%s: lähdeosoite on saatettu valita muusta laitteesta kuin: %s"
-
-#
-msgid "Minimal interval for multicast ping"
-msgstr "Minimiväli käyttäjän monilähetyspingille"
-
-#
-msgid "Minimal interval for broadcast ping"
-msgstr "Minimiväli käyttäjän kaikkilähetyspingille"
-
-#, c-format
-msgid "%s for user must be >= %u ms, use -i %.*f (or higher)"
-msgstr "%s on oltava >= %u ms, käytä -i %.*f (tai suurempi)"
-
-#
-msgid "Multicast ping"
-msgstr "Moni-lähetyksen ping"
-
-#
-msgid "Broadcast ping"
-msgstr "Laaja-lähetyksen ping"
-
-#, c-format
-msgid "%s does not fragment"
-msgstr "%s ei pirstoudu"
-
-#: ping/ping6_common.c:331
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "setsockopt(RAW_CHECKSUM) epäonnistui - yritä jatkaa"
-
-#: ping/ping6_common.c:362
-msgid "cannot set multicast hop limit"
-msgstr "ei voi asettaa moni-lähetyksen hyppyrajaa"
-
-#: ping/ping6_common.c:365
-msgid "cannot set unicast hop limit"
-msgstr "ei voi asettaa yksi-lähetyksen hyppyrajaa"
-
-#: ping/ping6_common.c:377
-msgid "cannot receive hop limit"
-msgstr "ei voi vastaanottaa hyppyrajaa"
-
-#: ping/ping6_common.c:391
-msgid "cannot set flowlabel"
-msgstr "virtausnimiötä ei voi asettaa"
-
-#: ping/ping6_common.c:395
-msgid "cannot send flowinfo"
-msgstr "ei voi lähettää virtaustietoja"
-
-#: ping/ping6_common.c:398 ping/ping.c:1023
-#, c-format
-msgid "PING %s (%s) "
-msgstr "PING %s (%s) "
-
-#: ping/ping6_common.c:400
-#, c-format
-msgid ", flow 0x%05x, "
-msgstr ", virtaus 0x%05x, "
-
-#: ping/ping6_common.c:405 ping/ping.c:1025
-#, c-format
-msgid "from %s %s: "
-msgstr "%s %s:lta : "
-
-#: ping/ping6_common.c:423
-#, c-format
-msgid "Destination unreachable: "
-msgstr "Kohde tavoittamaton: "
-
-#: ping/ping6_common.c:426
-#, c-format
-msgid "No route"
-msgstr "Ei reittiä"
-
-#: ping/ping6_common.c:429
-#, c-format
-msgid "Administratively prohibited"
-msgstr "Hallinnollisesti kielletty"
-
-#: ping/ping6_common.c:432
-#, c-format
-msgid "Beyond scope of source address"
-msgstr "Lähdeosoitteen laajuuden ulkopuolella"
-
-#: ping/ping6_common.c:435
-#, c-format
-msgid "Address unreachable"
-msgstr "Tavoittamaton osoite"
-
-#: ping/ping6_common.c:438
-#, c-format
-msgid "Port unreachable"
-msgstr "Tavoittamaton portti"
-
-#: ping/ping6_common.c:441
-#, c-format
-msgid "Source address failed ingress/egress policy"
-msgstr "Lähdeosoite epäonnistui sisään-/ulostulokäytännössä"
-
-#: ping/ping6_common.c:444
-#, c-format
-msgid "Reject route to destination"
-msgstr "Hylkää reitti määränpäähän"
-
-#: ping/ping6_common.c:447
-#, c-format
-msgid "Unknown code %d"
-msgstr "Tuntematon koodi %d"
-
-#: ping/ping6_common.c:452
-#, c-format
-msgid "Packet too big: mtu=%u"
-msgstr "Paketti liian iso: mtu=%u"
-
-#: ping/ping6_common.c:454
-#, c-format
-msgid ", code=%d"
-msgstr ", koodi=%d"
-
-#: ping/ping6_common.c:457
-#, c-format
-msgid "Time exceeded: "
-msgstr "Ylitetty aika: "
-
-#: ping/ping6_common.c:459
-#, c-format
-msgid "Hop limit"
-msgstr "Hyppyraja"
-
-#: ping/ping6_common.c:461
-#, c-format
-msgid "Defragmentation failure"
-msgstr "Hajanaisuuden poiston epäonnistus"
-
-#, c-format
-msgid "code %d"
-msgstr "koodi %d"
-
-#
-msgid "Parameter problem: "
-msgstr "Parametriongelma: "
-
-#
-msgid "Wrong header field"
-msgstr "Väärä otsikkokenttä"
-
-#
-msgid "Unknown header"
-msgstr "Tuntematon otsikko"
-
-#
-msgid "Unknown option"
-msgstr "tuntematon valitsin"
-
-#, c-format
-msgid " at %u"
-msgstr " %u:lle"
-
-#
-msgid "Echo request"
-msgstr "Kaikupyyntö"
-
-#
-msgid "Echo reply"
-msgstr "Kaikuvastaus"
-
-#: ping/ping6_common.c:484
-#, c-format
-msgid "MLD Query"
-msgstr "MLD-kysely"
-
-#
-msgid "MLD Report"
-msgstr "MLD-raportti"
-
-#
-msgid "MLD Reduction"
-msgstr "MLD-vähennys"
-
-#
-msgid "Unknown icmp type"
-msgstr "Tuntematon icmp-tyyppi"
-
-#
-msgid "local error"
-msgstr "paikallinen virhe"
-
-#, c-format
-msgid "local error: message too long, mtu: %u"
-msgstr "paikallinen virhe: viesti liian pitkä, mtu: %u"
-
-#, c-format
-msgid "From %s icmp_seq=%u "
-msgstr "%s:lta icmp_seq=%u "
-
-#: ping/ping6_common.c:677 ping/ping.c:1592
-#, c-format
-msgid " icmp_seq=%u"
-msgstr " icmp_seq=%u"
-
-#: ping/ping6_common.c:701 ping/ping6_common.c:762
-#, c-format
-msgid " parse error (too short)"
-msgstr " jäsennysvirhe (liian lyhyt)"
-
-#: ping/ping6_common.c:715 ping/ping6_common.c:771
-#, c-format
-msgid " parse error (truncated)"
-msgstr " jäsennysvirhe (typistetty)"
-
-#: ping/ping6_common.c:775
-#, c-format
-msgid " unexpected error in inet_ntop(%s)"
-msgstr " odottamaton virhe inet_ntop(%s):ssa"
-
-#: ping/ping6_common.c:803
-#, c-format
-msgid " unknown qtype(0x%02x)"
-msgstr " tuntematon qtype(0x%02x)"
-
-#: ping/ping6_common.c:807
-#, c-format
-msgid " refused"
-msgstr " hylätty"
-
-#: ping/ping6_common.c:810
-#, c-format
-msgid " unknown"
-msgstr " tuntematon"
-
-#: ping/ping6_common.c:813
-#, c-format
-msgid " unknown code(%02x)"
-msgstr " tuntematon code(%02x)"
-
-#: ping/ping6_common.c:815
-#, c-format
-msgid "; seq=%u;"
-msgstr "; seq=%u;"
-
-#: ping/ping6_common.c:856
-#, c-format
-msgid "packet too short: %d bytes"
-msgstr "paketti liian lyhyt: %d tavua"
-
-#: ping/ping6_common.c:923 ping/ping.c:1721
-#, c-format
-msgid "From %s: "
-msgstr "%s:lta: "
-
-#
-msgid "WARNING"
-msgstr "VAROITUS"
-
-#: ping/ping.c:96 ping/ping.c:684
-#, c-format
-msgid "unknown protocol family: %d"
-msgstr "tuntematon protokollaperhe: %d"
-
-#: ping/ping.c:111
-#, c-format
-msgid "unknown sock type: %d"
-msgstr "tuntematon sock-tyyppi: %d"
-
-#: ping/ping.c:198
-msgid "=> missing cap_net_raw+p capability or setuid?"
-msgstr "=> puuttuu cap_net_raw+p-ominaisuus tai setuid?"
-
-#: ping/ping.c:272
-#, c-format
-msgid "bad value for flowinfo: %s"
-msgstr "huono arvo virtaustiedolle: %s"
-
-#: ping/ping.c:275
-#, c-format
-msgid "flow value is greater than 20 bits: %s"
-msgstr "virtausarvo on suurempi kuin 20 bittiä: %s"
-
-#: ping/ping.c:297
-#, c-format
-msgid "bad TOS value: %s"
-msgstr "virheellinen TOS-arvo: %s"
-
-#: ping/ping.c:300
-#, c-format
-msgid "the decimal value of TOS bits must be in range 0-255: %lu"
-msgstr "TOS-bittien desimaaliarvon on oltava välillä 0–255: %lu"
-
-#: ping/ping.c:397
-#, c-format
-msgid "invalid timestamp type: %s"
-msgstr "virheellinen aikaleimatyyppi: %s"
-
-#: ping/ping.c:443
-msgid "bad timing interval"
-msgstr "huono ajoitusväli"
-
-#: ping/ping.c:456
-#, c-format
-msgid "cannot copy: %s"
-msgstr "'%s':ta ei voi kopioida"
-
-#: ping/ping.c:465
-#, c-format
-msgid "invalid source address: %s"
-msgstr "virheellinen lähdeosoite: %s"
-
-#: ping/ping.c:479
-#, c-format
-msgid "cannot set preload to value greater than 3: %d"
-msgstr "ei voi asettaa esikuormitusta arvoon, joka on suurempi kuin kolme: %d"
-
-#: ping/ping.c:498
-#, c-format
-msgid "invalid -M argument: %s"
-msgstr "virheellinen -M argumentti: %s"
-
-#: ping/ping.c:557
-msgid "bad linger time"
-msgstr "huono viipymäaika"
-
-#: ping/ping.c:595
-msgid "ident 0 => forcing raw socket"
-msgstr "ident 0 => pakotetaan raakapistoke"
-
-#: ping/ping.c:841
-msgid ""
-"Do you want to ping broadcast? Then -b. If not, check your local firewall "
-"rules"
-msgstr ""
-"Haluatko toteuta ping laaja-lähetyksellä? Sitten '-b'. Jos ei, tarkista "
-"paikalliset palomuurisäännöt"
-
-#: ping/ping.c:842
-msgid "pinging broadcast address"
-msgstr "laaja-lähetysosoitteen pingaaminen"
-
-#: ping/ping.c:845 ping/ping.c:1001
-msgid "cannot set broadcasting"
-msgstr "laaja-lähetystä ei voi asettaa"
-
-#: ping/ping.c:866
-msgid "getifaddrs failed"
-msgstr "getifaddrs epäonnistui"
-
-#: ping/ping.c:1007
-msgid "cannot disable multicast loopback"
-msgstr "ei voi poistaa monilähetyksen takaisin-silmukkaa käytöstä"
-
-#: ping/ping.c:1012
-msgid "cannot set multicast time-to-live"
-msgstr "ei voi asettaa monilähetyksen elon aikaa (TTL)"
-
-#: ping/ping.c:1014
-msgid "cannot set unicast time-to-live"
-msgstr "yksi-lähetyksen elon aikaa (TTL) ei voi asettaa"
-
-#, c-format
-msgid "%zu(%zu) data bytes"
-msgstr "%zu(%zu) tavua dataa"
-
-#
-msgid "(same route)"
-msgstr "(sama reitti)"
-
-#
-msgid "absolute not-standard"
-msgstr "absoluuttinen ei-standardi"
-
-#
-msgid "not-standard"
-msgstr "ei-standardi"
-
-#
-msgid "absolute"
-msgstr "absoluuttinen"
-
-#
-msgid "Unrecorded hops"
-msgstr "Tallentamattomat hyppyt"
-
-#
-msgid "Echo Reply"
-msgstr "Kaiun vastaus"
-
-#: ping/ping.c:1248
-#, c-format
-msgid "Destination Net Unreachable"
-msgstr "Tavoittamaton kohdeverkko"
-
-#: ping/ping.c:1251
-#, c-format
-msgid "Destination Host Unreachable"
-msgstr "Tavoittamaton kohdeisäntä"
-
-#: ping/ping.c:1254
-#, c-format
-msgid "Destination Protocol Unreachable"
-msgstr "Tavoittamaton kohdeprotokolla"
-
-#: ping/ping.c:1257
-#, c-format
-msgid "Destination Port Unreachable"
-msgstr "Tavoittamaton kohdeportti"
-
-#: ping/ping.c:1260
-#, c-format
-msgid "Frag needed and DF set (mtu = %u)"
-msgstr "Frag:ta tarvitaan ja DF asetettu (mtu = %u)"
-
-#: ping/ping.c:1263
-#, c-format
-msgid "Source Route Failed"
-msgstr "Lähteen reitti epäonnistui"
-
-#: ping/ping.c:1266
-#, c-format
-msgid "Destination Net Unknown"
-msgstr "Tuntematon kohdeverkko"
-
-#: ping/ping.c:1269
-#, c-format
-msgid "Destination Host Unknown"
-msgstr "Tuntematon kohdeisäntä"
-
-#: ping/ping.c:1272
-#, c-format
-msgid "Source Host Isolated"
-msgstr "Lähdeisäntä eristettynä"
-
-#: ping/ping.c:1275
-#, c-format
-msgid "Destination Net Prohibited"
-msgstr "Kielletty kohdeverkko"
-
-#: ping/ping.c:1278
-#, c-format
-msgid "Destination Host Prohibited"
-msgstr "Kielletty kohdeisäntä"
-
-#: ping/ping.c:1281
-#, c-format
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "Tavoittamaton kohdeverkko palvelutyypille"
-
-#: ping/ping.c:1284
-#, c-format
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "Tavoittamaton kohdeisäntä palvelutyypille"
-
-#: ping/ping.c:1287
-#, c-format
-msgid "Packet filtered"
-msgstr "Paketti suodatettu"
-
-#: ping/ping.c:1290
-#, c-format
-msgid "Precedence Violation"
-msgstr "Ensisijaisuuden rikkominen"
-
-#: ping/ping.c:1293
-#, c-format
-msgid "Precedence Cutoff"
-msgstr "Ensisijaisuuden raja"
-
-#: ping/ping.c:1296
-#, c-format
-msgid "Dest Unreachable, Bad Code: %d"
-msgstr "Kohde tavoittamaton; huono koodi: %d"
-
-#: ping/ping.c:1303
-#, c-format
-msgid "Source Quench"
-msgstr "Lähde-Quench"
-
-#: ping/ping.c:1310
-#, c-format
-msgid "Redirect Network"
-msgstr "Ohjaa uudelleen verkko"
-
-#: ping/ping.c:1313
-#, c-format
-msgid "Redirect Host"
-msgstr "Ohjaa uudelleen isäntä"
-
-#: ping/ping.c:1316
-#, c-format
-msgid "Redirect Type of Service and Network"
-msgstr "Ohjaa uudelleen palvelun tyyppi ja verkko"
-
-#: ping/ping.c:1319
-#, c-format
-msgid "Redirect Type of Service and Host"
-msgstr "Ohjaa uudelleen palvelun tyyppi ja isäntä"
-
-#: ping/ping.c:1322
-#, c-format
-msgid "Redirect, Bad Code: %d"
-msgstr "Ohjaa uudelleen; kelvoton koodi: %d"
-
-#
-msgid "New nexthop"
-msgstr "Uusi seuraava hyppy"
-
-#: ping/ping.c:1339
-#, c-format
-msgid "Echo Request"
-msgstr "Kaikupyyntö"
-
-#: ping/ping.c:1345
-#, c-format
-msgid "Time to live exceeded"
-msgstr "Elinaika (TTL) ylitetty"
-
-#: ping/ping.c:1348
-#, c-format
-msgid "Frag reassembly time exceeded"
-msgstr "Frag:n uudelleenkokoamisaika ylitetty"
-
-#: ping/ping.c:1351
-#, c-format
-msgid "Time exceeded, Bad Code: %d"
-msgstr "Aika ylitetty, kelvoton koodi: %d"
-
-#: ping/ping.c:1358
-#, c-format
-msgid "Parameter problem: pointer = %u"
-msgstr "Parametriongelma: osoitin = %u"
-
-#: ping/ping.c:1364
-#, c-format
-msgid "Timestamp"
-msgstr "Aikaleima"
-
-#: ping/ping.c:1368
-#, c-format
-msgid "Timestamp Reply"
-msgstr "Aikaleiman vastaus"
-
-#: ping/ping.c:1372
-#, c-format
-msgid "Information Request"
-msgstr "Tietopyyntö"
-
-#: ping/ping.c:1376
-#, c-format
-msgid "Information Reply"
-msgstr "Tietovastaus"
-
-#: ping/ping.c:1381
-#, c-format
-msgid "Address Mask Request"
-msgstr "Osoitepeitepyyntö"
-
-#: ping/ping.c:1386
-#, c-format
-msgid "Address Mask Reply"
-msgstr "Osoitepeitevastaus"
-
-#: ping/ping.c:1390
-#, c-format
-msgid "Bad ICMP type: %d"
-msgstr "Kelvoton ICMP-tyyppi: %d"
-
-#: ping/ping.c:1442
-#, c-format
-msgid "local error: %s"
-msgstr "paikallinen virhe: %s"
-
-#: ping/ping.c:1444
-#, c-format
-msgid "local error: message too long, mtu=%u"
-msgstr "paikallinen virhe: viesti liian pitkä; mtu=%u"
-
-#: ping/ping.c:1617
-#, c-format
-msgid "packet too short (%zd bytes) from %s"
-msgstr "paketti liian lyhyt (%zd tavua) %s:sta"
-
-#: ping/ping.c:1696
-#, c-format
-msgid "From %s: icmp_seq=%u "
-msgstr "%s:sta: icmp_seq=%u "
-
-#, fuzzy, c-format
-msgid ""
-"\n"
-"Usage\n"
-"  ping [options] <destination>\n"
-"\n"
-"Options:\n"
 "  <destination>      DNS name or IP address\n"
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
@@ -988,65 +139,739 @@ msgid ""
 "  -6                 use IPv6\n"
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
-"\n"
-"For more details see ping(8)\n"
 msgstr ""
-"\n"
-"Käyttö\n"
-"   ping [vaihtoehdot] <kohde>\n"
-"\n"
-"Vaihtoehdot:\n"
-"   <kohde> DNS-nimi tai IP-osoite\n"
-"   -a käytä ping-ääntä\n"
-"   -A käytä mukautuvaa pingiä\n"
-"   -B tahmea lähdeosoite\n"
-"   -c <määrä> lopettaa <määrä> vastausten jälkeen\n"
-"   -C kutsu connect()-järjestelmäkutsua socketin luomiseen\n"
-"   -D tulosta aikaleimat\n"
-"   -d käytä socketille ominaisuutta SO_DEBUG\n"
-"   -e <tunniste> määrittää ping-istunnon tunnisteen, oletusarvo on "
-"satunnainen\n"
-"                      SOCK_RAW:lle ja ytimen määrittämä SOCK_DGRAM:lle\n"
-"                      Tarkoittaa SOCK_RAW:n käyttämistä (IPv4 vain "
-"tunnisteelle 0)\n"
-"   -f tulva-ping\n"
-"   -h tulosta ohje ja poistu\n"
-"   -I <liitäntä> liitännän nimi tai osoite\n"
-"   -i <intervalli> sekuntia kunkin paketin lähettämisen välillä\n"
-"   -L estää monilähetyspakettien silmukan\n"
-"   -l <esilataus> lähettää <esilataus> pakettien määrä odottaessaan "
-"vastauksia\n"
-"   -m <merkki> merkitsee lähtevät paketit\n"
-"   -M <pmtud opt> määrittää mtu-etsinnän, voi olla yksi seuraavista: <do|"
-"dont|want|probe>\n"
-"   -n ei DNS-nimen selvittämistä\n"
-"   -O ilmoita odottamattomista vastauksista\n"
-"   -p <pattern> täytetavun sisältö\n"
-"   -q hiljennä tulosteet\n"
-"   -Q <tclass> käyttää palvelun laadun bittejä <tclass>\n"
-"   -s <koko> käyttää <kokoa> lähetettävien datatavujen lukumääränä\n"
-"   -S <koko> käyttää <kokoa> SO_SNDBUF-socket-vaihtoehdon arvona\n"
-"   -t <ttl> määritä elinaika (TTL)\n"
-"   -U tulosta käyttäjien välinen latenssi\n"
-"   -v monisanainen tulos\n"
-"   -V tulosta versio ja poistu\n"
-"   -w <deadline> vastaus odota <deadline> sekunneissa\n"
-"   -W <timeout> aika odottaa vastausta\n"
+"  <kohde>           DNS-nimi tai IP-osoite\n"
+"  -a                käytä ping-ääntä\n"
+"  -A                käytä mukautuvaa pingiä\n"
+"  -B                tahmea lähdeosoite\n"
+"  -c <määrä>        lopettaa <määrä> vastausten jälkeen\n"
+"  -C                kutsu connect()-järjestelmäkutsua socketin luomiseen\n"
+"  -D                tulosta aikaleimat\n"
+"  -d                käytä socketille ominaisuutta SO_DEBUG\n"
+"  -e <tunniste>     määrittää ping-istunnon tunnisteen, oletusarvo on satunnainen\n"
+"                    SOCK_RAW:lle ja ytimen määrittämä SOCK_DGRAM:lle\n"
+"                    Tarkoittaa SOCK_RAW:n käyttämistä (IPv4 vain tunnisteelle 0)\n"
+"  -f                tulva-ping\n"
+"  -h                tulosta ohje ja poistu\n"
+"  -I <liitäntä>     liitännän nimi tai osoite\n"
+"  -i <intervalli>   sekuntia kunkin paketin lähettämisen välillä\n"
+"  -L                estää monilähetyspakettien silmukan\n"
+"  -l <esilataus>    lähettää <esilataus> pakettien määrä odottaessaan vastauksia\n"
+"  -m <merkki>       merkitsee lähtevät paketit\n"
+"  -M <pmtud opt>    määrittää mtu-etsinnän, voi olla yksi seuraavista:\n"
+"                    <do|dont|want|probe>\n"
+"  -n                ei DNS-nimen selvittämistä\n"
+"  -O                ilmoita odottamattomista vastauksista\n"
+"  -p <pattern>      täytetavun sisältö\n"
+"  -q                hiljennä tulosteet\n"
+"  -Q <tclass>       käyttää palvelun laadun bittejä <tclass>\n"
+"  -s <koko>         käyttää <kokoa> lähetettävien datatavujen lukumääränä\n"
+"  -S <koko>         käyttää <kokoa> SO_SNDBUF-socket-vaihtoehdon arvona\n"
+"  -t <ttl>          määritä elinaika (TTL)\n"
+"  -U                tulosta käyttäjien välinen latenssi\n"
+"  -v                monisanainen tulos\n"
+"  -V                tulosta versio ja poistu\n"
+"  -w <deadline>     vastaus odota <deadline> sekunneissa\n"
+"  -W <timeout>      aika odottaa vastausta\n"
 "\n"
 "IPv4-vaihtoehdot:\n"
-"   -4 käyttää IPv4:ää\n"
-"   -b salli ping-yleislähetyksen\n"
-"   -R tallenna reitti\n"
-"   -T <timestamp> määrittää aikaleiman, voi olla jokin seuraavista: <tsonly|"
-"tsandaddr|tsprespec>\n"
+"  -4                käyttää IPv4:ää\n"
+"  -b                salli ping-yleislähetyksen\n"
+"  -R                tallenna reitti\n"
+"  -T <timestamp>    määrittää aikaleiman, voi olla jokin seuraavista:\n"
+"                    <tsonly|tsandaddr|tsprespec>\n"
 "\n"
 "IPv6-vaihtoehdot:\n"
-"   -6 käyttää IPv6:ta\n"
-"   -F <flowlabel> määrittelee virtauksen otsikon, oletus on satunnainen\n"
-"   -N <nodeinfo opt> käytä icmp6-solmutietokyselyä, kokeile argumenttina "
-"<help>\n"
-"\n"
-"Katso lisätietoja ping(8)\n"
+"  -6                käyttää IPv6:ta\n"
+"  -F <flowlabel>    määrittelee virtauksen otsikon, oletus on satunnainen\n"
+"  -N <nodeinfo opt> käytä icmp6-solmutietokyselyä, kokeile argumenttina <help>\n"
+
+# tracepath options
+#, fuzzy
+msgid ""
+"  -4             use IPv4\n"
+"  -6             use IPv6\n"
+"  -b             print both name and IP\n"
+"  -l <length>    use packet <length>\n"
+"  -m <hops>      use maximum <hops>\n"
+"  -n             no reverse DNS name resolution\n"
+"  -p <port>      use destination <port>\n"
+"  -V             print version and exit\n"
+"  <destination>  DNS name or IP address\n"
+msgstr ""
+"  -4           käytä IPv4\n"
+"  -6           käytä IPv6\n"
+"  -b           tulosta sekä nimi että IP\n"
+"  -l <length>  käytä paketille pituutta\n"
+"  -m <hops>    käytä enintään hyppyä\n"
+"  -n           ei DNS-nimen selvitystä\n"
+"  -p <port>    käytä kohdeporttia\n"
+"  -V           tulostaa version ja poistu\n"
+"  <kohde>      DNS-nimi tai IP-osoite\n"
+
+#
+msgid "Sent probes"
+msgstr "Lähetetty tutkimusta"
+
+#
+msgid "Received responses"
+msgstr "Vastaanotettu vastausta"
+
+# %d requests
+msgid "requests"
+msgstr "pyyntöä"
+
+# %d broadcasts
+msgid "broadcasts"
+msgstr "kaikkilähetystä"
+
+#
+msgid "Unicast"
+msgstr "Yksilähetys"
+
+#
+msgid "Broadcast"
+msgstr "Kaikkilähetys"
+
+#
+msgid "reply"
+msgstr "vastaus"
+
+#
+msgid "request"
+msgstr "pyyntö"
+
+# for %s
+msgid "for"
+msgstr "kohteelle"
+
+#
+msgid "UNSOLICITED"
+msgstr "PYYTÄMÄTTÄ"
+
+#
+msgid "Interface is down"
+msgstr "Liitäntä on poissa käytöstä"
+
+#
+msgid "Interface is not ARPable"
+msgstr "Liitäntä ei ole ARP-kysyttävä"
+
+#
+msgid "Using default broadcast address"
+msgstr "Käytetään oletuskaikkilähetysosoitetta"
+
+#
+msgid "Invalid argument"
+msgstr "Virheellinen argumentti"
+
+#
+msgid "Device is not available"
+msgstr "Laite ei ole käytettävissä"
+
+#
+msgid "No suitable device found, please use -I option"
+msgstr "Sopivaa laitetta ei löytynyt, käytä vaihtoehtoa -I"
+
+#
+msgid "Interface is ignored"
+msgstr "Liitäntää ei huomioida"
+
+#
+msgid "no ll address"
+msgstr "ei ll-osoitetta"
+
+#
+msgid "ARPING"
+msgstr ""
+
+# From %s
+msgid "From"
+msgstr "Lähde"
+
+# from %s
+msgid " from"
+msgstr ", lähde"
+
+#
+msgid "No source address in not-DAD mode"
+msgstr "Ei lähdeosoitetta ei-DAD-tilassa"
+
+#
+msgid "Wrong timestamp"
+msgstr "Väärä aikaleima"
+
+#
+msgid "Overflow hops"
+msgstr "Ylivirta hyppyä"
+
+#
+msgid "measure"
+msgstr "mitta"
+
+#
+msgid "Unknown failure"
+msgstr "Tuntematon vika"
+
+#
+msgid "Non-standard time format"
+msgstr "Aika epästandardissa muodossa"
+
+#
+msgid "host="
+msgstr "isäntä="
+
+#
+msgid "rtt="
+msgstr ""
+
+#
+msgid "ms"
+msgstr ""
+
+#
+msgid "delta="
+msgstr ""
+
+#
+msgid "Qtype conflict"
+msgstr "Qtype-ristiriita"
+
+#
+msgid "Subject type conflict"
+msgstr "Aihetyypin ristiriita"
+
+#
+msgid "IDN encoding error"
+msgstr "IDN-koodausvirhe"
+
+#
+msgid "Too long scope name"
+msgstr "Liian pitkä laajuuden nimi"
+
+#
+msgid "Memory allocation failed"
+msgstr "Muistin varaus ei onnistunut"
+
+#
+msgid "Inappropriate subject name"
+msgstr "Ei kelpavaa aihenimi"
+
+#
+msgid "dn_comp() returned too long result"
+msgstr "dn_comp() palautti liian pitkän tuloksen"
+
+#, c-format
+msgid ""
+"ping -6 -N <nodeinfo opt>\n"
+"Help:\n"
+"  help\n"
+"Query:\n"
+"  name\n"
+"  ipv6\n"
+"  ipv6-all\n"
+"  ipv6-compatible\n"
+"  ipv6-global\n"
+"  ipv6-linklocal\n"
+"  ipv6-sitelocal\n"
+"  ipv4\n"
+"  ipv4-all\n"
+"Subject:\n"
+"  subject-ipv6=addr\n"
+"  subject-ipv4=addr\n"
+"  subject-name=name\n"
+"  subject-fqdn=name\n"
+msgstr ""
+"ping -6 -N <nodeinfo opt>\n"
+"Apu:\n"
+"  help\n"
+"Kysely:\n"
+"  name\n"
+"  ipv6\n"
+"  ipv6-all\n"
+"  ipv6-compatible\n"
+"  ipv6-global\n"
+"  ipv6-linklocal\n"
+"  ipv6-sitelocal\n"
+"  ipv4\n"
+"  ipv4-all\n"
+"Aihe:\n"
+"  subject-ipv6=addr\n"
+"  subject-ipv4=addr\n"
+"  subject-name=name\n"
+"  subject-fqdn=name\n"
+
+#, fuzzy
+msgid "Unknown network interface"
+msgstr "Tuntematon iface"
+
+#
+msgid "Scope discrepancy among the nodes"
+msgstr "Laajuuden ero solmujen joukossa"
+
+#
+msgid "Source address might be selected on device other than:"
+msgstr "Lähdeosoite on saatettu valita muusta laitteesta kuin:"
+
+#
+msgid "Minimal user interval for multicast ping must be >="
+msgstr "Minimiväli käyttäjän monilähetyspingille on oltava >="
+
+#
+msgid "Minimal user interval for broadcast ping must be >="
+msgstr "Minimiväli käyttäjän kaikkilähetyspingille on oltava >="
+
+#
+msgid "see -i option for details"
+msgstr "katso -i vaihtoehto lisätietoja"
+
+#
+msgid "Multicast ping"
+msgstr "Moni-lähetyksen ping"
+
+#
+msgid "Broadcast ping"
+msgstr "Laaja-lähetyksen ping"
+
+#
+msgid "does not fragment"
+msgstr "ei pirstoudu"
+
+#
+msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
+msgstr "setsockopt(RAW_CHECKSUM) epäonnistui - yritä jatkaa"
+
+#
+msgid "Cannot set multicast hop limit"
+msgstr "Ei voi asettaa moni-lähetyksen hyppyrajaa"
+
+#
+msgid "Cannot set unicast hop limit"
+msgstr "Ei voi asettaa yksi-lähetyksen hyppyrajaa"
+
+#
+msgid "Cannot receive hop limit"
+msgstr "Ei voi vastaanottaa hyppyrajaa"
+
+#
+msgid "Cannot set flowlabel"
+msgstr "Virtausnimiötä ei voi asettaa"
+
+#
+msgid "Cannot send flowinfo"
+msgstr "Ei voi lähettää virtaustietoja"
+
+#
+msgid "PING"
+msgstr ""
+
+# flow 0x%05x
+msgid "flow"
+msgstr "virtaus"
+
+#
+msgid "Destination unreachable"
+msgstr "Kohde tavoittamaton"
+
+#
+msgid "No route"
+msgstr "Ei reittiä"
+
+#
+msgid "Administratively prohibited"
+msgstr "Hallinnollisesti kielletty"
+
+#
+msgid "Beyond scope of source address"
+msgstr "Lähdeosoitteen laajuuden ulkopuolella"
+
+#
+msgid "Address unreachable"
+msgstr "Tavoittamaton osoite"
+
+#
+msgid "Port unreachable"
+msgstr "Tavoittamaton portti"
+
+#
+msgid "Source address failed ingress/egress policy"
+msgstr "Lähdeosoite epäonnistui sisään-/ulostulokäytännössä"
+
+#
+msgid "Reject route to destination"
+msgstr "Hylkää reitti määränpäähän"
+
+#
+msgid "Packet too big"
+msgstr "Paketti liian iso"
+
+#
+msgid "Time exceeded"
+msgstr "Aika ylitetty"
+
+#
+msgid "Hop limit"
+msgstr "Hyppyraja"
+
+#
+msgid "Defragmentation failure"
+msgstr "Hajanaisuuden poiston epäonnistus"
+
+#
+msgid "code"
+msgstr "koodi"
+
+#
+msgid "Parameter problem"
+msgstr "Parametriongelma"
+
+#
+msgid "Wrong header field"
+msgstr "Väärä otsikkokenttä"
+
+#
+msgid "Unknown header"
+msgstr "Tuntematon otsikko"
+
+#
+msgid "Unknown option"
+msgstr "tuntematon valitsin"
+
+#
+msgid "info"
+msgstr "tieto"
+
+#
+msgid "Echo request"
+msgstr "Kaikupyyntö"
+
+#
+msgid "Echo reply"
+msgstr "Kaikuvastaus"
+
+#
+msgid "MLD Query"
+msgstr "MLD-kysely"
+
+#
+msgid "MLD Report"
+msgstr "MLD-raportti"
+
+#
+msgid "MLD Reduction"
+msgstr "MLD-vähennys"
+
+#
+msgid "Unknown icmp type"
+msgstr "Tuntematon icmp-tyyppi"
+
+#
+msgid "Local error"
+msgstr "paikallinen virhe"
+
+#
+msgid "Message too long"
+msgstr "Viesti liian pitkä"
+
+#
+msgid "parse error"
+msgstr "jäsennysvirhe"
+
+#
+msgid "too short"
+msgstr "liian lyhyt"
+
+#
+msgid "truncated"
+msgstr "typistetty"
+
+#
+msgid "unexpected error"
+msgstr "odottamaton virhe"
+
+#
+msgid "unknown qtype"
+msgstr "tuntematon qtype"
+
+#
+msgid "refused"
+msgstr "hylätty"
+
+#
+msgid "unknown"
+msgstr "tuntematon"
+
+#
+msgid "unknown code"
+msgstr "tuntematon code"
+
+#
+msgid "seq="
+msgstr "seq="
+
+#
+msgid "Packet too short"
+msgstr "Paketti liian lyhyt"
+
+#
+msgid "WARNING"
+msgstr "VAROITUS"
+
+#
+msgid "=> missing cap_net_raw+p capability"
+msgstr "=> puuttuu cap_net_raw+p-ominaisuus"
+
+#
+msgid "=> missing cap_net_admin+p capability"
+msgstr "=> puuttuu cap_net_admin+p-ominaisuus"
+
+#
+msgid "Bad value for flowinfo"
+msgstr "Huono arvo virtaustiedolle"
+
+#
+msgid "Flow value is greater than 20 bits"
+msgstr "Virtausarvo on suurempi kuin 20 bittiä"
+
+#
+msgid "Bad TOS value"
+msgstr "Virheellinen TOS-arvo"
+
+#
+msgid "Decimal value of TOS bits must be in range 0-255"
+msgstr "TOS-bittien desimaaliarvon on oltava välillä 0–255"
+
+#
+msgid "Invalid timestamp type"
+msgstr "Virheellinen aikaleimatyyppi"
+
+#
+msgid "Bad timing interval"
+msgstr "Huono ajoitusväli"
+
+#
+msgid "Cannot copy"
+msgstr "Ei voi kopioida"
+
+#
+msgid "Invalid source address"
+msgstr "Virheellinen lähdeosoite"
+
+#
+msgid "Invalid source"
+msgstr "Virheellinen lähde"
+
+#
+msgid "Cannot set preload to value greater than 3"
+msgstr "Ei voi asettaa esikuormitusta arvoon, joka on suurempi kuin kolme"
+
+#
+msgid "Bad linger time"
+msgstr "Huono viipymäaika"
+
+#
+msgid "ident 0 => forcing raw socket"
+msgstr "ident 0 => pakotetaan raakapistoke"
+
+#
+msgid ""
+"Do you want to ping broadcast? Then -b. If not, check your local firewall "
+"rules"
+msgstr ""
+"Haluatko toteuta ping laaja-lähetyksellä? Sitten '-b'. Jos ei, tarkista "
+"paikalliset palomuurisäännöt"
+
+#
+msgid "Pinging broadcast address"
+msgstr "Laaja-lähetysosoitteen pingaaminen"
+
+#
+msgid "Cannot set broadcasting"
+msgstr "Laaja-lähetystä ei voi asettaa"
+
+#
+msgid "getifaddrs() failed"
+msgstr "getifaddrs() epäonnistui"
+
+#
+msgid "Cannot disable multicast loopback"
+msgstr "Ei voi poistaa monilähetyksen takaisin-silmukkaa käytöstä"
+
+#
+msgid "Cannot set multicast time-to-live"
+msgstr "Ei voi asettaa monilähetyksen elon aikaa (TTL)"
+
+#
+msgid "Cannot set unicast time-to-live"
+msgstr "Yksi-lähetyksen elon aikaa (TTL) ei voi asettaa"
+
+# %ld data bytes
+msgid "data bytes"
+msgstr "tavua dataa"
+
+#
+msgid "(same route)"
+msgstr "(sama reitti)"
+
+#
+msgid "absolute not-standard"
+msgstr "absoluuttinen ei-standardi"
+
+#
+msgid "not-standard"
+msgstr "ei-standardi"
+
+#
+msgid "absolute"
+msgstr "absoluuttinen"
+
+#
+msgid "Unrecorded hops"
+msgstr "Tallentamattomat hyppyt"
+
+#
+msgid "Echo Reply"
+msgstr "Kaiun vastaus"
+
+#
+msgid "Destination Net Unreachable"
+msgstr "Tavoittamaton kohdeverkko"
+
+#
+msgid "Destination Host Unreachable"
+msgstr "Tavoittamaton kohdeisäntä"
+
+#
+msgid "Destination Protocol Unreachable"
+msgstr "Tavoittamaton kohdeprotokolla"
+
+#
+msgid "Destination Port Unreachable"
+msgstr "Tavoittamaton kohdeportti"
+
+#
+msgid "Frag needed and DF set"
+msgstr "Frag:ta tarvitaan ja DF asetettu"
+
+#
+msgid "Source Route Failed"
+msgstr "Lähteen reitti epäonnistui"
+
+#
+msgid "Destination Net Unknown"
+msgstr "Tuntematon kohdeverkko"
+
+#
+msgid "Destination Host Unknown"
+msgstr "Tuntematon kohdeisäntä"
+
+#
+msgid "Source Host Isolated"
+msgstr "Lähdeisäntä eristettynä"
+
+#
+msgid "Destination Net Prohibited"
+msgstr "Kielletty kohdeverkko"
+
+#
+msgid "Destination Host Prohibited"
+msgstr "Kielletty kohdeisäntä"
+
+#
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "Tavoittamaton kohdeverkko palvelutyypille"
+
+#
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "Tavoittamaton kohdeisäntä palvelutyypille"
+
+#
+msgid "Packet filtered"
+msgstr "Paketti suodatettu"
+
+#
+msgid "Precedence Violation"
+msgstr "Ensisijaisuuden rikkominen"
+
+#
+msgid "Precedence Cutoff"
+msgstr "Ensisijaisuuden raja"
+
+#
+msgid "Dest Unreachable"
+msgstr "Kohde tavoittamaton"
+
+#
+msgid "Bad Code"
+msgstr "Kelvoton koodi"
+
+#
+msgid "Source Quench"
+msgstr "Lähde-Quench"
+
+#
+msgid "Redirect Network"
+msgstr "Ohjaa uudelleen verkko"
+
+#
+msgid "Redirect Host"
+msgstr "Ohjaa uudelleen isäntä"
+
+#
+msgid "Redirect Type of Service and Network"
+msgstr "Ohjaa uudelleen palvelun tyyppi ja verkko"
+
+#
+msgid "Redirect Type of Service and Host"
+msgstr "Ohjaa uudelleen palvelun tyyppi ja isäntä"
+
+#
+msgid "Redirect"
+msgstr "Ohjaa uudelleen"
+
+#
+msgid "New nexthop"
+msgstr "Uusi seuraava hyppy"
+
+#
+msgid "Echo Request"
+msgstr "Kaikupyyntö"
+
+#
+msgid "Time to live exceeded"
+msgstr "Elinaika (TTL) ylitetty"
+
+#
+msgid "Frag reassembly time exceeded"
+msgstr "Frag:n uudelleenkokoamisaika ylitetty"
+
+#
+msgid "Timestamp"
+msgstr "Aikaleima"
+
+#
+msgid "Timestamp Reply"
+msgstr "Aikaleiman vastaus"
+
+#
+msgid "Information Request"
+msgstr "Tietopyyntö"
+
+#
+msgid "Information Reply"
+msgstr "Tietovastaus"
+
+#
+msgid "Address Mask Request"
+msgstr "Osoitepeitepyyntö"
+
+#
+msgid "Address Mask Reply"
+msgstr "Osoitepeitevastaus"
+
+#
+msgid "Bad ICMP type"
+msgstr "Kelvoton ICMP-tyyppi"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -1064,276 +889,211 @@ msgstr "Lauseke"
 msgid "PAYLOAD"
 msgstr ""
 
-#: ping/ping_common.c:354
-#, c-format
-msgid "no answer yet for icmp_seq=%lu\n"
-msgstr "ei vielä vastausta icmp_seq=%lu:lle\n"
+#
+msgid "No answer yet"
+msgstr "Ei vielä vastausta"
 
-#: ping/ping_common.c:454
-msgid "probably, rcvbuf is not enough to hold preload"
-msgstr "luultavasti rcvbuf ei riitä esilatauksen säilyttämiseen"
+#
+msgid "Probably, rcvbuf is not enough to hold preload"
+msgstr "Luultavasti rcvbuf ei riitä esilatauksen säilyttämiseen"
 
-#: ping/ping_common.c:471
+#
 msgid "failed to set mark"
 msgstr "merkin asettaminen epäonnistui"
 
-#: ping/ping_common.c:473
+#
 msgid "SO_MARK not supported"
 msgstr "SO_MARK ei tueta"
 
-#, c-format
-msgid ""
-"Cannot flood, minimal interval for user must be >= %u ms, use -i %.*f "
-"(or higher)"
-msgstr ""
-"Ei saa tulvia, käyttäjän vähimmäisvälin on oltava >= %u ms, käytä -i "
-"%.*f (tai suurempi)"
+#
+msgid "Cannot flood"
+msgstr "Ei saa tulvia"
 
-#: ping/ping_common.c:493
-#, c-format
-msgid "illegal preload and/or interval: %d"
-msgstr "laiton esilataus ja/tai välli: %d"
+#
+msgid "Minimal user interval must be >="
+msgstr "Käyttäjän vähimmäisvälin on oltava >="
 
-#: ping/ping_common.c:505
+#
+msgid "Illegal preload and/or interval"
+msgstr "Laiton esilataus ja/tai välli"
+
+#
 msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
 msgstr "ei SO_TIMESTAMP-tukea, palataan SIOCGSTAMP:een"
 
-#: ping/ping_common.c:749
-#, c-format
-msgid "%s: time of day goes back (%ldus), taking countermeasures"
-msgstr "%s: vuorokaudenaika palautuu (%ldus); ryhdytään vastatoimiin"
+#
+msgid "Time of day goes back, taking countermeasures"
+msgstr "Vuorokaudenaika palautuu; ryhdytään vastatoimiin"
 
-#: ping/ping_common.c:799
-#, c-format
-msgid "%zd bytes from %s:"
-msgstr "%zd tavua %s:sta:"
+# %ld bytes
+msgid "bytes"
+msgstr "tavua"
 
-#: ping/ping_common.c:805
-#, c-format
-msgid " ident=%d"
-msgstr " ident=%d"
-
-#: ping/ping_common.c:808
-#, c-format
-msgid " ttl=%d"
-msgstr " ttl=%d"
-
-#: ping/ping_common.c:811
-#, c-format
-msgid " (truncated)"
-msgstr " (typistetty)"
-
-#: ping/ping_common.c:816
-#, c-format
-msgid " time=%ld ms"
-msgstr " aika=%ld ms"
-
-#: ping/ping_common.c:818
-#, c-format
-msgid " time=%ld.%01ld ms"
-msgstr " aika=%ld.%01ld ms"
-
-#: ping/ping_common.c:821
-#, c-format
-msgid " time=%ld.%02ld ms"
-msgstr " aika=%ld.%02ld ms"
-
-#: ping/ping_common.c:824
-#, c-format
-msgid " time=%ld.%03ld ms"
-msgstr " aika=%ld.%03ld ms"
-
-#: ping/ping_common.c:829
-#, c-format
-msgid " (DUP!)"
-msgstr " (Kaksoiskappale!)"
-
-#: ping/ping_common.c:831
-#, c-format
-msgid " (BAD CHECKSUM!)"
-msgstr " (Kelvoton tarkistussumma!)"
-
-#: ping/ping_common.c:833
-#, c-format
-msgid " (DIFFERENT ADDRESS!)"
-msgstr " (Eri osoite!)"
-
-#: ping/ping_common.c:840
-#, c-format
-msgid "wrong data byte #%zu should be 0x%x but was 0x%x"
-msgstr "väärän datatavun #%zu pitäisi olla 0x%x, mutta oli 0x%x"
-
-#: ping/ping_common.c:883
-#, c-format
-msgid "--- %s ping statistics ---\n"
-msgstr "-- %s ping-tilastot --\n"
-
-#: ping/ping_common.c:884
-#, c-format
-msgid "%ld packets transmitted, "
-msgstr "%ld paketteja lähetetty, "
-
-#: ping/ping_common.c:885
-#, c-format
-msgid "%ld received"
-msgstr "%ld otettu vastaan"
-
-#: ping/ping_common.c:887
-#, c-format
-msgid ", +%ld duplicates"
-msgstr ", +%ld kaksoiskappaletta"
-
-#: ping/ping_common.c:889
-#, c-format
-msgid ", +%ld corrupted"
-msgstr ", +%ld vioittuneet"
-
-#: ping/ping_common.c:891
-#, c-format
-msgid ", +%ld errors"
-msgstr ", +%ld virhettä"
-
-#: ping/ping_common.c:897
-#, c-format
-msgid ", %g%% packet loss"
-msgstr ", %g%% paketin menetys"
-
-#: ping/ping_common.c:899
-#, c-format
-msgid ", time %ldms"
-msgstr ", aika %ld ms"
-
-#: ping/ping_common.c:919
-#, c-format
-msgid "rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms"
+#
+msgid "icmp_seq="
 msgstr ""
-"rtt min/keskiarvo/maks/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms"
 
-#: ping/ping_common.c:927
-#, c-format
-msgid "%spipe %d"
-msgstr "%spipe %d"
+#
+msgid "ident="
+msgstr ""
 
-#: ping/ping_common.c:934
-#, c-format
-msgid "%sipg/ewma %d.%03d/%d.%03d ms"
-msgstr "%sipg/ewma %d.%03d/%d.%03d ms"
+#
+msgid "ttl="
+msgstr ""
 
-#: ping/ping_common.c:952
-#, c-format
-msgid "%ld/%ld packets, %d%% loss"
-msgstr "%ld/%ld pakettia, %d %% menetystä"
+#
+msgid " time="
+msgstr " aika="
 
-#: ping/ping_common.c:957
-#, c-format
-msgid ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
-msgstr ", min/keskiarvo/ewma/maks = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
+#
+msgid " ms"
+msgstr ""
 
-#: tracepath.c:235
-#, c-format
-msgid "no info\n"
-msgstr "ei tietoa\n"
+#
+msgid "DUP"
+msgstr "Kaksoiskappale"
 
-#: tracepath.c:239
-msgid "[LOCALHOST]"
-msgstr "[Paikallinen isäntä]"
+#
+msgid "BAD CHECKSUM"
+msgstr "Kelvoton tarkistussumma"
 
-#: tracepath.c:287
-#, c-format
-msgid "%3ld.%03ldms "
-msgstr "%3ld.%03ld ms "
+#
+msgid "DIFFERENT ADDRESS"
+msgstr "Eri osoite"
 
-#: tracepath.c:290
-#, c-format
-msgid "(This broken router returned corrupted payload) "
-msgstr "(Tämä rikkinäinen reititin palautti vioittuneen hyötykuorman) "
+#
+msgid "wrong byte #"
+msgstr "väärän datatavun #"
 
-#: tracepath.c:305
-#, c-format
-msgid "pmtu %d\n"
-msgstr "pmtu %d\n"
+#
+msgid "expected 0x"
+msgstr "pitäisi olla 0x"
 
-#: tracepath.c:310
-#, c-format
-msgid "reached\n"
-msgstr "saavuttanut\n"
+#
+msgid "got 0x"
+msgstr "mutta oli 0x"
 
-#: tracepath.c:327
-#, c-format
-msgid "asymm %2d "
-msgstr "asymm %2d "
+# hostname ping statistics
+msgid " ping statistics"
+msgstr " ping-tilastot"
 
-#: tracepath.c:342
+# %ld packets transmitted
+msgid "packets transmitted"
+msgstr "paketteja lähetetty"
+
+# %ld received
+msgid "received"
+msgstr "otettu vastaan"
+
+# %ld duplicates
+msgid "duplicates"
+msgstr "kaksoiskappaletta"
+
+# %ld corrupted
+msgid "corrupted"
+msgstr "vioittuneet"
+
+# %ld errors
+msgid "errors"
+msgstr "virhettä"
+
+# %g%% packet loss
+msgid "packet loss"
+msgstr "paketin menetys"
+
+# time %ld ms
+msgid "time"
+msgstr "aika"
+
+# rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
+msgid "rtt min/avg/max/mdev"
+msgstr "rtt min/keskiarvo/maks/mdev"
+
+# pipe %d
+msgid "pipe"
+msgstr ""
+
+# ipg/ewma = %d.%03d/%d.%03d ms
+msgid "ipg/ewma"
+msgstr ""
+
+# %ld/%ld packets
+msgid "packets"
+msgstr "pakettia"
+
+# %d%% loss
+msgid "loss"
+msgstr "menetystä"
+
+# min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
+msgid "min/avg/ewma/max"
+msgstr "min/keskiarvo/ewma/maks"
+
+#
+msgid "No info"
+msgstr "Ei tietoa"
+
+#
+msgid "LOCALHOST"
+msgstr "Paikallinen isäntä"
+
+#
+msgid "(This broken router returned corrupted payload)"
+msgstr "(Tämä rikkinäinen reititin palautti vioittuneen hyötykuorman)"
+
+#
+msgid "pmtu"
+msgstr ""
+
+#
+msgid "reached"
+msgstr "saavuttanut"
+
+#
+msgid "asymm"
+msgstr ""
+
+#
 msgid "NET ERROR"
 msgstr "Verkkovirhe"
 
-#: tracepath.c:387
-#, c-format
-msgid "%2d?: reply received 8)\n"
-msgstr "%2d?: vastaus vastaanotettu 8)\n"
+#
+msgid "reply received 8"
+msgstr "vastaus vastaanotettu 8"
 
-#: tracepath.c:393
-#, c-format
-msgid "%2d:  send failed\n"
-msgstr "%2d: lähetys epäonnistui\n"
+#
+msgid "send failed"
+msgstr "lähetys epäonnistui"
 
-#, fuzzy, c-format
-msgid ""
-"\n"
-"Usage\n"
-"  tracepath [options] <destination>\n"
-"\n"
-"Options:\n"
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -V             print version and exit\n"
-"  <destination>  DNS name or IP address\n"
-"\n"
-"For more details see tracepath(8)\n"
+#
+msgid "Mutually exclusive options"
 msgstr ""
-"\n"
-"Käyttö\n"
-"  tracepath [vaihtoehdot] <kohde>\n"
-"\n"
-"Vaihtoehdot:\n"
-"  -4             käytä IPv4\n"
-"  -6             käytä IPv6\n"
-"  -b             tulosta sekä nimi että IP\n"
-"  -l <length>    käytä paketille pituutta\n"
-"  -m <hops>      käytä enintään hyppyä\n"
-"  -n            ei DNS-nimen selvitystä\n"
-"  -p <port>     käytä kohdeporttia\n"
-"  -V            tulostaa version ja poistu\n"
-"  <kohde>  DNS-nimi tai IP-osoite\n"
-"\n"
-"Katso lisätietoja kohdasta tracepath(8)\n"
 
-#, c-format
-msgid "Only one -%c or -%c option may be specified"
-msgstr "Vain yksi vaihtoehto '-%c' tai '-%c' voidaan määrittää"
+#
+msgid "no reply"
+msgstr "ei vastausta"
 
-#, c-format
-msgid "%2d:  no reply\n"
-msgstr "%2d:  ei vastausta\n"
+#
+msgid "Resume"
+msgstr "Jatkaa"
 
-#, c-format
-msgid "     Resume: pmtu %d "
-msgstr "     Jatkaa: pmtu %d "
+#
+msgid "Too many hops"
+msgstr ""
 
-#, c-format
-msgid "hops %d "
-msgstr "hypyt %d "
+#
+msgid "pmtu="
+msgstr ""
 
-#, c-format
-msgid "back %d "
-msgstr "takaisin %d "
+#
+msgid "hops="
+msgstr "hypyt="
 
-#, c-format
-msgid "pktlen must be within: %d < value <= %d"
-msgstr "pktlenin on oltava sisällä: %d < arvo <= %d"
+#
+msgid "back="
+msgstr "takaisin="
+
+#
+msgid "Packet length"
+msgstr ""
 

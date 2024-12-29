@@ -236,11 +236,11 @@ static int recverr(struct run_state *const ctl)
 		}
 	}
 	if (e == NULL) {
-		printf(_("no info\n"));
+		puts(_("No info"));
 		return 0;
 	}
 	if (e->ee_origin == SO_EE_ORIGIN_LOCAL)
-		printf("%2d?: %-32s ", ctl->ttl, _("[LOCALHOST]"));
+		printf("%2d?: [%s] ", ctl->ttl, _("LOCALHOST"));
 	else if (e->ee_origin == SO_EE_ORIGIN_ICMP6 ||
 		 e->ee_origin == SO_EE_ORIGIN_ICMP) {
 		char abuf[NI_MAXHOST];
@@ -285,10 +285,13 @@ static int recverr(struct run_state *const ctl)
 	if (retts) {
 		struct timespec res;
 		timespecsub(&ts, retts, &res);
-		printf(_("%3ld.%03ldms "), res.tv_sec * 1000 + res.tv_nsec / 1000000,
-					   (res.tv_nsec % 1000000) / 1000);
+		printf("%3ld.%03ld%s",
+			res.tv_sec * 1000 + res.tv_nsec / 1000000,
+			(res.tv_nsec % 1000000) / 1000,
+			_("ms"));
 		if (broken_router)
-			printf(_("(This broken router returned corrupted payload) "));
+			fputs(_("(This broken router returned corrupted payload)"), stdout);
+		putchar(' ');
 	}
 
 	if (rethops <= 64)
@@ -303,12 +306,12 @@ static int recverr(struct run_state *const ctl)
 		printf("\n");
 		break;
 	case EMSGSIZE:
-		printf(_("pmtu %d\n"), e->ee_info);
+		printf("%s %d\n", _("pmtu"), e->ee_info);
 		ctl->mtu = e->ee_info;
 		progress = ctl->mtu;
 		break;
 	case ECONNREFUSED:
-		printf(_("reached\n"));
+		puts(_("reached"));
 		ctl->hops_to = sndhops < 0 ? ctl->ttl : sndhops;
 		ctl->hops_from = rethops;
 		return 0;
@@ -325,7 +328,7 @@ static int recverr(struct run_state *const ctl)
 			if (rethops >= 0) {
 				if ((sndhops >= 0 && rethops != sndhops) ||
 					(sndhops < 0 && rethops != ctl->ttl))
-					printf(_("asymm %2d "), rethops);
+					printf("%s %2d ", _("asymm"), rethops);
 			}
 			printf("\n");
 			break;
@@ -339,8 +342,8 @@ static int recverr(struct run_state *const ctl)
 		printf("!A\n");
 		return 0;
 	default:
-		printf("\n");
-		warnx(_("NET ERROR"));
+		putchar('\n');
+		warnx("%s", _("NET ERROR"));
 		return 0;
 	}
 	goto restart;
@@ -385,40 +388,33 @@ static int probe_ttl(struct run_state *const ctl)
 	if (i < MAX_PROBES) {
 		data_wait(ctl);
 		if (recv(ctl->socket_fd, ctl->pktbuf, ctl->mtu, MSG_DONTWAIT) > 0) {
-			printf(_("%2d?: reply received 8)\n"), ctl->ttl);
+			printf("%2d?: %s\n", ctl->ttl, _("reply received 8"));
 			return 0;
 		}
 		return recverr(ctl);
 	}
 
-	printf(_("%2d:  send failed\n"), ctl->ttl);
+	printf("%2d:  %s\n", ctl->ttl, _("send fail"));
 	return 0;
 }
 
 NORETURN static void usage(int rc) {
-	fprintf(stderr, _(
-		"\n"
-		"Usage\n"
-		"  tracepath [options] <destination>\n"
-		"\n"
-		"Options:\n"
-		"  -4             use IPv4\n"
-		"  -6             use IPv6\n"
-		"  -b             print both name and IP\n"
-		"  -l <length>    use packet <length>\n"
-		"  -m <hops>      use maximum <hops>\n"
-		"  -n             no reverse DNS name resolution\n"
-		"  -p <port>      use destination <port>\n"
-		"  -V             print version and exit\n"
-		"  <destination>  DNS name or IP address\n"
-		"\n"
-		"For more details see tracepath(8)\n"
-	));
-	exit(rc);
+	const char *options =
+"  -4             use IPv4\n"
+"  -6             use IPv6\n"
+"  -b             print both name and IP\n"
+"  -l <length>    use packet <length>\n"
+"  -m <hops>      use maximum <hops>\n"
+"  -n             no reverse DNS name resolution\n"
+"  -p <port>      use destination <port>\n"
+"  -V             print version and exit\n"
+"  <destination>  DNS name or IP address\n"
+;
+	usage_common(rc, options);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
+	setmyname(argv[0]);
 	struct run_state ctl = {
 		.max_hops = MAX_HOPS_DEFAULT,
 		.hops_to = -1,
@@ -473,13 +469,13 @@ int main(int argc, char **argv)
 			ctl.show_both = 1;
 			break;
 		case 'l':
-			ctl.mtu = strtol_or_err(optarg, _("invalid argument"), ctl.overhead, INT_MAX);
+			ctl.mtu = strtol_or_err(optarg, _("Invalid argument"), ctl.overhead, INT_MAX);
 			break;
 		case 'm':
-			ctl.max_hops = strtol_or_err(optarg, _("invalid argument"), 0, MAX_HOPS_LIMIT);
+			ctl.max_hops = strtol_or_err(optarg, _("Invalid argument"), 0, MAX_HOPS_LIMIT);
 			break;
 		case 'p':
-			ctl.base_port = strtol_or_err(optarg, _("invalid argument"), 0, UINT16_MAX);
+			ctl.base_port = strtol_or_err(optarg, _("Invalid argument"), 0, UINT16_MAX);
 			break;
 		case 'V':
 			printf(IPUTILS_VERSION("tracepath"));
@@ -497,7 +493,7 @@ int main(int argc, char **argv)
 	argv += optind;
 	if (argc <= 0) {
 		errno = EDESTADDRREQ;
-		warn(_("No goal"));
+		warn("%s", _("No goal"));
 		usage(EDESTADDRREQ);
 	} else if (argc != 1)
 		usage(EINVAL);
@@ -507,7 +503,7 @@ int main(int argc, char **argv)
 		p = strchr(argv[0], '/');
 		if (p) {
 			*p = 0;
-			ctl.base_port = strtol_or_err(p + 1, _("invalid argument"), 0, UINT16_MAX);
+			ctl.base_port = strtol_or_err(p + 1, _("Invalid argument"), 0, UINT16_MAX);
 		} else
 			ctl.base_port = DEFAULT_BASEPORT;
 	}
@@ -613,22 +609,22 @@ int main(int argc, char **argv)
 		}
 
 		if (res < 0)
-			printf(_("%2d:  no reply\n"), ctl.ttl);
+			printf("%2d:  %s\n", ctl.ttl, _("no reply"));
 	}
-	printf("     Too many hops: pmtu %d\n", ctl.mtu);
+	printf("     %s: %s%d\n", _("Too many hops"), _("pmtu="), ctl.mtu);
 
  done:
 	freeaddrinfo(result);
-
-	printf(_("     Resume: pmtu %d "), ctl.mtu);
+	printf("     %s: %s%d", _("Resume"), _("pmtu="), ctl.mtu);
 	if (ctl.hops_to >= 0)
-		printf(_("hops %d "), ctl.hops_to);
+		printf(" %s=%d", _("hops="), ctl.hops_to);
 	if (ctl.hops_from >= 0)
-		printf(_("back %d "), ctl.hops_from);
+		printf(" %s=%d", _("back="), ctl.hops_from);
 	printf("\n");
 	exit(EXIT_SUCCESS);
 
  pktlen_error:
-	errx(EXIT_FAILURE, _("pktlen must be within: %d < value <= %d"), ctl.overhead, INT_MAX);
+	errno = ERANGE;
+	err(errno, "%s: %d - %d", _("Packet length"), ctl.overhead, INT_MAX);
 }
 

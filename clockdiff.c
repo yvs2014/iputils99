@@ -67,6 +67,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sys/param.h>
 #include <sys/socket.h>
@@ -110,7 +111,6 @@ enum {
 };
 
 struct run_state {
-	int interactive;
 	uint16_t id;
 	int sock_raw;
 	struct sockaddr_in server;
@@ -125,6 +125,7 @@ struct run_state {
 	long rtt_sigma;
 	char *hisname;
 	int time_format;
+	bool interactive;
 };
 
 struct measure_vars {
@@ -241,12 +242,12 @@ static int measure_inner_loop(struct run_state *ctl, struct measure_vars *mv)
 			ctl->acked = mv->icp->un.echo.sequence;
 		if (ctl->ip_opt_len) {
 			if ((opt[3] & 0xF) != IPOPT_TS_PRESPEC) {
-				fprintf(stderr, _("Wrong timestamp %d\n"), opt[3] & 0xF);
+				warnx("%s: %d", _("Wrong timestamp"), opt[3] & 0xF);
 				return NONSTDTIME;
 			}
 			if (opt[3] >> 4) {
 				if ((opt[3] >> 4) != 1 || ctl->ip_opt_len != 4 + 3 * 8)
-					fprintf(stderr, _("Overflow %d hops\n"), opt[3] >> 4);
+					 warnx("%s: %d", _("Overflow hops"), opt[3] >> 4);
 			}
 			sendtime = recvtime = histime = histime1 = 0;
 			for (i = 0; i < (opt[2] - 5) / 8; i++) {
@@ -271,7 +272,7 @@ static int measure_inner_loop(struct run_state *ctl, struct measure_vars *mv)
 			}
 
 			if (!(sendtime & histime & histime1 & recvtime)) {
-				fprintf(stderr, _("wrong timestamps\n"));
+				warnx("%s", _("Wrong timestamp"));
 				return -1;
 			}
 		} else {
@@ -395,7 +396,7 @@ static int measure(struct run_state *ctl)
 		 */
 		if (ctl->seqno - ctl->acked > TRIALS) {
 			errno = EHOSTDOWN;
-			return HOSTDOWN;
+			return -1;
 		}
 
 		oicp->un.echo.sequence = ++ctl->seqno;
@@ -411,12 +412,11 @@ static int measure(struct run_state *ctl)
 
 		if (mv.count < 0) {
 			errno = EHOSTUNREACH;
-			return UNREACHABLE;
+			return -1;
 		}
 
 		while (!escape) {
 			int ret = measure_inner_loop(ctl, &mv);
-
 			switch (ret) {
 				case BREAK:
 					escape = 1;
@@ -446,25 +446,18 @@ static void drop_rights(void)
 
 NORETURN static void usage(int rc) {
 	drop_rights();
-	fprintf(stderr, _(
-		"\n"
-		"Usage:\n"
-		"  clockdiff [options] <destination>\n"
-		"\n"
-		"Options:\n"
-		"                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
-		"  -o            use IP timestamp and icmp echo\n"
-		"  -o1           use three-term IP timestamp and icmp echo\n"
-		"  -T, --time-format <ctime|iso>\n"
-		"                  specify display time format, ctime is the default\n"
-		"  -I            alias of --time-format=iso\n"
-		"  -h, --help    display this help\n"
-		"  -V, --version print version and exit\n"
-		"  <destination> DNS name or IP address\n"
-		"\n"
-		"For more details see clockdiff(8)\n"
-	));
-	exit(rc);
+	const char *options =
+"                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
+"  -o            use IP timestamp and icmp echo\n"
+"  -o1           use three-term IP timestamp and icmp echo\n"
+"  -T, --time-format <ctime|iso>\n"
+"                specify display time format, ctime is the default\n"
+"  -I            alias of --time-format=iso\n"
+"  -h, --help    display this help\n"
+"  -V, --version print version and exit\n"
+"  <destination> DNS name or IP address\n"
+;
+	usage_common(rc, options);
 }
 
 static void parse_opts(struct run_state *ctl, int argc, char **argv) {
@@ -516,131 +509,118 @@ static void parse_opts(struct run_state *ctl, int argc, char **argv) {
 		}
 }
 
-
-int main(int argc, char **argv)
-{
-	struct run_state ctl = {
-		.rtt = 1000,
-		.time_format = time_format_ctime
-	};
-	int measure_status;
-
-	struct addrinfo hints = {
-		.ai_family = AF_INET,
-		.ai_socktype = SOCK_RAW,
-		.ai_flags = AI_CANONNAME
-	};
-	struct addrinfo *result;
-	int status;
-
+int main(int argc, char **argv) {
+	setmyname(argv[0]);
 	atexit(close_stdout);
 #ifdef ENABLE_NLS
-        setlocale(LC_ALL, "");
-        bindtextdomain(PACKAGE_NAME, LOCALEDIR);
-        textdomain(PACKAGE_NAME);
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE_NAME, LOCALEDIR);
+	textdomain(PACKAGE_NAME);
 #endif
-
-	parse_opts(&ctl, argc, argv);
+	struct run_state rts = {.rtt = 1000, .time_format = time_format_ctime};
+	parse_opts(&rts, argc, argv);
 	argc -= optind;
 	argv += optind;
 	if (argc <= 0) {
 		errno = EDESTADDRREQ;
-		warn(_("No goal"));
+		warn("%s", _("No goal"));
 		usage(EDESTADDRREQ);
 	} else if (argc != 1)
 		usage(EINVAL);
 
-	ctl.sock_raw = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-	if (ctl.sock_raw < 0)
+	rts.sock_raw = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+	if (rts.sock_raw < 0)
 		err(errno, "socket");
 	if (nice(-16) == -1)
 		err(errno, "nice");
 	drop_rights();
 
 	if (isatty(fileno(stdin)) && isatty(fileno(stdout)))
-		ctl.interactive = 1;
+		rts.interactive = true;
 
-	ctl.id = getpid();
+	rts.id = getpid();
 
-	status = getaddrinfo(argv[0], NULL, &hints, &result);
-	if (status)
-		errx(EXIT_FAILURE, "%s: %s", argv[0], gai_strerror(status));
-	ctl.hisname = strdup(result->ai_canonname);
+	struct addrinfo *result = NULL;
+	struct addrinfo hints = {
+		.ai_family   = AF_INET,
+		.ai_socktype = SOCK_RAW,
+		.ai_flags    = AI_CANONNAME
+	};
+	int rc = getaddrinfo(argv[0], NULL, &hints, &result);
+	if (rc || !result) {
+		if (rc == EAI_SYSTEM)
+			err(errno, "getaddrinfo()");
+		else if (rc)
+			errx(rc, "getaddrinfo(): %s", gai_strerror(rc));
+		else
+			errx(EXIT_FAILURE, "getaddrinfo()");
+	}
+	rts.hisname = strdup(result->ai_canonname);
 
-	memcpy(&ctl.server, result->ai_addr, sizeof ctl.server);
+	memcpy(&rts.server, result->ai_addr, sizeof(rts.server));
 	freeaddrinfo(result);
 
-	if (connect(ctl.sock_raw, (struct sockaddr *)&ctl.server, sizeof(ctl.server)) < 0)
+	if (connect(rts.sock_raw, (struct sockaddr *)&rts.server, sizeof(rts.server)) < 0)
 		err(errno, "connect");
-	if (ctl.ip_opt_len) {
+	if (rts.ip_opt_len) {
 		struct sockaddr_in myaddr = { 0 };
 		socklen_t addrlen = sizeof(myaddr);
-		uint8_t *rspace = calloc(ctl.ip_opt_len, sizeof(uint8_t));
-
-		if (rspace == NULL)
+		uint8_t *rspace = calloc(rts.ip_opt_len, sizeof(uint8_t));
+		if (!rspace)
 			err(errno, "allocating %zu bytes failed",
-					ctl.ip_opt_len * sizeof(uint8_t));
+				rts.ip_opt_len * sizeof(uint8_t));
 		rspace[0] = IPOPT_TIMESTAMP;
-		rspace[1] = ctl.ip_opt_len;
+		rspace[1] = rts.ip_opt_len;
 		rspace[2] = 5;
 		rspace[3] = IPOPT_TS_PRESPEC;
-		if (getsockname(ctl.sock_raw, (struct sockaddr *)&myaddr, &addrlen) < 0)
+		if (getsockname(rts.sock_raw, (struct sockaddr *)&myaddr, &addrlen) < 0)
 			err(errno, "getsockname");
 		((uint32_t *) (rspace + 4))[0 * 2] = myaddr.sin_addr.s_addr;
-		((uint32_t *) (rspace + 4))[1 * 2] = ctl.server.sin_addr.s_addr;
+		((uint32_t *) (rspace + 4))[1 * 2] = rts.server.sin_addr.s_addr;
 		((uint32_t *) (rspace + 4))[2 * 2] = myaddr.sin_addr.s_addr;
-		if (ctl.ip_opt_len == 4 + 4 * 8) {
-			((uint32_t *) (rspace + 4))[2 * 2] = ctl.server.sin_addr.s_addr;
+		if (rts.ip_opt_len == (4 + 4 * 8)) {
+			((uint32_t *) (rspace + 4))[2 * 2] = rts.server.sin_addr.s_addr;
 			((uint32_t *) (rspace + 4))[3 * 2] = myaddr.sin_addr.s_addr;
 		}
 
-		if (setsockopt(ctl.sock_raw, IPPROTO_IP, IP_OPTIONS, rspace, ctl.ip_opt_len) < 0) {
+		if (setsockopt(rts.sock_raw, IPPROTO_IP, IP_OPTIONS, rspace, rts.ip_opt_len) < 0) {
 			warn("IP_OPTIONS (fallback to icmp tstamps)");
-			ctl.ip_opt_len = 0;
+			rts.ip_opt_len = 0;
 		}
 		free(rspace);
 	}
 
-	measure_status = measure(&ctl);
-	if (measure_status < 0) {
+	{ const char *name = rts.hisname ? rts.hisname : "";
+	  int status = measure(&rts);
+	  if (status < 0) {
 		if (errno)
-			err(errno, "measure");
-		errx(EXIT_FAILURE, _("measure: unknown failure"));
+			err(errno, "%s(%s)", _("measure"), name);
+		errx(EXIT_FAILURE, "%s(%s): %s", _("measure"), name, _("Unknown failure"));
+	  }
+	  switch (status) {
+	  case NONSTDTIME:
+		errx(EXIT_FAILURE, "%s(%s): %s", _("measure"), name, _("Non-standard time format"));
+		break;
+	  }
 	}
 
-	switch (measure_status) {
-	case HOSTDOWN:
-		errx(EXIT_FAILURE, _("%s is down"), ctl.hisname);
-		break;
-	case NONSTDTIME:
-		errx(EXIT_FAILURE, _("%s time transmitted in a non-standard format"), ctl.hisname);
-		break;
-	case UNREACHABLE:
-		errx(EXIT_FAILURE, _("%s is unreachable"), ctl.hisname);
-		break;
-	default:
-		break;
-	}
-
-	{
-		time_t now = time(NULL);
-
-		if (ctl.interactive) {
-			char s[32];
-			struct tm tm;
-			localtime_r(&now, &tm);
-
-			if (ctl.time_format == time_format_iso)
-				strftime(s, sizeof(s), "%Y-%m-%dT%H:%M:%S%z", &tm);
-			else
-				strftime(s, sizeof(s), "%a %b %e %H:%M:%S %Y", &tm);
-
-			printf(_("\nhost=%s rtt=%ld(%ld)ms/%ldms delta=%dms/%dms %s\n"),
-				ctl.hisname, ctl.rtt, ctl.rtt_sigma, ctl.min_rtt,
-				ctl.measure_delta, ctl.measure_delta1, s);
-		} else {
-			printf("%ld %d %d\n", now, ctl.measure_delta, ctl.measure_delta1);
-		}
+	{ time_t now = time(NULL);
+	  if (rts.interactive) {
+		struct tm tm = {0};
+		localtime_r(&now, &tm);
+		char s[32];
+		const char *fmt = (rts.time_format == time_format_iso) ?
+			"%Y-%m-%dT%H:%M:%S%z" : "%a %b %e %H:%M:%S %Y";
+		if (!strftime(s, sizeof(s), fmt, &tm))
+			s[0] = 0;
+		const char *ms = _("ms");
+		printf("\n%s%s %s%ld(%ld)%s/%ld%s %s%d%s/%d%s %s\n",
+			_("host="), rts.hisname,
+			_("rtt="), rts.rtt, rts.rtt_sigma, ms, rts.min_rtt, ms,
+			_("delta="), rts.measure_delta, ms, rts.measure_delta1, ms,
+			s);
+	  } else
+		printf("%ld %d %d\n", now, rts.measure_delta, rts.measure_delta1);
 	}
 	exit(EXIT_SUCCESS);
 }

@@ -212,11 +212,11 @@ static inline bool ping4_icmp_extra_type(state_t *rts,
 	if (rts->opt.quiet || rts->opt.flood)
 		return true;
 	PRINT_TIMESTAMP;
-	printf(_("From %s: icmp_seq=%u "),
-		sprint_addr(from, sizeof(*from), rts->opt.resolve),
-		ntohs(orig->un.echo.sequence));
+	printf("%s %s: %s%u ",
+		_("From"), sprint_addr(from, sizeof(*from), rts->opt.resolve),
+		_("icmp_seq="), ntohs(orig->un.echo.sequence));
 	if (bad)
-		printf(_(" (BAD CHECKSUM!)"));
+		printf("(%s!)", _("BAD CHECKSUM"));
 	print4_icmph(rts, icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp);
 	return true;
 }
@@ -244,8 +244,9 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 		hlen = ip->ihl * 4;
 		if ((received < (hlen + sizeof(struct icmphdr))) || (ip->ihl < 5)) {
 			if (rts->opt.verbose)
-				warnx(_("packet too short (%zd bytes) from %s"), received,
-					sprint_addr(from, sizeof(*from), rts->opt.resolve));
+				warnx("%s: %s (%zd %s)",
+					sprint_addr(from, sizeof(*from), rts->opt.resolve),
+					_("Packet too short"), received, _("bytes"));
 			return true;
 		}
 		reply_ttl = ip->ttl;
@@ -270,7 +271,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 
 	if (received < (hlen + 8)) {
 		if (rts->opt.verbose)
-			warnx(_("packet too short: %zd bytes"), received);
+			warnx("%s: %zd %s", _("Packet too short"), received, _("bytes"));
 		return true;
 	}
 	received -= hlen;
@@ -318,10 +319,9 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 			printf("%lu.%06lu ", (unsigned long)recv_time.tv_sec, (unsigned long)recv_time.tv_usec);
 		}
 
-		printf(_("From %s: "), sprint_addr(from, sizeof(*from), rts->opt.resolve));
+		printf("%s %s: ", _("From"), sprint_addr(from, sizeof(*from), rts->opt.resolve));
 		if (bad) {
-			printf(_(" (BAD CHECKSUM!)"));
-			putchar('\n');
+			printf("(%s!)\n", _("BAD CHECKSUM"));
 			return false;
 		}
 		print4_icmph(rts, icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp);
@@ -414,10 +414,11 @@ int ping4_run(state_t *rts, int argc, char **argv,
 			usage(EINVAL);
 		else if (rts->opt.timestamp) {
 			if (rts->ipt_flg != IPOPT_TS_PRESPEC)
-				errx(EINVAL, _("Only 'tsprespec' is allowed with intermediate hops"));
+				errx(EINVAL, "%s", _("Only 'tsprespec' is allowed with intermediate hops"));
 #define MAX_TS_ROUTES ((MAX_ROUTES + 1) / 2) /* 5 */
 			if (argc > MAX_TS_ROUTES)
-				errx(EINVAL, _("Too many intermediate TS hops (max=%d)"), MAX_TS_ROUTES - 1);
+				errx(EINVAL, "%s, %s%d", _("Too many intermediate TS hops"),
+					_("max="), MAX_TS_ROUTES - 1);
 		} else
 			rts->opt.sourceroute = true;
 	}
@@ -454,7 +455,8 @@ int ping4_run(state_t *rts, int argc, char **argv,
 			if (rts->route->n < MAX_ROUTES)
 				rts->route->data[rts->route->n++] = whereto->sin_addr.s_addr;
 			else
-				errx(EXIT_FAILURE, _("Too many intermediate hops (max=%d)"), MAX_ROUTES);
+				errx(EINVAL, "%s, %s%d", _("Too many intermediate hops"),
+					_("max="), MAX_ROUTES);
 		}
 		argc--;
 		argv++;
@@ -489,10 +491,10 @@ int ping4_run(state_t *rts, int argc, char **argv,
 				if (!rts->opt.broadcast)
 					errx(EINVAL,
 _("Do you want to ping broadcast? Then -b. If not, check your local firewall rules"));
-				warnx("%s: %s", _WARN, _("pinging broadcast address"));
+				warnx("%s: %s", _WARN, _("Pinging broadcast address"));
 				int opt = rts->opt.broadcast;
 				if (setsockopt(probe_fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
-					err(errno, _("cannot set broadcasting"));
+					err(errno, "%s", _("Cannot set broadcasting"));
 				if (connect(probe_fd, (struct sockaddr *)whereto, sizeof(*whereto)) < 0)
 					err(errno, "connect");
 				break;
@@ -561,7 +563,7 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 	if (rts->opt.broadcast) {
 		int opt = 1;
 		if (setsockopt(sock->fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
-			err(errno, _("cannot set broadcasting"));
+			err(errno, "%s", _("Cannot set broadcasting"));
 	}
 
 	if (rts->opt.noloop)

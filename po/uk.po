@@ -15,17 +15,27 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.3\n"
 
-#, c-format
+# local edition by yvs@
+
+#
+msgid "Usage"
+msgstr "Застосування"
+
+#
+msgid "[options] <destination>"
+msgstr "[параметри] <призначення>"
+
+#
+msgid "Options"
+msgstr "Параметри"
+
+#
+msgid "For more details see"
+msgstr "Докладніший опис можна знайти в"
+
+# arping options
 msgid ""
-"\n"
-"Usage:\n"
-"  arping [options] <destination>\n"
-"\n"
-"Options:\n"
 "  -f            quit on first reply\n"
 "  -q            be quiet\n"
 "  -b            keep on broadcasting, do not unicast\n"
@@ -36,17 +46,14 @@ msgid ""
 "  -c <count>    how many packets to send\n"
 "  -w <timeout>  how long to wait for a reply\n"
 "  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use"
+"  -I <device>   which ethernet device to use\n"
+"  -s <source>   source IP address\n"
+"  <destination> DNS name or IP address\n"
 msgstr ""
-"\n"
-"Користування:\n"
-"  arping [параметри] <призначення>\n"
-"\n"
-"Параметри:\n"
-"  -f            вийти при першій же відповіді\n"
+"  -f            вийти при першій відповіді\n"
 "  -q            не виводити даних\n"
-"  -b            продовжити пінгування всієї підмережі та не переходити до "
-"направленої адресації\n"
+"  -b            продовжувати пінгування всієї підмережі,\n"
+"                та не переходити до направленої адресації\n"
 "  -D            режим виявлення дублікатів адрес\n"
 "  -U            незапитуваний режим ARP, оновити ваше оточення\n"
 "  -A            режим відповідей ARP, оновити ваше оточення\n"
@@ -54,156 +61,22 @@ msgstr ""
 "  -c <к-ть>     кількість пакетів, які слід надіслати\n"
 "  -w <час>      час очікування на відповідь\n"
 "  -i <інтервал> інтервал між пакетами (типове значення: 1 секунда)\n"
-"  -I <пристрій> пристрій ethernet, яким слід скористатися"
-
-#, c-format
-msgid ""
-"\n"
-"  -s <source>   source IP address\n"
-"  <destination> DNS name or IP address\n"
-"\n"
-"For more details see arping(8)\n"
-msgstr ""
-"\n"
+"  -I <пристрій> пристрій ethernet, яким слід скористатися\n"
 "  -s <джерело>  IP-адреса джерела\n"
 "  <призначення> DNS-назва або IP-адреса\n"
-"\n"
-"Докладніший опис можна знайти в arping(8)\n"
 
-#, c-format
-msgid "Sent %d probes (%d broadcast(s))\n"
-msgstr "Надіслано %d запитів (%d на всю підмережу)\n"
-
-#, c-format
-msgid "Received %d response(s)"
-msgstr "Отримано %d відповідей"
-
-#, c-format
-msgid "%d request(s)"
-msgstr "%d запит(ів)"
-
-#, c-format
-msgid "%s%d broadcast(s)"
-msgstr "%s%d на всю підмережу"
-
-#
-msgid "Unicast"
-msgstr "Направлена адресація"
-
-#
-msgid "Broadcast"
-msgstr "Розсилка на підмережу"
-
-#, c-format
-msgid "%s from "
-msgstr "%s з "
-
-#
-msgid "reply"
-msgstr "відповідь"
-
-#
-msgid "request"
-msgstr "запит"
-
-#, c-format
-msgid "for %s "
-msgstr "для %s "
-
-#
-msgid "for "
-msgstr "для "
-
-#, c-format
-msgid " %ld.%03ldms\n"
-msgstr " %ld.%03ldмс\n"
-
-#, c-format
-msgid " UNSOLICITED?\n"
-msgstr " НЕБАЖАНИЙ?\n"
-
-#, c-format
-msgid "Interface \"%s\" is down\n"
-msgstr "Інтерфейс \"%s\" вимкнений\n"
-
-#, c-format
-msgid "Interface \"%s\" is not ARPable\n"
-msgstr "Інтерфейс \"%s\" непридатний для ARP\n"
-
-#
-msgid "using default broadcast address"
-msgstr "використовуємо типову адресу всієї підмережі"
-
-#
-msgid "invalid argument"
-msgstr "некоректний аргумент"
-
-#, c-format
-msgid "Device %s not available."
-msgstr "Пристрій %s недоступний"
-
-#
-msgid "Suitable device could not be determined. Please, use option -I."
-msgstr ""
-"Не вдалося визначити відповідний пристрій, будь ласка скористайтеся "
-"параметром -I"
-
-#
-msgid "interface is ignored"
-msgstr "інтерфейс проігноровано"
-
-#, c-format
-msgid "Interface \"%s\" is not ARPable (no ll address)\n"
-msgstr "Інтерфейс \"%s\" непридатний для ARP (немає link-level адреси)\n"
-
-#, c-format
-msgid "ARPING %s "
-msgstr "Аналізуємо ARP %s "
-
-#, c-format
-msgid "from %s %s\n"
-msgstr "з %s %s\n"
-
-#
-msgid "no source address in not-DAD mode"
-msgstr "немає адреси джерела у режимі без DAD"
-
-#, c-format
-msgid "Wrong timestamp %d\n"
-msgstr "Помилкова часова позначка %d\n"
-
-#, c-format
-msgid "Overflow %d hops\n"
-msgstr "Перевищено кількість переходів %d\n"
-
-#, c-format
-msgid "wrong timestamps\n"
-msgstr "помилкові часові позначки\n"
-
-#, c-format
+# clockdiff options
 msgid ""
-"\n"
-"Usage:\n"
-"  clockdiff [options] <destination>\n"
-"\n"
-"Options:\n"
 "                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
 "  -o            use IP timestamp and icmp echo\n"
 "  -o1           use three-term IP timestamp and icmp echo\n"
 "  -T, --time-format <ctime|iso>\n"
-"                  specify display time format, ctime is the default\n"
+"                specify display time format, ctime is the default\n"
 "  -I            alias of --time-format=iso\n"
 "  -h, --help    display this help\n"
 "  -V, --version print version and exit\n"
 "  <destination> DNS name or IP address\n"
-"\n"
-"For more details see clockdiff(8)\n"
 msgstr ""
-"\n"
-"Користування:\n"
-"  clockdiff [параметри] <призначення>\n"
-"\n"
-"Параметри:\n"
 "                без -o — використовувати лише часову позначку icmp (див. "
 "RFC0792, стор. 16)\n"
 "  -o            використовувати часову позначку IP та icmp ехо\n"
@@ -214,657 +87,9 @@ msgstr ""
 "  -h, --help    показати цю довідкову інформацію\n"
 "  -V            вивести версію і завершити роботу\n"
 "  <призначення> DNS-назва або IP-адреса\n"
-"\n"
-"Докладніший опис можна знайти у clockdiff(8)\n"
 
-#
-msgid "measure: unknown failure"
-msgstr "вимірювання: невідома помилка"
-
-#, c-format
-msgid "%s is down"
-msgstr "%s є непрацездатним"
-
-#, c-format
-msgid "%s time transmitted in a non-standard format"
-msgstr "Час %s передано у нестандартному форматі"
-
-#, c-format
-msgid "%s is unreachable"
-msgstr "%s є недосяжним"
-
-#, c-format
+# ping options
 msgid ""
-"\n"
-"host=%s rtt=%ld(%ld)ms/%ldms delta=%dms/%dms %s\n"
-msgstr ""
-"\n"
-"вузол=%s rtt=%ld(%ld)мс/%ldмс різниця=%dмс/%dмс %s\n"
-
-#, c-format
-msgid "Qtype conflict\n"
-msgstr "Конфлікт Qtype\n"
-
-#, c-format
-msgid "Subject type conflict\n"
-msgstr "Конфлікти типів теми\n"
-
-#, c-format
-msgid "IDN encoding error: %s"
-msgstr "Помилка кодування IDN: %s"
-
-#
-msgid "too long scope name"
-msgstr "надто довга назва зони"
-
-#
-msgid "memory allocation failed"
-msgstr "помилка виділення пам'яті"
-
-#, c-format
-msgid "inappropriate subject name: %s"
-msgstr "неприйнятна назва призначення: %s"
-
-#
-msgid "dn_comp() returned too long result"
-msgstr "dn_comp() повернуто надто довгий результат"
-
-#, c-format
-msgid ""
-"ping -6 -N <nodeinfo opt>\n"
-"Help:\n"
-"  help\n"
-"Query:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Subject:\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=name\n"
-"  subject-fqdn=name\n"
-msgstr ""
-"ping -6 -N <параметри nodeinfo>\n"
-"Довідка:\n"
-"  help\n"
-"Запит:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Призначення:\n"
-"  subject-ipv6=адреса\n"
-"  subject-ipv4=адреса\n"
-"  subject-name=назва\n"
-"  subject-fqdn=назва\n"
-
-#, c-format
-msgid "unknown iface: %s"
-msgstr "невідомий інтерфейс: %s"
-
-#
-msgid "scope discrepancy among the nodes"
-msgstr "невідповідність зон між вузлами"
-
-#, c-format
-msgid "%s: source address might be selected on device other than: %s"
-msgstr "%s: адресу джерела можливо вибрано на пристрої відмінному від: %s"
-
-#
-msgid "Minimal interval for multicast ping"
-msgstr "Мінімальний інтервал групової розсилки"
-
-#
-msgid "Minimal interval for broadcast ping"
-msgstr "Мінімальний інтервал пінгування всієї підмережі"
-
-#, c-format
-msgid "%s for user must be >= %u ms, use -i %.*f (or higher)"
-msgstr ""
-"%s для користувача має бути >= %u мсек, тобто '-i %.*f' або більше значення"
-
-#
-msgid "Multicast ping"
-msgstr "Пінг групової розсилки"
-
-#
-msgid "Broadcast ping"
-msgstr "Пінг всієї підмережі не фрагментується"
-
-#, c-format
-msgid "%s does not fragment"
-msgstr "%s не фрагментується"
-
-#
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "помилка setsockopt(RAW_CHECKSUM) - намагаємося продовжити"
-
-#
-msgid "cannot disable multicast loopback"
-msgstr "неможливо вимкнути петльовий інтерфейс групової розсилки"
-
-#
-msgid "cannot set multicast hop limit"
-msgstr "не вдалося обмежити кількість переходів для групової розсилки"
-
-#
-msgid "cannot set unicast hop limit"
-msgstr  "не вдалося обмежити кількість переходів"
-
-#
-msgid "canno receive hop limit"
-msgstr "не вдалося отримати максимальну кількість переходів"
-
-#
-msgid "cannot set flowlabel"
-msgstr "не вдалося встановити відмітку потоку"
-
-#
-msgid "cannot send flowinfo"
-msgstr "не вдалося надіслати відомості щодо потоку"
-
-#, c-format
-msgid "PING %s (%s) "
-msgstr "ПІНГ %s (%s) "
-
-#, c-format
-msgid ", flow 0x%05x, "
-msgstr ", потік 0x%05x, "
-
-#, c-format
-msgid "from %s %s: "
-msgstr "з %s %s: "
-
-#
-msgid "Destination unreachable: "
-msgstr "Пункт призначення недоступний: "
-
-#
-msgid "No route"
-msgstr "Немає маршруту"
-
-#
-msgid "Administratively prohibited"
-msgstr "Адміністративно заборонено"
-
-#
-msgid "Beyond scope of source address"
-msgstr "Поза зоною адреси джерела"
-
-#
-msgid "Address unreachable"
-msgstr "Недосяжна адреса"
-
-#
-msgid "Port unreachable"
-msgstr "Недосяжний порт"
-
-#
-msgid "Source address failed ingress/egress policy"
-msgstr "Адреса джерела не відповідає вхідним-вихідним правилам"
-
-#
-msgid "Reject route to destination"
-msgstr "Відкинути маршрут до призначення"
-
-#, c-format
-msgid "Unknown code %d"
-msgstr "Невідомий код %d"
-
-#, c-format
-msgid "Packet too big: mtu=%u"
-msgstr "Занадто великий пакет: mtu=%u"
-
-#, c-format
-msgid ", code=%d"
-msgstr ", код=%d"
-
-#
-msgid "Time exceeded: "
-msgstr "Перевищено час: "
-
-#
-msgid "Hop limit"
-msgstr "Обмеження на кількість переходів"
-
-#
-msgid "Defragmentation failure"
-msgstr "Помилка під час дефрагментації"
-
-#, c-format
-msgid "code %d"
-msgstr "код %d"
-
-#
-msgid "Parameter problem: "
-msgstr "Проблема з параметрами: "
-
-#
-msgid "Wrong header field"
-msgstr "Помилкове поле заголовка"
-
-#
-msgid "Unknown header"
-msgstr "Невідомий заголовок"
-
-#
-msgid "Unknown option"
-msgstr "Невідомий параметр"
-
-#, c-format
-msgid " at %u"
-msgstr " у %u"
-
-#
-msgid "Echo request"
-msgstr "Луна-запит"
-
-#
-msgid "Echo reply"
-msgstr "Луна-відповідь"
-
-#
-msgid "MLD Query"
-msgstr "Запит MLD"
-
-#
-msgid "MLD Report"
-msgstr "Звіт MLD"
-
-#
-msgid "MLD Reduction"
-msgstr "Спрощення MLD"
-
-#
-msgid "Unknown icmp type"
-msgstr "Невідомий тип icmp"
-
-#
-msgid "local error"
-msgstr "локальна помилка"
-
-#, c-format
-msgid "local error: message too long, mtu: %u"
-msgstr "локальна помилка: надто велике повідомлення, mtu: %u"
-
-#, c-format
-msgid "From %s icmp_seq=%u "
-msgstr "З %s icmp_seq=%u "
-
-#, c-format
-msgid " icmp_seq=%u"
-msgstr " icmp_seq=%u"
-
-#
-msgid " parse error (too short)"
-msgstr " помилка обробки (надто короткі дані)"
-
-#
-msgid " parse error (truncated)"
-msgstr " помилка обробки (обрізано)"
-
-#, c-format
-msgid " unexpected error in inet_ntop(%s)"
-msgstr " неочікувана помилка в inet_ntop(%s)"
-
-#, c-format
-msgid " unknown qtype(0x%02x)"
-msgstr " невідоме значення qtype(0x%02x)"
-
-#
-msgid " refused"
-msgstr " відмовлено"
-
-#
-msgid " unknown"
-msgstr " невідомий"
-
-#, c-format
-msgid " unknown code(%02x)"
-msgstr " невідомий код(%02x)"
-
-#, c-format
-msgid "; seq=%u;"
-msgstr "; посл=%u;"
-
-#, c-format
-msgid "packet too short: %d bytes"
-msgstr "занадто короткий пакет: %d байтів"
-
-#, c-format
-msgid "From %s: "
-msgstr "Від %s: "
-
-#
-msgid "WARNING"
-msgstr "УВАГА"
-
-#
-msgid "failed to install socket filter"
-msgstr "не вдалося встановити фільтрування на сокет"
-
-#, c-format
-msgid "unknown protocol family: %d"
-msgstr "невідоме сімейство протоколів: %d"
-
-#, c-format
-msgid "unknown sock type: %d"
-msgstr "невідомий тип сокета: %d"
-
-#
-msgid "=> missing cap_net_raw+p capability or setuid?"
-msgstr "=> пропущено cap_net_raw+p або setuid ?"
-
-#, c-format
-msgid "bad value for flowinfo: %s"
-msgstr "неправильне значення flowinfo: %s"
-
-#, c-format
-msgid "flow value is greater than 20 bits: %s"
-msgstr "значення потоку перевищує 20 біт: %s"
-
-#, c-format
-msgid "bad TOS value: %s"
-msgstr "неправильне значення TOS: %s"
-
-#, c-format
-msgid "the decimal value of TOS bits must be in range 0-255: %lu"
-msgstr "значення TOS має бути в діапазоні 0-255: %lu"
-
-#, c-format
-msgid "invalid timestamp type: %s"
-msgstr "некоректний тип часової позначки: %s"
-
-#
-msgid "bad timing interval"
-msgstr "помилковий інтервал часу"
-
-#, c-format
-msgid "cannot copy: %s"
-msgstr "не вдалося скопіювати: %s"
-
-#, c-format
-msgid "invalid source address: %s"
-msgstr "некоректна адреса джерела: %s"
-
-#, c-format
-msgid "cannot set preload to value greater than 3: %d"
-msgstr "неможливо встановити розмір попереднього завантаження, перевищує 3: %d"
-
-#, c-format
-msgid "invalid -M argument: %s"
-msgstr "некоректний аргумент -M: %s"
-
-#
-msgid "bad linger time"
-msgstr "помилковий час затягування"
-
-#
-msgid "ident 0 => forcing raw socket"
-msgstr "ident 0 => примусово raw сокет"
-
-#
-msgid "Only 'tsprespec' is allowed with intermediate hops"
-msgstr "З транзитом дозволено тільки 'tsprespec'"
-
-#, c-format
-msgid "Too many intermediate TS hops (max=%d)"
-msgstr "Надто багато проміжних TS адрес (макс=%d)"
-
-#, c-format
-msgid "Too many intermediate hops (max=%d)"
-msgstr "Надто багато проміжних адрес (макс=%d)"
-
-#
-msgid "NodeInfo client is for IPv6 only"
-msgstr "Клієнт NodeInfo тільки для IPv6"
-
-#
-msgid "Cannot set NodeInfo option"
-msgstr "Неможливо встановити параметр для NodeInfo"
-
-#
-msgid "NodeInfo packet can only have a header"
-msgstr "Пакет NodeInfo може мати лише заголовок"
-
-#
-msgid "No goal"
-msgstr "Нема мети"
-
-#
-msgid ""
-"Do you want to ping broadcast? Then -b. If not, check your local firewall "
-"rules"
-msgstr ""
-"Хочете надіслати пінг на всю підмережу? Скористайтеся -b. Якщо ні, перевірте, "
-"чи правильно вказано правила вашого локального файрвола"
-
-#
-msgid "pinging broadcast address"
-msgstr "пінгування всієї підмережі"
-
-#
-msgid "cannot set broadcasting"
-msgstr "не вдалося встановити пінгування всієї підмережі"
-
-#
-msgid "getifaddrs failed"
-msgstr "помилка getifaddrs()"
-
-#
-msgid "cannot set multicast time-to-live"
-msgstr "не вдалося встановити TTL для групової розсилки"
-
-#
-msgid "cannot set unicast time-to-live"
-msgstr "не вдалося встановити TTL"
-
-#, c-format
-msgid "%zu(%zu) data bytes"
-msgstr "%zu(%zu) байтів даних"
-
-#
-msgid "(same route)"
-msgstr "(такий самий маршрут)"
-
-#
-msgid "absolute not-standard"
-msgstr "нестандартне абсолютне значення"
-
-#
-msgid "not-standard"
-msgstr "нестандартне значення"
-
-#
-msgid "absolute"
-msgstr "абсолютне значення"
-
-#
-msgid "Unrecorded hops"
-msgstr "Незаписаних переходів"
-
-#
-msgid "Echo Reply"
-msgstr "Луна-відповідь"
-
-#
-msgid "Destination Net Unreachable"
-msgstr "Мережа призначення недоступна"
-
-#
-msgid "Destination Host Unreachable"
-msgstr "Вузол призначення недоступний"
-
-#
-msgid "Destination Protocol Unreachable"
-msgstr "Протокол призначення недоступний"
-
-#
-msgid "Destination Port Unreachable"
-msgstr "Порт призначення недоступний"
-
-#, c-format
-msgid "Frag needed and DF set (mtu = %u)"
-msgstr "Потрібна фрагментація і встановлено DF (mtu = %u)"
-
-#
-msgid "Source Route Failed"
-msgstr "Помилка маршрутизації залежної від джерела"
-
-#
-msgid "Destination Net Unknown"
-msgstr "Невідома мережа призначення"
-
-#
-msgid "Destination Host Unknown"
-msgstr "Невідомий вузол призначення"
-
-#
-msgid "Source Host Isolated"
-msgstr "Ізольований вузол джерела"
-
-#
-msgid "Destination Net Prohibited"
-msgstr "Заборонена мережа призначення"
-
-#
-msgid "Destination Host Prohibited"
-msgstr "Заборонений вузол призначення"
-
-#
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "Мережа недоступна для ToS пакетів"
-
-#
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "Пункт призначення недоступний для ToS пакетів"
-
-#
-msgid "Packet filtered"
-msgstr "Пакет відфільтровано"
-
-#
-msgid "Precedence Violation"
-msgstr "Порушення першості"
-
-#
-msgid "Precedence Cutoff"
-msgstr "Обрізання першості"
-
-#, c-format
-msgid "Dest Unreachable, Bad Code: %d"
-msgstr "Недоступний пункт призначення, код: %d"
-
-#
-msgid "Source Quench"
-msgstr "Обрив зв'язку з джерелом"
-
-#
-msgid "Redirect Network"
-msgstr "Мережеве переспрямовування"
-
-#
-msgid "Redirect Host"
-msgstr "Переспрямовування вузла"
-
-#
-msgid "Redirect Type of Service and Network"
-msgstr "Переспрямовування мережеве і служби ToS"
-
-#
-msgid "Redirect Type of Service and Host"
-msgstr "Переспрямовування вузла і служби ToS"
-
-#, c-format
-msgid "Redirect, Bad Code: %d"
-msgstr "Переспрямовування, код: %d"
-
-#
-msgid "New nexthop"
-msgstr "Новий наступний шлюз"
-
-#
-msgid "Echo Request"
-msgstr "Луна-запит"
-
-#
-msgid "Time to live exceeded"
-msgstr "Перевищено TTL"
-
-#
-msgid "Frag reassembly time exceeded"
-msgstr "Перевищено час перезбирання фрагментів"
-
-#, c-format
-msgid "Time exceeded, Bad Code: %d"
-msgstr "Перевищено обмеження за часом, код: %d"
-
-#, c-format
-msgid "Parameter problem: pointer = %u"
-msgstr "Проблема з параметрами за адресою %u"
-
-#
-msgid "Timestamp"
-msgstr "Часова позначка"
-
-#
-msgid "Timestamp Reply"
-msgstr "Відповідь з часовою позначкою"
-
-#
-msgid "Information Request"
-msgstr "Інформаційний запит"
-
-#
-msgid "Information Reply"
-msgstr "Інформаційна відповідь"
-
-#
-msgid "Address Mask Request"
-msgstr "Запит маски адреси"
-
-#
-msgid "Address Mask Reply"
-msgstr "Відповідь з маскою адреси"
-
-#, c-format
-msgid "Bad ICMP type: %d"
-msgstr "Помилковий тип ICMP: %d"
-
-#, c-format
-msgid "local error: %s"
-msgstr "локальна помилка: %s"
-
-#, c-format
-msgid "local error: message too long, mtu=%u"
-msgstr "локальна помилка: надто велике повідомлення, mtu=%u"
-
-#, c-format
-msgid "packet too short (%zd bytes) from %s"
-msgstr "пакет є надто коротким (%zd байтів), отримано з %s"
-
-#, c-format
-msgid "From %s: icmp_seq=%u "
-msgstr "З %s: icmp_seq=%u "
-
-#, c-format
-msgid ""
-"\n"
-"Usage\n"
-"  ping [options] <destination>\n"
-"\n"
-"Options:\n"
 "  <destination>      DNS name or IP address\n"
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
@@ -914,14 +139,7 @@ msgid ""
 "  -6                 use IPv6\n"
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
-"\n"
-"For more details see ping(8)\n"
 msgstr ""
-"\n"
-"Користування\n"
-"  ping [параметри] <призначення>\n"
-"\n"
-"Параметри:\n"
 "  <призначення>      DNS-назва або IP-адреса\n"
 "  -a                 використовувати звуковий супровід\n"
 "  -A                 адаптивне зондування\n"
@@ -972,10 +190,690 @@ msgstr ""
 "Параметри IPv6:\n"
 "  -6                 використовувати IPv6\n"
 "  -F <відмітка>      визначити відмітку потоку, типова - випадкова\n"
-"  -N <параметр>      задати параметр NodeInfo запиту, спробуйте <help> як "
-"аргумент\n"
-"\n"
-"Докладніший опис можна знайти у ping(8)\n"
+"  -N <параметр>      задати параметр NodeInfo (подивіться -N help)\n"
+
+# tracepath options
+msgid ""
+"  -4             use IPv4\n"
+"  -6             use IPv6\n"
+"  -b             print both name and IP\n"
+"  -l <length>    use packet <length>\n"
+"  -m <hops>      use maximum <hops>\n"
+"  -n             no reverse DNS name resolution\n"
+"  -p <port>      use destination <port>\n"
+"  -V             print version and exit\n"
+"  <destination>  DNS name or IP address\n"
+msgstr ""
+"  -4             використовувати IPv4\n"
+"  -6             використовувати IPv6\n"
+"  -b             виводити назву та адресу\n"
+"  -l <довжина>   довжина пакетів у байтах\n"
+"  -m <переходів> максимальна кількість переходів\n"
+"  -n             не використовувати DNS\n"
+"  -p <порт>      використовувати <порт> призначення\n"
+"  -V             вивести версію і завершити роботу\n"
+"  <призначення>  назва DNS або IP-адреса\n"
+
+#
+msgid "Sent probes"
+msgstr "Надіслано запитів"
+
+#
+msgid "Received responses"
+msgstr "Отримано відповідей"
+
+# %d requests
+msgid "requests"
+msgstr "запитів"
+
+# %d broadcasts
+msgid "broadcasts"
+msgstr "на всю підмережу"
+
+#
+msgid "Unicast"
+msgstr "Направлена адресація"
+
+#
+msgid "Broadcast"
+msgstr "Розсилка на підмережу"
+
+#
+msgid "reply"
+msgstr "відповідь"
+
+#
+msgid "request"
+msgstr "запит"
+
+# for %s
+msgid "for"
+msgstr "для"
+
+#
+msgid "UNSOLICITED"
+msgstr "НЕБАЖАНИЙ"
+
+#
+msgid "Interface is down"
+msgstr "Інтерфейс вимкнений"
+
+#
+msgid "Interface is not ARPable"
+msgstr "Інтерфейс непридатний для ARP"
+
+#
+msgid "Using default broadcast address"
+msgstr "Використовуємо типову адресу всієї підмережі"
+
+#
+msgid "Invalid argument"
+msgstr "Некоректний аргумент"
+
+#
+msgid "Device is not available"
+msgstr "Пристрій недоступний"
+
+#
+msgid "No suitable device found, please use -I option"
+msgstr "Відповідний пристрій не знайдено, будь ласка скористайтеся опцією -I"
+
+#
+msgid "Interface is ignored"
+msgstr "Iнтерфейс проігноровано"
+
+#
+msgid "no ll address"
+msgstr "немає link-level адреси"
+
+#
+msgid "ARPING"
+msgstr "ARP пінг"
+
+# From %s
+msgid "From"
+msgstr "З"
+
+# from %s
+msgid " from"
+msgstr " з"
+
+#
+msgid "No source address in not-DAD mode"
+msgstr "Немає адреси джерела у режимі без DAD"
+
+#
+msgid "Wrong timestamp"
+msgstr "Помилкова часова позначка"
+
+#
+msgid "Overflow hops"
+msgstr "Перевищено кількість переходів"
+
+#
+msgid "measure"
+msgstr "вимірювання"
+
+#
+msgid "Unknown failure"
+msgstr "Невідома помилка"
+
+#
+msgid "Non-standard time format"
+msgstr "Нестандартний формат часу"
+
+#
+msgid "host="
+msgstr "вузол="
+
+#
+msgid "rtt="
+msgstr "затримка="
+
+#
+msgid "ms"
+msgstr "мс"
+
+#
+msgid "delta="
+msgstr "різниця="
+
+#
+msgid "Qtype conflict"
+msgstr "Конфлікт Qtype"
+
+#
+msgid "Subject type conflict"
+msgstr "Конфлікти типів теми"
+
+#
+msgid "IDN encoding error"
+msgstr "Помилка кодування IDN"
+
+#
+msgid "Too long scope name"
+msgstr "Надто довга назва зони"
+
+#
+msgid "Memory allocation failed"
+msgstr "Помилка виділення пам'яті"
+
+#
+msgid "Inappropriate subject name"
+msgstr "Неприйнятна назва теми"
+
+#
+msgid "dn_comp() returned too long result"
+msgstr "dn_comp() повернуто надто довгий результат"
+
+#
+msgid "Unknown network interface"
+msgstr "Невідомий мережевий інтерфейс"
+
+#
+msgid "Scope discrepancy among the nodes"
+msgstr "Невідповідність зон між вузлами"
+
+#
+msgid "Source address might be selected on device other than:"
+msgstr "Вихідну адресу можливо вибрано на пристрої відмінному від:"
+
+#
+msgid "Minimal user interval for multicast ping must be >="
+msgstr "Мінімальний інтервал користувача для групової розсилки має бути >="
+
+#
+msgid "Minimal user interval for broadcast ping must be >="
+msgstr ""
+"Мінімальний інтервал користувача для пінгування всієї підмережі має бути >="
+
+#
+msgid "see -i option for details"
+msgstr "дивіться подробиці опції -i"
+
+#
+msgid "Multicast ping"
+msgstr "Пінг групової розсилки"
+
+#
+msgid "Broadcast ping"
+msgstr "Пінг всієї підмережі не фрагментується"
+
+#
+msgid "does not fragment"
+msgstr "не фрагментується"
+
+#
+msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
+msgstr "помилка setsockopt(RAW_CHECKSUM) - намагаємося продовжити"
+
+#
+msgid "Cannot disable multicast loopback"
+msgstr "Неможливо вимкнути петльовий інтерфейс групової розсилки"
+
+#
+msgid "Cannot set multicast hop limit"
+msgstr "Не вдалося обмежити кількість переходів для групової розсилки"
+
+#
+msgid "Cannot set unicast hop limit"
+msgstr "Не вдалося обмежити кількість переходів"
+
+#
+msgid "Cannot receive hop limit"
+msgstr "Не вдалося отримати максимальну кількість переходів"
+
+#
+msgid "Cannot set flowlabel"
+msgstr "Не вдалося встановити відмітку потоку"
+
+#
+msgid "Cannot send flowinfo"
+msgstr "Не вдалося надіслати відомості щодо потоку"
+
+#
+msgid "PING"
+msgstr "ПІНГ"
+
+# flow 0x%05x
+msgid "flow"
+msgstr "потік"
+
+#
+msgid "Destination unreachable"
+msgstr "Пункт призначення недоступний"
+
+#
+msgid "No route"
+msgstr "Немає маршруту"
+
+#
+msgid "Administratively prohibited"
+msgstr "Адміністративно заборонено"
+
+#
+msgid "Beyond scope of source address"
+msgstr "Поза зоною адреси джерела"
+
+#
+msgid "Address unreachable"
+msgstr "Недосяжна адреса"
+
+#
+msgid "Port unreachable"
+msgstr "Недосяжний порт"
+
+#
+msgid "Source address failed ingress/egress policy"
+msgstr "Адреса джерела не відповідає вхідним-вихідним правилам"
+
+#
+msgid "Reject route to destination"
+msgstr "Відкинути маршрут до призначення"
+
+#
+msgid "Packet too big"
+msgstr "Занадто великий пакет"
+
+#
+msgid "Time exceeded"
+msgstr "Перевищено час"
+
+#
+msgid "Hop limit"
+msgstr "Обмеження на кількість переходів"
+
+#
+msgid "Defragmentation failure"
+msgstr "Помилка під час дефрагментації"
+
+#
+msgid "code"
+msgstr "код"
+
+#
+msgid "Parameter problem"
+msgstr "Проблема з параметром"
+
+#
+msgid "Wrong header field"
+msgstr "Помилкове поле заголовка"
+
+#
+msgid "Unknown header"
+msgstr "Невідомий заголовок"
+
+#
+msgid "Unknown option"
+msgstr "Невідомий параметр"
+
+#
+msgid "info"
+msgstr "інфо"
+
+#
+msgid "Echo request"
+msgstr "Луна-запит"
+
+#
+msgid "Echo reply"
+msgstr "Луна-відповідь"
+
+#
+msgid "MLD Query"
+msgstr "Запит MLD"
+
+#
+msgid "MLD Report"
+msgstr "Звіт MLD"
+
+#
+msgid "MLD Reduction"
+msgstr "Спрощення MLD"
+
+#
+msgid "Unknown icmp type"
+msgstr "Невідомий тип icmp"
+
+#
+msgid "Local error"
+msgstr "Локальна помилка"
+
+#
+msgid "Message too long"
+msgstr "Завелике повідомлення"
+
+#
+msgid "parse error"
+msgstr "помилка обробки"
+
+#
+msgid "too short"
+msgstr "замало"
+
+#
+msgid "truncated"
+msgstr "обрізано"
+
+#
+msgid "unexpected error"
+msgstr "неочікувана помилка"
+
+#
+msgid "unknown qtype"
+msgstr "невідомий qtype"
+
+#
+msgid "refused"
+msgstr "відмовлено"
+
+#
+msgid "unknown"
+msgstr "невідомий"
+
+#
+msgid "unknown code"
+msgstr "невідомий код"
+
+#
+msgid "seq="
+msgstr "посл="
+
+#
+msgid "Packet too short"
+msgstr "Занадто короткий пакет"
+
+#
+msgid "WARNING"
+msgstr "УВАГА"
+
+#
+msgid "failed to install socket filter"
+msgstr "не вдалося встановити фільтрування на сокет"
+
+#
+msgid "=> missing cap_net_raw+p capability"
+msgstr "=> не вистачає cap_net_raw+p"
+
+#
+msgid "=> missing cap_net_admin+p capability"
+msgstr "=> не вистачає cap_net_admin+p"
+
+#
+msgid "Bad value for flowinfo"
+msgstr "Неправильне значення flowinfo"
+
+#
+msgid "Flow value is greater than 20 bits"
+msgstr "Значення потоку перевищує 20 біт"
+
+#
+msgid "Bad TOS value"
+msgstr "Неправильне значення TOS"
+
+#
+msgid "Decimal value of TOS bits must be in range 0-255"
+msgstr "Значення TOS має бути в діапазоні 0-255"
+
+#
+msgid "Invalid timestamp type"
+msgstr "Некоректний тип часової позначки"
+
+#
+msgid "Bad timing interval"
+msgstr "Помилковий інтервал часу"
+
+#
+msgid "Cannot copy"
+msgstr "Неможливо скопіювати"
+
+#
+msgid "Invalid source address"
+msgstr "Некоректна адреса джерела"
+
+#
+msgid "Invalid source"
+msgstr "Некоректне джерело"
+
+#
+msgid "Cannot set preload to value greater than 3"
+msgstr "Неможливо встановити розмір пре-завантаження більш за 3"
+
+#
+msgid "Bad linger time"
+msgstr "Помилковий час затягування"
+
+#
+msgid "ident 0 => forcing raw socket"
+msgstr "ident 0 => примусово raw сокет"
+
+#
+msgid "Only 'tsprespec' is allowed with intermediate hops"
+msgstr "З транзитом дозволено тільки 'tsprespec'"
+
+#
+msgid "Too many intermediate TS hops"
+msgstr "Надто багато проміжних TS адрес"
+
+#
+msgid "Too many intermediate hops"
+msgstr "Надто багато проміжних адрес"
+
+#
+msgid "max="
+msgstr "макс="
+
+#
+msgid "NodeInfo client is for IPv6 only"
+msgstr "Клієнт NodeInfo тільки для IPv6"
+
+#
+msgid "Cannot set NodeInfo option"
+msgstr "Неможливо встановити параметр для NodeInfo"
+
+#
+msgid "NodeInfo packet can only have a header"
+msgstr "Пакет NodeInfo може мати лише заголовок"
+
+#
+msgid "No goal"
+msgstr "Нема мети"
+
+#
+msgid ""
+"Do you want to ping broadcast? Then -b. If not, check your local firewall "
+"rules"
+msgstr ""
+"Хочете надіслати пінг на всю підмережу? Скористайтеся -b. Якщо ні, перевірте, "
+"чи правильно вказано правила вашого локального файрвола"
+
+#
+msgid "Pinging broadcast address"
+msgstr "Пінгування всієї підмережі"
+
+#
+msgid "Cannot set broadcasting"
+msgstr "Не вдалося встановити пінгування всієї підмережі"
+
+#
+msgid "getifaddrs() failed"
+msgstr "помилка getifaddrs()"
+
+#
+msgid "Cannot set multicast time-to-live"
+msgstr "Не вдалося встановити TTL для групової розсилки"
+
+#
+msgid "Cannot set unicast time-to-live"
+msgstr "Не вдалося встановити TTL"
+
+# %ld data bytes
+msgid "data bytes"
+msgstr "байтів даних"
+
+#
+msgid "(same route)"
+msgstr "(такий самий маршрут)"
+
+#
+msgid "absolute not-standard"
+msgstr "нестандартне абсолютне значення"
+
+#
+msgid "not-standard"
+msgstr "нестандартне значення"
+
+#
+msgid "absolute"
+msgstr "абсолютне значення"
+
+#
+msgid "Unrecorded hops"
+msgstr "Незаписаних переходів"
+
+#
+msgid "Echo Reply"
+msgstr "Луна-відповідь"
+
+#
+msgid "Destination Net Unreachable"
+msgstr "Мережа призначення недоступна"
+
+#
+msgid "Destination Host Unreachable"
+msgstr "Вузол призначення недоступний"
+
+#
+msgid "Destination Protocol Unreachable"
+msgstr "Протокол призначення недоступний"
+
+#
+msgid "Destination Port Unreachable"
+msgstr "Порт призначення недоступний"
+
+#
+msgid "Frag needed and DF set"
+msgstr "Потрібна фрагментація і встановлено DF"
+
+#
+msgid "Source Route Failed"
+msgstr "Помилка маршрутизації залежної від джерела"
+
+#
+msgid "Destination Net Unknown"
+msgstr "Невідома мережа призначення"
+
+#
+msgid "Destination Host Unknown"
+msgstr "Невідомий вузол призначення"
+
+#
+msgid "Source Host Isolated"
+msgstr "Ізольований вузол джерела"
+
+#
+msgid "Destination Net Prohibited"
+msgstr "Заборонена мережа призначення"
+
+#
+msgid "Destination Host Prohibited"
+msgstr "Заборонений вузол призначення"
+
+#
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "Мережа недоступна для ToS пакетів"
+
+#
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "Пункт призначення недоступний для ToS пакетів"
+
+#
+msgid "Packet filtered"
+msgstr "Пакет відфільтровано"
+
+#
+msgid "Precedence Violation"
+msgstr "Порушення першості"
+
+#
+msgid "Precedence Cutoff"
+msgstr "Обрізання першості"
+
+#
+msgid "Dest Unreachable"
+msgstr "Недоступний пункт призначення"
+
+#
+msgid "Bad Code"
+msgstr "Хибний код"
+
+#
+msgid "Source Quench"
+msgstr "Обрив зв'язку з джерелом"
+
+#
+msgid "Redirect Network"
+msgstr "Мережева переадресація"
+
+#
+msgid "Redirect Host"
+msgstr "Переадресація вузла"
+
+#
+msgid "Redirect Type of Service and Network"
+msgstr "Мережева переадресація служби ToS"
+
+#
+msgid "Redirect Type of Service and Host"
+msgstr "Переадресація вузла і служби ToS"
+
+#
+msgid "Redirect"
+msgstr "Переадресація"
+
+#
+msgid "New nexthop"
+msgstr "Новий наступний шлюз"
+
+#
+msgid "Echo Request"
+msgstr "Луна-запит"
+
+#
+msgid "Time to live exceeded"
+msgstr "Перевищено TTL"
+
+#
+msgid "Frag reassembly time exceeded"
+msgstr "Перевищено час перезбирання фрагментів"
+
+#
+msgid "Timestamp"
+msgstr "Часова позначка"
+
+#
+msgid "Timestamp Reply"
+msgstr "Відповідь з часовою позначкою"
+
+#
+msgid "Information Request"
+msgstr "Інформаційний запит"
+
+#
+msgid "Information Reply"
+msgstr "Інформаційна відповідь"
+
+#
+msgid "Address Mask Request"
+msgstr "Запит маски адреси"
+
+#
+msgid "Address Mask Reply"
+msgstr "Відповідь з маскою адреси"
+
+#
+msgid "Bad ICMP type"
+msgstr "Неправильний тип ICMP"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -993,13 +891,13 @@ msgstr "ВЗІРЕЦЬ"
 msgid "PAYLOAD"
 msgstr "НАВАНТАЖЕННЯ"
 
-#, c-format
-msgid "no answer yet for icmp_seq=%lu\n"
-msgstr "ще немає відповіді для icmp_seq=%lu\n"
+#
+msgid "No answer yet"
+msgstr "Відповіді ще немає"
 
 #
-msgid "probably, rcvbuf is not enough to hold preload"
-msgstr "ймовірно, rcvbuf замалий для попереднього завантаження"
+msgid "Probably, rcvbuf is not enough to hold preload"
+msgstr "Ймовірно, rcvbuf замалий для попереднього завантаження"
 
 #
 msgid "failed to set mark"
@@ -1009,223 +907,195 @@ msgstr "не вдалося встановити позначку"
 msgid "SO_MARK not supported"
 msgstr "SO_MARK не підтримується"
 
-#, c-format
-msgid ""
-"Cannot flood, minimal interval for user must be >= %u ms, use -i %.*f "
-"(or higher)"
-msgstr ""
-"Флуд неможливий, інтервал має бути не меньше ніж %u мс, тобто -i %.*f "
-"(або більше)"
+#
+msgid "Cannot flood"
+msgstr "Флуд неможливий"
 
-#, c-format
-msgid "illegal preload and/or interval: %d"
-msgstr "некоректне попереднє завантаження і/або інтервал: %d"
+#
+msgid "Minimal user interval must be >="
+msgstr "Мінімальний інтервал для користувача має бути >="
+
+#
+msgid "Illegal preload and/or interval"
+msgstr "Некоректне пре-завантаження і/або інтервал"
 
 #
 msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
 msgstr "немає підтримки SO_TIMESTAMP, використовуємо SIOCGSTAMP"
 
-#, c-format
-msgid "%s: time of day goes back (%ldus), taking countermeasures"
-msgstr "%s: відставання часу (%ldмкс), вживаємо контрзаходів"
+#
+msgid "Time of day goes back, taking countermeasures"
+msgstr "Відставання часу, вживаємо контрзаходів"
 
-#, c-format
-msgid "%zd bytes from %s:"
-msgstr "%zd байтів з %s:"
-
-#, c-format
-msgid " ident=%d"
-msgstr " ідент=%d"
-
-#, c-format
-msgid " ttl=%d"
-msgstr " ttl=%d"
+# %ld bytes
+msgid "bytes"
+msgstr "байтів"
 
 #
-msgid " (truncated)"
-msgstr " (обрізано)"
-
-#, c-format
-msgid " time=%ld ms"
-msgstr " час=%ld мс"
-
-#, c-format
-msgid " time=%ld.%01ld ms"
-msgstr " час=%ld.%01ld мс"
-
-#, c-format
-msgid " time=%ld.%02ld ms"
-msgstr " час=%ld.%02ld мс"
-
-#, c-format
-msgid " time=%ld.%03ld ms"
-msgstr " час=%ld.%03ld мс"
+msgid "icmp_seq="
+msgstr "номер="
 
 #
-msgid " (DUP!)"
-msgstr " (DUP!)"
+msgid "ident="
+msgstr "ідент="
 
 #
-msgid " (BAD CHECKSUM!)"
-msgstr " (ПОМИЛКОВА КОНТРОЛЬНА СУМА!)"
+msgid "ttl="
+msgstr "ттл="
 
 #
-msgid " (DIFFERENT ADDRESS!)"
-msgstr " (ІНША АДРЕСА!)"
-
-#, c-format
-msgid "wrong data byte #%zu should be 0x%x but was 0x%x"
-msgstr "помилковий байт даних %zu — має бути 0x%x, але маємо 0x%x"
-
-#, c-format
-msgid "--- %s ping statistics ---\n"
-msgstr "--- Статистика пінгування %s ---\n"
-
-#, c-format
-msgid "%ld packets transmitted, "
-msgstr "Надіслано %ld пакетів, "
-
-#, c-format
-msgid "%ld received"
-msgstr "отримано %ld"
-
-#, c-format
-msgid ", +%ld duplicates"
-msgstr ", +%ld дублікатів"
-
-#, c-format
-msgid ", +%ld corrupted"
-msgstr ", +%ld пошкоджено"
-
-#, c-format
-msgid ", +%ld errors"
-msgstr ", +%ld помилок"
-
-#, c-format
-msgid ", %g%% packet loss"
-msgstr ", %g%% пакетів втрачено"
-
-#, c-format
-msgid ", time %ldms"
-msgstr ", час %ldмс"
-
-#, c-format
-msgid "rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms"
-msgstr "затримка мін/сер/макс/відх = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld мс"
-
-#, c-format
-msgid "%spipe %d"
-msgstr "%sканал %d"
-
-#, c-format
-msgid "%sipg/ewma %d.%03d/%d.%03d ms"
-msgstr "%sIPG/EWMA %d.%03d/%d.%03d мс"
-
-#, c-format
-msgid "%ld/%ld packets, %d%% loss"
-msgstr "%ld/%ld пакетів, %d%% втрачено"
-
-#, c-format
-msgid ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
-msgstr ", мін/сер/EWMA/макс = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld мс"
-
-#, c-format
-msgid "no info\n"
-msgstr "немає інформації\n"
+msgid " time="
+msgstr " час="
 
 #
-msgid "[LOCALHOST]"
-msgstr "[ЛОКАЛЬНИЙ-ВУЗОЛ]"
-
-#, c-format
-msgid "%3ld.%03ldms "
-msgstr "%3ld.%03ldмс "
+msgid " ms"
+msgstr " мсек"
 
 #
-msgid "(This broken router returned corrupted payload) "
-msgstr "(Цей помилковий маршрутизатор повернув пошкоджені дані) "
+msgid "DUP"
+msgstr "ДУБЛЬ"
 
-#, c-format
-msgid "pmtu %d\n"
-msgstr "pmtu %d\n"
+#
+msgid "BAD CHECKSUM"
+msgstr "НЕПРАВИЛЬНА КОНТРОЛЬНА СУМА"
 
-#, c-format
-msgid "reached\n"
-msgstr "досягнуто\n"
+#
+msgid "DIFFERENT ADDRESS"
+msgstr "ІНША АДРЕСА"
 
-#, c-format
-msgid "asymm %2d "
-msgstr "асим %2d "
+#
+msgid "wrong byte #"
+msgstr "помилковий байт #"
+
+#
+msgid "extected 0x"
+msgstr "очікувалось 0x"
+
+#
+msgid "got 0x"
+msgstr "отримано 0x"
+
+# hostname ping statistics
+msgid " ping statistics"
+msgstr " пінг статистика"
+
+# %ld packets transmitted
+msgid "packets transmitted"
+msgstr "пакетів надіслано"
+
+# %ld received
+msgid "received"
+msgstr "отримано"
+
+# %ld duplicates
+msgid "duplicates"
+msgstr "дублікатів"
+
+# %ld corrupted
+msgid "corrupted"
+msgstr "пошкоджено"
+
+# %ld errors
+msgid "errors"
+msgstr "помилок"
+
+# %g%% packet loss
+msgid "packet loss"
+msgstr "пакетів втрачено"
+
+# time %ld ms
+msgid "time"
+msgstr "час"
+
+# rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
+msgid "rtt min/avg/max/mdev"
+msgstr "затримка мін/сер/макс/відх"
+
+# pipe %d
+msgid "pipe"
+msgstr "конвеєр"
+
+# ipg/ewma = %d.%03d/%d.%03d ms
+msgid "ipg/ewma"
+msgstr "IPG/EWMA"
+
+# %ld/%ld packets
+msgid "packets"
+msgstr "пакетів"
+
+# %d%% loss
+msgid "loss"
+msgstr "втрачено"
+
+# min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
+msgid "min/avg/ewma/max"
+msgstr "мін/сер/EWMA/макс"
+
+#
+msgid "No info"
+msgstr "Немає інформації"
+
+#
+msgid "LOCALHOST"
+msgstr "ЛОКАЛЬНИЙ-КОМП"
+
+#
+msgid "(This broken router returned corrupted payload)"
+msgstr "(Цей помилковий маршрутизатор повернув пошкоджені дані)"
+
+#
+msgid "pmtu"
+msgstr "PMTU"
+
+#
+msgid "reached"
+msgstr "досягнуто"
+
+#
+msgid "asymm"
+msgstr "асим"
 
 #
 msgid "NET ERROR"
 msgstr "ПОМИЛКА МЕРЕЖІ"
 
-#, c-format
-msgid "%2d?: reply received 8)\n"
-msgstr "%2d?: отримано відповідь 8)\n"
+#
+msgid "reply received 8"
+msgstr "отримано відповідь 8"
 
-#, c-format
-msgid "%2d:  send failed\n"
-msgstr "%2d:  помилка надсилання\n"
+#
+msgid "send failed"
+msgstr "помилка надсилання"
 
-#, c-format
-msgid ""
-"\n"
-"Usage\n"
-"  tracepath [options] <destination>\n"
-"\n"
-"Options:\n"
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -V             print version and exit\n"
-"  <destination>  DNS name or IP address\n"
-"\n"
-"For more details see tracepath(8)\n"
-msgstr ""
-"\n"
-"Користування\n"
-"  tracepath [параметри] <призначення>\n"
-"\n"
-"Параметри:\n"
-"  -4             використовувати IPv4\n"
-"  -6             використовувати IPv6\n"
-"  -b             виводити назву та адресу\n"
-"  -l <довжина>   довжина пакетів у байтах\n"
-"  -m <переходів> максимальна кількість переходів\n"
-"  -n             не використовувати DNS\n"
-"  -p <порт>      використовувати <порт> призначення\n"
-"  -V             вивести версію і завершити роботу\n"
-"  <призначення>  назва DNS або IP-адреса\n"
-"\n"
-"Докладніший опис можна знайти у tracepath(8)\n"
+#
+msgid "Mutually exclusive options"
+msgstr "Взаємовиключні опції"
 
-#, c-format
-msgid "Only one -%c or -%c option may be specified"
-msgstr "Можна вказувати лише один із параметрів (-%c або -%c)"
+#
+msgid "no reply"
+msgstr "немає відповіді"
 
-#, c-format
-msgid "%2d:  no reply\n"
-msgstr "%2d:  немає відповіді\n"
+#
+msgid "Resume"
+msgstr "Резюме"
 
-#, c-format
-msgid "     Resume: pmtu %d "
-msgstr "     Резюме: pmtu %d "
+#
+msgid "Too many hops"
+msgstr "Надто багато переходів"
 
-#, c-format
-msgid "hops %d "
-msgstr "переходів %d "
+#
+msgid "pmtu="
+msgstr "PMTU="
 
-#, c-format
-msgid "back %d "
-msgstr "назад %d "
+#
+msgid "hops="
+msgstr "переходів="
 
-#, c-format
-msgid "pktlen must be within: %d < value <= %d"
-msgstr "pktlen має відповідати умові: %d < значення <= %d"
+#
+msgid "back="
+msgstr "назад="
+
+#
+msgid "Packet length"
+msgstr "Довжина пакета"
 

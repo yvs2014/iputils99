@@ -87,8 +87,8 @@ unsigned long strtoul_or_err(const char *str, const char *errmesg,
 		if (!(errno || (str == end) || (end && *end))) {
 			if ((min <= num) && (num <= max))
 				return num;
-			errx(ERANGE, _("%s: '%s': out of range %lu-%lu"),
-			      errmesg, str, min, max);
+			errx(ERANGE, "%s: '%s': %s: %lu-%lu", errmesg, str,
+				_("out of range"), min, max);
 		}
 	}
 	err(errno ? errno : EXIT_FAILURE, "%s: '%s'", errmesg, str);
@@ -116,8 +116,8 @@ double strtod_or_err(const char *str, const char *errmesg,
 		if (!(errno || (str == end) || (end && *end))) {
 			if (isgreaterequal(num, min) && islessequal(num, max))
 				return num;
-			errx(ERANGE, _("%s: '%s': out of range %g - %g"),
-			      errmesg, str, min, max);
+			errx(ERANGE, "%s: '%s': %s: %g-%g", errmesg, str,
+				_("out of range"), min, max);
 		}
 	}
 	err(errno ? errno : EXIT_FAILURE, "%s: '%s'", errmesg, str);
@@ -131,9 +131,9 @@ unsigned parse_flow(const char *str) {
 	unsigned val = strtoul(str + dx, &ep, dx ? 16 : 10);
 	/* doesn't look like decimal or hex, eh? */
 	if (ep && *ep)
-		errx(EINVAL, _("bad value for flowinfo: %s"), str);
+		errx(EINVAL, "%s: %s", _("Bad value for flowinfo"), str);
 	if (val & ~IPV6_FLOWINFO_FLOWLABEL)
-		errx(EINVAL, _("flow value is greater than 20 bits: %s"), str);
+		errx(EINVAL, "%s: %s", _("Flow value is greater than 20 bits"), str);
 	return val;
 }
 
@@ -145,9 +145,11 @@ unsigned char parse_tos(const char *str) {
 	unsigned long tos = strtoul(str + dx, &ep, dx ? 16 : 10);
 	/* doesn't look like decimal or hex, eh? */
 	if (ep && *ep)
-		errx(EINVAL, _("bad TOS value: %s"), str);
+		errx(EINVAL, "%s: %s", _("Bad TOS value"), str);
 	if (tos > UCHAR_MAX)
-		errx(EINVAL, _("the decimal value of TOS bits must be in range 0-255: %lu"), tos);
+		errx(EINVAL, "%s: %lu",
+			_("Decimal value of TOS bits must be in range 0-255"),
+			tos);
 	return tos;
 }
 #undef DX_SHIFT
@@ -155,7 +157,7 @@ unsigned char parse_tos(const char *str) {
 inline unsigned if_name2index(const char *ifname) {
 	unsigned rc = if_nametoindex(ifname);
 	if (!rc)
-		errx(EINVAL, _("unknown iface: %s"), ifname);
+		errx(EINVAL, "%s: %s", _("Unknown network interface"), ifname);
 	return rc;
 }
 
@@ -186,20 +188,20 @@ inline void setsock_noloop(int fd, bool ip6) {
 	if (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
 		ip6 ? IPV6_MULTICAST_LOOP : IP_MULTICAST_LOOP,
 		&off, sizeof(off)) < 0)
-			err(errno, _("cannot disable multicast loopback"));
+			err(errno, "%s", _("Cannot disable multicast loopback"));
 }
 
 void setsock_ttl(int fd, bool ip6, int ttl) {
 	int level = ip6 ? IPPROTO_IPV6 : IPPROTO_IP;
 	if (setsockopt(fd, level, ip6 ? IPV6_MULTICAST_HOPS : IP_MULTICAST_TTL,
 		&ttl, sizeof(ttl)) < 0)
-			err(errno, _("cannot set multicast time-to-live"));
+			err(errno, "%s", _("Cannot set multicast time-to-live"));
 	int uni = ip6 ? ttl : 1;
 	if (setsockopt(fd, level, ip6 ? IPV6_UNICAST_HOPS : IP_TTL,
 		&uni, sizeof(uni)) < 0)
-			err(errno, ip6 ?
-		_("cannot set unicast hop limit") :
-		_("cannot set unicast time-to-live"));
+			err(errno, "%s", ip6 ?
+		_("Cannot set unicast hop limit") :
+		_("Cannot set unicast time-to-live"));
 }
 
 void pmtu_interval(state_t *rts) {
@@ -210,19 +212,18 @@ void pmtu_interval(state_t *rts) {
 #ifdef ENABLE_NLS
 			setlocale(LC_NUMERIC, "C");
 #endif
-			errx(EINVAL,
-				_("%s for user must be >= %u ms, use -i %.*f (or higher)"),
-				_(rts->ip6 ?
-					"Minimal interval for multicast ping" :
-					"Minimal interval for broadcast ping"),
-				MIN_MCAST_MS, MS2LEN(MIN_MCAST_MS % 1000), MIN_MCAST_MS / 1000.);
+			errx(EINVAL, "%s %u%s, %s", _(rts->ip6 ?
+				"Minimal user interval for multicast ping must be >=" :
+				"Minimal user interval for broadcast ping must be >="),
+				MIN_MCAST_MS, _(" ms"), _("see -i option for details"));
 #ifdef ENABLE_NLS
 			setlocale(LC_NUMERIC, ""); // for symmetry
 #endif
 		}
 		if ((rts->pmtudisc >= 0) && (rts->pmtudisc != pmtudo))
-			errx(EINVAL, _("%s does not fragment"), _(rts->ip6 ?
-				"Multicast ping" : "Broadcast ping"));
+			errx(EINVAL, "%s %s", _(rts->ip6 ?
+				"Multicast ping" : "Broadcast ping"),
+				_("does not fragment"));
 	}
 	if (rts->pmtudisc < 0)
 		rts->pmtudisc = pmtudo;
@@ -288,7 +289,7 @@ void cmp_srcdev(const state_t *rts) {
 	// called once before loop
 	struct ifaddrs *list = NULL;
 	if (getifaddrs(&list))
-		err(errno, _("getifaddrs failed"));
+		err(errno, "%s", _("getifaddrs() failed"));
 	uint16_t af = rts->ip6 ? AF_INET6 : AF_INET;
 	size_t len  = rts->ip6 ? 16 : 4;
 	size_t off  = rts->ip6 ?
@@ -303,7 +304,8 @@ void cmp_srcdev(const state_t *rts) {
 			break;
 	}
 	if (!ifa)
-		warnx(_("%s: source address might be selected on device other than: %s"),
+		warnx("%s: %s %s",
+			_("Source address might be selected on device other than:"),
 			_WARN, rts->device);
 	if (list)
 		freeifaddrs(list);
@@ -331,7 +333,8 @@ void set_estimate_buf(state_t *rts, int fd,
 	int rcvbuf = hold;
 	if (!getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &hold, &size))
 		if (hold < rcvbuf)
-			warnx("%s: %s", _WARN, _("probably, rcvbuf is not enough to hold preload"));
+			warnx("%s: %s", _WARN,
+				_("Probably, rcvbuf is not enough to hold preload"));
 }
 
 // func_set:receive_error:print_addr_seq
@@ -345,8 +348,9 @@ void print_addr_seq(const state_t *rts, uint16_t seq,
 	else {
 		PRINT_TIMESTAMP;
 		const void *sa = ee + 1;
-		printf(_("From %s icmp_seq=%u "),
-			sprint_addr(sa, salen, rts->opt.resolve), seq);
+		printf("%s %s: %s=%u ",
+			_("From"), sprint_addr(sa, salen, rts->opt.resolve),
+			_("icmp_seq="), seq);
 		if (rts->ip6) {
 			print6_icmp(ee->ee_type, ee->ee_code, ee->ee_info);
 			putchar('\n');
@@ -361,8 +365,8 @@ inline void print_local_ee(const state_t *rts, const struct sock_extended_err *e
 	if (rts->opt.flood)
 		write(STDOUT_FILENO, "E", 1);
 	else if (ee->ee_errno != EMSGSIZE)
-		warnx(_("local error"));
+		warnx("%s", _("Local error"));
 	else
-		warnx(_("local error: message too long, mtu: %u"), ee->ee_info);
+		warnx("%s: %s: mtu=%u", _("Local error"), _("Message too long"), ee->ee_info);
 }
 

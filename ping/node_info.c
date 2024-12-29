@@ -184,7 +184,7 @@ int niquery_check_nonce(struct ping_ni *ni, uint8_t *nonce)
 static int niquery_set_qtype(struct ping_ni *ni, int type)
 {
 	if (niquery_is_enabled(ni) && ni->query != type) {
-		printf(_("Qtype conflict\n"));
+		printf("%s\n", _("Qtype conflict"));
 		return -1;
 	}
 	ni->query = type;
@@ -236,7 +236,7 @@ int niquery_is_subject_valid(struct ping_ni *ni)
 static int niquery_set_subject_type(struct ping_ni *ni, int type)
 {
 	if (niquery_is_subject_valid(ni) && ni->subject_type != type) {
-		printf(_("Subject type conflict\n"));
+		printf("%s\n", _("Subject type conflict"));
 		return -1;
 	}
 	ni->subject_type = type;
@@ -321,7 +321,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 	{ // glibc: internal libidn2 lookup
 	  int rc = __idna_to_dns_encoding(name, &idn);
 	  if (rc)
-		errx(EINVAL, _("IDN encoding error: %s"), gai_strerror(rc)); }
+		errx(EINVAL, "%s: %s", _("IDN encoding error"), gai_strerror(rc)); }
 #else
 	idn = strdup(name);
 	if (!idn)
@@ -332,7 +332,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 	if (p) {
 		*p = '\0';
 		if (strlen(p + 1) >= IFNAMSIZ)
-			errx(EXIT_FAILURE, _("too long scope name"));
+			errx(EXIT_FAILURE, "%s", _("Too long scope name"));
 	}
 
 	namelen = strlen(idn);
@@ -356,7 +356,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 					   plus non-fqdn indicator. */
 	buf = malloc(buflen);
 	if (!buf) {
-		warn(_("memory allocation failed"));
+		warn("%s", _("Memory allocation failed"));
 		goto errexit;
 	}
 
@@ -368,10 +368,10 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 
 	n = dn_comp(canonname, (unsigned char *)buf, buflen, dnptrs, lastdnptr);
 	if (n < 0) {
-		warnx(_("inappropriate subject name: %s"), canonname);
+		warnx("%s: %s", _("Inappropriate subject name"), canonname);
 		goto errexit;
 	} else if ((size_t)n >= buflen) {
-		warnx(_("dn_comp() returned too long result"));
+		warnx("%s", _("dn_comp() returned too long result"));
 		goto errexit;
 	}
 
@@ -398,7 +398,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 
 	return 0;
 oomexit:
-	warn(_("memory allocation failed"));
+	warn("%s", _("Memory allocation failed"));
 errexit:
 	free(buf);
 	free(canonname);
@@ -407,29 +407,31 @@ errexit:
 }
 
 int niquery_option_help_handler(struct ping_ni *ni __attribute__((__unused__)),
-				int index,
-				const char *arg __attribute__((__unused__)))
+	int index, const char *arg __attribute__((__unused__)))
 {
 	fprintf(index ? stdout : stderr,
-		      _("ping -6 -N <nodeinfo opt>\n"
-			"Help:\n"
-			"  help\n"
-			"Query:\n"
-			"  name\n"
-			"  ipv6\n"
-			"  ipv6-all\n"
-			"  ipv6-compatible\n"
-			"  ipv6-global\n"
-			"  ipv6-linklocal\n"
-			"  ipv6-sitelocal\n"
-			"  ipv4\n"
-			"  ipv4-all\n"
-			"Subject:\n"
-			"  subject-ipv6=addr\n"
-			"  subject-ipv4=addr\n"
-			"  subject-name=name\n"
-			"  subject-fqdn=name\n"
-		));
+"Nodeinfo options\n"
+"\n"
+"Query:\n"
+"  name\n"
+"  ipv6\n"
+"  ipv6-all\n"
+"  ipv6-compatible\n"
+"  ipv6-global\n"
+"  ipv6-linklocal\n"
+"  ipv6-sitelocal\n"
+"  ipv4\n"
+"  ipv4-all\n"
+"\n"
+"Subject:\n"
+"  subject-ipv6=addr\n"
+"  subject-ipv4=addr\n"
+"  subject-name=name\n"
+"  subject-fqdn=name\n"
+"\n"
+"Help:\n"
+"  help\n"
+);
 	exit(index ? EXIT_SUCCESS : EINVAL);
 }
 

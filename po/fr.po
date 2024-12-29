@@ -15,16 +15,27 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.3\n"
 
-#, c-format
+# iputils99 edition
+
+#
+msgid "Usage"
+msgstr "Utilisation"
+
+#
+msgid "[options] <destination>"
+msgstr ""
+
+#
+msgid "Options"
+msgstr ""
+
+#
+msgid "For more details see"
+msgstr "Pour plus de détails, consultez"
+
+# arping options
 msgid ""
-"\n"
-"Usage:\n"
-"  arping [options] <destination>\n"
-"\n"
-"Options:\n"
 "  -f            quit on first reply\n"
 "  -q            be quiet\n"
 "  -b            keep on broadcasting, do not unicast\n"
@@ -35,13 +46,10 @@ msgid ""
 "  -c <count>    how many packets to send\n"
 "  -w <timeout>  how long to wait for a reply\n"
 "  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use"
+"  -I <device>   which ethernet device to use\n"
+"  -s <source>   source IP address\n"
+"  <destination> DNS name or IP address\n"
 msgstr ""
-"\n"
-"Utilisation :\n"
-"  arping [options] <destination>\n"
-"\n"
-"Options :\n"
 "  -f            quitter dès la première réponse\n"
 "  -q            être silencieux\n"
 "  -b            continuer à diffuser, ne pas diffuser en monodiffusion\n"
@@ -53,903 +61,36 @@ msgstr ""
 "  -w <timeout>  temps à attendre la réponse\n"
 "  -i <interval> définir l’intervalle entre les paquets (par défaut : "
 "1 seconde)\n"
-"  -I <device>   périphérique Ethernet à utiliser"
-
-#, c-format
-msgid ""
-"\n"
-"  -s <source>   source IP address\n"
-"  <destination> DNS name or IP address\n"
-"\n"
-"For more details see arping(8)\n"
-msgstr ""
-"\n"
+"  -I <device>   périphérique Ethernet à utiliser\n"
 "  -s <source>   adresse IP source\n"
 "  <destination> nom DNS ou adresse IP\n"
-"\n"
-"Pour plus de détails, consultez arping(8)\n"
 
-#: arping.c:305
-#, c-format
-msgid "Sent %d probes (%d broadcast(s))\n"
-msgstr "%d sondes envoyées (%d diffusion(s))\n"
-
-#: arping.c:306
-#, c-format
-msgid "Received %d response(s)"
-msgstr "%d réponse(s) reçue(s)"
-
-#: arping.c:310
-#, c-format
-msgid "%d request(s)"
-msgstr "%d requête(s)"
-
-#: arping.c:312
-#, c-format
-msgid "%s%d broadcast(s)"
-msgstr "%s%d diffusion(s)"
-
-#: arping.c:415
-msgid "Unicast"
-msgstr "Monodiffusion"
-
-#: arping.c:415
-msgid "Broadcast"
-msgstr "Diffusion"
-
-#: arping.c:416
-#, c-format
-msgid "%s from "
-msgstr "%s de "
-
-#: arping.c:416
-msgid "reply"
-msgstr "réponse"
-
-#: arping.c:416
-msgid "request"
-msgstr "requête"
-
-#: arping.c:421
-#, c-format
-msgid "for %s "
-msgstr "pour %s "
-
-#: arping.c:426
-#, c-format
-msgid "for "
-msgstr "pour "
-
-#: arping.c:436
-#, c-format
-msgid " %ld.%03ldms\n"
-msgstr " %ld.%03ld ms\n"
-
-#: arping.c:438
-#, c-format
-msgid " UNSOLICITED?\n"
-msgstr " NON SOLLICITÉ ?\n"
-
-#: arping.c:589
-#, c-format
-msgid "Interface \"%s\" is down\n"
-msgstr "L’interface « %s » est inactive\n"
-
-#: arping.c:597
-#, c-format
-msgid "Interface \"%s\" is not ARPable\n"
-msgstr "L’interface « %s » n’est pas ARPable\n"
-
-#: arping.c:690
-msgid "using default broadcast address"
-msgstr "utilisation de l’adresse de diffusion par défaut"
-
-#: arping.c:901 arping.c:904 arping.c:907 ping/ping.c:378 ping/ping.c:425
-#: ping/ping.c:477 ping/ping.c:485 ping/ping.c:531 ping/ping.c:534
-#: ping/ping.c:537 ping/ping.c:551 tracepath.c:473 tracepath.c:476
-#: tracepath.c:479 tracepath.c:501
-msgid "invalid argument"
-msgstr "paramètre invalide"
-
-#: arping.c:974
-#, c-format
-msgid "Device %s not available."
-msgstr "Périphérique %s non disponible."
-
-#: arping.c:975
-msgid "Suitable device could not be determined. Please, use option -I."
-msgstr ""
-"Le périphérique approprié n'a pas pu être déterminé. Veuillez utiliser "
-"l'option -l."
-
-#: arping.c:995
-msgid "interface is ignored"
-msgstr "l’interface est ignorée"
-
-#: arping.c:1038
-#, c-format
-msgid "Interface \"%s\" is not ARPable (no ll address)\n"
-msgstr "L’interface « %s » n’est pas ARPable (pas d’adresse ll)\n"
-
-#: arping.c:1047
-#, c-format
-msgid "ARPING %s "
-msgstr "ARPING %s "
-
-#: arping.c:1048
-#, c-format
-msgid "from %s %s\n"
-msgstr "de %s %s\n"
-
-#: arping.c:1052
-msgid "no source address in not-DAD mode"
-msgstr "il n'y a pas d'adresse source en mode non-DAD"
-
-#: clockdiff.c:242
-#, c-format
-msgid "Wrong timestamp %d\n"
-msgstr "Mauvais timestamp %d\n"
-
-#: clockdiff.c:247
-#, c-format
-msgid "Overflow %d hops\n"
-msgstr "Dépasse %d sauts\n"
-
-#: clockdiff.c:272
-#, c-format
-msgid "wrong timestamps\n"
-msgstr "mauvais timestamps\n"
-
-#, c-format
+# clockdiff options
 msgid ""
-"\n"
-"Usage:\n"
-"  clockdiff [options] <destination>\n"
-"\n"
-"Options:\n"
 "                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
 "  -o            use IP timestamp and icmp echo\n"
 "  -o1           use three-term IP timestamp and icmp echo\n"
 "  -T, --time-format <ctime|iso>\n"
-"                  specify display time format, ctime is the default\n"
+"                specify display time format, ctime is the default\n"
 "  -I            alias of --time-format=iso\n"
 "  -h, --help    display this help\n"
 "  -V, --version print version and exit\n"
 "  <destination> DNS name or IP address\n"
-"\n"
-"For more details see clockdiff(8)\n"
 msgstr ""
-"\n"
-"Utilisation :\n"
-"  clockdiff [options] <destination>\n"
-"\n"
-"Options :\n"
 "                sans -o, utilise uniquement le timestamp ICMP (voir RFC0792, "
 "page 16)\n"
 "  -o            utiliser le timestamp IP et ICMP echo\n"
 "  -o1           utiliser le timestamp IP three-term et ICMP echo\n"
 "  -T, --time-format <ctime|iso>\n"
-"                  spécifier le format d’affichage du temps, par défaut ctime "
+"                spécifier le format d’affichage du temps, par défaut ctime "
 "est utilisé\n"
 "  -I            alias de --time-format=iso\n"
 "  -h, --help    afficher cette aide\n"
 "  -V, --version afficher la version et quitter\n"
 "  <destination> nom DNS ou adresse IP\n"
-"\n"
-"Pour plus de détails, consultez clockdiff(8)\n"
 
-#: clockdiff.c:592
-msgid "measure: unknown failure"
-msgstr "mesure : échec inconnu"
-
-#: clockdiff.c:597
-#, c-format
-msgid "%s is down"
-msgstr "%s est inactif"
-
-#: clockdiff.c:600
-#, c-format
-msgid "%s time transmitted in a non-standard format"
-msgstr "temps %s transmis est dans un format non standard"
-
-#: clockdiff.c:603
-#, c-format
-msgid "%s is unreachable"
-msgstr "%s est injoignable"
-
-#: clockdiff.c:622
-#, c-format
+# ping options
 msgid ""
-"\n"
-"host=%s rtt=%ld(%ld)ms/%ldms delta=%dms/%dms %s\n"
-msgstr ""
-"\n"
-"hôte=%s rtt=%ld (%ld) ms/%ld ms delta=%d ms/%d ms %s\n"
-
-#: ping/node_info.c:169
-#, c-format
-msgid "Qtype conflict\n"
-msgstr "Conflit de qtype\n"
-
-#: ping/node_info.c:221
-#, c-format
-msgid "Subject type conflict\n"
-msgstr "Conflit de type de sujet\n"
-
-#: ping/node_info.c:312
-#, c-format
-msgid "IDN encoding error: %s"
-msgstr "Erreur d’encodage IDN : %s"
-
-#: ping/node_info.c:323
-msgid "too long scope name"
-msgstr "le nom d'étendue est trop long"
-
-#: ping/node_info.c:347 ping/node_info.c:389 ping/ping6_common.c:309
-#: ping/ping.c:518 ping/ping.c:580 ping/ping.c:1021
-msgid "memory allocation failed"
-msgstr "échec de l’allocation de mémoire"
-
-#: ping/node_info.c:359
-#, c-format
-msgid "inappropriate subject name: %s"
-msgstr "le nom sur sujet est inapproprié : %s"
-
-#: ping/node_info.c:362
-msgid "dn_comp() returned too long result"
-msgstr "dn_comp() a renvoyé un résultat trop long"
-
-#: ping/node_info.c:402
-#, c-format
-msgid ""
-"ping -6 -N <nodeinfo opt>\n"
-"Help:\n"
-"  help\n"
-"Query:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Subject:\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=name\n"
-"  subject-fqdn=name\n"
-msgstr ""
-"ping -6 -N <nodeinfo opt>\n"
-"Aide :\n"
-"  help\n"
-"Requête :\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Sujet :\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=nom\n"
-"  subject-fqdn=nom\n"
-
-#: ping/ping6_common.c:99 ping/ping.c:708
-#, c-format
-msgid "unknown iface: %s"
-msgstr "interface inconnue : %s"
-
-#: ping/ping6_common.c:146
-msgid "scope discrepancy among the nodes"
-msgstr "écart d'étendue entre les nœuds"
-
-#: ping/ping6_common.c:226 ping/ping.c:878
-#, c-format
-msgid "%s: source address might be selected on device other than: %s"
-msgstr ""
-"%s : l'adresse source pourrait être sélectionnée sur un périphérique autre que"
-" : %s"
-
-#
-msgid "Minimal interval for multicast ping"
-msgstr "L'intervalle minimal de ping multidiffusion"
-
-#
-msgid "Minimal interval for broadcast ping"
-msgstr "L'intervalle minimal de ping diffusé"
-
-#, c-format
-msgid "%s for user must be >= %u ms, use -i %.*f (or higher)"
-msgstr "%s pour l'utilisateur doit être >=%u ms, utilisez -i %.*f (ou plus)"
-
-#
-msgid "Multicast ping"
-msgstr "Le ping multidiffusion"
-
-#
-msgid "Broadcast ping"
-msgstr "Le ping diffusé"
-
-#, c-format
-msgid "%s does not fragment"
-msgstr "%s ne fragmente pas"
-
-#: ping/ping6_common.c:331
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "setsockopt(RAW_CHECKSUM) a échoué - essayez de continuer"
-
-#: ping/ping6_common.c:362
-msgid "cannot set multicast hop limit"
-msgstr "impossible de définir la limite de saut de multidiffusion"
-
-#: ping/ping6_common.c:365
-msgid "cannot set unicast hop limit"
-msgstr "impossible de définir de limite de saut de monodiffusion"
-
-#: ping/ping6_common.c:377
-msgid "cannot receive hop limit"
-msgstr "impossible de recevoir la limite de saut"
-
-#: ping/ping6_common.c:391
-msgid "cannot set flowlabel"
-msgstr "impossible de définir le label de flux"
-
-#: ping/ping6_common.c:395
-msgid "cannot send flowinfo"
-msgstr "impossible d'envoyer l'information de flux"
-
-#: ping/ping6_common.c:398 ping/ping.c:1023
-#, c-format
-msgid "PING %s (%s) "
-msgstr "PING %s (%s) "
-
-#: ping/ping6_common.c:400
-#, c-format
-msgid ", flow 0x%05x, "
-msgstr ", flux 0x%05x, "
-
-#: ping/ping6_common.c:405 ping/ping.c:1025
-#, c-format
-msgid "from %s %s: "
-msgstr "de %s %s : "
-
-#: ping/ping6_common.c:423
-#, c-format
-msgid "Destination unreachable: "
-msgstr "Destination injoignable : "
-
-#: ping/ping6_common.c:426
-#, c-format
-msgid "No route"
-msgstr "Aucune route"
-
-#: ping/ping6_common.c:429
-#, c-format
-msgid "Administratively prohibited"
-msgstr "Interdit administrativement"
-
-#: ping/ping6_common.c:432
-#, c-format
-msgid "Beyond scope of source address"
-msgstr "Dépassement de l’étendue de l’adresse source"
-
-#: ping/ping6_common.c:435
-#, c-format
-msgid "Address unreachable"
-msgstr "Adresse injoignable"
-
-#: ping/ping6_common.c:438
-#, c-format
-msgid "Port unreachable"
-msgstr "Port injoignable"
-
-#: ping/ping6_common.c:441
-#, c-format
-msgid "Source address failed ingress/egress policy"
-msgstr "Échec de la stratégie d'entrée/sortie de l'adresse source"
-
-#: ping/ping6_common.c:444
-#, c-format
-msgid "Reject route to destination"
-msgstr "Rejeter la route vers la destination"
-
-#: ping/ping6_common.c:447
-#, c-format
-msgid "Unknown code %d"
-msgstr "Code %d inconnu"
-
-#: ping/ping6_common.c:452
-#, c-format
-msgid "Packet too big: mtu=%u"
-msgstr "Le paquet est trop gros : mtu=%u"
-
-#: ping/ping6_common.c:454
-#, c-format
-msgid ", code=%d"
-msgstr ", code=%d"
-
-#: ping/ping6_common.c:457
-#, c-format
-msgid "Time exceeded: "
-msgstr "Temps dépassé : "
-
-#
-msgid "Hop limit"
-msgstr "Limite de saut"
-
-#
-msgid "Defragmentation failure"
-msgstr "Échec de la défragmentation"
-
-#, c-format
-msgid "code %d"
-msgstr "code %d"
-
-#
-msgid "Parameter problem: "
-msgstr "Problème de paramètre : "
-
-#
-msgid "Wrong header field"
-msgstr "Champ d'entête incorrect"
-
-#
-msgid "Unknown header"
-msgstr "Entête inconnu"
-
-#
-msgid "Unknown option"
-msgstr "Option inconnue"
-
-#, c-format
-msgid " at %u"
-msgstr " à %u"
-
-#
-msgid "Echo request"
-msgstr "Requête Echo"
-
-#: ping/ping6_common.c:481
-#, c-format
-msgid "Echo reply"
-msgstr "Réponse Echo"
-
-#: ping/ping6_common.c:484
-#, c-format
-msgid "MLD Query"
-msgstr "Requête MLD"
-
-#
-msgid "MLD Report"
-msgstr "Rapport MLD"
-
-#
-msgid "MLD Reduction"
-msgstr "Réduction MLD"
-
-#
-msgid "Unknown icmp type"
-msgstr "Type ICMP inconnu"
-
-#
-msgid "local error"
-msgstr "erreur locale"
-
-#, c-format
-msgid "local error: message too long, mtu: %u"
-msgstr "erreur locale : le message est trop long : %u"
-
-#, c-format
-msgid "From %s icmp_seq=%u "
-msgstr "De %s icmp_seq=%u "
-
-#: ping/ping6_common.c:677 ping/ping.c:1592
-#, c-format
-msgid " icmp_seq=%u"
-msgstr " icmp_seq=%u"
-
-#: ping/ping6_common.c:701 ping/ping6_common.c:762
-#, c-format
-msgid " parse error (too short)"
-msgstr " erreur d’analyse (trop court)"
-
-#: ping/ping6_common.c:715 ping/ping6_common.c:771
-#, c-format
-msgid " parse error (truncated)"
-msgstr " erreur d’analyse (tronqué)"
-
-#: ping/ping6_common.c:775
-#, c-format
-msgid " unexpected error in inet_ntop(%s)"
-msgstr " erreur inattendue dans inet_ntop (%s)"
-
-#: ping/ping6_common.c:803
-#, c-format
-msgid " unknown qtype(0x%02x)"
-msgstr " qtype inconnu (0x%02x)"
-
-#: ping/ping6_common.c:807
-#, c-format
-msgid " refused"
-msgstr " refusé"
-
-#: ping/ping6_common.c:810
-#, c-format
-msgid " unknown"
-msgstr " inconnu"
-
-#: ping/ping6_common.c:813
-#, c-format
-msgid " unknown code(%02x)"
-msgstr " code inconnu (%02x)"
-
-#: ping/ping6_common.c:815
-#, c-format
-msgid "; seq=%u;"
-msgstr "; seq=%u ;"
-
-#: ping/ping6_common.c:856
-#, c-format
-msgid "packet too short: %d bytes"
-msgstr "paquet trop court : %d bytes"
-
-#: ping/ping6_common.c:923 ping/ping.c:1721
-#, c-format
-msgid "From %s: "
-msgstr "De %s : "
-
-#
-msgid "WARNING"
-msgstr "AVERTISSEMENT"
-
-#: ping/ping6_common.c:964 ping/ping.c:1826
-msgid "failed to install socket filter"
-msgstr "échec de l’installation du filtre de socket"
-
-#: ping/ping.c:96 ping/ping.c:684
-#, c-format
-msgid "unknown protocol family: %d"
-msgstr "famille de protocole inconnue : %d"
-
-#: ping/ping.c:111
-#, c-format
-msgid "unknown sock type: %d"
-msgstr "Type de socket inconnu : %d"
-
-#: ping/ping.c:198
-msgid "=> missing cap_net_raw+p capability or setuid?"
-msgstr "=> capacité cap_net_raw+p ou setuid manquante ?"
-
-#: ping/ping.c:272
-#, c-format
-msgid "bad value for flowinfo: %s"
-msgstr "mauvaise valeur pour les information de flux : %s"
-
-#: ping/ping.c:275
-#, c-format
-msgid "flow value is greater than 20 bits: %s"
-msgstr "la valeur de flux est plus grande que 20 bits : %s"
-
-#, c-format
-msgid "bad TOS value: %s"
-msgstr "mauvaise valeur de TOS : %s"
-
-#, c-format
-msgid "the decimal value of TOS bits must be in range 0-255: %lu"
-msgstr "la valeur décimale des bits TOS doit être entre 0 et 255 : %lu"
-
-#, c-format
-msgid "invalid timestamp type: %s"
-msgstr "type de timestamp invalide : %s"
-
-#: ping/ping.c:443
-msgid "bad timing interval"
-msgstr "mauvais intervalle de timing"
-
-#, c-format
-msgid "cannot copy: %s"
-msgstr "impossible de copier : %s"
-
-#, c-format
-msgid "invalid source address: %s"
-msgstr "adresse source invalide : %s"
-
-#: ping/ping.c:479
-#, c-format
-msgid "cannot set preload to value greater than 3: %d"
-msgstr ""
-"impossible de définir une valeur de préchargement plus grande que 3 : %d"
-
-#: ping/ping.c:498
-#, c-format
-msgid "invalid -M argument: %s"
-msgstr "paramètre -M invalide : %s"
-
-#: ping/ping.c:557
-msgid "bad linger time"
-msgstr "mauvais temps de persistance"
-
-#: ping/ping.c:595
-msgid "ident 0 => forcing raw socket"
-msgstr "ident 0 => raw socket forcé"
-
-#
-msgid "No goal"
-msgstr "Aucun objectif"
-
-#: ping/ping.c:841
-msgid ""
-"Do you want to ping broadcast? Then -b. If not, check your local firewall "
-"rules"
-msgstr ""
-"Vous voulez faire un ping broadcast ? Alors utilisez -b, sinon veuillez "
-"vérifier les règles de votre pare-feu local."
-
-#: ping/ping.c:842
-msgid "pinging broadcast address"
-msgstr "ping de l’adresse de diffusion"
-
-#: ping/ping.c:845 ping/ping.c:1001
-msgid "cannot set broadcasting"
-msgstr "impossible de définir la multidiffusion"
-
-#: ping/ping.c:866
-msgid "getifaddrs failed"
-msgstr "échec de getifaddrs"
-
-#: ping/ping.c:1007
-msgid "cannot disable multicast loopback"
-msgstr "impossible de désactiver la boucle de retour pour la multidiffusion"
-
-#: ping/ping.c:1012
-msgid "cannot set multicast time-to-live"
-msgstr "impossible de définir la durée de vie de la multidiffusion"
-
-#: ping/ping.c:1014
-msgid "cannot set unicast time-to-live"
-msgstr "impossible de définir la durée de vie de la monodiffusion"
-
-#, c-format
-msgid "%zu(%zu) data bytes"
-msgstr "%zu(%zu) octets de données"
-
-#
-msgid "(same route)"
-msgstr "(route identique)"
-
-#
-msgid "absolute not-standard"
-msgstr "absolut non standard"
-
-#
-msgid "not-standard"
-msgstr "non standard"
-
-#
-msgid "absolute"
-msgstr "absolut"
-
-#
-msgid "Unrecorded hops"
-msgstr "Sauts non comptabilités"
-
-#: ping/ping.c:1242
-#, c-format
-msgid "Echo Reply"
-msgstr "Réponse Echo"
-
-#: ping/ping.c:1248
-#, c-format
-msgid "Destination Net Unreachable"
-msgstr "Réseau de destination injoignable"
-
-#: ping/ping.c:1251
-#, c-format
-msgid "Destination Host Unreachable"
-msgstr "Hôte de destination injoignable"
-
-#: ping/ping.c:1254
-#, c-format
-msgid "Destination Protocol Unreachable"
-msgstr "Protocole de destination injoignable"
-
-#: ping/ping.c:1257
-#, c-format
-msgid "Destination Port Unreachable"
-msgstr "Port de destination injoignable"
-
-#: ping/ping.c:1260
-#, c-format
-msgid "Frag needed and DF set (mtu = %u)"
-msgstr "Fragmentation nécessaire et DF est défini (mtu = %u)"
-
-#: ping/ping.c:1263
-#, c-format
-msgid "Source Route Failed"
-msgstr "Échec de la route source"
-
-#: ping/ping.c:1266
-#, c-format
-msgid "Destination Net Unknown"
-msgstr "Réseau de destination inconnu"
-
-#: ping/ping.c:1269
-#, c-format
-msgid "Destination Host Unknown"
-msgstr "Hôte de destination inconnu"
-
-#: ping/ping.c:1272
-#, c-format
-msgid "Source Host Isolated"
-msgstr "Hôte source isolé"
-
-#: ping/ping.c:1275
-#, c-format
-msgid "Destination Net Prohibited"
-msgstr "Réseau de destination interdit"
-
-#: ping/ping.c:1278
-#, c-format
-msgid "Destination Host Prohibited"
-msgstr "Hôte de destination interdit"
-
-#: ping/ping.c:1281
-#, c-format
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "Réseau de destination injoignable pour Type de service"
-
-#: ping/ping.c:1284
-#, c-format
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "Hôte de destination injoignable pour Type de service"
-
-#: ping/ping.c:1287
-#, c-format
-msgid "Packet filtered"
-msgstr "Paquet filtré"
-
-#: ping/ping.c:1290
-#, c-format
-msgid "Precedence Violation"
-msgstr "Violation de priorité"
-
-#: ping/ping.c:1293
-#, c-format
-msgid "Precedence Cutoff"
-msgstr "Coupure de priorité"
-
-#: ping/ping.c:1296
-#, c-format
-msgid "Dest Unreachable, Bad Code: %d"
-msgstr "Destination injoignable, mauvais code : %d"
-
-#: ping/ping.c:1303
-#, c-format
-msgid "Source Quench"
-msgstr "Terminaison de source"
-
-#: ping/ping.c:1310
-#, c-format
-msgid "Redirect Network"
-msgstr "Rediriger le réseau"
-
-#: ping/ping.c:1313
-#, c-format
-msgid "Redirect Host"
-msgstr "Rediriger l'hôte"
-
-#: ping/ping.c:1316
-#, c-format
-msgid "Redirect Type of Service and Network"
-msgstr "Rediriger le type de service et réseau"
-
-#: ping/ping.c:1319
-#, c-format
-msgid "Redirect Type of Service and Host"
-msgstr "Rediriger le type de service et l'hôte"
-
-#: ping/ping.c:1322
-#, c-format
-msgid "Redirect, Bad Code: %d"
-msgstr "Redirection, mauvais code : %d"
-
-#
-msgid "New nexthop"
-msgstr "Nouveau sautsuivant"
-
-#: ping/ping.c:1339
-#, c-format
-msgid "Echo Request"
-msgstr "Requête Echo"
-
-#: ping/ping.c:1345
-#, c-format
-msgid "Time to live exceeded"
-msgstr "Durée de vie dépassée"
-
-#: ping/ping.c:1348
-#, c-format
-msgid "Frag reassembly time exceeded"
-msgstr "Temps de réassemblage des fragments dépassé"
-
-#: ping/ping.c:1351
-#, c-format
-msgid "Time exceeded, Bad Code: %d"
-msgstr "Temps dépassé, mauvais code : %d"
-
-#: ping/ping.c:1358
-#, c-format
-msgid "Parameter problem: pointer = %u"
-msgstr "Problème de paramètre : pointer = %u"
-
-#: ping/ping.c:1364
-#, c-format
-msgid "Timestamp"
-msgstr "Horodatage"
-
-#: ping/ping.c:1368
-#, c-format
-msgid "Timestamp Reply"
-msgstr "Réponse timestamp"
-
-#: ping/ping.c:1372
-#, c-format
-msgid "Information Request"
-msgstr "Demande d'information"
-
-#: ping/ping.c:1376
-#, c-format
-msgid "Information Reply"
-msgstr "Réponse d'information"
-
-#: ping/ping.c:1381
-#, c-format
-msgid "Address Mask Request"
-msgstr "Requête de masque d’adresse"
-
-#: ping/ping.c:1386
-#, c-format
-msgid "Address Mask Reply"
-msgstr "Réponse de masque d’adresse"
-
-#: ping/ping.c:1390
-#, c-format
-msgid "Bad ICMP type: %d"
-msgstr "Mauvais type ICMP : %d"
-
-#: ping/ping.c:1442
-#, c-format
-msgid "local error: %s"
-msgstr "erreur locale : %s"
-
-#: ping/ping.c:1444
-#, c-format
-msgid "local error: message too long, mtu=%u"
-msgstr "erreur locale : le message est trop long : mtu=%u"
-
-#: ping/ping.c:1617
-#, c-format
-msgid "packet too short (%zd bytes) from %s"
-msgstr "paquet trop court (%zd bytes) de %s"
-
-#: ping/ping.c:1696
-#, c-format
-msgid "From %s: icmp_seq=%u "
-msgstr "De %s : icmp_seq=%u "
-
-#, c-format
-msgid ""
-"\n"
-"Usage\n"
-"  ping [options] <destination>\n"
-"\n"
-"Options:\n"
 "  <destination>      DNS name or IP address\n"
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
@@ -999,14 +140,7 @@ msgid ""
 "  -6                 use IPv6\n"
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
-"\n"
-"For more details see ping(8)\n"
 msgstr ""
-"\n"
-"Usage\n"
-"   ping [options] <destination>\n"
-"\n"
-"Options :\n"
 "   <destination>     Nom DNS ou adresse IP\n"
 "   -a                utiliser un ping sonore\n"
 "   -A                utiliser un ping adaptatif\n"
@@ -1062,8 +196,702 @@ msgstr ""
 "aléatoire\n"
 "   -N <nodeinfo opt> utilise la requête d'informations sur le nœud IPv6, "
 "essayez <help> comme argument\n"
-"\n"
-"Pour plus de détails, voir ping(8)\n"
+
+# tracepath options
+msgid ""
+"  -4             use IPv4\n"
+"  -6             use IPv6\n"
+"  -b             print both name and IP\n"
+"  -l <length>    use packet <length>\n"
+"  -m <hops>      use maximum <hops>\n"
+"  -n             no reverse DNS name resolution\n"
+"  -p <port>      use destination <port>\n"
+"  -V             print version and exit\n"
+"  <destination>  DNS name or IP address\n"
+msgstr ""
+"  -4             utiliser IPv4\n"
+"  -6             utiliser IPv6\n"
+"  -b             afficher le nom et l’IP\n"
+"  -l <taille>    utiliser des paquets de taille <taille>\n"
+"  -m <sauts>     utiliser au maximum <sauts> sauts\n"
+"  -n             pas de résolution de nom de domaine DNS\n"
+"  -p <port>      utiliser le port de destination <port>\n"
+"  -V             afficher la version et quitter\n"
+"  <destination>  nom DNS ou adresse IP\n"
+
+#
+msgid "Sent probes"
+msgstr "Sondes envoyées"
+
+#
+msgid "Received responses"
+msgstr "Réponses reçues"
+
+# %d requests
+msgid "requests"
+msgstr "requêtes"
+
+# %d broadcasts
+msgid "broadcasts"
+msgstr "diffusions"
+
+#
+msgid "Unicast"
+msgstr "Monodiffusion"
+
+#
+msgid "Broadcast"
+msgstr "Diffusion"
+
+#
+msgid "reply"
+msgstr "réponse"
+
+#
+msgid "request"
+msgstr "requête"
+
+# for %s
+msgid "for"
+msgstr "pour"
+
+#
+msgid "UNSOLICITED"
+msgstr "NON SOLLICITÉ"
+
+#
+msgid "Interface is down"
+msgstr "L’interface est inactive"
+
+#
+msgid "Interface is not ARPable"
+msgstr "L’interface n’est pas ARPable"
+
+#
+msgid "Using default broadcast address"
+msgstr "Utilisation de l’adresse de diffusion par défaut"
+
+#
+msgid "Invalid argument"
+msgstr "Paramètre invalide"
+
+#
+msgid "Device is not available"
+msgstr "Périphérique n'est disponible"
+
+#
+msgid "No suitable device found, please use -I option"
+msgstr ""
+"Le périphérique approprié n'a été trouvé, veuillez utiliser l'option -I"
+
+#
+msgid "Interface is ignored"
+msgstr "L’interface est ignorée"
+
+#
+msgid "no ll address"
+msgstr "pas d’adresse ll"
+
+#
+msgid "ARPING"
+msgstr ""
+
+# From %s
+msgid "From"
+msgstr "De"
+
+# from %s
+msgid " from"
+msgstr " de"
+
+#
+msgid "No source address in not-DAD mode"
+msgstr "Il n'y a pas d'adresse source en mode non-DAD"
+
+#
+msgid "Wrong timestamp"
+msgstr "Mauvais timestamp"
+
+#
+msgid "Overflow hops"
+msgstr "Dépasse sauts"
+
+#
+msgid "measure"
+msgstr "mesure"
+
+#
+msgid "Unknown failure"
+msgstr "Échec inconnu"
+
+#
+msgid "Non-standard time format"
+msgstr "Format temps non standard"
+
+#
+msgid "host="
+msgstr "hôte="
+
+#
+msgid "rtt="
+msgstr ""
+
+#
+msgid "ms"
+msgstr ""
+
+#
+msgid "delta="
+msgstr ""
+
+#
+msgid "Qtype conflict"
+msgstr "Conflit de qtype"
+
+#
+msgid "Subject type conflict"
+msgstr "Conflit de type de sujet"
+
+#
+msgid "IDN encoding error"
+msgstr "Erreur d’encodage IDN"
+
+#
+msgid "Too long scope name"
+msgstr "Le nom d'étendue est trop long"
+
+#
+msgid "Memory allocation failed"
+msgstr "Échec de l’allocation de mémoire"
+
+#
+msgid "Inappropriate subject name"
+msgstr "Le nom sur sujet est inapproprié"
+
+#
+msgid "dn_comp() returned too long result"
+msgstr "dn_comp() a renvoyé un résultat trop long"
+
+#, c-format
+msgid ""
+"ping -6 -N <nodeinfo opt>\n"
+"Help:\n"
+"  help\n"
+"Query:\n"
+"  name\n"
+"  ipv6\n"
+"  ipv6-all\n"
+"  ipv6-compatible\n"
+"  ipv6-global\n"
+"  ipv6-linklocal\n"
+"  ipv6-sitelocal\n"
+"  ipv4\n"
+"  ipv4-all\n"
+"Subject:\n"
+"  subject-ipv6=addr\n"
+"  subject-ipv4=addr\n"
+"  subject-name=name\n"
+"  subject-fqdn=name\n"
+msgstr ""
+"ping -6 -N <nodeinfo opt>\n"
+"Aide :\n"
+"  help\n"
+"Requête :\n"
+"  name\n"
+"  ipv6\n"
+"  ipv6-all\n"
+"  ipv6-compatible\n"
+"  ipv6-global\n"
+"  ipv6-linklocal\n"
+"  ipv6-sitelocal\n"
+"  ipv4\n"
+"  ipv4-all\n"
+"Sujet :\n"
+"  subject-ipv6=addr\n"
+"  subject-ipv4=addr\n"
+"  subject-name=nom\n"
+"  subject-fqdn=nom\n"
+
+#
+msgid "Unknown network interface"
+msgstr "Interface réseau inconnue"
+
+#
+msgid "Scope discrepancy among the nodes"
+msgstr "Écart d'étendue entre les nœuds"
+
+#
+msgid "Source address might be selected on device other than:"
+msgstr ""
+"L'adresse source pourrait être sélectionnée sur un périphérique autre que:"
+
+#
+msgid "Minimal user interval for multicast ping must be >="
+msgstr "L'intervalle utilisateur minimal de ping multidiffusion doit être >="
+
+#
+msgid "Minimal user interval for broadcast ping must be >="
+msgstr "L'intervalle utilisateur minimal de ping diffusé doit être >="
+
+#
+msgid "see -i option for details"
+msgstr "pour plus de détails voir l'option -i"
+
+#
+msgid "Multicast ping"
+msgstr "Le ping multidiffusion"
+
+#
+msgid "Broadcast ping"
+msgstr "Le ping diffusé"
+
+#
+msgid "does not fragment"
+msgstr "ne fragmente pas"
+
+#
+msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
+msgstr "setsockopt(RAW_CHECKSUM) a échoué - essayez de continuer"
+
+#
+msgid "Cannot set multicast hop limit"
+msgstr "Impossible de définir la limite de saut de multidiffusion"
+
+#
+msgid "Cannot set unicast hop limit"
+msgstr "Impossible de définir de limite de saut de monodiffusion"
+
+#
+msgid "Cannot receive hop limit"
+msgstr "Impossible de recevoir la limite de saut"
+
+#
+msgid "Cannot set flowlabel"
+msgstr "Impossible de définir le label de flux"
+
+#
+msgid "Cannot send flowinfo"
+msgstr "Impossible d'envoyer l'information de flux"
+
+#
+msgid "PING"
+msgstr ""
+
+# flow 0x%05x
+msgid "flow"
+msgstr "flux"
+
+#
+msgid "Destination unreachable"
+msgstr "Destination injoignable"
+
+#
+msgid "No route"
+msgstr "Aucune route"
+
+#
+msgid "Administratively prohibited"
+msgstr "Interdit administrativement"
+
+#
+msgid "Beyond scope of source address"
+msgstr "Dépassement de l’étendue de l’adresse source"
+
+#
+msgid "Address unreachable"
+msgstr "Adresse injoignable"
+
+#
+msgid "Port unreachable"
+msgstr "Port injoignable"
+
+#
+msgid "Source address failed ingress/egress policy"
+msgstr "Échec de la stratégie d'entrée/sortie de l'adresse source"
+
+#
+msgid "Reject route to destination"
+msgstr "Rejeter la route vers la destination"
+
+#
+msgid "Packet too big"
+msgstr "Le paquet est trop gros"
+
+#
+msgid "Time exceeded"
+msgstr "Temps dépassé"
+
+#
+msgid "Hop limit"
+msgstr "Limite de saut"
+
+#
+msgid "Defragmentation failure"
+msgstr "Échec de la défragmentation"
+
+#
+msgid "code"
+msgstr ""
+
+#
+msgid "Parameter problem"
+msgstr "Problème de paramètre"
+
+#
+msgid "Wrong header field"
+msgstr "Champ d'entête incorrect"
+
+#
+msgid "Unknown header"
+msgstr "Entête inconnu"
+
+#
+msgid "Unknown option"
+msgstr "Option inconnue"
+
+#, fuzzy
+msgid "info"
+msgstr "info"
+
+#
+msgid "Echo request"
+msgstr "Requête Echo"
+
+#
+msgid "Echo reply"
+msgstr "Réponse Echo"
+
+#
+msgid "MLD Query"
+msgstr "Requête MLD"
+
+#
+msgid "MLD Report"
+msgstr "Rapport MLD"
+
+#
+msgid "MLD Reduction"
+msgstr "Réduction MLD"
+
+#
+msgid "Unknown icmp type"
+msgstr "Type ICMP inconnu"
+
+#
+msgid "Local error"
+msgstr "Erreur locale"
+
+#
+msgid "Message too long"
+msgstr "Le message est trop long"
+
+#
+msgid "parse error"
+msgstr "erreur d’analyse"
+
+#
+msgid "too short"
+msgstr "trop court"
+
+#
+msgid "truncated"
+msgstr "tronqué"
+
+#
+msgid "unexpected error"
+msgstr "erreur inattendue"
+
+#
+msgid "unknown qtype"
+msgstr "qtype inconnu"
+
+#
+msgid "refused"
+msgstr "refusé"
+
+#
+msgid "unknown"
+msgstr "inconnu"
+
+#
+msgid "unknown code"
+msgstr "code inconnu"
+
+#
+msgid "seq="
+msgstr "seq="
+
+#
+msgid "Packet too short"
+msgstr "Paquet trop court"
+
+#
+msgid "WARNING"
+msgstr "AVERTISSEMENT"
+
+#
+msgid "failed to install socket filter"
+msgstr "échec de l’installation du filtre de socket"
+
+#
+msgid "=> missing cap_net_raw+p capability"
+msgstr "=> capacité cap_net_raw+p manquante"
+
+#
+msgid "=> missing cap_net_admin+p capability"
+msgstr "=> capacité cap_net_admin+p manquante"
+
+#
+msgid "Bad value for flowinfo"
+msgstr "Mauvaise valeur pour les information de flux"
+
+#
+msgid "Flow value is greater than 20 bits"
+msgstr "La valeur de flux est plus grande que 20 bits"
+
+#
+msgid "Bad TOS value"
+msgstr "Mauvaise valeur de TOS"
+
+#
+msgid "Decimal value of TOS bits must be in range 0-255"
+msgstr "La valeur décimale des bits TOS doit être entre 0 et 255"
+
+#
+msgid "Invalid timestamp type"
+msgstr "Type de timestamp invalide"
+
+#
+msgid "Bad timing interval"
+msgstr "Mauvais intervalle de timing"
+
+#
+msgid "Cannot copy"
+msgstr "Impossible de copier"
+
+#
+msgid "Invalid source address"
+msgstr "Adresse source invalide"
+
+#
+msgid "Invalid source"
+msgstr "Source invalide"
+
+#
+msgid "Cannot set preload to value greater than 3"
+msgstr "Impossible de définir une valeur de préchargement plus grande que 3"
+
+#
+msgid "Bad linger time"
+msgstr "Mauvais temps de persistance"
+
+#
+msgid "ident 0 => forcing raw socket"
+msgstr "ident 0 => raw socket forcé"
+
+#
+msgid "No goal"
+msgstr "Aucun objectif"
+
+#
+msgid ""
+"Do you want to ping broadcast? Then -b. If not, check your local firewall "
+"rules"
+msgstr ""
+"Vous voulez faire un ping broadcast ? Alors utilisez -b, sinon veuillez "
+"vérifier les règles de votre pare-feu local."
+
+#
+msgid "Pinging broadcast address"
+msgstr "Ping de l’adresse de diffusion"
+
+#
+msgid "Cannot set broadcasting"
+msgstr "Impossible de définir la multidiffusion"
+
+#
+msgid "getifaddrs() failed"
+msgstr "échec de getifaddrs()"
+
+#
+msgid "Cannot disable multicast loopback"
+msgstr "Impossible de désactiver la boucle de retour pour la multidiffusion"
+
+#
+msgid "Cannot set multicast time-to-live"
+msgstr "Impossible de définir la durée de vie de la multidiffusion"
+
+#
+msgid "Cannot set unicast time-to-live"
+msgstr "Impossible de définir la durée de vie de la monodiffusion"
+
+# %ld data bytes
+msgid "data bytes"
+msgstr "octets de données"
+
+#
+msgid "(same route)"
+msgstr "(route identique)"
+
+#
+msgid "absolute not-standard"
+msgstr "absolut non standard"
+
+#
+msgid "not-standard"
+msgstr "non standard"
+
+#
+msgid "absolute"
+msgstr "absolut"
+
+#
+msgid "Unrecorded hops"
+msgstr "Sauts non comptabilités"
+
+#
+msgid "Echo Reply"
+msgstr "Réponse Echo"
+
+#
+msgid "Destination Net Unreachable"
+msgstr "Réseau de destination injoignable"
+
+#
+msgid "Destination Host Unreachable"
+msgstr "Hôte de destination injoignable"
+
+#
+msgid "Destination Protocol Unreachable"
+msgstr "Protocole de destination injoignable"
+
+#
+msgid "Destination Port Unreachable"
+msgstr "Port de destination injoignable"
+
+#
+msgid "Frag needed and DF set"
+msgstr "Fragmentation nécessaire et DF est défini"
+
+#
+msgid "Source Route Failed"
+msgstr "Échec de la route source"
+
+#
+msgid "Destination Net Unknown"
+msgstr "Réseau de destination inconnu"
+
+#
+msgid "Destination Host Unknown"
+msgstr "Hôte de destination inconnu"
+
+#
+msgid "Source Host Isolated"
+msgstr "Hôte source isolé"
+
+#
+msgid "Destination Net Prohibited"
+msgstr "Réseau de destination interdit"
+
+#
+msgid "Destination Host Prohibited"
+msgstr "Hôte de destination interdit"
+
+#
+msgid "Destination Net Unreachable for Type of Service"
+msgstr "Réseau de destination injoignable pour Type de service"
+
+#
+msgid "Destination Host Unreachable for Type of Service"
+msgstr "Hôte de destination injoignable pour Type de service"
+
+#
+msgid "Packet filtered"
+msgstr "Paquet filtré"
+
+#
+msgid "Precedence Violation"
+msgstr "Violation de priorité"
+
+#
+msgid "Precedence Cutoff"
+msgstr "Coupure de priorité"
+
+#
+msgid "Dest Unreachable"
+msgstr "Destination injoignable"
+
+#
+msgid "Bad Code"
+msgstr "Mauvais code"
+
+#
+msgid "Source Quench"
+msgstr "Terminaison de source"
+
+#
+msgid "Redirect Network"
+msgstr "Rediriger le réseau"
+
+#
+msgid "Redirect Host"
+msgstr "Rediriger l'hôte"
+
+#
+msgid "Redirect Type of Service and Network"
+msgstr "Rediriger le type de service et réseau"
+
+#
+msgid "Redirect Type of Service and Host"
+msgstr "Rediriger le type de service et l'hôte"
+
+#
+msgid "Redirect"
+msgstr "Redirection"
+
+#
+msgid "New nexthop"
+msgstr "Nouveau sautsuivant"
+
+#
+msgid "Echo Request"
+msgstr "Requête Echo"
+
+#
+msgid "Time to live exceeded"
+msgstr "Durée de vie dépassée"
+
+#
+msgid "Frag reassembly time exceeded"
+msgstr "Temps de réassemblage des fragments dépassé"
+
+#
+msgid "Timestamp"
+msgstr "Horodatage"
+
+#
+msgid "Timestamp Reply"
+msgstr "Réponse timestamp"
+
+#
+msgid "Information Request"
+msgstr "Demande d'information"
+
+#
+msgid "Information Reply"
+msgstr "Réponse d'information"
+
+#
+msgid "Address Mask Request"
+msgstr "Requête de masque d’adresse"
+
+#
+msgid "Address Mask Reply"
+msgstr "Réponse de masque d’adresse"
+
+#
+msgid "Bad ICMP type"
+msgstr "Mauvais type ICMP"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -1081,276 +909,212 @@ msgstr "MOTIF"
 msgid "PAYLOAD"
 msgstr ""
 
-#: ping/ping_common.c:354
-#, c-format
-msgid "no answer yet for icmp_seq=%lu\n"
-msgstr "encore aucune réponse pour icmp_seq=%lu\n"
+#
+msgid "No answer yet"
+msgstr "Encore aucune réponse"
 
-#: ping/ping_common.c:454
+#
 msgid "probably, rcvbuf is not enough to hold preload"
 msgstr ""
 "probablement, le rcvbuf n’est pas suffisant pour maintenir le préchargement"
 
-#: ping/ping_common.c:471
+#
 msgid "failed to set mark"
 msgstr "échec de définition du repère"
 
-#: ping/ping_common.c:473
+#
 msgid "SO_MARK not supported"
 msgstr "SO_MARK n'est pas pris en charge"
 
-#, c-format
-msgid ""
-"Cannot flood, minimal interval for user must be >= %u ms, use -i %.*f "
-"(or higher)"
-msgstr ""
-"Impossible d'inonder, intervalle minimal pour l'utilisateur doit être >= %u "
-"ms, utilisez -i %.*f (ou plus)"
+#
+msgid "Cannot flood"
+msgstr "Impossible d'inonder"
 
-#: ping/ping_common.c:493
-#, c-format
-msgid "illegal preload and/or interval: %d"
-msgstr "préchargement et/ou intervalle irrégulier : %d"
+#
+msgid "Minimal user interval must be >="
+msgstr "Intervalle minimal pour l'utilisateur doit être >="
 
-#: ping/ping_common.c:505
+#
+msgid "Illegal preload and/or interval"
+msgstr "Préchargement et/ou intervalle irrégulier"
+
+#
 msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
 msgstr "pas de prise de charge de SO_TIMESTAMP, retour à SIOCGSTAMP"
 
-#: ping/ping_common.c:749
-#, c-format
-msgid "%s: time of day goes back (%ldus), taking countermeasures"
-msgstr "%s: l'heure de la journée recule (%ldus), prise de contre-mesures"
+#
+msgid "Time of day goes back, taking countermeasures"
+msgstr "L'heure de la journée recule, prise de contre-mesures"
 
-#: ping/ping_common.c:799
-#, c-format
-msgid "%zd bytes from %s:"
-msgstr "%zd octets de %s :"
+# %ld bytes
+msgid "bytes"
+msgstr "octets"
 
-#: ping/ping_common.c:805
-#, c-format
-msgid " ident=%d"
-msgstr " ident=%d"
+#
+msgid "icmp_seq="
+msgstr ""
 
-#: ping/ping_common.c:808
-#, c-format
-msgid " ttl=%d"
-msgstr " ttl=%d"
+#
+msgid "ident="
+msgstr ""
 
-#: ping/ping_common.c:811
-#, c-format
-msgid " (truncated)"
-msgstr " (tronqué)"
+#
+msgid "ttl="
+msgstr ""
 
-#: ping/ping_common.c:816
-#, c-format
-msgid " time=%ld ms"
-msgstr " temps=%ld ms"
+#
+msgid " time="
+msgstr " temps="
 
-#: ping/ping_common.c:818
-#, c-format
-msgid " time=%ld.%01ld ms"
-msgstr " temps=%ld.%01ld ms"
+#
+msgid " ms"
+msgstr " ms"
 
-#: ping/ping_common.c:821
-#, c-format
-msgid " time=%ld.%02ld ms"
-msgstr " temps=%ld.%02ld ms"
+#
+msgid "DUP"
+msgstr "DUPLIQUÉ"
 
-#: ping/ping_common.c:824
-#, c-format
-msgid " time=%ld.%03ld ms"
-msgstr " temps=%ld.%03ld ms"
+#
+msgid "BAD CHECKSUM"
+msgstr "MAUVAISE SOMME DE CONTRÔLE"
 
-#: ping/ping_common.c:829
-#, c-format
-msgid " (DUP!)"
-msgstr " (DUPLIQUÉ !)"
+#
+msgid "DIFFERENT ADDRESS"
+msgstr "ADRESSE DIFFÉRENTE"
 
-#: ping/ping_common.c:831
-#, c-format
-msgid " (BAD CHECKSUM!)"
-msgstr " (MAUVAISE SOMME DE CONTRÔLE !)"
+#
+msgid "wrong byte #"
+msgstr "octet incorrect #"
 
-#: ping/ping_common.c:833
-#, c-format
-msgid " (DIFFERENT ADDRESS!)"
-msgstr " (ADRESSE DIFFÉRENTE !)"
+#
+msgid "expected 0x"
+msgstr "attendu 0x"
 
-#: ping/ping_common.c:840
-#, c-format
-msgid "wrong data byte #%zu should be 0x%x but was 0x%x"
-msgstr "octet de données incorrect #%zu devrait être 0x%x mais était 0x%x"
+#
+msgid "got 0x"
+msgstr "reçu 0x"
 
-#: ping/ping_common.c:883
-#, c-format
-msgid "--- %s ping statistics ---\n"
-msgstr "--- statistiques ping %s ---\n"
+# hostname%s
+msgid " ping statistics"
+msgstr " ping statistiques"
 
-#: ping/ping_common.c:884
-#, c-format
-msgid "%ld packets transmitted, "
-msgstr "%ld paquets transmis, "
+# %ld %s
+msgid "packets transmitted"
+msgstr "paquets transmis"
 
-#: ping/ping_common.c:885
-#, c-format
-msgid "%ld received"
-msgstr "%ld reçus"
+# %ld %s
+msgid "received"
+msgstr "reçus"
 
-#: ping/ping_common.c:887
-#, c-format
-msgid ", +%ld duplicates"
-msgstr ", +%ld dupliqués"
+# %ld %s
+msgid "duplicates"
+msgstr "dupliqués"
 
-#: ping/ping_common.c:889
-#, c-format
-msgid ", +%ld corrupted"
-msgstr ", +%ld corrompus"
+# %ld %s
+msgid "corrupted"
+msgstr "corrompus"
 
-#: ping/ping_common.c:891
-#, c-format
-msgid ", +%ld errors"
-msgstr ", +%ld erreurs"
+# %ld %s
+msgid "errors"
+msgstr "erreurs"
 
-#: ping/ping_common.c:897
-#, c-format
-msgid ", %g%% packet loss"
-msgstr ", %g %% paquets perdus"
+# %g%% %s
+msgid "packet loss"
+msgstr "paquets perdus"
 
-#: ping/ping_common.c:899
-#, c-format
-msgid ", time %ldms"
-msgstr ", temps %ld ms"
+# time %ld ms
+msgid "time"
+msgstr "temps"
 
-#: ping/ping_common.c:919
-#, c-format
-msgid "rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms"
-msgstr "rtt min/moy/max/mdev = %ld,%03ld/%lu,%03ld/%ld,%03ld/%ld,%03ld ms"
+# rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
+msgid "rtt min/avg/max/mdev"
+msgstr "rtt min/moy/max/mdev"
 
-#: ping/ping_common.c:927
-#, c-format
-msgid "%spipe %d"
-msgstr "%s tuyau %d"
+# pipe %d
+msgid "pipe"
+msgstr "tuyau"
 
-#: ping/ping_common.c:934
-#, c-format
-msgid "%sipg/ewma %d.%03d/%d.%03d ms"
-msgstr "%s ipg/mmpe %d.%03d/%d.%03d ms"
+# ipg/ewma = %d.%03d/%d.%03d ms
+msgid "ipg/ewma"
+msgstr "ipg/mmpe"
 
-#: ping/ping_common.c:952
-#, c-format
-msgid "%ld/%ld packets, %d%% loss"
-msgstr "%ld/%ld paquets, %d %% perdus"
+# %ld/%ld packets
+msgid "packets"
+msgstr "paquets"
 
-#: ping/ping_common.c:957
-#, c-format
-msgid ", min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
-msgstr ", min/moy/mmpe/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms"
+# %d%% loss
+msgid "loss"
+msgstr "perdus"
 
-#: tracepath.c:235
-#, c-format
-msgid "no info\n"
-msgstr "aucune info\n"
+# min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
+msgid "min/avg/ewma/max"
+msgstr "min/moy/mmpe/max"
 
-#: tracepath.c:239
-msgid "[LOCALHOST]"
-msgstr "[LOCALHOST]"
+#
+msgid "No info"
+msgstr "Aucune info"
 
-#: tracepath.c:287
-#, c-format
-msgid "%3ld.%03ldms "
-msgstr "%3ld.%03ld ms "
+#
+msgid "LOCALHOST"
+msgstr ""
 
-#: tracepath.c:290
-#, c-format
-msgid "(This broken router returned corrupted payload) "
-msgstr "(Ce routeur défectueux renvoie des charges utiles corrompues) "
+#
+msgid "(This broken router returned corrupted payload)"
+msgstr "(Ce routeur défectueux renvoie des charges utiles corrompues)"
 
-#: tracepath.c:305
-#, c-format
-msgid "pmtu %d\n"
-msgstr "pmtu %d\n"
+#
+msgid "pmtu"
+msgstr ""
 
-#: tracepath.c:310
-#, c-format
-msgid "reached\n"
-msgstr "atteint\n"
+#
+msgid "reached"
+msgstr "atteint"
 
-#: tracepath.c:327
-#, c-format
-msgid "asymm %2d "
-msgstr "asymm %2d "
+#
+msgid "asymm"
+msgstr ""
 
-#: tracepath.c:342
+#
 msgid "NET ERROR"
 msgstr "ERREUR RESEAU"
 
-#: tracepath.c:387
-#, c-format
-msgid "%2d?: reply received 8)\n"
-msgstr "%2d ? : réponse reçue 8)\n"
+#
+msgid "reply received 8"
+msgstr "réponse reçue 8"
 
-#: tracepath.c:393
-#, c-format
-msgid "%2d:  send failed\n"
-msgstr "%2d :  échec envoi\n"
+#
+msgid "send failed"
+msgstr "échec envoi"
 
-#, c-format
-msgid ""
-"\n"
-"Usage\n"
-"  tracepath [options] <destination>\n"
-"\n"
-"Options:\n"
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -V             print version and exit\n"
-"  <destination>  DNS name or IP address\n"
-"\n"
-"For more details see tracepath(8)\n"
+#
+msgid "Mutually exclusive options"
+msgstr "Les options mutuellement exclusives"
+
+#
+msgid "no reply"
+msgstr "aucune réponse"
+
+#
+msgid "Resume"
+msgstr "Reprise"
+
+#
+msgid "Too many hops"
 msgstr ""
-"\n"
-"Utilisation\n"
-"  tracepath [options] <destination>\n"
-"\n"
-"Options :\n"
-"  -4             utiliser IPv4\n"
-"  -6             utiliser IPv6\n"
-"  -b             afficher le nom et l’IP\n"
-"  -l <taille>    utiliser des paquets de taille <taille>\n"
-"  -m <sauts>      utiliser au maximum <sauts> sauts\n"
-"  -n             pas de résolution de nom de domaine DNS\n"
-"  -p <port>      utiliser le port de destination <port>\n"
-"  -V             afficher la version et quitter\n"
-"  <destination>  nom DNS ou adresse IP\n"
-"\n"
-"Pour plus de détails, consultez tracepath(8)\n"
 
-#, c-format
-msgid "Only one -%c or -%c option may be specified"
-msgstr "Seule l’option -%c ou -%c peut être spécifiée"
+#
+msgid "pmtu="
+msgstr ""
 
-#, c-format
-msgid "%2d:  no reply\n"
-msgstr "%2d :  aucune réponse\n"
+#
+msgid "hops="
+msgstr "sauts="
 
-#, c-format
-msgid "     Resume: pmtu %d "
-msgstr "     Reprise : pmtu %d "
+#
+msgid "back="
+msgstr "retour="
 
-#, c-format
-msgid "hops %d "
-msgstr "sauts %d "
-
-#, c-format
-msgid "back %d "
-msgstr "retour %d "
-
-#, c-format
-msgid "pktlen must be within: %d < value <= %d"
-msgstr "pktlen doit être entre : %d < valeur <= %d"
+#
+msgid "Packet length"
+msgstr ""
 
