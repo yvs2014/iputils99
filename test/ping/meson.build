@@ -20,31 +20,22 @@ ip = find_program('ip', required: false)
 ip6enabled = false
 if ip.found()
   ip6_cmd = [ip, '-6', 'address']
-  if meson.version().version_compare('>=0.47')
-    ip6_en = run_command(ip6_cmd, check: false)
-  else
-    ip6_en = run_command(ip6_cmd)
-  endif
+  ip6_en = run_command(ip6_cmd, check: false)
   ip6enabled = ip6_en.stdout().contains('::1')
   if ip6enabled
     localhost46 += localhost6
     ipfamily    += '-6'
     message('IPv6 enabled')
   else
-    message('WARNING: IPv6 disabled')
+    warning('IPv6 disabled')
   endif
 else
-  message('WARNING: ip binary not found => disable IPv6 tests')
+  warning('ip binary not found => disable IPv6 tests')
 endif
 
 id_cmd = ['id', '-u']
-if meson.version().version_compare('>=0.47')
-  r = run_command(id_cmd, check: false)
-else
-  r = run_command(id_cmd)
-endif
-run_as_root = r.stdout().strip().to_int() == 0
-message('running as ' + (run_as_root ? 'root' : 'normal user'))
+asroot = run_command(id_cmd, check: false).stdout().strip().to_int() == 0
+message('running as ' + (asroot ? 'root' : 'normal user'))
 
 cmd = ping
 if meson.version().version_compare('>=0.54')
@@ -69,26 +60,26 @@ foreach dst: [localhost] + localhost46
   endforeach
 endforeach
 
-extra_suites = [ # list because no dictionaries before 0.47
-  ['timeouts', true, [
+suites = {
+  'timeout': {'success': true,   'opts': [
     [ '-c', '5', '-i', '0.1' ],
     [ '-c', '1', '-I', 'lo'  ],
     [ '-c', '1', '-w', '1'   ],
     [ '-c', '1', '-W', '1'   ],
-    [ '-c', '1', '-W', '1.1' ]]],
-  ['fail', false, [
+    [ '-c', '1', '-W', '1.1' ]]},
+  'fail':    {'success': false,  'opts': [
     [ '-c', '1.1'         ],
     [ '-I', 'nonexisting' ],
     [ '-w', '0.1'         ],
-    [ '-w', '0,1'         ]]],
-  ['root', run_as_root, [
-    [ '-c', '1', '-i', '0.001']]], # -c1 required to quit ping when running as root
-]
+    [ '-w', '0,1'         ]]},
+  'root':    {'success': asroot, 'opts': [
+    # -c1 to quit ping when running as root
+    [ '-c', '1', '-i', '0.001']]},
+}
 
-foreach param: extra_suites
-  suite = param[0]
-  fail  = not param[1]
-  opts  = param[2]
+foreach suite, params: suites
+  fail = not params['success']
+  opts = params['opts']
   foreach dst: localhost46
     foreach args: opts
       args += dst

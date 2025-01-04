@@ -3,33 +3,36 @@
 # local edition by @yvs
 
 project('iputils', 'c',
-	default_options : [
+	default_options: [
 		'c_std=c99',
 		'warning_level=3',
 		'localstatedir=var',
 #		'b_sanitize=address,undefined', # use for testing
 	],
-	meson_version : '>=0.40',
-	version : '20240117') # keep in sync with: git describe | awk -F- '{print $1}'
-
-cc = meson.get_compiler('c')
-
-add_project_arguments(
-	'-include', 'config.h',
-	'-include', 'git-version.h',
-	language : 'c'
+	meson_version: '>=0.47',
+	version: find_program('git', required: false).found() ? run_command(
+		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
+			check: false).stdout().strip() : '20250104',
 )
 
-conf = configuration_data()
-conf.set_quoted('PACKAGE_NAME', meson.project_name())
+name    = meson.project_name()
+version = meson.project_version()
+cc      = meson.get_compiler('c')
+deps    = []
 
-build_arping = get_option('BUILD_ARPING')
+conf = configuration_data()
+conf.set_quoted('PACKAGE_NAME',    name)
+conf.set_quoted('PACKAGE_VERSION', version)
+config_h = 'config.h'
+
+build_arping    = get_option('BUILD_ARPING')
 build_clockdiff = get_option('BUILD_CLOCKDIFF')
-build_ping = get_option('BUILD_PING')
+build_ping      = get_option('BUILD_PING')
 build_tracepath = get_option('BUILD_TRACEPATH')
 
-build_mans = get_option('BUILD_MANS')
-build_html_mans = get_option('BUILD_HTML_MANS')
+build_man  = get_option('BUILD_MAN')
+build_html = get_option('BUILD_HTML')
+
 run_tests = not get_option('SKIP_TESTS')
 
 prefix = get_option('prefix')
@@ -37,7 +40,7 @@ bindir = join_paths(prefix, get_option('bindir'))
 localedir = join_paths(prefix, get_option('localedir'))
 sbindir = join_paths(prefix, get_option('sbindir'))
 
-systemd = dependency('systemd', required : false)
+systemd = dependency('systemd', required: false)
 install_systemd_units = systemd.found() or get_option('INSTALL_SYSTEMD_UNITS')
 
 systemdunitdir = get_option('systemdunitdir')
@@ -59,47 +62,16 @@ if (not get_option('NO_SETCAP_OR_SUID'))
   setcap_ping = get_option('SETCAP_OR_SUID_PING')
 endif
 
-extra_funcs = [
-	'getprogname', 'program_invocation_short_name',
-	'getrandom', 'nanosleep', '__fpending',
-]
-
-if cc.compiles('''
-	#include <sys/types.h>
-	#include <netinet/in.h>
-	#include <netinet/icmp6.h>
-	int main(void) {
-		struct icmp6_nodeinfo nodeinfo;
-		return 0;
-	}
-''', name: 'struct icmp6_nodeinfo')
-	conf.set('HAVE_STRUCT_ICMP6_NODEINFO', 1, description: 'Defined if struct icmp6_nodeinfo exists')
-endif
-
-if cc.compiles('''
-	#include <sys/types.h>
-	#include <sys/time.h>
-	#include <time.h>
-	int main(void) {
-		struct tm time;
-		return 0;
-	}
-''', name: 'struct tm time;')
-	conf.set('TIME_WITH_SYS_TIME', 1, description: 'Defined if struct tm exists')
-endif
-
-if cc.has_function('clock_gettime')
-	rt_dep = cc.find_library('disabler-appears-to-disable-executable-build', required: false)
-else
-	rt_dep = cc.find_library('rt')
-endif
+extra_funcs = {}
+extra_funcs += {'getprogname':   {'hdr': ['stdlib.h']}}
+extra_funcs += {'program_invocation_short_name': {'hdr': ['errno.h']}}
+extra_funcs += {'getrandom':     {'hdr': ['sys/random.h']}}
+extra_funcs += {'clock_gettime': {'hdr': ['time.h'], 'lib': ['rt'], 'req': true}}
 
 cap = get_option('USE_CAP')
 if cap
-	cap_dep = cc.find_library('cap')
+	deps += cc.find_library('cap')
 	conf.set('HAVE_LIBCAP', 1, description: 'Defined if libcap exists')
-else
-	cap_dep = dependency('disabler-appears-to-disable-executable-build', required: false)
 endif
 
 arping_device = get_option('ARPING_DEFAULT_DEVICE')
@@ -107,31 +79,41 @@ if arping_device != ''
 	conf.set_quoted('DEFAULT_DEVICE', arping_device, description: 'arping default device')
 endif
 
-# Some systems need intl for gettext
-intl_dep = []
-i18_gettext = get_option('USE_GETTEXT')
-if i18_gettext
-	add_project_arguments(['-DGETTEXT_PACKAGE="iputils"'], language: 'c')
-	conf.set('ENABLE_NLS', 1, description: 'If set enable I18N')
-	conf.set_quoted('LOCALEDIR', localedir)
-	subdir('po')
-	intl_dep += cc.find_library('intl', required: false)
+if build_ping
+	extra_funcs += {'arc4random_uniform': {'hdr': ['stdlib.h']}}
+	extra_files = ['md5.c']
+	ni6 = get_option('NI6')
+        if ni6	# RFC4620 builtin client
+		conf.set('ENABLE_NI6', 1, description: 'build with RFC4620 NodeInfo client')
+		if get_option('PING6_NONCE_MEMORY')
+			conf.set('PING6_NONCE_MEMORY', 1,
+				description: 'ping6 NodeInfo with nonce memory')
+		endif
+		extra_files += name + '_ni_aux.c'
+	endif
+	ping_extra = files(extra_files)
 endif
 
 idn = get_option('USE_IDN')
 if idn	# If available: use AI_IDN for getaddrinfo() queries
-	# and idna_to_dns_encoding() for nodeinfo IDN
+	ai_prfx = '#define _GNU_SOURCE\n#include <netdb.h>\n'
+	if cc.get_define('AI_IDN', prefix: ai_prfx) == ''
+		error('IDN is not transparently supported')
+        endif
 	add_project_arguments('-DUSE_IDN', language: 'c')
-	conf.set('USE_IDN', 1, description: 'If set use libc IDN support')
-	extra_funcs += '__idna_to_dns_encoding'
+	conf.set('USE_IDN', 1, description: 'libc IDN support')
+        if ni6 # idna_to_dns_encoding() for nodeinfo IDN
+		extra_funcs += {'__idna_to_dns_encoding': {'req': true}}
+        endif
 endif
 
-if build_ping
-	ping_extra = files('iputils_ni_aux.c', 'md5.c')
-	if get_option('PING6_NONCE_MEMORY')
-		conf.set('PING6_NONCE_MEMORY', 1, description: 'Define to use ping6 NodeInfo with nonce memory')
-	endif
-	extra_funcs += 'arc4random_uniform'
+nls = get_option('USE_NLS')
+if nls
+	add_project_arguments('-DGETTEXT_PACKAGE="' + name + '"', language: 'c')
+	conf.set('USE_NLS', 1, description: 'gettext NLS support')
+	conf.set_quoted('LOCALEDIR', localedir)
+	subdir('po')
+	extra_funcs += {'gettext': {'hdr': ['libintl.h'], 'lib': ['intl'], 'req': true}}
 endif
 
 if host_machine.endian() == 'big'
@@ -139,22 +121,44 @@ if host_machine.endian() == 'big'
 endif
 
 # Check functions availability
-foreach f: extra_funcs
-	if cc.has_function(f, args: '-D_GNU_SOURCE')
+foreach f, ext: extra_funcs
+	incl = ''
+	hdrs = 'hdr' in ext ? ext['hdr'] : []
+	foreach h: hdrs
+#		incl += cc.has_header(h) ? '#include <' + h + '>\n' : ''
+		incl += '#include <' + h + '>\n'
+	endforeach
+        found = cc.has_function(f, args: '-D_GNU_SOURCE', prefix: incl)
+	if not found
+		libs = 'lib' in ext ? ext['lib'] : []
+		foreach l: libs
+			lib = dependency('lib' + l, required: false)
+			if not lib.found()
+				lib = cc.find_library(l, required: false)
+			endif
+			if lib.found() and cc.has_function(f,
+			args: '-D_GNU_SOURCE', prefix: incl, dependencies: lib)
+				found = true
+				deps += lib
+                                break
+			endif
+		endforeach
+	endif
+	if found
 		conf.set('HAVE_' + f.to_upper(), 1, description: 'Define if you have ' + f + ' function')
+        else
+		req = 'req' in ext ? ext['req'] : false
+		if req
+			error('Required function ' + f + '() is not found')
+		endif
 	endif
 endforeach
 
-git_version_h = vcs_tag(
-	input:    'git-version.h.meson',
-	output:   'git-version.h',
-	fallback: meson.project_version()
-)
-
-config_h = configure_file(output: 'config.h', configuration: conf)
+configure_file(output: config_h, configuration: conf)
+add_project_arguments('-include', config_h, language: 'c')
 
 setcap = find_program('setcap', '/usr/sbin/setcap', '/sbin/setcap', required: false)
-if cap_dep.found() and setcap.found()
+if cap and setcap.found()
 	perm_type = 'caps'
 	if meson.version().version_compare('>=0.55')
 		setcap_path = setcap.full_path()
@@ -169,7 +173,7 @@ endif
 
 # build stage
 #
-common_sources = files('iputils_common.c') + [git_version_h]
+common_sources = files(name + '_common.c')
 
 if build_ping
 	subdir('ping')
@@ -177,12 +181,12 @@ endif
 
 if build_tracepath
 	tracepath = executable('tracepath', common_sources + ['tracepath.c'],
-		dependencies: [cap_dep, intl_dep], install: true)
+		dependencies: deps, install: true)
 endif
 
 if build_clockdiff
 	clockdiff = executable('clockdiff', common_sources + ['clockdiff.c'],
-		dependencies: [cap_dep, intl_dep], install: true)
+		dependencies: deps, install: true)
 	if setcap_clockdiff
 		meson.add_install_script('build-aux/setcap-setuid.sh',
 			bindir, 'clockdiff', perm_type, setcap_path)
@@ -191,15 +195,15 @@ endif
 
 if build_arping
 	arping = executable('arping', common_sources + ['arping.c'],
-		dependencies: [rt_dep, cap_dep, intl_dep], install: true)
+		dependencies: deps, install: true)
 	if setcap_arping
 		meson.add_install_script('build-aux/setcap-setuid.sh',
 			bindir, 'arping', perm_type, setcap_path)
 	endif
 endif
 
-if build_mans or build_html_mans
-	subdir ('doc')
+if build_man or build_html
+	subdir('doc')
 endif
 
 if run_tests
@@ -210,64 +214,69 @@ endif
 # summary at the end
 #
 if meson.version().version_compare('>=0.53')
-	sections = [ # lists because no dictionaries prior to 0.47
-		['DOCUMENTATION', [
-['Manual pages', build_mans],
-['HTML manual',  build_html_mans],
-		]], ['APPLICATIONS', [
-['ping',         build_ping],
-['  cap/suid ping',       setcap_ping],
-['arping',       build_arping],
-['  cap/suid arping',     setcap_arping],
-['clockdiff',    build_clockdiff],
-['  cap/suid clockdiff ', setcap_clockdiff],
-['tracepath',    build_tracepath],
-		]], ['CONFIGURATION', [
-['Caps  (libcap)', cap],
-['IDN (via libc)',      idn],
-['I18N (gettext)',      i18_gettext],
-['Systemd',             install_systemd_units],
-['Tests',               run_tests],
-		]], ['DIRECTORIES', [
-['prefix',         prefix],
-['bindir',         bindir],
-['localedir',      localedir],
-['sbindir',        sbindir],
-['systemdunitdir', systemdunitdir],
-		]],
-	]
-	foreach part: sections
-		foreach kv: part[1]
-			if '@0@'.format(kv[1]) != ''
-				summary(kv[0], kv[1], bool_yn: true, section: part[0])
+	sections = {}
+	sections += {'DOCUMENTATION': {
+		'Manual pages': build_man,
+		'HTML manuals': build_html,
+	}}
+	sections += {'APPLICATIONS': {
+		'ping':         build_ping,
+		'  caps/suid ping':       setcap_ping,
+		'arping':       build_arping,
+		'  caps/suid arping':     setcap_arping,
+		'clockdiff':    build_clockdiff,
+		'  caps/suid clockdiff ': setcap_clockdiff,
+		'tracepath':    build_tracepath,
+	}}
+	sections += {'CONFIGURATION': {
+		'Caps  (libcap)': cap,
+		'IDN (via libc)': idn,
+		'NLS  (gettext)': nls,
+		'NI6  (rfc4620)': ni6,
+		'Systemd':        install_systemd_units,
+		'Tests':          run_tests,
+	}}
+	sections += {'DIRECTORIES': {
+		'prefix':         prefix,
+		'bindir':         bindir,
+		'localedir':      localedir,
+		'sbindir':        sbindir,
+		'systemdunitdir': systemdunitdir,
+        }}
+	foreach section, elements: sections
+		foreach key, value: elements
+			if '@0@'.format(value) != ''
+				summary(key, value, bool_yn: true, section: section)
 			endif
 		endforeach
 	endforeach
-else
+else # legacy
 
-output = '\n\nAPPLICATIONS (build)\n'
-output += 'man: ' + build_mans.to_string() + '\n'
-output += 'HTML man: ' + build_html_mans.to_string() + '\n'
-output += 'arping: ' + build_arping.to_string()
-output += ' (capability or suid: ' + setcap_arping.to_string() + ')\n'
-output += 'clockdiff: ' + build_clockdiff.to_string()
-output += ' (capability or suid: ' + setcap_clockdiff.to_string() + ')\n'
-output += 'ping: ' + build_ping.to_string()
-output += ' (capability or suid: ' + setcap_ping.to_string() + ')\n'
-output += 'tracepath: ' + build_tracepath.to_string() + '\n'
+output  = name + '-' + version
+output += '\n\nAPPLICATIONS (build)\n'
+output += 'Manual pages:   ' + build_man.to_string()  + '\n'
+output += 'HTML maniuals:  ' + build_html.to_string() + '\n'
+output += 'arping:         ' + build_arping.to_string()
+output += '  (caps/suid ' + setcap_arping.to_string() + ')\n'
+output += 'clockdiff:      ' + build_clockdiff.to_string()
+output += '  (caps/suid ' + setcap_clockdiff.to_string() + ')\n'
+output += 'ping:           ' + build_ping.to_string()
+output += '  (caps/suid ' + setcap_ping.to_string() + ')\n'
+output += 'tracepath:      ' + build_tracepath.to_string() + '\n'
 
 output += '\nCONFIGURATION\n'
-output += 'Capability (with libcap): ' + cap.to_string() + '\n'
+output += 'Caps  (libcap): ' + cap.to_string() + '\n'
 output += 'IDN (via libc): ' + idn.to_string() + '\n'
-output += 'I18N (with gettext): ' + i18_gettext.to_string() + '\n'
-output += 'systemd: ' + install_systemd_units.to_string() + '\n'
-output += 'run tests: ' + run_tests.to_string() + '\n'
+output += 'NLS  (gettext): ' + nls.to_string() + '\n'
+output += 'NI6  (rfc4620): ' + ni6.to_string() + '\n'
+output += 'systemd:        ' + install_systemd_units.to_string() + '\n'
+output += 'run tests:      ' + run_tests.to_string() + '\n'
 
 output += '\nSYSTEM PATHS\n'
-output += 'prefix: ' + prefix + '\n'
-output += 'bindir: ' + bindir + '\n'
-output += 'localedir: ' + localedir + '\n'
-output += 'sbindir: ' + sbindir + '\n'
+output += 'prefix:         ' + prefix + '\n'
+output += 'bindir:         ' + bindir + '\n'
+output += 'localedir:      ' + localedir + '\n'
+output += 'sbindir:        ' + sbindir + '\n'
 output += 'systemdunitdir: ' + systemdunitdir + '\n'
 
 message(output)

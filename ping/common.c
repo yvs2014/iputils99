@@ -39,6 +39,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <locale.h>
 #include <limits.h>
 #include <signal.h>
 #include <sched.h>
@@ -48,10 +49,6 @@
 #include <math.h>
 #include <assert.h>
 #include <err.h>
-
-#ifdef ENABLE_NLS
-#include <locale.h>
-#endif
 
 #ifndef HZ
 #define HZ sysconf(_SC_CLK_TCK)
@@ -64,6 +61,7 @@ static uid_t euid;
 #endif
 
 #include <netinet/ip_icmp.h>
+#include <netinet/icmp6.h>
 #include <linux/sockios.h>
 #include <linux/filter.h>
 
@@ -223,9 +221,6 @@ void drop_capabilities(void) {
 
 // Fill payload area (supposed to be without timestamp area) with supplied pattern
 void fill_payload(int quiet, const char *str, uint8_t *payload, size_t len) {
-#ifdef ENABLE_NLS
-	setlocale(LC_NUMERIC, "C");
-#endif
 	for (const char *cp = str; *cp; cp++)
 		if (!isxdigit(*cp))
 			errx(EINVAL, "%s: %s", _("Pattern must be specified as hex digits"), cp);
@@ -259,9 +254,6 @@ void fill_payload(int quiet, const char *str, uint8_t *payload, size_t len) {
 		}
 		printf("\n");
 	}
-#ifdef ENABLE_NLS
-	setlocale(LC_NUMERIC, "");
-#endif
 }
 
 /* a bit clearer, but in fact it's the same as with global_rts */
@@ -519,18 +511,10 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 		rts->interval = 0;
 
 	// interval restrictions
-	if (rts->uid && (rts->interval < MIN_USER_MS)) {
-#ifdef ENABLE_NLS
-		setlocale(LC_NUMERIC, "C");
-#endif
+	if (rts->uid && (rts->interval < MIN_USER_MS))
 		errx(EINVAL, "%s: %s %u%s, %s", _("Cannot flood"),
 			_("Minimal user interval must be >="), MIN_USER_MS, _(" ms"),
 			_("see -i option for details"));
-
-#ifdef ENABLE_NLS
-		setlocale(LC_NUMERIC, ""); // for symmetry
-#endif
-	}
 	if (rts->interval >= (INT_MAX / rts->preload))
 		errx(EINVAL, "%s: %d", _("Illegal preload and/or interval"), rts->interval);
 
@@ -907,8 +891,10 @@ int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
 {
 	/* can we time transfer */
 	rts->timing = (rts->datalen >= sizeof(struct timeval));
+#ifdef ENABLE_NI6
 	if (rts->ip6 && rts->ni && rts->timing)
 		rts->timing = (rts->ni->query < 0);
+#endif
 	//
 	size_t packlen = hlen + rts->datalen;
 	uint8_t *packet = malloc(packlen);

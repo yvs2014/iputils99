@@ -1,10 +1,10 @@
 # Copyright (c) Iputils Project, 2018-2020
 #
-# Update iputils.pot:
-# meson . builddir && ninja iputils-pot -C builddir
+# Update NAME.pot:
+# meson . builddir && ninja NAME-pot -C builddir
 #
 # Update *.po files
-# meson . builddir && ninja iputils-update-po -C builddir
+# meson . builddir && ninja NAME-update-po -C builddir
 
-i18n = import('i18n')
-i18n.gettext(meson.project_name(), args: '--directory=' + meson.current_source_dir())
+import('i18n').gettext(name, args: '--directory=' + meson.current_source_dir())
+

@@ -57,7 +57,9 @@
 #include "ping4.h"
 #include "ping6.h"
 #include "extra.h"
+#ifdef ENABLE_NI6
 #include "node_info.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,7 +75,7 @@
 #include <netinet/ip_icmp.h>
 #include <ifaddrs.h>
 
-#ifdef ENABLE_NLS
+#ifdef USE_NLS
 #include <locale.h>
 #endif
 
@@ -175,16 +177,6 @@ static void open_socket(sock_t *sock, int af, int proto, bool verbose) {
 	err(num ? num : EXIT_FAILURE, "socket");
 }
 
-static inline void opt_46(state_t *rts, bool ip4, struct addrinfo *hints) {
-	if (rts->ni && ip4) // '-N' indication
-		errx(EINVAL, "%s: %s", _WARN,
-			_("NodeInfo client is for IPv6 only"));
-	int incompat = ip4 ? AF_INET6 : AF_INET;
-	if (hints->ai_family == incompat)
-		OPTEXCL('4', '6');
-	hints->ai_family = ip4 ? AF_INET : AF_INET6;
-}
-
 static inline void opt_I(state_t *rts, const char *str) {
 	if (strchr(str, ':')) {
 		char *addr = strdup(str);
@@ -212,6 +204,7 @@ static inline void opt_I(state_t *rts, const char *str) {
 	}
 }
 
+#ifdef ENABLE_NI6
 static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) {
 	if (rts->datalen != DEFDATALEN) // '-s' indication
 		errx(EINVAL, "%s: %s", _WARN,
@@ -232,11 +225,14 @@ static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) 
 		rts->datalen = 0;
 	}
 }
+#endif
 
 static inline void opt_s(state_t *rts, const char *str) {
+#ifdef ENABLE_NI6
 	if (rts->ni)
 		errx(EXIT_FAILURE, "%s: %s", _WARN,
 			_("NodeInfo packet can only have a header"));
+#endif
 	unsigned long len = strtoul_or_err(str, _("Invalid argument"),
 		0, MAXPAYLOAD);
 	unsigned char *pack = calloc(1, PACKHDRLEN + len);
@@ -258,9 +254,17 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 	while ((ch = getopt(argc, argv, optstr)) != EOF) {
 		switch(ch) {
 		case '4':
-		case '6':
-			opt_46(rts, ch == '4', hints);
-			break;
+		case '6': {
+			bool ip4 = (ch == '4');
+#ifdef ENABLE_NI6
+			if (rts->ni && ip4) // '-N' indication
+				errx(EINVAL, "%s: %s", _WARN, _("NodeInfo client is for IPv6 only"));
+#endif
+			int incompat = ip4 ? AF_INET6 : AF_INET;
+			if (hints->ai_family == incompat)
+				OPTEXCL('4', '6');
+			hints->ai_family = ip4 ? AF_INET : AF_INET6;
+		}	break;
 		/* IPv4 specific options */
 		case 'b':
 			rts->opt.broadcast = true;
@@ -293,9 +297,11 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->flowlabel = parse_flow(optarg);
 			rts->opt.flowinfo = true;
 			break;
+#ifdef ENABLE_NI6
 		case 'N':
 			opt_N(rts, optarg, hints);
 			break;
+#endif
 		/* Common options */
 		case 'a':
 			rts->opt.audible = true;
@@ -403,10 +409,6 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 		case 'v':
 			rts->opt.verbose = true;
 			break;
-		case 'V':
-			printf(IPUTILS_VERSION("ping"));
-			print_config();
-			exit(EXIT_SUCCESS);
 		case 'w':
 			rts->deadline = strtol_or_err(optarg, _("Invalid argument"), 0, INT_MAX);
 			break;
@@ -417,11 +419,12 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->lingertime = (int)(value * 1000);
 		}
 			break;
+		case 'V':
+			version_n_exit(EXIT_SUCCESS);
 		case 'h':
 			usage(EXIT_SUCCESS);
 		default:
 			usage(EXIT_FAILURE);
-			break;
 		}
 	}
 }
@@ -462,7 +465,7 @@ int main(int argc, char **argv) {
 		.ai_socktype = SOCK_DGRAM,
 		.ai_flags    = AI_FLAGS,
 	};
-#ifdef ENABLE_NLS
+#ifdef USE_NLS
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE_NAME, LOCALEDIR);
 	textdomain(PACKAGE_NAME);
@@ -563,8 +566,10 @@ int main(int argc, char **argv) {
 		freeaddrinfo(resolv);
 	if (rts.outpack)
 		free(rts.outpack);
+#ifdef ENABLE_NI6
 	if (rts.ni)
 		free(rts.ni);
+#endif
 	return rcode;
 }
 

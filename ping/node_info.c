@@ -33,7 +33,7 @@
 #include "iputils_common.h"
 #include "iputils_ni.h"
 #include "iputils_ni_aux.h"
-#ifdef PING6_NONCE_MEMORY
+#if defined(PING6_NONCE_MEMORY) || !defined(SCOPE_DELIMITER)
 #include "common.h"
 #endif
 #include "md5.h"

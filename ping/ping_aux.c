@@ -62,9 +62,11 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 #include <err.h>
 #include <math.h>
+#include <locale.h>
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <sys/types.h>
@@ -72,10 +74,6 @@
 #include <net/if.h>
 #include <linux/in6.h>
 #include <linux/errqueue.h>
-
-#ifdef ENABLE_NLS
-#include <locale.h>
-#endif
 
 unsigned long strtoul_or_err(const char *str, const char *errmesg,
 	unsigned long min, unsigned long max)
@@ -99,19 +97,12 @@ double strtod_or_err(const char *str, const char *errmesg,
 {
 	errno = (str && *str) ? 0 : EINVAL;
 	if (!errno) {
-		/*
-		 * Here we always want to use locale regardless USE_IDN or ENABLE_NLS,
-		 * because it handles decimal point of -i/-W input options
-		 */
 		char *end = NULL;
-#ifdef ENABLE_NLS
+/* Here we always use "C" LC_NUMERIC to have dots as decimal separators */
 		setlocale(LC_NUMERIC, "C");
-#endif
 		double num = strtod(str, &end);
 		int keep = errno;
-#ifdef ENABLE_NLS
 		setlocale(LC_NUMERIC, "");
-#endif
 		errno = keep;
 		if (!(errno || (str == end) || (end && *end))) {
 			if (isgreaterequal(num, min) && islessequal(num, max))
@@ -209,16 +200,10 @@ void pmtu_interval(state_t *rts) {
 	int pmtudo = rts->ip6 ? IPV6_PMTUDISC_DO : IP_PMTUDISC_DO;
 	if (rts->uid) {
 		if (rts->interval < MIN_MCAST_MS) {
-#ifdef ENABLE_NLS
-			setlocale(LC_NUMERIC, "C");
-#endif
 			errx(EINVAL, "%s %u%s, %s", _(rts->ip6 ?
 				"Minimal user interval for multicast ping must be >=" :
 				"Minimal user interval for broadcast ping must be >="),
 				MIN_MCAST_MS, _(" ms"), _("see -i option for details"));
-#ifdef ENABLE_NLS
-			setlocale(LC_NUMERIC, ""); // for symmetry
-#endif
 		}
 		if ((rts->pmtudisc >= 0) && (rts->pmtudisc != pmtudo))
 			errx(EINVAL, "%s %s", _(rts->ip6 ?

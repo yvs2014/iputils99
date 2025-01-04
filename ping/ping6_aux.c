@@ -53,14 +53,20 @@
 // ping6.c auxiliary functions
 
 #include "iputils_common.h"
+#ifdef ENABLE_NI6
 #include "iputils_ni.h"
+#endif
 #include "common.h"
 #include "ping6_aux.h"
+#ifdef ENABLE_NI6
 #include "node_info.h"
+#endif
 
 #include <stdio.h>
+#ifdef ENABLE_NI6
 #include <ctype.h>
 #include <errno.h>
+#endif
 #include <arpa/inet.h>
 #include <netinet/icmp6.h>
 #include <resolv.h>
@@ -184,6 +190,7 @@ void print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
 	// note: no \n, no stdout flush
 }
 
+#ifdef ENABLE_NI6
 ssize_t build_ni_hdr(struct ping_ni *ni, long ntransmitted, uint8_t *hdr) {
 	struct ni_hdr *nih = (struct ni_hdr *)hdr;
 	nih->ni_cksum = 0;
@@ -313,4 +320,5 @@ void print6_ni_reply(bool ip6, const uint8_t *hdr, size_t len) {
 	}
 	printf("; %s%u;", _("seq="), ntohs(*(uint16_t *)nih->ni_nonce));
 }
+#endif /* ENABLE_NI6 */
 

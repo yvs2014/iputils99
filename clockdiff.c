@@ -81,7 +81,7 @@
 #ifdef HAVE_LIBCAP
 #include <sys/capability.h>
 #endif
-#ifdef ENABLE_NLS
+#ifdef USE_NLS
 #include <locale.h>
 #endif
 
@@ -490,29 +490,18 @@ static void parse_opts(struct run_state *ctl, int argc, char **argv) {
 			ctl->time_format = time_format_iso;
 			break;
 		case 'V':
-			printf(IPUTILS_VERSION("clockdiff"));
-			print_config();
-			exit(EXIT_SUCCESS);
+			version_n_exit(EXIT_SUCCESS);
 		case 'h':
 			usage(EXIT_SUCCESS);
 		default:
-			printf("Try '%s --help' for more information\n",
-#ifdef HAVE_GETPROGNAME
-				getprogname()
-#elif  HAVE_PROGRAM_INVOCATION_SHORT_NAME
-				program_invocation_short_name
-#else
-				argv[0]
-#endif
-			);
-			exit(EXIT_FAILURE);
+			usage(EXIT_FAILURE);
 		}
 }
 
 int main(int argc, char **argv) {
 	setmyname(argv[0]);
 	atexit(close_stdout);
-#ifdef ENABLE_NLS
+#ifdef USE_NLS
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE_NAME, LOCALEDIR);
 	textdomain(PACKAGE_NAME);

@@ -15,7 +15,9 @@
 # include <sys/capability.h>
 #endif
 
+#ifdef ENABLE_NI6
 #include "node_info.h"
+#endif
 
 #ifndef SCOPE_DELIMITER
 /* defined in netdb.h */
@@ -162,7 +164,9 @@ typedef struct ping_state {
 	uint32_t flowlabel;
 	bool subnet_router_anycast;
 	cmsg_t *cmsg;       // allocated in ping6
+#ifdef ENABLE_NI6
 	struct ping_ni *ni; // allocated with -N option
+#endif
 } state_t;
 
 typedef struct fnset_t {

@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <netdb.h>
 
-#ifdef ENABLE_NLS
+#ifdef USE_NLS
 #include <libintl.h>
 #define _(Text) gettext (Text)
 #else
@@ -33,18 +33,16 @@
 # define IPV6_PMTUDISC_PROBE	3
 #endif
 
-#ifdef USE_IDN
-#ifdef AI_IDN
+#if defined(USE_IDN) && defined(AI_IDN)
 # define AI_FLAGS (AI_CANONNAME | AI_IDN | AI_CANONIDN)
 #else
 # define AI_FLAGS AI_CANONNAME
 #endif /* AI_IDN */
-#ifdef NI_IDN
+#if defined(USE_IDN) && defined(NI_IDN)
 # define NI_FLAGS NI_IDN
 #else
 # define NI_FLAGS 0
 #endif /* NI_IDN */
-#endif /* USE_IDN */
 
 #define INFO	"INFO"		// verbose output prefix
 #define WARN	"WARNING"	// warning prefix
@@ -68,8 +66,8 @@
 
 long strtol_or_err(const char *str, const char *errmesg, long min, long max);
 void close_stdout(void);
-void print_config(void);
 void setmyname(const char *argv0);
+NORETURN void version_n_exit(int rc);
 NORETURN void usage_common(int rc, const char *options);
 
 #ifndef timespecsub

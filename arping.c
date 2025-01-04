@@ -39,7 +39,7 @@
 # include <sys/prctl.h>
 #endif
 
-#ifdef ENABLE_NLS
+#ifdef USE_NLS
 #include <locale.h>
 #endif
 
@@ -853,7 +853,7 @@ int main(int argc, char **argv) {
 
 	atexit(close_stdout);
 	arping_limit_capabilities(&ctl);
-#ifdef ENABLE_NLS
+#ifdef USE_NLS
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE_NAME, LOCALEDIR);
 	textdomain(PACKAGE_NAME);
@@ -896,9 +896,7 @@ int main(int argc, char **argv) {
 			ctl.source = optarg;
 			break;
 		case 'V':
-			printf(IPUTILS_VERSION("arping"));
-			print_config();
-			exit(EXIT_SUCCESS);
+			version_n_exit(EXIT_SUCCESS);
 		case 'h':
 		case '?':
 			usage(EXIT_SUCCESS);

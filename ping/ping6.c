@@ -62,8 +62,10 @@
 // part of ping.c
 
 #include "iputils_common.h"
+#ifdef ENABLE_NI6
 #include "iputils_ni.h"
 #include "node_info.h"
+#endif
 #include "ipv6.h"
 #include "common.h"
 #include "ping_aux.h"
@@ -90,8 +92,11 @@
 
 // func_set:send_probe
 static ssize_t ping6_send_probe(state_t *rts, int fd, uint8_t *packet) {
-	ssize_t len = (rts->ni && niquery_is_enabled(rts->ni)) ?
+	ssize_t len =
+#ifdef ENABLE_NI6
+	(rts->ni && niquery_is_enabled(rts->ni)) ?
 		build_ni_hdr(rts->ni, rts->ntransmitted, packet) :
+#endif
 		build_echo_hdr(rts, packet);
 	len += rts->datalen;
 	//
@@ -267,7 +272,9 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 			ntohs(icmp->icmp6_seq), hops, at, NULL,
 			peer, true, !okay))
 				return false;
-	} else if (icmp->icmp6_type == IPUTILS_NI_ICMP6_REPLY) {
+	}
+#ifdef ENABLE_NI6
+	else if (icmp->icmp6_type == IPUTILS_NI_ICMP6_REPLY) {
 		if (!rts->ni)
 			return true;
 		struct ni_hdr *nih = (struct ni_hdr *)icmp;
@@ -278,7 +285,9 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 		if (gather_stats(rts, (uint8_t *)icmp, sizeof(*icmp), received,
 			seq, hops, at, print6_ni_reply, peer, true, false))
 				return false;
-	} else {
+	}
+#endif
+	else {
 		/* We must not ever fall here. All the messages but
 		 * echo reply are blocked by filter and error are
 		 * received with IPV6_RECVERR. Ugly code is preserved
@@ -311,10 +320,8 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		.receive_error  = ping6_receive_error,
 		.parse_reply    = ping6_parse_reply,
 	};
-	static uint32_t scope_id = 0;
 
 	rts->ip6 = true;
-
 	cmsg_t cmsg6 = {0};
 	rts->cmsg = &cmsg6;
 
@@ -323,6 +330,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 	struct sockaddr_in6 *whereto  = (struct sockaddr_in6 *)&rts->whereto;
 	source->sin6_family = AF_INET6;
 
+#ifdef ENABLE_NI6
 	if (rts->ni && niquery_is_enabled(rts->ni)) {
 		niquery_init_nonce(rts->ni);
 		if (!niquery_is_subject_valid(rts->ni)) {
@@ -331,17 +339,21 @@ int ping6_run(state_t *rts, int argc, char **argv,
 			rts->ni->subject_type = IPUTILS_NI_ICMP6_SUBJ_IPV6;
 		}
 	}
+#endif
 
 	char *target = NULL;
 	if (argc > 1) {
 		usage(EINVAL);
 	} else if (argc == 1) {
 		target = *argv;
-	} else if (rts->ni) {
+	}
+#ifdef ENABLE_NI6
+	else if (rts->ni) {
 		if ((rts->ni->query < 0) && (rts->ni->subject_type != IPUTILS_NI_ICMP6_SUBJ_FQDN))
 			usage(EINVAL);
 		target = rts->ni->group;
 	}
+#endif
 
 	memcpy(whereto, ai->ai_addr, sizeof(*whereto));
 	whereto->sin6_port = htons(IPPROTO_ICMPV6);
@@ -353,10 +365,11 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		memcpy(&firsthop->sin6_addr, &whereto->sin6_addr, sizeof(firsthop->sin6_addr));
 		firsthop->sin6_scope_id = whereto->sin6_scope_id;
 		/* Verify scope_id is the same as intermediate nodes */
-		if (firsthop->sin6_scope_id && scope_id && (firsthop->sin6_scope_id != scope_id))
-			errx(EINVAL, "%s", _("Scope discrepancy among the nodes"));
-		else if (!scope_id)
+		static uint32_t scope_id;
+		if (!scope_id)
 			scope_id = firsthop->sin6_scope_id;
+		else if (firsthop->sin6_scope_id && (firsthop->sin6_scope_id != scope_id))
+			errx(EINVAL, "%s", _("Scope discrepancy among the nodes"));
 	}
 
 	rts->hostname = target;
@@ -436,9 +449,11 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		/* select icmp echo reply as icmp type to receive */
 		struct icmp6_filter filter = {0};
 		ICMP6_FILTER_SETBLOCKALL(&filter);
+#ifdef ENABLE_NI6
 		if (rts->ni && niquery_is_enabled(rts->ni))
 			ICMP6_FILTER_SETPASS(IPUTILS_NI_ICMP6_REPLY, &filter);
 		else
+#endif
 			ICMP6_FILTER_SETPASS(ICMP6_ECHO_REPLY, &filter);
 		if (setsockopt(sock->fd, IPPROTO_ICMPV6, ICMP6_FILTER, &filter, sizeof(filter)) < 0)
 			err(errno, "setsockopt(ICMP6_FILTER)");

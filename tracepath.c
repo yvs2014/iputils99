@@ -38,7 +38,7 @@
 #include <linux/icmpv6.h>
 #include <linux/types.h>
 
-#ifdef ENABLE_NLS
+#ifdef USE_NLS
 #include <locale.h>
 #endif
 
@@ -439,7 +439,7 @@ int main(int argc, char **argv) {
 #endif
 
 	atexit(close_stdout);
-#ifdef ENABLE_NLS
+#ifdef USE_NLS
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE_NAME, LOCALEDIR);
 	textdomain(PACKAGE_NAME);
@@ -478,9 +478,7 @@ int main(int argc, char **argv) {
 			ctl.base_port = strtol_or_err(optarg, _("Invalid argument"), 0, UINT16_MAX);
 			break;
 		case 'V':
-			printf(IPUTILS_VERSION("tracepath"));
-			print_config();
-			return 0;
+			version_n_exit(EXIT_SUCCESS);
 		case 'h':
 		case '?':
 			usage(EXIT_SUCCESS);

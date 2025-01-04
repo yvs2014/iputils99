@@ -394,14 +394,8 @@ int ping4_run(state_t *rts, int argc, char **argv,
 		.receive_error  = ping4_receive_error,
 		.parse_reply    = ping4_parse_reply,
 	};
-	static const struct addrinfo hints = {
-		.ai_family = AF_INET,
-		.ai_protocol = IPPROTO_UDP,
-		.ai_flags = AI_FLAGS,
-	};
 
 	rts->ip6 = false;
-
 	route_t route4 = {0};
 	rts->route = &route4;
 
@@ -435,6 +429,11 @@ int ping4_run(state_t *rts, int argc, char **argv,
 		} else {
 			struct addrinfo *result = ai;
 			if (argc > 1) {
+				const struct addrinfo hints = {
+					.ai_family   = AF_INET,
+					.ai_protocol = IPPROTO_UDP,
+					.ai_flags    = AI_FLAGS,
+				};
 				int rc = getaddrinfo(target, NULL, &hints, &result);
 				if (rc)
 					errx(EINVAL, "%s: %s", target, gai_strerror(rc));

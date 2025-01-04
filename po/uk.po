@@ -709,7 +709,7 @@ msgstr "Не вдалося встановити TTL"
 
 # %ld data bytes
 msgid "data bytes"
-msgstr "байтів даних"
+msgstr "байт даних"
 
 #
 msgid "(same route)"
@@ -929,7 +929,7 @@ msgstr "Відставання часу, вживаємо контрзаході
 
 # %ld bytes
 msgid "bytes"
-msgstr "байтів"
+msgstr "байт"
 
 #
 msgid "icmp_seq="

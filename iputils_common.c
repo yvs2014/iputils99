@@ -1,12 +1,8 @@
 
 #include "iputils_common.h"
 
-#include <stdarg.h>
-#include <stdio_ext.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
 #include <time.h>
 #include <err.h>
 #include <errno.h>
@@ -15,31 +11,13 @@
 # include <sys/random.h>
 #endif
 
-static int close_stream(FILE *stream) {
-	const int flush_status = fflush(stream);
-#ifdef HAVE___FPENDING
-	const int some_pending = (__fpending(stream) != 0);
-#endif
-	const int prev_fail = (ferror(stream) != 0);
-	const int fclose_fail = (fclose(stream) != 0);
-	if (flush_status ||
-	    prev_fail || (fclose_fail && (
-#ifdef HAVE___FPENDING
-					  some_pending ||
-#endif
-					  errno != EBADF))) {
-		if (!fclose_fail && !(errno == EPIPE))
-			errno = 0;
-		return EOF;
-	}
-	return 0;
-}
-
 void close_stdout(void) {
-	if (close_stream(stdout) && (errno != EPIPE))
-		err(errno ? errno : EXIT_FAILURE, "write error");
-	if (close_stream(stderr))
-		_exit(errno ? errno : EXIT_FAILURE);
+	if (fclose(stdout))
+		if ((errno != EBADF) && (errno != EPIPE))
+			err(errno, "stdout");
+	if (fclose(stderr))
+		if ((errno != EBADF) && (errno != EPIPE))
+			err(errno, "stderr");
 }
 
 long strtol_or_err(const char *str, const char *errmesg, long min, long max) {
@@ -80,26 +58,6 @@ void timersub(struct timeval *a, struct timeval *b, struct timeval *res) {
 }
 #endif
 
-inline void print_config(void) {
-	printf("%cCAP %cIDN %cNLS\n",
-#ifdef HAVE_LIBCAP
-	'+',
-#else
-	'-',
-#endif
-#ifdef USE_IDN
-	'+',
-#else
-	'-',
-#endif
-#ifdef ENABLE_NLS
-	'+'
-#else
-	'-'
-#endif
-	);
-}
-
 static const char *myname;
 
 void setmyname(const char *argv0) {
@@ -113,6 +71,45 @@ void setmyname(const char *argv0) {
 #endif
 	if (!myname)
 		myname = argv0 ? argv0 : "";
+}
+
+void version_n_exit(int rc) {
+	if (!myname)
+		setmyname(NULL);
+	printf("%s %s%s: %cCAP %cIDN %cNLS %cNI6\n",
+		myname,
+#ifdef PACKAGE_NAME
+		PACKAGE_NAME,
+#else
+		"iputils",
+#endif
+#ifdef PACKAGE_VERSION
+		"_" PACKAGE_VERSION,
+#else
+		"",
+#endif
+#ifdef HAVE_LIBCAP
+		'+',
+#else
+		'-',
+#endif
+#ifdef USE_IDN
+		'+',
+#else
+		'-',
+#endif
+#ifdef USE_NLS
+		'+',
+#else
+		'-',
+#endif
+#ifdef ENABLE_NI6
+		'+'
+#else
+		'-'
+#endif
+	);
+	exit(rc);
 }
 
 void usage_common(int rc, const char *options) {

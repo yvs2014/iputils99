@@ -20,77 +20,74 @@ if build_tracepath == true
 	manpages += ['tracepath']
 endif
 
-xsltproc = find_program('xsltproc', required : build_mans or build_html_mans)
+xsltproc = find_program('xsltproc', required: build_man or build_html)
 xsltproc_args = [
 	'--nonet',
 	'--stringparam', 'man.output.quietly', '1',
 	'--stringparam', 'funcsynopsis.style', 'ansi',
 	'--stringparam', 'man.th.extra1.suppress', '1',
-	'--stringparam', 'iputils.version', meson.project_version(),
+	'--stringparam', name + '.version', version,
 ]
 
-if xsltproc.found()
-	doc_targets = []
-	if build_mans
-		doc_targets += ['manpages']
+valid = xsltproc.found()
+if valid
+	docs = []
+	if build_man
+		docs += ['manpages']
 	endif
-	if build_html_mans
-		doc_targets += ['html']
+	if build_html
+		docs += ['html']
 	endif
-	xsltproc_works = true
-	foreach doc_target : doc_targets
-		xsl = 'http://docbook.sourceforge.net/release/xsl-ns/current/' + doc_target + '/docbook.xsl'
-		xsl_cmd = [xsltproc, '--nonet', xsl]
-		if meson.version().version_compare('>=0.47')
-			testrun = run_command(xsl_cmd, check: false)
-		else
-			testrun = run_command(xsl_cmd)
-		endif
-		if testrun.returncode() != 0
-			xsltproc_works = false
-			message('WARNING: xsltproc: cannot process ' + xsl)
+	foreach doc: docs
+		xsl = 'http://docbook.sourceforge.net/release/xsl-ns/current/' + doc + '/docbook.xsl'
+		cmd = [xsltproc, '--nonet', xsl]
+		valid = (run_command(cmd, check: false).returncode() == 0)
+		if not valid
+			warning('xsltproc: cannot process ' + xsl)
+			break
 		endif
 	endforeach
 endif
 
-if xsltproc_works == false
-	message('Docs cannot be built: xsltproc does not work correctly')
-	build_mans = false
-	build_html_mans = false
+if not valid
+	warning('Docs will not be built')
+	build_man  = false
+	build_html = false
 endif
 
-if build_mans
-	foreach man : manpages
+if build_man
+	foreach man: manpages
 		custom_target(man + '.8',
-			output : man + '.8',
-			input : man + '.xml',
-			command : [
+			output: man + '.8',
+			input:  man + '.xml',
+			command: [
 				xsltproc,
 				'-o', '@OUTPUT@',
 				xsltproc_args,
 				custom_man_xsl,
 				'@INPUT@',
 			],
-			install : true,
-			install_dir : join_paths(get_option('mandir'), 'man8'),
+			install:     true,
+			install_dir: join_paths(get_option('mandir'), 'man8'),
 		)
 	endforeach
 endif
 
-if build_html_mans
-	foreach man : manpages
+if build_html
+	foreach man: manpages
 		custom_target(man + '.html',
-			output : man + '.html',
-			input : man + '.xml',
-			command : [
+			output: man + '.html',
+			input:  man + '.xml',
+			command: [
 				xsltproc,
 				'-o', '@OUTPUT@',
 				xsltproc_args,
 				custom_html_xsl,
 				'@INPUT@',
 			],
-			install : true,
-			install_dir : join_paths(get_option('datadir'), meson.project_name()),
+			install:     true,
+			install_dir: join_paths(get_option('datadir'), name),
 		)
 	endforeach
 endif
+
