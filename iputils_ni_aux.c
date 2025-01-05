@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <arpa/inet.h>
-#ifdef PING6_NONCE_MEMORY
+#ifdef NI6_NONCE_MEMORY
 #include <stdlib.h>
 #include <errno.h>
 #include <time.h>
@@ -18,7 +18,7 @@
 
 #include "iputils_ni_aux.h"
 
-#ifdef PING6_NONCE_MEMORY
+#ifdef NI6_NONCE_MEMORY
 static unsigned srand_fallback(void) {
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME, &ts);

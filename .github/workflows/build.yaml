@@ -1,0 +1,35 @@
+name: build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build_and_test:
+    name: build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: master
+      - name: Deps
+        run: |
+          sudo apt update
+          sudo apt install -y meson git pkg-config sed gettext libcap2-bin libcap-dev libidn2-dev
+      - name: Build
+        run: |
+          meson setup _build
+          meson compile -C _build
+      - name: Tests
+        run: |
+          sudo /sbin/setcap cap_net_raw+ep ./_build/ping/ping
+          meson test -C _build
+

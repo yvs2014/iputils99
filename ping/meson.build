@@ -1,5 +1,7 @@
 # Copyright (c) Iputils Project, 2017-2021
 
+# local edition: yvs, 2024
+
 ping_src = common_sources
 ping_src += 'ping.c'
 ping_src += 'ping_aux.c'

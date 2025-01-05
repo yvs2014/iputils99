@@ -33,7 +33,7 @@
 #include "iputils_common.h"
 #include "iputils_ni.h"
 #include "iputils_ni_aux.h"
-#if defined(PING6_NONCE_MEMORY) || !defined(SCOPE_DELIMITER)
+#if defined(NI6_NONCE_MEMORY) || !defined(SCOPE_DELIMITER)
 #include "common.h"
 #endif
 #include "md5.h"
@@ -108,7 +108,7 @@ int niquery_is_enabled(struct ping_ni *ni)
 
 void niquery_init_nonce(struct ping_ni *ni)
 {
-#if PING6_NONCE_MEMORY
+#if NI6_NONCE_MEMORY
 	iputils_srand();
 	ni->nonce_ptr = calloc(NI_NONCE_SIZE, MAX_DUP_CHK);
 	if (!ni->nonce_ptr)
@@ -121,7 +121,7 @@ void niquery_init_nonce(struct ping_ni *ni)
 #endif
 }
 
-#if !PING6_NONCE_MEMORY
+#if !NI6_NONCE_MEMORY
 static int niquery_nonce(struct ping_ni *ni, uint8_t *nonce, int fill)
 {
 	static uint8_t digest[IPUTILS_MD5LENGTH];
@@ -154,7 +154,7 @@ static int niquery_nonce(struct ping_ni *ni, uint8_t *nonce, int fill)
 void niquery_fill_nonce(struct ping_ni *ni, uint16_t seq, uint8_t *nonce)
 {
 	uint16_t v = htons(seq);
-#if PING6_NONCE_MEMORY
+#if NI6_NONCE_MEMORY
 	int i;
 
 	memcpy(&ni->nonce_ptr[NI_NONCE_SIZE * (seq % MAX_DUP_CHK)], &v, sizeof(v));
@@ -171,7 +171,7 @@ void niquery_fill_nonce(struct ping_ni *ni, uint16_t seq, uint8_t *nonce)
 
 int niquery_check_nonce(struct ping_ni *ni, uint8_t *nonce)
 {
-#if PING6_NONCE_MEMORY
+#if NI6_NONCE_MEMORY
 	uint16_t seq = ntohsp((uint16_t *)nonce);
 	if (memcmp(nonce, &ni->nonce_ptr[NI_NONCE_SIZE * (seq % MAX_DUP_CHK)], NI_NONCE_SIZE))
 		return -1;

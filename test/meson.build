@@ -1,6 +1,6 @@
 # Copyright (c) 2021 Petr Vorel <pvorel@suse.cz>
 
-# local edition by @yvs
+# local edition: yvs, 2024
 
 cmds = []
 if build_clockdiff

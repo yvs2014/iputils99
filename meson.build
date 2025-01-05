@@ -1,72 +1,58 @@
 # Copyright (c) Iputils Project, 2017-2021
 
-# local edition by @yvs
+# local edition: yvs, 2024
 
 project('iputils', 'c',
 	default_options: [
 		'c_std=c99',
 		'warning_level=3',
-		'localstatedir=var',
 #		'b_sanitize=address,undefined', # use for testing
 	],
 	meson_version: '>=0.47',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
-			check: false).stdout().strip() : '20250104',
+			check: false).stdout().strip() : '20250105',
 )
 
 name    = meson.project_name()
 version = meson.project_version()
 cc      = meson.get_compiler('c')
 deps    = []
+manpage = []
+manexcl = {}
 
 conf = configuration_data()
 conf.set_quoted('PACKAGE_NAME',    name)
 conf.set_quoted('PACKAGE_VERSION', version)
 config_h = 'config.h'
 
+build_ping      = get_option('BUILD_PING')
 build_arping    = get_option('BUILD_ARPING')
 build_clockdiff = get_option('BUILD_CLOCKDIFF')
-build_ping      = get_option('BUILD_PING')
 build_tracepath = get_option('BUILD_TRACEPATH')
 
-build_man  = get_option('BUILD_MAN')
-build_html = get_option('BUILD_HTML')
-
-run_tests = not get_option('SKIP_TESTS')
-
-prefix = get_option('prefix')
-bindir = join_paths(prefix, get_option('bindir'))
+prefix    = get_option('prefix')
+bindir    = join_paths(prefix, get_option('bindir'))
 localedir = join_paths(prefix, get_option('localedir'))
-sbindir = join_paths(prefix, get_option('sbindir'))
+sbindir   = join_paths(prefix, get_option('sbindir'))
 
-systemd = dependency('systemd', required: false)
-install_systemd_units = systemd.found() or get_option('INSTALL_SYSTEMD_UNITS')
-
-systemdunitdir = get_option('systemdunitdir')
-if systemdunitdir == '' and install_systemd_units
-	unitdir_var = 'systemdsystemunitdir'
-	if meson.version().version_compare('>=0.51')
-		systemdunitdir = systemd.get_variable(pkgconfig: unitdir_var)
-	else
-		systemdunitdir = systemd.get_pkgconfig_variable(unitdir_var)
-	endif
-endif
-
-setcap_arping = false
+setcap_ping      = false
+setcap_arping    = false
 setcap_clockdiff = false
-setcap_ping = false
-if (not get_option('NO_SETCAP_OR_SUID'))
-  setcap_arping = get_option('SETCAP_OR_SUID_ARPING')
-  setcap_clockdiff = get_option('SETCAP_OR_SUID_CLOCKDIFF')
-  setcap_ping = get_option('SETCAP_OR_SUID_PING')
+if not get_option('NO_CAPS')
+	setcap_ping      = get_option('PING_CAPS')
+	setcap_arping    = get_option('ARPING_CAPS')
+	setcap_clockdiff = get_option('CLOCKDIFF_CAPS')
 endif
 
 extra_funcs = {}
 extra_funcs += {'getprogname':   {'hdr': ['stdlib.h']}}
 extra_funcs += {'program_invocation_short_name': {'hdr': ['errno.h']}}
-extra_funcs += {'getrandom':     {'hdr': ['sys/random.h']}}
 extra_funcs += {'clock_gettime': {'hdr': ['time.h'], 'lib': ['rt'], 'req': true}}
+
+if host_machine.endian() == 'big'
+	conf.set('WORDS_BIGENDIAN', '1')
+endif
 
 cap = get_option('USE_CAP')
 if cap
@@ -85,11 +71,14 @@ if build_ping
 	ni6 = get_option('NI6')
         if ni6	# RFC4620 builtin client
 		conf.set('ENABLE_NI6', 1, description: 'build with RFC4620 NodeInfo client')
-		if get_option('PING6_NONCE_MEMORY')
-			conf.set('PING6_NONCE_MEMORY', 1,
+		if get_option('NI6_NONCE_MEMORY')
+			conf.set('NI6_NONCE_MEMORY', 1,
 				description: 'ping6 NodeInfo with nonce memory')
 		endif
 		extra_files += name + '_ni_aux.c'
+		extra_funcs += {'getrandom': {'hdr': ['sys/random.h']}}
+	else
+		manexcl += {'ping': ['N']}
 	endif
 	ping_extra = files(extra_files)
 endif
@@ -114,10 +103,6 @@ if nls
 	conf.set_quoted('LOCALEDIR', localedir)
 	subdir('po')
 	extra_funcs += {'gettext': {'hdr': ['libintl.h'], 'lib': ['intl'], 'req': true}}
-endif
-
-if host_machine.endian() == 'big'
-	conf.set('WORDS_BIGENDIAN', '1')
 endif
 
 # Check functions availability
@@ -177,11 +162,13 @@ common_sources = files(name + '_common.c')
 
 if build_ping
 	subdir('ping')
+	manpage += 'ping'
 endif
 
 if build_tracepath
 	tracepath = executable('tracepath', common_sources + ['tracepath.c'],
 		dependencies: deps, install: true)
+	manpage += 'tracepath'
 endif
 
 if build_clockdiff
@@ -191,6 +178,7 @@ if build_clockdiff
 		meson.add_install_script('build-aux/setcap-setuid.sh',
 			bindir, 'clockdiff', perm_type, setcap_path)
 	endif
+	manpage += 'clockdiff'
 endif
 
 if build_arping
@@ -200,48 +188,43 @@ if build_arping
 		meson.add_install_script('build-aux/setcap-setuid.sh',
 			bindir, 'arping', perm_type, setcap_path)
 	endif
+	manpage += 'arping'
 endif
 
-if build_man or build_html
-	subdir('doc')
+if manpage.length() > 0
+	subdir('man')
 endif
 
-if run_tests
+tst = not get_option('SKIP_TESTS')
+if tst
 	subdir('test')
 endif
-
 
 # summary at the end
 #
 if meson.version().version_compare('>=0.53')
 	sections = {}
-	sections += {'DOCUMENTATION': {
-		'Manual pages': build_man,
-		'HTML manuals': build_html,
-	}}
 	sections += {'APPLICATIONS': {
-		'ping':         build_ping,
-		'  caps/suid ping':       setcap_ping,
-		'arping':       build_arping,
-		'  caps/suid arping':     setcap_arping,
-		'clockdiff':    build_clockdiff,
-		'  caps/suid clockdiff ': setcap_clockdiff,
-		'tracepath':    build_tracepath,
+		'ping @0@'     .format(setcap_ping      ? '(with caps/suid)' : ''):
+			build_ping,
+		'arping @0@'   .format(setcap_arping    ? '(with caps/suid)' : ''):
+			build_arping,
+		'clockdiff @0@'.format(setcap_clockdiff ? '(with caps/suid)' : ''):
+			build_clockdiff,
+		'tracepath': build_tracepath,
 	}}
 	sections += {'CONFIGURATION': {
-		'Caps  (libcap)': cap,
-		'IDN (via libc)': idn,
-		'NLS  (gettext)': nls,
-		'NI6  (rfc4620)': ni6,
-		'Systemd':        install_systemd_units,
-		'Tests':          run_tests,
+		'Caps   (libcap)' : cap,
+		'IDN  (via libc) ': idn,
+		'NLS   (gettext)' : nls,
+		'NI6   (rfc4620)' : ni6,
+		'Tests'           : tst,
 	}}
 	sections += {'DIRECTORIES': {
-		'prefix':         prefix,
-		'bindir':         bindir,
-		'localedir':      localedir,
-		'sbindir':        sbindir,
-		'systemdunitdir': systemdunitdir,
+		'prefix'   : prefix,
+		'bindir'   : bindir,
+		'sbindir'  : sbindir,
+		'localedir': localedir,
         }}
 	foreach section, elements: sections
 		foreach key, value: elements
@@ -252,32 +235,29 @@ if meson.version().version_compare('>=0.53')
 	endforeach
 else # legacy
 
-output  = name + '-' + version
-output += '\n\nAPPLICATIONS (build)\n'
-output += 'Manual pages:   ' + build_man.to_string()  + '\n'
-output += 'HTML maniuals:  ' + build_html.to_string() + '\n'
-output += 'arping:         ' + build_arping.to_string()
-output += '  (caps/suid ' + setcap_arping.to_string() + ')\n'
-output += 'clockdiff:      ' + build_clockdiff.to_string()
-output += '  (caps/suid ' + setcap_clockdiff.to_string() + ')\n'
+output = name + '-' + version + '\n'
+
+output += '\nAPPLICATIONS (build)\n'
 output += 'ping:           ' + build_ping.to_string()
-output += '  (caps/suid ' + setcap_ping.to_string() + ')\n'
-output += 'tracepath:      ' + build_tracepath.to_string() + '\n'
+output += '  (caps/suid ' + setcap_ping.to_string()        + ')\n'
+output += 'arping:         ' + build_arping.to_string()
+output += '  (caps/suid ' + setcap_arping.to_string()      + ')\n'
+output += 'clockdiff:      ' + build_clockdiff.to_string()
+output += '  (caps/suid ' + setcap_clockdiff.to_string()   + ')\n'
+output += 'tracepath:      ' + build_tracepath.to_string() +  '\n'
 
 output += '\nCONFIGURATION\n'
 output += 'Caps  (libcap): ' + cap.to_string() + '\n'
 output += 'IDN (via libc): ' + idn.to_string() + '\n'
 output += 'NLS  (gettext): ' + nls.to_string() + '\n'
 output += 'NI6  (rfc4620): ' + ni6.to_string() + '\n'
-output += 'systemd:        ' + install_systemd_units.to_string() + '\n'
-output += 'run tests:      ' + run_tests.to_string() + '\n'
+output += 'Tests:          ' + tst.to_string() + '\n'
 
-output += '\nSYSTEM PATHS\n'
-output += 'prefix:         ' + prefix + '\n'
-output += 'bindir:         ' + bindir + '\n'
-output += 'localedir:      ' + localedir + '\n'
-output += 'sbindir:        ' + sbindir + '\n'
-output += 'systemdunitdir: ' + systemdunitdir + '\n'
+output += '\nDIRECTORIES\n'
+output += 'prefix:         ' + prefix         + '\n'
+output += 'bindir:         ' + bindir         + '\n'
+output += 'sbindir:        ' + sbindir        + '\n'
+output += 'localedir:      ' + localedir      + '\n'
 
 message(output)
 
