@@ -1072,8 +1072,8 @@ msgid "NET ERROR"
 msgstr "ERREUR RESEAU"
 
 #
-msgid "reply received 8"
-msgstr "réponse reçue 8"
+msgid "reply received"
+msgstr "réponse reçue"
 
 #
 msgid "send failed"

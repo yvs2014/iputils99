@@ -1068,8 +1068,8 @@ msgid "NET ERROR"
 msgstr "ERRO DE REDE"
 
 #
-msgid "reply received 8"
-msgstr "resposta recebida 8"
+msgid "reply received"
+msgstr "resposta recebida"
 
 #
 msgid "send failed"

@@ -533,7 +533,7 @@ int main(int argc, char **argv) {
 		.ai_flags    = AI_CANONNAME
 	  };
 	  struct addrinfo *res = NULL;
-	  int rc = gai_wrapper(argv[0], NULL, &hints, &res);
+	  int rc = GAI_WRAPPER(argv[0], NULL, &hints, &res);
 	  if (rc) {
 		if (rc == EAI_SYSTEM)
 			err(errno, "%s", "getaddrinfo()");

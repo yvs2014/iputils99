@@ -1005,8 +1005,8 @@ msgid "NET ERROR"
 msgstr "ネットワークエラー"
 
 #
-msgid "reply received 8"
-msgstr "応答受信 8"
+msgid "reply received"
+msgstr "応答受信"
 
 #
 msgid "send failed"

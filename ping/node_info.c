@@ -274,7 +274,7 @@ static int niquery_option_subject_addr_handler(struct ping_ni *ni, int index, co
 	}
 
 	struct addrinfo *res = NULL;
-	int rc = gai_wrapper(arg, 0, &hints, &res);
+	int rc = GAI_WRAPPER(arg, 0, &hints, &res);
 	if (rc) {
 		if (rc == EAI_SYSTEM)
 			warn("%s", "getaddrinfo()");

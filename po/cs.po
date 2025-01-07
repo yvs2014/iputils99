@@ -1066,8 +1066,8 @@ msgid "NET ERROR"
 msgstr "CHYBA SÍTĚ"
 
 #
-msgid "reply received 8"
-msgstr "přijata odpověď 8"
+msgid "reply received"
+msgstr "přijata odpověď"
 
 #
 msgid "send failed"

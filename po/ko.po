@@ -1067,8 +1067,8 @@ msgid "NET ERROR"
 msgstr "넷 오류"
 
 #
-msgid "reply received 8"
-msgstr "응답 8 받았습니다"
+msgid "reply received"
+msgstr "응답 받았습니다"
 
 #
 msgid "send failed"

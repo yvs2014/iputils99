@@ -928,7 +928,7 @@ int main(int argc, char **argv) {
 			.ai_flags    = AI_FLAGS,
 		};
 		struct addrinfo *res = NULL;
-		int rc = gai_wrapper(ctl.target, NULL, &hints, &res);
+		int rc = GAI_WRAPPER(ctl.target, NULL, &hints, &res);
 		if (rc) {
 			if (rc == EAI_SYSTEM)
 				err(errno, "%s", "getaddrinfo()");

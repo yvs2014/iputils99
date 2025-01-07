@@ -8,8 +8,12 @@
 #include <errno.h>
 #include <locale.h>
 
-#if HAVE_GETRANDOM
+#ifdef HAVE_GETRANDOM
 # include <sys/random.h>
+#endif
+
+#ifdef USE_LIBIDN2
+#include <idn2.h>
 #endif
 
 void close_stdout(void) {
@@ -145,4 +149,44 @@ inline int gai_wrapper(const char *restrict node, const char *restrict service,
 #endif
 	return rc;
 }
+
+#ifdef USE_LIBIDN2
+static inline char *idn2_decode(const char *restrict node) {
+	char *decoded = NULL;
+	int rc = idn2_to_ascii_lz(node, &decoded, 0);
+	if (rc != IDN2_OK) { // first attempt failed
+		if (decoded) {
+			free(decoded);
+			decoded = NULL;
+		}
+		// second attempt
+		rc = idn2_to_ascii_8z(node, &decoded, 0);
+	}
+	if (rc != IDN2_OK) {
+		warn("%s: %s", node, idn2_strerror(rc));
+		if (decoded) {
+			free(decoded);
+			decoded = NULL;
+		}
+	}
+	return decoded;
+}
+
+int gai_wrapper2(const char *restrict node, const char *restrict service,
+	const struct addrinfo *restrict hints, struct addrinfo **restrict res)
+{
+	int rc = gai_wrapper(node, service, hints, res);
+	if (rc) {
+		int keep = errno; // preserve errno
+		char *decoded = idn2_decode(node);
+		if (decoded) {
+			errno = 0;
+			rc = getaddrinfo(decoded, service, hints, res);
+			free(decoded); // free() preserves errno
+		} else
+			errno = keep;
+	}
+	return rc;
+}
+#endif
 

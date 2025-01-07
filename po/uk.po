@@ -219,19 +219,27 @@ msgid ""
 "            use -f multiple times to combine flags\n"
 "  -F macro  ai_flags macro like AI_IDN\n"
 "            use -F multiple times to combine flags\n"
+"  -i        convert IDN names using libidn2\n"
+"            (available if IDN is not transparently supported)\n"
 "  -h        print help and exit\n"
 "  -v        verbose output\n"
 "  -V        print version and exit\n"
 msgstr ""
 "  -4        сімейство адрес IPv4\n"
 "  -6        сімейство адрес IPv6\n"
-"  -f value  ai_flags значення (десяткове або шістнадцяткове)\n"
+"  -f число  ai_flags значення (десяткове або шістнадцяткове)\n"
 "            використовуйте -f декілька разів для об'єднання аргументів\n"
-"  -F macro  ai_flags макро (на зразок AI_IDN)\n"
+"  -F макро  ai_flags макро (на зразок AI_IDN)\n"
 "            використовуйте -F декілька разів для об'єднання аргументів\n"
+"  -i        конвертувати IDN назви за допомогою libidn2\n"
+"            (опція доступна, якщо IDN не підтримується прозоро)\n"
 "  -h        вивести довідку і завершити роботу\n"
 "  -v        докладне виведення\n"
 "  -V        вивести версію і завершити роботу\n"
+
+#
+msgid "no need in -i, IDN is transparently supported"
+msgstr "опція -i не потрібна, IDN підтримується прозоро"
 
 #
 msgid "Sent probes"
@@ -1075,8 +1083,8 @@ msgid "NET ERROR"
 msgstr "ПОМИЛКА МЕРЕЖІ"
 
 #
-msgid "reply received 8"
-msgstr "отримано відповідь 8"
+msgid "reply received"
+msgstr "отримано у відповідь"
 
 #
 msgid "send failed"
@@ -1092,7 +1100,7 @@ msgstr "немає відповіді"
 
 #
 msgid "Resume"
-msgstr "Резюме"
+msgstr "Висновок"
 
 #
 msgid "Too many hops"

@@ -1069,8 +1069,8 @@ msgid "NET ERROR"
 msgstr "NETZFEHLER"
 
 #
-msgid "reply received 8"
-msgstr "Antwort erhalten 8"
+msgid "reply received"
+msgstr "Antwort erhalten"
 
 #
 msgid "send failed"

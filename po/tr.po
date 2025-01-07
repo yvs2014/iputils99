@@ -1058,8 +1058,8 @@ msgid "NET ERROR"
 msgstr "AĞ HATASI"
 
 #
-msgid "reply received 8"
-msgstr "yanıt alındı 8"
+msgid "reply received"
+msgstr "yanıt alındı"
 
 #
 msgid "send failed"

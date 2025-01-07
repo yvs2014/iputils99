@@ -433,7 +433,7 @@ int ping4_run(state_t *rts, int argc, char **argv,
 					.ai_family = AF_INET,
 					.ai_flags  = AI_FLAGS,
 				};
-				int rc = gai_wrapper(target, NULL, &hints, &res);
+				int rc = GAI_WRAPPER(target, NULL, &hints, &res);
 				if (rc) {
 					if (rc == EAI_SYSTEM)
 						err(errno, "%s", "getaddrinfo()");

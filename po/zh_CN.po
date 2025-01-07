@@ -1014,8 +1014,8 @@ msgid "NET ERROR"
 msgstr "网络错误"
 
 #
-msgid "reply received 8"
-msgstr "回复已接收 8"
+msgid "reply received"
+msgstr "回复已接收"
 
 #
 msgid "send failed"

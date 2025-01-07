@@ -2,7 +2,7 @@
 
 # local edition: yvs, 2024
 
-project('iputils', 'c',
+project('iputils99', 'c',
 	default_options: [
 		'c_std=c99',
 		'warning_level=3',
@@ -11,9 +11,10 @@ project('iputils', 'c',
 	meson_version: '>=0.47',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
-			check: false).stdout().strip() : '20250105',
+			check: false).stdout().strip() : '20250107',
 )
 
+base    = 'iputils'
 name    = meson.project_name()
 version = meson.project_version()
 cc      = meson.get_compiler('c')
@@ -76,7 +77,7 @@ if build_ping
 			conf.set('NI6_NONCE_MEMORY', 1,
 				description: 'ping6 NodeInfo with nonce memory')
 		endif
-		extra_files += name + '_ni_aux.c'
+		extra_files += base + '_ni_aux.c'
 		extra_funcs += {'getrandom': {'hdr': ['sys/random.h']}}
 	else
 		manexcl += {'ping': ['N']}
@@ -85,14 +86,20 @@ if build_ping
 endif
 
 idn = get_option('IDN')
+idn_via = ''
 if idn	# If available: use AI_IDN for getaddrinfo() queries
 	ai_prfx = '#define _GNU_SOURCE\n#include <netdb.h>\n'
 	if cc.get_define('AI_IDN', prefix: ai_prfx) == ''
-		error('IDN is not transparently supported')
+		warning('IDN is not transparently supported')
+		deps += dependency('libidn2', required: true)
+		conf.set('USE_LIBIDN2', 1, description: 'Use libidn2 conversion')
+		idn_via = ' (libidn2)'
+	else
+		idn_via = '(via libc)'
         endif
 	conf.set('USE_IDN', 1, description: 'libc IDN support')
         if ni6 # idna_to_dns_encoding() for nodeinfo IDN
-		extra_funcs += {'__idna_to_dns_encoding': {'req': true}}
+		extra_funcs += {'__idna_to_dns_encoding': {}}
         endif
 endif
 
@@ -157,7 +164,7 @@ endif
 
 # build stage
 #
-common_src = files(name + '_common.c')
+common_src = files(base + '_common.c')
 
 if build_ping
 	subdir('ping')
@@ -222,7 +229,7 @@ if meson.version().version_compare('>=0.53')
 	}}
 	sections += {'CONFIGURATION': {
 		'Caps   (libcap)' : cap,
-		'IDN  (via libc) ': idn,
+		'IDN  @0@ '.format(idn_via): idn,
 		'NLS   (gettext)' : nls,
 		'NI6   (rfc4620)' : ni6,
 		'Tests'           : tst,
@@ -245,26 +252,26 @@ else # legacy
 output = name + '-' + version + '\n'
 
 output += '\nAPPLICATIONS (build)\n'
-output += 'ping:           ' + build_ping.to_string()
-output += '  (caps/suid ' + setcap_ping.to_string()        + ')\n'
-output += 'arping:         ' + build_arping.to_string()
-output += '  (caps/suid ' + setcap_arping.to_string()      + ')\n'
-output += 'clockdiff:      ' + build_clockdiff.to_string()
-output += '  (caps/suid ' + setcap_clockdiff.to_string()   + ')\n'
-output += 'tracepath:      ' + build_tracepath.to_string() +  '\n'
+output += 'ping:\t\t'     + build_ping.to_string()
+output += '  (caps/suid ' + setcap_ping.to_string()      + ')\n'
+output += 'arping:\t\t'   + build_arping.to_string()
+output += '  (caps/suid ' + setcap_arping.to_string()    + ')\n'
+output += 'clockdiff:\t'  + build_clockdiff.to_string()
+output += '  (caps/suid ' + setcap_clockdiff.to_string() + ')\n'
+output += 'tracepath:\t'  + build_tracepath.to_string()  +  '\n'
 
 output += '\nCONFIGURATION\n'
-output += 'Caps  (libcap): ' + cap.to_string() + '\n'
-output += 'IDN (via libc): ' + idn.to_string() + '\n'
-output += 'NLS  (gettext): ' + nls.to_string() + '\n'
-output += 'NI6  (rfc4620): ' + ni6.to_string() + '\n'
-output += 'Tests:          ' + tst.to_string() + '\n'
+output += 'Caps  (libcap):\t' + cap.to_string() + '\n'
+output += 'IDN @0@:\t'.format(idn_via != '' ? idn_via : '\t') + idn.to_string() + '\n'
+output += 'NLS  (gettext):\t' + nls.to_string() + '\n'
+output += 'NI6  (rfc4620):\t' + ni6.to_string() + '\n'
+output += 'Tests:\t\t'        + tst.to_string() + '\n'
 
 output += '\nDIRECTORIES\n'
-output += 'prefix:         ' + prefix         + '\n'
-output += 'bindir:         ' + bindir         + '\n'
-output += 'sbindir:        ' + sbindir        + '\n'
-output += 'localedir:      ' + localedir      + '\n'
+output += 'prefix:\t\t'  + prefix    + '\n'
+output += 'bindir:\t\t'  + bindir    + '\n'
+output += 'sbindir:\t'   + sbindir   + '\n'
+output += 'localedir:\t' + localedir + '\n'
 
 message(output)
 

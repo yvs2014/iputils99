@@ -1064,8 +1064,8 @@ msgid "NET ERROR"
 msgstr "ქსელის შეცდომა"
 
 #
-msgid "reply received 8"
-msgstr "პაკეტი დაბრუნდა 8"
+msgid "reply received"
+msgstr "პაკეტი დაბრუნდა"
 
 #
 msgid "send failed"

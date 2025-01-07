@@ -19,6 +19,9 @@ typedef struct gai_opts {
 	int af;
 	int flags;
 	bool verbose;
+#ifdef USE_LIBIDN2
+	bool idn2;
+#endif
 } gai_opt_s;
 
 NORETURN static void gai_usage(int rc) {
@@ -29,6 +32,8 @@ NORETURN static void gai_usage(int rc) {
 "            use -f multiple times to combine flags\n"
 "  -F macro  ai_flags macro like AI_IDN\n"
 "            use -F multiple times to combine flags\n"
+"  -i        convert IDN names using libidn2\n"
+"            (available if IDN is not transparently supported)\n"
 "  -h        print help and exit\n"
 "  -v        verbose output\n"
 "  -V        print version and exit\n"
@@ -83,7 +88,7 @@ static inline unsigned ai_macro2value(char opt, const char *arg) {
 static void parse_opt(int argc, char **argv, gai_opt_s *gai_opt) {
 	if (argc <= 0)
 		return;
-	const char *optstr = "hf:F:vV46";
+	const char *optstr = "hf:F:ivV46";
 	int opt;
 	while ((opt = getopt(argc, argv, optstr)) != EOF) {
 		switch (opt) {
@@ -95,6 +100,14 @@ static void parse_opt(int argc, char **argv, gai_opt_s *gai_opt) {
 				OPTEXCL('4', '6');
 			gai_opt->af = ip4 ? AF_INET : AF_INET6;
 		}	break;
+		case 'i':
+#ifdef USE_LIBIDN2
+			if (!gai_opt->idn2)
+				gai_opt->idn2 = true;
+#else
+			warnx(_("no need in -i, IDN is transparently supported"));
+#endif
+			break;
 		case 'h':
 			gai_usage(EXIT_SUCCESS);
 		case 'f':
@@ -146,7 +159,11 @@ int main(int argc, char **argv) {
 		const char *name = argv[i];
 		struct addrinfo *res = NULL;
 
-		int rc = gai_wrapper(name, NULL, &hints, &res);
+		int rc =
+#ifdef USE_LIBIDN2
+			gai_opt.idn2 ? gai_wrapper2(name, NULL, &hints, &res) :
+#endif
+			gai_wrapper(name, NULL, &hints, &res);
 		if (rc) {
 			if (rc == EAI_SYSTEM)
 				warn("%s", name);

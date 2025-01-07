@@ -144,9 +144,15 @@ msgid ""
 "            use -f multiple times to combine flags\n"
 "  -F macro  ai_flags macro like AI_IDN\n"
 "            use -F multiple times to combine flags\n"
+"  -i        convert IDN names using libidn2\n"
+"            (available if IDN is not transparently supported)\n"
 "  -h        print help and exit\n"
 "  -v        verbose output\n"
 "  -V        print version and exit\n"
+msgstr ""
+
+#
+msgid "no need in -i, IDN is transparently supported"
 msgstr ""
 
 #
@@ -1014,7 +1020,7 @@ msgid "NET ERROR"
 msgstr ""
 
 #
-msgid "reply received 8"
+msgid "reply received"
 msgstr ""
 
 #

@@ -26,7 +26,7 @@ xsltproc_args = [
 	'--stringparam', 'man.output.quietly', '1',
 	'--stringparam', 'funcsynopsis.style', 'ansi',
 	'--stringparam', 'man.th.extra1.suppress', '1',
-	'--stringparam', name + '.version', version,
+	'--stringparam', base + '.version', version,
 ]
 
 valid = xsltproc.found()
@@ -86,7 +86,7 @@ if build_html
 				'@INPUT@',
 			],
 			install:     true,
-			install_dir: join_paths(get_option('datadir'), name),
+			install_dir: join_paths(get_option('datadir'), base),
 		)
 	endforeach
 endif

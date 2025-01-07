@@ -1014,8 +1014,8 @@ msgid "NET ERROR"
 msgstr "KESALAHAN JARINGAN"
 
 #
-msgid "reply received 8"
-msgstr "balasan diterima 8"
+msgid "reply received"
+msgstr "balasan diterima"
 
 #
 msgid "send failed"

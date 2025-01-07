@@ -1052,8 +1052,8 @@ msgid "NET ERROR"
 msgstr "Verkkovirhe"
 
 #
-msgid "reply received 8"
-msgstr "vastaus vastaanotettu 8"
+msgid "reply received"
+msgstr "vastaus vastaanotettu"
 
 #
 msgid "send failed"

@@ -497,7 +497,7 @@ int main(int argc, char **argv) {
 	}
 
 	struct addrinfo *res = NULL;
-	int rcode = gai_wrapper(target, NULL, &hints, &res);
+	int rcode = GAI_WRAPPER(target, NULL, &hints, &res);
 	if (rcode) {
 		if (rcode == EAI_SYSTEM)
 			err(errno, "%s", "getaddrinfo()");

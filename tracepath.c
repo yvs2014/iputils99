@@ -111,7 +111,7 @@ static void data_wait(int fd) {
 	fd_set fds;
 	FD_ZERO(&fds);
 	FD_SET(fd, &fds);
-	struct timeval tv = { .tv_sec = 1, .tv_usec = 0 };
+	struct timeval tv = {.tv_sec = 1};
 	select(fd + 1, &fds, NULL, NULL, &tv);
 }
 
@@ -124,26 +124,15 @@ static void print_host(const char *a, const char *b, bool show_both) {
 	printf("%*s", HOST_COLUMN_SIZE - plen, "");
 }
 
+// return codes: <0 (-1) | 0 | >0 (mtu)
 static int recverr(run_state *rts) {
-	ssize_t recv_size;
-	struct probehdr rcvbuf;
-	char cbuf[ANCILLARY_DATA_LEN];
-	struct cmsghdr *cmsg;
-	struct sock_extended_err *e;
 	struct sockaddr_storage addr;
-	struct timespec ts;
-	struct timespec *retts;
-	int slot = 0;
-	int rethops;
-	int sndhops;
-	int progress = -1;
-	int broken_router;
-	char hnamebuf[NI_MAXHOST] = "";
+	struct probehdr rcvbuf;
 	struct iovec iov = {
 		.iov_base = &rcvbuf,
 		.iov_len = sizeof(rcvbuf)
 	};
-	struct msghdr msg;
+	char cbuf[ANCILLARY_DATA_LEN];
 	const struct msghdr reset = {
 		.msg_name = (uint8_t *)&addr,
 		.msg_namelen = sizeof(addr),
@@ -151,15 +140,16 @@ static int recverr(run_state *rts) {
 		.msg_iovlen = 1,
 		.msg_control = cbuf,
 		.msg_controllen = sizeof(cbuf),
-		0
 	};
 
- restart:
+	int progress = -1;
+restart:
 	memset(&rcvbuf, -1, sizeof(rcvbuf));
-	msg = reset;
+	struct msghdr msg = reset;
 
+	struct timespec ts = {0};
 	clock_gettime(CLOCK_MONOTONIC, &ts);
-	recv_size = recvmsg(rts->socket_fd, &msg, MSG_ERRQUEUE);
+	ssize_t recv_size = recvmsg(rts->socket_fd, &msg, MSG_ERRQUEUE);
 	if (recv_size < 0) {
 		if (errno == EAGAIN)
 			return progress;
@@ -168,13 +158,7 @@ static int recverr(run_state *rts) {
 
 	progress = rts->mtu;
 
-	rethops = -1;
-	sndhops = -1;
-	e = NULL;
-	retts = NULL;
-	broken_router = 0;
-
-	slot = -rts->base_port;
+	int slot = -rts->base_port;
 	switch (rts->ai->ai_family) {
 	case AF_INET6:
 		slot += ntohs(((struct sockaddr_in6 *)&addr)->sin6_port);
@@ -183,21 +167,30 @@ static int recverr(run_state *rts) {
 		slot += ntohs(((struct sockaddr_in *)&addr)->sin_port);
 		break;
 	}
-	if (slot >= 0 && slot < (HIS_ARRAY_SIZE - 1) && rts->his[slot].hops) {
+
+	int sndhops = -1;
+	struct timespec *retts = NULL;
+	if ((slot >= 0) && (slot < (HIS_ARRAY_SIZE - 1)) && rts->his[slot].hops) {
 		sndhops = rts->his[slot].hops;
 		retts = &rts->his[slot].sendtime;
 		rts->his[slot].hops = 0;
 	}
+
+	bool broken_router = false;
 	if (recv_size == sizeof(rcvbuf)) {
-		if (rcvbuf.ttl == 0 || (rcvbuf.ts.tv_sec == 0 && rcvbuf.ts.tv_nsec == 0))
-			broken_router = 1;
+		if (!(rcvbuf.ttl && (rcvbuf.ts.tv_sec || rcvbuf.ts.tv_nsec)))
+			broken_router = true;
 		else {
 			sndhops = rcvbuf.ttl;
 			retts = &rcvbuf.ts;
 		}
 	}
 
-	for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+	int rethops = -1;
+	struct sock_extended_err *e = NULL;
+	for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg); cmsg;
+		cmsg = CMSG_NXTHDR(&msg, cmsg))
+	{
 		switch (cmsg->cmsg_level) {
 		case SOL_IPV6:
 			switch (cmsg->cmsg_type) {
@@ -227,10 +220,13 @@ static int recverr(run_state *rts) {
 			}
 		}
 	}
+
 	if (e == NULL) {
 		puts(_("No info"));
 		return 0;
 	}
+
+	char hnamebuf[NI_MAXHOST] = "";
 	if (e->ee_origin == SO_EE_ORIGIN_LOCAL)
 		printf("%2d?: [%s] ", rts->ttl, _("LOCALHOST"));
 	else if (e->ee_origin == SO_EE_ORIGIN_ICMP6 ||
@@ -253,6 +249,7 @@ static int recverr(run_state *rts) {
 			break;
 		default:
 			salen = 0;
+			break;
 		}
 
 		if (rts->opt.no_resolve || rts->opt.show_both) {
@@ -284,7 +281,7 @@ static int recverr(run_state *rts) {
 		putchar(' ');
 	}
 
-	if (rethops <= 64)
+	if      (rethops <= 64)
 		rethops = 65 - rethops;
 	else if (rethops <= 128)
 		rethops = 129 - rethops;
@@ -302,7 +299,7 @@ static int recverr(run_state *rts) {
 		break;
 	case ECONNREFUSED:
 		puts(_("reached"));
-		rts->hops_to = (sndhops < 0) ? rts->ttl : sndhops;
+		rts->hops_to   = (sndhops < 0) ? rts->ttl : sndhops;
 		rts->hops_from = rethops;
 		return 0;
 	case EPROTO:
@@ -340,13 +337,13 @@ static int recverr(run_state *rts) {
 	goto restart;
 }
 
+// return codes: <0 (-1) | 0 | >0 (mtu)
 static int probe_ttl(run_state *rts) {
 	struct probehdr *hdr = rts->pktbuf;
 	memset(rts->pktbuf, 0, rts->mtu);
 restart:
 	{ int i;
 	  for (i = 0; i < MAX_PROBES; i++) {
-		int res;
 		hdr->ttl = rts->ttl;
 		switch (rts->ai->ai_family) {
 		case AF_INET6:
@@ -364,19 +361,21 @@ restart:
 		if (sendto(rts->socket_fd, rts->pktbuf, rts->mtu - rts->overhead, 0,
 			   (struct sockaddr *)&rts->target, rts->targetlen) > 0)
 			break;
-		res = recverr(rts);
+		int rc = recverr(rts);
 		rts->his[rts->hisptr].hops = 0;
-		if (res == 0)
+		if (rc == 0)
 			return 0;
-		if (res > 0)
+		if (rc > 0)
 			goto restart;
 	  }
 	  rts->hisptr = (rts->hisptr + 1) & (HIS_ARRAY_SIZE - 1);
 
 	  if (i < MAX_PROBES) {
 		data_wait(rts->socket_fd);
-		if (recv(rts->socket_fd, rts->pktbuf, rts->mtu, MSG_DONTWAIT) > 0) {
-			printf("%2d?: %s\n", rts->ttl, _("reply received 8"));
+		ssize_t got = recv(rts->socket_fd, rts->pktbuf, rts->mtu, MSG_DONTWAIT);
+		if (got > 0) { // was print("reply received 8")
+			printf("%2d?: %s: %zd %s\n", rts->ttl,
+				_("reply received"), got, _("bytes"));
 			return 0;
 		}
 		return recverr(rts);
@@ -407,6 +406,7 @@ int main(int argc, char **argv) {
 	atexit(close_stdout);
 
 	run_state rts = {
+		.socket_fd = -1,
 		.max_hops  = MAX_HOPS_DEFAULT,
 		.hops_to   = -1,
 		.hops_from = -1,
@@ -415,6 +415,7 @@ int main(int argc, char **argv) {
 	struct addrinfo hints = {
 		.ai_family   = AF_UNSPEC,
 		.ai_socktype = SOCK_DGRAM,
+		.ai_protocol = IPPROTO_UDP,
 		.ai_flags    = AI_FLAGS,
 	};
 	/* Support being called using `tracepath4` or `tracepath6` symlinks */
@@ -482,30 +483,33 @@ int main(int argc, char **argv) {
 	sprintf(pbuf, "%u", rts.base_port);
 
 	struct addrinfo *res = NULL;
-	int rc = gai_wrapper(argv[0], pbuf, &hints, &res);
-	if (rc) {
+	{ // resolver
+	  int rc = GAI_WRAPPER(argv[0], pbuf, &hints, &res);
+	  if (rc) {
 		if (rc == EAI_SYSTEM)
 			err(errno, "%s", "getaddrinfo()");
 		errx(rc, "%s", gai_strerror(rc));
+	  }
 	}
 	if (!res)
 		errx(EXIT_FAILURE, "%s", "getaddrinfo()");
 
+	int af = 0;
 	for (rts.ai = res; rts.ai; rts.ai = rts.ai->ai_next) {
-		int af = rts.ai->ai_family;
-		if ((af != AF_INET6) || (af != AF_INET))
-			continue;
-		rts.socket_fd = socket(af, rts.ai->ai_socktype, rts.ai->ai_protocol);
-		if (rts.socket_fd < 0)
-			continue;
-		memcpy(&rts.target, rts.ai->ai_addr, rts.ai->ai_addrlen);
-		rts.targetlen = rts.ai->ai_addrlen;
-		break;
+		af = rts.ai->ai_family;
+		if ((af == AF_INET) || (af == AF_INET6)) {
+			rts.socket_fd = socket(af, rts.ai->ai_socktype, rts.ai->ai_protocol);
+			if (rts.socket_fd >= 0) {
+				memcpy(&rts.target, rts.ai->ai_addr, rts.ai->ai_addrlen);
+				rts.targetlen = rts.ai->ai_addrlen;
+				break; // success
+			}
+		}
 	}
 	if ((rts.socket_fd < 0) || !rts.ai)
 		err(EXIT_FAILURE, "socket/ai");
 
-	switch (rts.ai->ai_family) {
+	switch (af) {
 	case AF_INET6:
 		rts.overhead = DEFAULT_OVERHEAD_IPV6;
 		if (!rts.mtu)
@@ -569,7 +573,7 @@ int main(int argc, char **argv) {
 
 	for (rts.ttl = 1; rts.ttl <= rts.max_hops; rts.ttl++) {
 		int ttl = rts.ttl;
-		switch (rts.ai->ai_family) {
+		switch (af) {
 		case AF_INET6:
 			if (setsockopt(rts.socket_fd, SOL_IPV6, IPV6_UNICAST_HOPS, &ttl, sizeof(ttl)) < 0)
 				err(errno, "IPV6_UNICAST_HOPS");
@@ -581,36 +585,36 @@ int main(int argc, char **argv) {
 				err(errno, "IP_TTL");
 		}
 
- restart:
-		{ int res = -1;
-		  for (int i = 0; i < 3; i++) {
+		int rc = -1;
+restart:
+		for (int i = 0; i < 3; i++) {
 			int old_mtu = rts.mtu;
-			res = probe_ttl(&rts);
+			// possible get: <0 (-1) | 0 | >0 (mtu)
+			rc = probe_ttl(&rts);
 			if (rts.mtu != old_mtu)
 				goto restart;
-			if (res == 0)
+			if (rc == 0)
 				goto done;
-			if (res > 0)
+			if (rc > 0)
 				break;
-		  }
-		  if (res < 0)
-			printf("%2d:  %s\n", rts.ttl, _("no reply"));
 		}
+		if (rc < 0)
+			printf("%2d:  %s\n", rts.ttl, _("no reply"));
 	}
 	printf("     %s: %s%d\n", _("Too many hops"), _("pmtu="), rts.mtu);
 
- done:
+done:
 	if (res)
 		freeaddrinfo(res);
 	printf("     %s: %s%d", _("Resume"), _("pmtu="), rts.mtu);
 	if (rts.hops_to >= 0)
-		printf(" %s=%d", _("hops="), rts.hops_to);
+		printf(" %s%d", _("hops="), rts.hops_to);
 	if (rts.hops_from >= 0)
-		printf(" %s=%d", _("back="), rts.hops_from);
+		printf(" %s%d", _("back="), rts.hops_from);
 	printf("\n");
 	exit(EXIT_SUCCESS);
 
- pktlen_error:
+pktlen_error:
 	errno = ERANGE;
 	err(errno, "%s: %d - %d", _("Packet length"), rts.overhead, INT_MAX);
 }

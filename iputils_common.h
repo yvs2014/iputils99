@@ -87,6 +87,13 @@ NORETURN void usage_common(int rc, const char *options, bool more);
 
 int gai_wrapper(const char *restrict node, const char *restrict service,
 	const struct addrinfo *restrict hints, struct addrinfo **restrict res);
+#ifdef USE_LIBIDN2
+int gai_wrapper2(const char *restrict node, const char *restrict service,
+	const struct addrinfo *restrict hints, struct addrinfo **restrict res);
+#define GAI_WRAPPER gai_wrapper2
+#else
+#define GAI_WRAPPER gai_wrapper
+#endif
 
 #ifndef timespecsub
 void timespecsub(const struct timespec *a, const struct timespec *b, struct timespec *res);
