@@ -22,8 +22,7 @@
 .SH "NAME"
 tracepath \- traces path to a network host discovering MTU along this path
 .SH "SYNOPSIS"
-.HP \w'\fBtracepath\fR\ 'u
-\fBtracepath\fR [\fB\-4\fR] [\fB\-6\fR] [\fB\-n\fR] [\fB\-b\fR] [\fB\-l\ \fR\fB\fIpktlen\fR\fR] [\fB\-m\ \fR\fB\fImax_hops\fR\fR] [\fB\-p\ \fR\fB\fIport\fR\fR] [\fB\-V\fR] {destination}
+\fBtracepath\fR [\fB\-4\fR] [\fB\-6\fR] [\fB\-n\fR] [\fB\-b\fR] [\fB\-l\ \fR\fB\fIpktlen\fR\fR] [\fB\-m\ \fR\fB\fImax_hops\fR\fR] [\fB\-p\ \fR\fB\fIport\fR\fR] [\fB\-V\fR] TARGET
 .SH "DESCRIPTION"
 .PP
 It traces the network path to

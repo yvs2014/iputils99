@@ -45,7 +45,7 @@ xml:id="man.arping">
         <option>-I
         <replaceable>interface</replaceable></option>
       </arg>
-      <arg choice="req" rep="norepeat">destination</arg>
+      <arg choice="req" rep="norepeat">TARGET</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
 

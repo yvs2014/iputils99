@@ -88,7 +88,6 @@ static inline void rcvd_clear(state_t *rts, uint16_t seq) {
 
 void usage(int rc) {
 	const char *options =
-"  <destination>      DNS name or IP address\n"
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
 "  -B                 sticky source address\n"
@@ -134,7 +133,7 @@ void usage(int rc) {
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 ;
-	usage_common(rc, options);
+	usage_common(rc, options, false);
 }
 
 uid_t limit_capabilities(const state_t *rts) {
@@ -905,7 +904,9 @@ int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
 		free(packet);
 		return rc;
 	}
-	err(errno ? errno : EXIT_FAILURE, "%s", _("Memory allocation failed"));
+	if (errno)
+		err(errno, "malloc(%zu)", packlen);
+	errx(EXIT_FAILURE, "malloc(%zu)", packlen);
 }
 
 bool stats_noflush(state_t *rts, const uint8_t *icmp, int icmplen,
@@ -1051,6 +1052,53 @@ inline bool gather_stats(state_t *rts, const void *icmp, int icmplen,
 	if (finished)
 		fflush(stdout);
 	return finished;
+}
+
+unsigned long strtoul_or_err(const char *str, const char *errmesg,
+	unsigned long min, unsigned long max)
+{
+	errno = (str && *str) ? 0 : EINVAL;
+	if (!errno) {
+		char *end = NULL;
+		unsigned long num = strtoul(str, &end, 10);
+		if (errno || (str == end) || (end && *end)) {
+			errno = 0;
+			num = strtoul(str, &end, 0x10);
+		}
+		if (!(errno || (str == end) || (end && *end))) {
+			if ((min <= num) && (num <= max))
+				return num;
+			errno = ERANGE;
+			err(errno, "%s: %s: %lu-%lu", errmesg, str, min, max);
+		}
+	}
+	if (errno)
+		err(errno, "%s: %s", errmesg, str);
+	errx(EXIT_FAILURE, "%s: %s", errmesg, str);
+}
+
+double strtod_or_err(const char *str, const char *errmesg,
+	double min, double max)
+{
+	errno = (str && *str) ? 0 : EINVAL;
+	if (!errno) {
+		char *end = NULL;
+/* Here we always use "C" LC_NUMERIC to have dots as decimal separators */
+		setlocale(LC_NUMERIC, "C");
+		double num = strtod(str, &end);
+		int keep = errno;
+		setlocale(LC_NUMERIC, "");
+		errno = keep;
+		if (!(errno || (str == end) || (end && *end))) {
+			if (isgreaterequal(num, min) && islessequal(num, max))
+				return num;
+			errno = ERANGE;
+			err(errno, "%s: %s: %g-%g", errmesg, str, min, max);
+		}
+	}
+	if (errno)
+		err(errno, "%s: %s", errmesg, str);
+	errx(EXIT_FAILURE, "%s: %s", errmesg, str);
 }
 
 /* Return a host address optionally with a hostname */

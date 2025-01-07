@@ -35,7 +35,7 @@ xml:id="man.clockdiff">
       <arg choice="opt" rep="norepeat">
         <option>-V</option>
       </arg>
-      <arg choice="req" rep="norepeat">destination</arg>
+      <arg choice="req" rep="norepeat">TARGET</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
 

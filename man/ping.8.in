@@ -23,8 +23,7 @@
 .SH "NAME"
 ping \- send ICMP ECHO_REQUEST to network hosts
 .SH "SYNOPSIS"
-.HP \w'\fBping\fR\ 'u
-\fBping\fR [\fB\-aAbBcCdDefFhHiIlLmMn\*[oN]OpqQrRsStTUvVwW46\fR] [hop \&.\&.\&.] destination
+\fBping\fR [\fB\-aAbBcCdDefFhHiIlLmMn\*[oN]OpqQrRsStTUvVwW46\fR] [hop\&.\&.\&.] TARGET
 .SH "DESCRIPTION"
 .PP
 \fBping\fR

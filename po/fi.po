@@ -22,16 +22,24 @@ msgid "Usage"
 msgstr "Käyttö"
 
 #
-msgid "[options] <destination>"
-msgstr "[valinnat] <kohde>"
-
-#
 msgid "Options"
 msgstr "Valinnat"
 
 #
+msgid "options"
+msgstr "valinnat"
+
+#
+msgid "TARGET"
+msgstr "KOHDE"
+
+#
 msgid "For more details see"
 msgstr "Katso lisätietoja"
+
+#
+msgid "No goal"
+msgstr "Ei kohde"
 
 # arping options
 msgid ""
@@ -47,7 +55,6 @@ msgid ""
 "  -i <interval> set interval between packets (default: 1 second)\n"
 "  -I <device>   which ethernet device to use\n"
 "  -s <source>   source IP address\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
 "  -f            lopeta ensimmäisellä vastauksella\n"
 "  -q            ole hiljaa\n"
@@ -61,12 +68,11 @@ msgstr ""
 "  -i <interval> aseta pakettien välinen aika (oletus: yksi sekunti)\n"
 "  -I <device>   käytettävää ethernet-laitetta\n"
 "  -s <source>   IP-osoitteen lähde\n"
-"  <destination> DNS-nimi tai IP-osoite\n"
 
 # clockdiff options
-#, fuzzy
 msgid ""
-"                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
+"                without -o, use icmp timestamp only\n"
+"                (see RFC792, page 16)\n"
 "  -o            use IP timestamp and icmp echo\n"
 "  -o1           use three-term IP timestamp and icmp echo\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -74,10 +80,9 @@ msgid ""
 "  -I            alias of --time-format=iso\n"
 "  -h, --help    display this help\n"
 "  -V, --version print version and exit\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
 "                ilman '-o':ta, käytä vain icmp-aikaleimaa\n"
-"                (katso RFC0792, sivu 16)\n"
+"                (katso RFC792, sivu 16)\n"
 "  -o            käytä IP-aikaleimaa ja icmp-echoa\n"
 "  -o1           käytä kolmen aikavälin IP-aikaleimaa ja icmp-kaikua\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -85,12 +90,9 @@ msgstr ""
 "  -I            alias '--time-format=iso':ta\n"
 "  -h, --help    näytä tämä ohje\n"
 "  -V, --version tulosta versio ja poistu\n"
-"  <kohde>       DNS-nimi tai IP-osoite\n"
 
 # ping options
-#, fuzzy
 msgid ""
-"  <destination>      DNS name or IP address\n"
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
 "  -B                 sticky source address\n"
@@ -140,7 +142,6 @@ msgid ""
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 msgstr ""
-"  <kohde>           DNS-nimi tai IP-osoite\n"
 "  -a                käytä ping-ääntä\n"
 "  -A                käytä mukautuvaa pingiä\n"
 "  -B                tahmea lähdeosoite\n"
@@ -187,7 +188,6 @@ msgstr ""
 "  -N <nodeinfo opt> käytä icmp6-solmutietokyselyä, kokeile argumenttina <help>\n"
 
 # tracepath options
-#, fuzzy
 msgid ""
 "  -4             use IPv4\n"
 "  -6             use IPv6\n"
@@ -197,7 +197,6 @@ msgid ""
 "  -n             no reverse DNS name resolution\n"
 "  -p <port>      use destination <port>\n"
 "  -V             print version and exit\n"
-"  <destination>  DNS name or IP address\n"
 msgstr ""
 "  -4           käytä IPv4\n"
 "  -6           käytä IPv6\n"
@@ -207,7 +206,6 @@ msgstr ""
 "  -n           ei DNS-nimen selvitystä\n"
 "  -p <port>    käytä kohdeporttia\n"
 "  -V           tulostaa version ja poistu\n"
-"  <kohde>      DNS-nimi tai IP-osoite\n"
 
 #
 msgid "Sent probes"
@@ -348,10 +346,6 @@ msgstr "IDN-koodausvirhe"
 #
 msgid "Too long scope name"
 msgstr "Liian pitkä laajuuden nimi"
-
-#
-msgid "Memory allocation failed"
-msgstr "Muistin varaus ei onnistunut"
 
 #
 msgid "Inappropriate subject name"

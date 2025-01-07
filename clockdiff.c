@@ -447,7 +447,8 @@ static void drop_rights(void)
 NORETURN static void usage(int rc) {
 	drop_rights();
 	const char *options =
-"                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
+"                without -o, use icmp timestamp only\n"
+"                (see RFC792, page 16)\n"
 "  -o            use IP timestamp and icmp echo\n"
 "  -o1           use three-term IP timestamp and icmp echo\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -455,9 +456,8 @@ NORETURN static void usage(int rc) {
 "  -I            alias of --time-format=iso\n"
 "  -h, --help    display this help\n"
 "  -V, --version print version and exit\n"
-"  <destination> DNS name or IP address\n"
 ;
-	usage_common(rc, options);
+	usage_common(rc, options, false);
 }
 
 static void parse_opts(struct run_state *ctl, int argc, char **argv) {
@@ -500,12 +500,9 @@ static void parse_opts(struct run_state *ctl, int argc, char **argv) {
 
 int main(int argc, char **argv) {
 	setmyname(argv[0]);
+	SET_NLS;
 	atexit(close_stdout);
-#ifdef USE_NLS
-	setlocale(LC_ALL, "");
-	bindtextdomain(PACKAGE_NAME, LOCALEDIR);
-	textdomain(PACKAGE_NAME);
-#endif
+
 	struct run_state rts = {.rtt = 1000, .time_format = time_format_ctime};
 	parse_opts(&rts, argc, argv);
 	argc -= optind;
@@ -529,25 +526,25 @@ int main(int argc, char **argv) {
 
 	rts.id = getpid();
 
-	struct addrinfo *result = NULL;
-	struct addrinfo hints = {
+	{ // resolv
+	  const struct addrinfo hints = {
 		.ai_family   = AF_INET,
 		.ai_socktype = SOCK_RAW,
 		.ai_flags    = AI_CANONNAME
-	};
-	int rc = getaddrinfo(argv[0], NULL, &hints, &result);
-	if (rc || !result) {
+	  };
+	  struct addrinfo *res = NULL;
+	  int rc = gai_wrapper(argv[0], NULL, &hints, &res);
+	  if (rc) {
 		if (rc == EAI_SYSTEM)
-			err(errno, "getaddrinfo()");
-		else if (rc)
-			errx(rc, "getaddrinfo(): %s", gai_strerror(rc));
-		else
-			errx(EXIT_FAILURE, "getaddrinfo()");
+			err(errno, "%s", "getaddrinfo()");
+		errx(rc, "%s", gai_strerror(rc));
+	  }
+	  if (!res)
+		errx(EXIT_FAILURE, "%s", "getaddrinfo()");
+	  rts.hisname = strdup(res->ai_canonname);
+	  memcpy(&rts.server, res->ai_addr, sizeof(rts.server));
+	  freeaddrinfo(res);
 	}
-	rts.hisname = strdup(result->ai_canonname);
-
-	memcpy(&rts.server, result->ai_addr, sizeof(rts.server));
-	freeaddrinfo(result);
 
 	if (connect(rts.sock_raw, (struct sockaddr *)&rts.server, sizeof(rts.server)) < 0)
 		err(errno, "connect");

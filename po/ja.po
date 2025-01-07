@@ -24,16 +24,24 @@ msgid "Usage"
 msgstr "使用法:"
 
 #
-msgid "[options] <destination>"
-msgstr "[オプション] <送信先>"
-
-#
 msgid "Options"
 msgstr "オプション"
 
 #
+msgid "options"
+msgstr "オプション"
+
+#
+msgid "TARGET"
+msgstr "送信先"
+
+#
 msgid "For more details see"
 msgstr "詳細は を参照してください:"
+
+#
+msgid "No goal"
+msgstr ""
 
 # arping options
 msgid ""
@@ -49,7 +57,6 @@ msgid ""
 "  -i <interval> set interval between packets (default: 1 second)\n"
 "  -I <device>   which ethernet device to use\n"
 "  -s <source>   source IP address\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
 "  -f                最初の応答で終了します\n"
 "  -q                表示を抑制します\n"
@@ -64,12 +71,11 @@ msgstr ""
 "  -i <間隔>         パケットの送信間隔を指定します (デフォルト: 1 秒)\n"
 "  -I <デバイス>     使用するイーサネットデバイスを指定します\n"
 "  -s <送信元>       送信元IPアドレス\n"
-"  <送信先>          DNS名またはIPアドレス\n"
 
 # clockdiff options
-#, fuzzy
 msgid ""
-"                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
+"                without -o, use icmp timestamp only\n"
+"                (see RFC792, page 16)\n"
 "  -o            use IP timestamp and icmp echo\n"
 "  -o1           use three-term IP timestamp and icmp echo\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -77,9 +83,9 @@ msgid ""
 "  -I            alias of --time-format=iso\n"
 "  -h, --help    display this help\n"
 "  -V, --version print version and exit\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
-"                -oオプションがない場合、IPタイムスタンプのみを利用します。\n"
+"                -oオプションがない場合、IPタイムスタンプのみを利用します\n"
+"                (RFC792の16ページを参照)\n"
 "  -o            IPタイムスタンプとICMPエコーを使用します。\n"
 "  -o1           3項目のIPタイムスタンプとICMPエコーを使用します。\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -87,11 +93,9 @@ msgstr ""
 "  -I            --time-format=isoのエイリアス\n"
 "  -h, --help    このヘルプを表示します\n"
 "  -V            バージョンを表示して終了します。\n"
-"  <送信先>      DNS名またはIPアドレス\n"
 
 # ping options
 msgid ""
-"  <destination>      DNS name or IP address\n"
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
 "  -B                 sticky source address\n"
@@ -143,7 +147,6 @@ msgid ""
 msgstr ""
 
 # tracepath options
-#, fuzzy
 msgid ""
 "  -4             use IPv4\n"
 "  -6             use IPv6\n"
@@ -153,7 +156,6 @@ msgid ""
 "  -n             no reverse DNS name resolution\n"
 "  -p <port>      use destination <port>\n"
 "  -V             print version and exit\n"
-"  <destination>  DNS name or IP address\n"
 msgstr ""
 "  -4             IPv4を使用します。\n"
 "  -6             IPv6を使用します。\n"
@@ -163,7 +165,6 @@ msgstr ""
 "  -n             DNS名前解決を行いません。\n"
 "  -p <ポート>    送信先ポートを指定します。\n"
 "  -V             バージョンを表示して終了します。\n"
-"  <送信先>       DNS名またはIPアドレス\n"
 
 #
 msgid "Sent probes"
@@ -305,10 +306,6 @@ msgstr "IDN エンコーディング失敗"
 #
 msgid "Too long scope name"
 msgstr "スコープ名が長すぎます"
-
-#
-msgid "Memory allocation failed"
-msgstr "メモリ確保に失敗しました"
 
 #
 msgid "Inappropriate subject name"

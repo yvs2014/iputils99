@@ -66,7 +66,6 @@
 #include "iputils_ni.h"
 #include "node_info.h"
 #endif
-#include "ipv6.h"
 #include "common.h"
 #include "ping_aux.h"
 #include "ping6_aux.h"
@@ -202,7 +201,7 @@ static inline int ping6_icmp_extra_type(state_t *rts,
 		return true;
 	//
 	uint8_t next = iph->ip6_nxt;
-	if (next == NEXTHDR_FRAGMENT) {
+	if (next == IPPROTO_FRAGMENT) {
 		next = *(uint8_t *)orig;
 		orig++;
 	}

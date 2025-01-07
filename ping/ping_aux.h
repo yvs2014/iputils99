@@ -4,10 +4,6 @@
 #include "common.h"
 #include <linux/errqueue.h>
 
-unsigned long strtoul_or_err(const char *str, const char *errmesg,
-	unsigned long min, unsigned long max);
-double strtod_or_err(const char *str, const char *errmesg,
-	double min, double max);
 unsigned parse_flow(const char *str);
 unsigned char parse_tos(const char *str);
 unsigned if_name2index(const char *ifname);

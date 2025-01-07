@@ -1,0 +1,95 @@
+'\" t
+.TH "GAI" "8" "" "iputils" "iputils"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+gai \- resolve names using getaddrinfo()
+.SH "SYNOPSIS"
+\fBgai\fR [\fB\-hfFvV46\fR] TARGET \&.\&.\&.
+.SH "DESCRIPTION"
+.PP
+\fBgai\fR
+resolves target names as if with the getaddrinfo(3) routine and prints them to standard output
+.SH "OPTIONS"
+.PP
+\fB\-4\fR
+.RS 4
+Limit resolver to IPv4 only
+.RE
+.PP
+\fB\-6\fR
+.RS 4
+Limit resolver to IPv6 only
+.RE
+.PP
+\fB\-f\fR \fIvalue\fR
+.RS 4
+Set \fBai_flags\fR value\&. Use \fB\-f\fR multiple times to combine flags\&.
+.br
+See below for known possible values\&.
+.RE
+.PP
+\fB\-F\fR \fImacro\fR
+.RS 4
+Set \fBai_flags\fR macro\&. Use \fB\-F\fR multiple times to combine flags\&.
+.br
+Known glibc macros and their values:
+.PP
+AI_PASSIVE	0x0001
+.br
+AI_CANONNAME	0x0002
+.br
+AI_NUMERICHOST	0x0004
+.br
+AI_V4MAPPED	0x0008
+.br
+AI_ALL		0x0010
+.br
+AI_ADDRCONFIG	0x0020
+.br
+AI_IDN		0x0040
+.br
+AI_CANONIDN	0x0080
+.br
+AI_NUMERICSERV	0x0400
+.br
+.RE
+.PP
+\fB\-h\fR
+.RS 4
+Print help
+.RE
+.PP
+\fB\-v\fR
+.RS 4
+Verbose output
+.RE
+.PP
+\fB\-V\fR
+.RS 4
+Print version
+.RE
+.PP
+.SH "USE"
+The \fBgai\fR command is handy to test \fBai_flags\fR on different libc versions
+.PP
+.SH "SEE ALSO"
+.PP
+\fBgetaddrinfo\fR(3)

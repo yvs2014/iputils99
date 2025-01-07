@@ -132,9 +132,8 @@ NORETURN static void usage(int rc) {
 "  -i <interval> set interval between packets (default: 1 second)\n"
 "  -I <device>   which ethernet device to use\n"
 "  -s <source>   source IP address\n"
-"  <destination> DNS name or IP address\n"
 ;
-	usage_common(rc, options);
+	usage_common(rc, options, false);
 }
 
 #ifdef HAVE_LIBCAP
@@ -839,25 +838,22 @@ static int event_loop(struct run_state *ctl)
 }
 
 int main(int argc, char **argv) {
-	setmyname(argv[0]);
 	struct run_state ctl = {
-		.device = { .name = DEFAULT_DEVICE },
-		.count = -1,
-		.interval = 1,
+		.device   = {.name = DEFAULT_DEVICE},
+		.count    = -1,
+		.interval =  1,
 #ifdef HAVE_LIBCAP
-		.cap_raw = CAP_CLEAR,
+		.cap_raw  = CAP_CLEAR,
 #endif
-		0
 	};
-	int ch;
 
-	atexit(close_stdout);
 	arping_limit_capabilities(&ctl);
-#ifdef USE_NLS
-	setlocale(LC_ALL, "");
-	bindtextdomain(PACKAGE_NAME, LOCALEDIR);
-	textdomain(PACKAGE_NAME);
-#endif
+
+	setmyname(argv[0]);
+	SET_NLS;
+	atexit(close_stdout);
+
+	int ch;
 	while ((ch = getopt(argc, argv, "h?bfDUAqc:w:i:s:I:V")) != EOF) {
 		switch (ch) {
 		case 'b':
@@ -926,23 +922,23 @@ int main(int argc, char **argv) {
 		ctl.device.name = NULL;
 
 	if (inet_aton(ctl.target, &ctl.gdst) != 1) {
-		struct addrinfo hints = {
-			.ai_family = AF_INET,
+		const struct addrinfo hints = {
+			.ai_family   = AF_INET,
 			.ai_socktype = SOCK_RAW,
-#if defined(USE_IDN) && defined(AI_IDN)
-			.ai_flags = AI_IDN | AI_CANONIDN
-#endif
+			.ai_flags    = AI_FLAGS,
 		};
-		struct addrinfo *result;
-		int status;
-
-		status = getaddrinfo(ctl.target, NULL, &hints, &result);
-		if (status)
-			errx(EINVAL, "%s: %s", ctl.target, gai_strerror(status));
-
-		memcpy(&ctl.gdst, &((struct sockaddr_in *)result->ai_addr)->sin_addr, sizeof ctl.gdst);
-		ctl.gdst_family = result->ai_family;
-		freeaddrinfo(result);
+		struct addrinfo *res = NULL;
+		int rc = gai_wrapper(ctl.target, NULL, &hints, &res);
+		if (rc) {
+			if (rc == EAI_SYSTEM)
+				err(errno, "%s", "getaddrinfo()");
+			errx(rc, "%s", gai_strerror(rc));
+		}
+		if (!res)
+			errx(EXIT_FAILURE, "%s", "getaddrinfo()");
+		memcpy(&ctl.gdst, &((struct sockaddr_in *)res->ai_addr)->sin_addr, sizeof(ctl.gdst));
+		ctl.gdst_family = res->ai_family;
+		freeaddrinfo(res);
 	} else
 		ctl.gdst_family = AF_INET;
 

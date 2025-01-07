@@ -23,16 +23,24 @@ msgid "Usage"
 msgstr "Použití"
 
 #
-msgid "[options] <destination>"
-msgstr "[přepínače] <cíl>"
-
-#
 msgid "Options"
 msgstr "Přepínače"
 
 #
+msgid "options"
+msgstr "přepínače"
+
+#
+msgid "TARGET"
+msgstr "CÍL"
+
+#
 msgid "For more details see"
 msgstr "Podrobnosti naleznete v"
+
+#
+msgid "No goal"
+msgstr "Žádný cíl"
 
 # arping options
 msgid ""
@@ -48,7 +56,6 @@ msgid ""
 "  -i <interval> set interval between packets (default: 1 second)\n"
 "  -I <device>   which ethernet device to use\n"
 "  -s <source>   source IP address\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
 "  -f            skončí s první odpovědí\n"
 "  -q            potlačí obvyklý výstup\n"
@@ -62,11 +69,11 @@ msgstr ""
 "  -i <interval> nastaví interval mezi pakety (výchozí: 1 sekunda)\n"
 "  -I <rozhraní> které ethernetové rozhraní se použije\n"
 "  -s <zdroj>    zdrojová IP adresa\n"
-"  <cíl>         doménové jméno nebo IP adresa\n"
 
 # clockdiff options
 msgid ""
-"                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
+"                without -o, use icmp timestamp only\n"
+"                (see RFC792, page 16)\n"
 "  -o            use IP timestamp and icmp echo\n"
 "  -o1           use three-term IP timestamp and icmp echo\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -74,10 +81,9 @@ msgid ""
 "  -I            alias of --time-format=iso\n"
 "  -h, --help    display this help\n"
 "  -V, --version print version and exit\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
-"                bez -o použije pouze ICMP časovou značku (viz str. 16 normy "
-"RFC0792)\n"
+"                bez -o použije pouze ICMP časovou značku\n"
+"                (viz str. 16 normy RFC792)\n"
 "  -o            použije časovou značku IP a ICMP echo\n"
 "  -o1           použije třízáznamovou časovou značku IP a ICMP echo\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -85,11 +91,9 @@ msgstr ""
 "  -I            stejné jako --time-format=iso\n"
 "  -h, --help    vypíše tuto nápovědu a skončí\n"
 "  -V, --version vypíše údaje o verzi a skončí\n"
-"  <cíl>         doménové jméno nebo IP adresa\n"
 
 # ping options
 msgid ""
-"  <destination>      DNS name or IP address\n"
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
 "  -B                 sticky source address\n"
@@ -139,7 +143,6 @@ msgid ""
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 msgstr ""
-"  <cíl>                doménové jméno nebo IP adresa\n"
 "  -a                   použije slyšitelný ping\n"
 "  -A                   použije adaptivní ping\n"
 "  -B                   sticky source address\n"
@@ -202,7 +205,6 @@ msgid ""
 "  -n             no reverse DNS name resolution\n"
 "  -p <port>      use destination <port>\n"
 "  -V             print version and exit\n"
-"  <destination>  DNS name or IP address\n"
 msgstr ""
 "  -4             použije IPv4\n"
 "  -6             použije IPv6\n"
@@ -212,7 +214,6 @@ msgstr ""
 "  -n             nepřeloží doménová jména\n"
 "  -p <port>      použije cílový <port>\n"
 "  -V             vypíše verzi a skončí\n"
-"  <cíl>          doménové jméno nebo IP adresa\n"
 
 #
 msgid "Sent probes"
@@ -353,10 +354,6 @@ msgstr "Chyba kódování IDN"
 #
 msgid "Too long scope name"
 msgstr "Název síťové oblasti je příliš dlouhý"
-
-#
-msgid "Memory allocation failed"
-msgstr "Nepodařilo se přidělit paměť"
 
 #
 msgid "Inappropriate subject name"
@@ -677,10 +674,6 @@ msgstr "Chybný čas čekání"
 #
 msgid "ident 0 => forcing raw socket"
 msgstr "ident 0 => vyžadován raw socket"
-
-#
-msgid "No goal"
-msgstr "Žádný cíl"
 
 #
 msgid ""

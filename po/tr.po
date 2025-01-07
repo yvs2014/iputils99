@@ -23,12 +23,16 @@ msgid "Usage"
 msgstr "Kullanım"
 
 #
-msgid "[options] <destination>"
-msgstr "[seçenekler] <hedef>"
-
-#
 msgid "Options"
 msgstr "Seçenekler"
+
+#
+msgid "options"
+msgstr "seçenekler"
+
+#
+msgid "TARGET"
+msgstr "HEDEF"
 
 #
 msgid "For more details see"
@@ -48,7 +52,6 @@ msgid ""
 "  -i <interval> set interval between packets (default: 1 second)\n"
 "  -I <device>   which ethernet device to use\n"
 "  -s <source>   source IP address\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
 "  -f            ilk yanıtta çık\n"
 "  -q            sessiz ol\n"
@@ -62,11 +65,11 @@ msgstr ""
 "  -i <aralık>   paketler arasındaki aralığı ayarla (öntanımlı: 1 saniye)\n"
 "  -I <aygıt>    hangi ethernet aygıtı kullanılacak\n"
 "  -s <kaynak>   kaynak IP adresi\n"
-"  <hedef>       DNS adı veya IP adresi\n"
 
 # clockdiff options
 msgid ""
-"                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
+"                without -o, use icmp timestamp only\n"
+"                (see RFC792, page 16)\n"
 "  -o            use IP timestamp and icmp echo\n"
 "  -o1           use three-term IP timestamp and icmp echo\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -74,10 +77,9 @@ msgid ""
 "  -I            alias of --time-format=iso\n"
 "  -h, --help    display this help\n"
 "  -V, --version print version and exit\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
-"                -o olmadan, sadece ICMP zaman damgası kullan (bkz: RFC0792, "
-"sayfa 16)\n"
+"                -o olmadan, sadece ICMP zaman damgası kullan\n"
+"                (bkz: RFC792, sayfa 16)\n"
 "  -o            IP zaman damgası ve ICMP yankı kullan\n"
 "  -o1           üç bileşenli IP zaman damgası ve ICMP yankı kullan\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -86,11 +88,9 @@ msgstr ""
 "  -I            --time-format=iso anlamına gelir\n"
 "  -h, --help    bu yardım bilgisini görüntüle\n"
 "  -V, --version sürüm bilgisini yazdır ve çık\n"
-"  <hedef>       DNS adı veya IP adresi\n"
 
 # ping options
 msgid ""
-"  <destination>      DNS name or IP address\n"
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
 "  -B                 sticky source address\n"
@@ -140,7 +140,6 @@ msgid ""
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 msgstr ""
-"  <hedef>            DNS adı veya IP adresi\n"
 "  -a                 duyulabilir ping kullan\n"
 "  -A                 uyarlanabilir ping kullan\n"
 "  -B                 yapışkan kaynak adresi\n"
@@ -200,7 +199,6 @@ msgid ""
 "  -n             no reverse DNS name resolution\n"
 "  -p <port>      use destination <port>\n"
 "  -V             print version and exit\n"
-"  <destination>  DNS name or IP address\n"
 msgstr ""
 "  -4             IPv4 kullan\n"
 "  -6             IPv6 kullan\n"
@@ -210,7 +208,6 @@ msgstr ""
 "  -n             DNS ad çözümlemesi yok\n"
 "  -p <port>      <port> hedef bağlantı noktasını kullan\n"
 "  -V             sürüm bilgisini yazdır ve çık\n"
-"  <hedef>        DNS adı veya IP adresi\n"
 
 #
 msgid "Sent probes"
@@ -351,10 +348,6 @@ msgstr "IDN kodlama hatası"
 #
 msgid "Too long scope name"
 msgstr "Çok uzun kapsam adı"
-
-#
-msgid "Memory allocation failed"
-msgstr "Bellek ayırma başarısız"
 
 #
 msgid "Inappropriate subject name"

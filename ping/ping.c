@@ -215,7 +215,7 @@ static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) 
 	if (!rts->ni) {
 		rts->ni = calloc(1, sizeof(struct ping_ni));
 		if (!rts->ni)
-			err(errno, "%s", _("Memory allocation failed"));
+			err(errno, "calloc(%zu)", sizeof(struct ping_ni));
 		rts->ni->query        = -1;
 		rts->ni->subject_type = -1;
 		if (niquery_option_handler(rts->ni, str) < 0)
@@ -237,7 +237,7 @@ static inline void opt_s(state_t *rts, const char *str) {
 		0, MAXPAYLOAD);
 	unsigned char *pack = calloc(1, PACKHDRLEN + len);
 	if (!pack)
-		err(errno, "%s", _("Memory allocation failed"));
+		err(errno, "calloc(%zu)", PACKHDRLEN + len);
 	if (rts->outpack)
 		free(rts->outpack);
 	rts->outpack = pack;
@@ -252,7 +252,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 		"46?aAbBc:CdDe:fF:hHi:I:l:Lm:M:nN:Op:qQ:rRs:S:t:T:UvVw:W:";
 	int ch;
 	while ((ch = getopt(argc, argv, optstr)) != EOF) {
-		switch(ch) {
+		switch (ch) {
 		case '4':
 		case '6': {
 			bool ip4 = (ch == '4');
@@ -450,29 +450,22 @@ int main(int argc, char **argv) {
 #endif
 		.pmtudisc     = -1,
 	};
+
+	rts.uid = limit_capabilities(&rts);
+
 	setmyname(argv[0]);
+	SET_NLS;
+	atexit(close_stdout);
 
 	rts.outpack = calloc(1, PACKHDRLEN + rts.datalen);
 	if (!rts.outpack)
-		err(errno, "%s", _("Memory allocation failed"));
-
-	atexit(close_stdout);
-	rts.uid = limit_capabilities(&rts);
+		err(errno, "calloc(%zu)", PACKHDRLEN + rts.datalen);
 
 	struct addrinfo hints = {
 		.ai_family   = AF_UNSPEC,
-		.ai_protocol = IPPROTO_UDP,
 		.ai_socktype = SOCK_DGRAM,
 		.ai_flags    = AI_FLAGS,
 	};
-#ifdef USE_NLS
-	setlocale(LC_ALL, "");
-	bindtextdomain(PACKAGE_NAME, LOCALEDIR);
-	textdomain(PACKAGE_NAME);
-#endif
-#if defined(USE_IDN) && defined(AI_CANONIDN)
-	hints.ai_flags &= ~ AI_CANONIDN;
-#endif
 
 	/* Support being called using `ping4` or `ping6` symlinks */
 	if (argv[0][strlen(argv[0]) - 1] == '4')
@@ -503,12 +496,15 @@ int main(int argc, char **argv) {
 		hints.ai_socktype = SOCK_RAW;
 	}
 
-	struct addrinfo *resolv = NULL;
-	int rcode = getaddrinfo(target, NULL, &hints, &resolv);
-	if (rcode)
-		errx(rcode, "%s: %s", target, gai_strerror(rcode));
+	struct addrinfo *res = NULL;
+	int rcode = gai_wrapper(target, NULL, &hints, &res);
+	if (rcode) {
+		if (rcode == EAI_SYSTEM)
+			err(errno, "%s", "getaddrinfo()");
+		errx(rcode, "%s", gai_strerror(rcode));
+	}
 
-	for (struct addrinfo *ai = resolv; ai; ai = ai->ai_next) {
+	for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
 		if (rts.opt.verbose) {
 			if (ai->ai_canonname)
 				warnx("%s: %s canonname '%s'", _INFO,
@@ -562,8 +558,8 @@ int main(int argc, char **argv) {
 		assert(ai->ai_next);
 	}
 
-	if (resolv)
-		freeaddrinfo(resolv);
+	if (res)
+		freeaddrinfo(res);
 	if (rts.outpack)
 		free(rts.outpack);
 #ifdef ENABLE_NI6

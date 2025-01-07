@@ -427,28 +427,32 @@ int ping4_run(state_t *rts, int argc, char **argv,
 			if (argc == 1)
 				rts->opt.resolve = false;
 		} else {
-			struct addrinfo *result = ai;
+			struct addrinfo *res = ai;
 			if (argc > 1) {
 				const struct addrinfo hints = {
-					.ai_family   = AF_INET,
-					.ai_protocol = IPPROTO_UDP,
-					.ai_flags    = AI_FLAGS,
+					.ai_family = AF_INET,
+					.ai_flags  = AI_FLAGS,
 				};
-				int rc = getaddrinfo(target, NULL, &hints, &result);
-				if (rc)
-					errx(EINVAL, "%s: %s", target, gai_strerror(rc));
+				int rc = gai_wrapper(target, NULL, &hints, &res);
+				if (rc) {
+					if (rc == EAI_SYSTEM)
+						err(errno, "%s", "getaddrinfo()");
+					errx(rc, "%s", gai_strerror(rc));
+				}
 			}
-			memcpy(whereto, result->ai_addr, sizeof(*whereto));
+			if (!res)
+				errx(EXIT_FAILURE, "%s", "getaddrinfo()");
+			memcpy(whereto, res->ai_addr, sizeof(*whereto));
 			/*
 			 * On certain network setup getaddrinfo() can return empty
 			 * ai_canonname. Instead of printing nothing in "PING"
 			 * line use the target.
 			 */
-			strncpy(hnamebuf, result->ai_canonname ? result->ai_canonname : target,
+			strncpy(hnamebuf, res->ai_canonname ? res->ai_canonname : target,
 				sizeof(hnamebuf) - 1);
 			rts->hostname = hnamebuf;
 			if (argc > 1)
-				freeaddrinfo(result);
+				freeaddrinfo(res);
 		}
 		if (argc > 1) {
 			if (rts->route->n < MAX_ROUTES)

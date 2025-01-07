@@ -65,7 +65,6 @@
 #include <string.h>
 #include <errno.h>
 #include <err.h>
-#include <math.h>
 #include <locale.h>
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
@@ -74,45 +73,6 @@
 #include <net/if.h>
 #include <linux/in6.h>
 #include <linux/errqueue.h>
-
-unsigned long strtoul_or_err(const char *str, const char *errmesg,
-	unsigned long min, unsigned long max)
-{
-	errno = (str && *str) ? 0 : EINVAL;
-	if (!errno) {
-		char *end = NULL;
-		unsigned long num = strtoul(str, &end, 10);
-		if (!(errno || (str == end) || (end && *end))) {
-			if ((min <= num) && (num <= max))
-				return num;
-			errx(ERANGE, "%s: '%s': %s: %lu-%lu", errmesg, str,
-				_("out of range"), min, max);
-		}
-	}
-	err(errno ? errno : EXIT_FAILURE, "%s: '%s'", errmesg, str);
-}
-
-double strtod_or_err(const char *str, const char *errmesg,
-	double min, double max)
-{
-	errno = (str && *str) ? 0 : EINVAL;
-	if (!errno) {
-		char *end = NULL;
-/* Here we always use "C" LC_NUMERIC to have dots as decimal separators */
-		setlocale(LC_NUMERIC, "C");
-		double num = strtod(str, &end);
-		int keep = errno;
-		setlocale(LC_NUMERIC, "");
-		errno = keep;
-		if (!(errno || (str == end) || (end && *end))) {
-			if (isgreaterequal(num, min) && islessequal(num, max))
-				return num;
-			errx(ERANGE, "%s: '%s': %s: %g-%g", errmesg, str,
-				_("out of range"), min, max);
-		}
-	}
-	err(errno ? errno : EXIT_FAILURE, "%s: '%s'", errmesg, str);
-}
 
 #define DX_SHIFT(str) (((str)[0] == '0') && (((str)[1] == 'x') || ((str)[1] == 'X')) ? 2 : 0)
 unsigned parse_flow(const char *str) {

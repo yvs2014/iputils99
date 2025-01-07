@@ -112,7 +112,7 @@ void niquery_init_nonce(struct ping_ni *ni)
 	iputils_srand();
 	ni->nonce_ptr = calloc(NI_NONCE_SIZE, MAX_DUP_CHK);
 	if (!ni->nonce_ptr)
-		err(errno, "calloc");
+		err(errno, "calloc(%u, %u)", NI_NONCE_SIZE, MAX_DUP_CHK);
 
 	ni->nonce_ptr[0] = ~0;
 #else
@@ -273,24 +273,28 @@ static int niquery_option_subject_addr_handler(struct ping_ni *ni, int index, co
 		return -1;
 	}
 
-	struct addrinfo *result = NULL;
-	{ int rc = getaddrinfo(arg, 0, &hints, &result);
-	  if (rc) {
-		warnx("%s: %s", arg, gai_strerror(rc));
+	struct addrinfo *res = NULL;
+	int rc = gai_wrapper(arg, 0, &hints, &res);
+	if (rc) {
+		if (rc == EAI_SYSTEM)
+			warn("%s", "getaddrinfo()");
+		else
+			warnx("%s", gai_strerror(rc));
 		return -1;
-	  }
 	}
 
-	for (struct addrinfo *ai = result; ai; ai = ai->ai_next) {
-		void *p = malloc(ni->subject_len);
-		if (!p)
-			continue;
-		memcpy(p, (uint8_t *)ai->ai_addr + offset, ni->subject_len);
-		free(ni->subject);
-		ni->subject = p;
-		break;
+	if (res) {
+		for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
+			void *p = malloc(ni->subject_len);
+			if (!p)
+				continue;
+			memcpy(p, (uint8_t *)ai->ai_addr + offset, ni->subject_len);
+			free(ni->subject);
+			ni->subject = p;
+			break;
+		}
+		freeaddrinfo(res);
 	}
-	freeaddrinfo(result);
 
 	return 0;
 }
@@ -356,7 +360,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 					   plus non-fqdn indicator. */
 	buf = malloc(buflen);
 	if (!buf) {
-		warn("%s", _("Memory allocation failed"));
+		warn("malloc(%zu)", buflen);
 		goto errexit;
 	}
 
@@ -398,7 +402,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 
 	return 0;
 oomexit:
-	warn("%s", _("Memory allocation failed"));
+	warn("malloc()");
 errexit:
 	free(buf);
 	free(canonname);

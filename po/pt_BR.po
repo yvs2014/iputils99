@@ -23,16 +23,24 @@ msgid "Usage"
 msgstr "Uso"
 
 #
-msgid "[options] <destination>"
-msgstr "[opções] <destino>"
-
-#
 msgid "Options"
 msgstr "Opções"
 
 #
+msgid "options"
+msgstr "opções"
+
+#
+msgid "TARGET"
+msgstr "DESTINO"
+
+#
 msgid "For more details see"
 msgstr "Para mais detalhes, consulte"
+
+#
+msgid "No goal"
+msgstr "Nenhuma meta"
 
 # arping options
 msgid ""
@@ -48,7 +56,6 @@ msgid ""
 "  -i <interval> set interval between packets (default: 1 second)\n"
 "  -I <device>   which ethernet device to use\n"
 "  -s <source>   source IP address\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
 "  -f            sai na primeira resposta\n"
 "  -q            modo silencioso\n"
@@ -62,11 +69,11 @@ msgstr ""
 "  -i <interval> define intervalo entre pacotes (padrão: 1 segundo)\n"
 "  -I <disp>     qual dispositivo <disp> ethernet deve ser usado\n"
 "  -s <origem>   endereço IP de origem\n"
-"  <destino>     endereço IP ou nome DNS\n"
 
 # clockdiff options
 msgid ""
-"                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
+"                without -o, use icmp timestamp only\n"
+"                (see RFC792, page 16)\n"
 "  -o            use IP timestamp and icmp echo\n"
 "  -o1           use three-term IP timestamp and icmp echo\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -74,10 +81,9 @@ msgid ""
 "  -I            alias of --time-format=iso\n"
 "  -h, --help    display this help\n"
 "  -V, --version print version and exit\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
 "                sem -o, usa carimbo de tempo icmp apenas\n"
-"                (consulte RFC0792, página 16)\n"
+"                (consulte RFC792, página 16)\n"
 "  -o            usa carimbo de tempo IP e eco de icmp\n"
 "  -o1           usa carimbo de tempo IP e eco de icmp em três termos\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -85,11 +91,9 @@ msgstr ""
 "  -I            apelido de --time-format=iso\n"
 "  -h, --help    exibe esta ajuda\n"
 "  -V, --version imprime a versão e sai\n"
-"  <destino>     nome de DNS ou endereço IP\n"
 
 # ping options
 msgid ""
-"  <destination>      DNS name or IP address\n"
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
 "  -B                 sticky source address\n"
@@ -139,7 +143,6 @@ msgid ""
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 msgstr ""
-"  <destino>          Nome DNS ou endereço IP\n"
 "  -a                 usar ping audível\n"
 "  -A                 usar ping adaptativo\n"
 "  -B                 endereço de origem fixo\n"
@@ -206,7 +209,6 @@ msgid ""
 "  -n             no reverse DNS name resolution\n"
 "  -p <port>      use destination <port>\n"
 "  -V             print version and exit\n"
-"  <destination>  DNS name or IP address\n"
 msgstr ""
 "  -4             use IPv4\n"
 "  -6             use IPv6\n"
@@ -216,7 +218,6 @@ msgstr ""
 "  -n             sem resolução reversa de nomes de DNS\n"
 "  -p <porta>     usa <porta> de destino\n"
 "  -V             imprime a versão e sai\n"
-"  <destino>      nome de DNS ou endereço IP\n"
 
 #
 msgid "Sent probes"
@@ -357,10 +358,6 @@ msgstr "Erro de codificação de IDN"
 #
 msgid "Too long scope name"
 msgstr "Nome de escopo longo demais"
-
-#
-msgid "Memory allocation failed"
-msgstr "Alocação de memória falhou"
 
 #
 msgid "Inappropriate subject name"
@@ -685,10 +682,6 @@ msgstr "Tempo de espera inválido"
 #
 msgid "ident 0 => forcing raw socket"
 msgstr "ident 0 => forçando socket não tratado"
-
-#
-msgid "No goal"
-msgstr "Nenhuma meta"
 
 #
 msgid ""

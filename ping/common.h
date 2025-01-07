@@ -197,6 +197,10 @@ int modify_capability(int);
 #endif
 void drop_capabilities(void);
 
+unsigned long strtoul_or_err(const char *str, const char *errmesg,
+	unsigned long min, unsigned long max);
+double strtod_or_err(const char *str, const char *errmesg,
+	double min, double max);
 const char *sprint_addr(const void *sa, socklen_t salen, bool resolve);
 
 void print_timestamp(void);

@@ -30,6 +30,7 @@ build_ping      = get_option('BUILD_PING')
 build_arping    = get_option('BUILD_ARPING')
 build_clockdiff = get_option('BUILD_CLOCKDIFF')
 build_tracepath = get_option('BUILD_TRACEPATH')
+build_gai       = get_option('BUILD_GAI')
 
 prefix    = get_option('prefix')
 bindir    = join_paths(prefix, get_option('bindir'))
@@ -54,7 +55,7 @@ if host_machine.endian() == 'big'
 	conf.set('WORDS_BIGENDIAN', '1')
 endif
 
-cap = get_option('USE_CAP')
+cap = get_option('CAP')
 if cap
 	deps += cc.find_library('cap')
 	conf.set('HAVE_LIBCAP', 1, description: 'Defined if libcap exists')
@@ -83,22 +84,20 @@ if build_ping
 	ping_extra = files(extra_files)
 endif
 
-idn = get_option('USE_IDN')
+idn = get_option('IDN')
 if idn	# If available: use AI_IDN for getaddrinfo() queries
 	ai_prfx = '#define _GNU_SOURCE\n#include <netdb.h>\n'
 	if cc.get_define('AI_IDN', prefix: ai_prfx) == ''
 		error('IDN is not transparently supported')
         endif
-	add_project_arguments('-DUSE_IDN', language: 'c')
 	conf.set('USE_IDN', 1, description: 'libc IDN support')
         if ni6 # idna_to_dns_encoding() for nodeinfo IDN
 		extra_funcs += {'__idna_to_dns_encoding': {'req': true}}
         endif
 endif
 
-nls = get_option('USE_NLS')
+nls = get_option('NLS')
 if nls
-	add_project_arguments('-DGETTEXT_PACKAGE="' + name + '"', language: 'c')
 	conf.set('USE_NLS', 1, description: 'gettext NLS support')
 	conf.set_quoted('LOCALEDIR', localedir)
 	subdir('po')
@@ -158,21 +157,30 @@ endif
 
 # build stage
 #
-common_sources = files(name + '_common.c')
+common_src = files(name + '_common.c')
 
 if build_ping
 	subdir('ping')
 	manpage += 'ping'
+	if build_gai
+		manpage += 'gai'
+	endif
+else
+	build_gai = false
 endif
 
-if build_tracepath
-	tracepath = executable('tracepath', common_sources + ['tracepath.c'],
+if build_arping
+	arping = executable('arping', common_src + ['arping.c'],
 		dependencies: deps, install: true)
-	manpage += 'tracepath'
+	if setcap_arping
+		meson.add_install_script('build-aux/setcap-setuid.sh',
+			bindir, 'arping', perm_type, setcap_path)
+	endif
+	manpage += 'arping'
 endif
 
 if build_clockdiff
-	clockdiff = executable('clockdiff', common_sources + ['clockdiff.c'],
+	clockdiff = executable('clockdiff', common_src + ['clockdiff.c'],
 		dependencies: deps, install: true)
 	if setcap_clockdiff
 		meson.add_install_script('build-aux/setcap-setuid.sh',
@@ -181,14 +189,10 @@ if build_clockdiff
 	manpage += 'clockdiff'
 endif
 
-if build_arping
-	arping = executable('arping', common_sources + ['arping.c'],
+if build_tracepath
+	tracepath = executable('tracepath', common_src + ['tracepath.c'],
 		dependencies: deps, install: true)
-	if setcap_arping
-		meson.add_install_script('build-aux/setcap-setuid.sh',
-			bindir, 'arping', perm_type, setcap_path)
-	endif
-	manpage += 'arping'
+	manpage += 'tracepath'
 endif
 
 if manpage.length() > 0
@@ -211,7 +215,10 @@ if meson.version().version_compare('>=0.53')
 			build_arping,
 		'clockdiff @0@'.format(setcap_clockdiff ? '(with caps/suid)' : ''):
 			build_clockdiff,
-		'tracepath': build_tracepath,
+		'tracepath':
+			build_tracepath,
+		'gai':
+			build_gai,
 	}}
 	sections += {'CONFIGURATION': {
 		'Caps   (libcap)' : cap,

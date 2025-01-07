@@ -3,13 +3,13 @@
 # local edition: yvs, 2024
 
 # features
-option('USE_CAP', type: 'boolean', value: true,
+option('CAP',              type: 'boolean', value: true,
 	description: 'Capability support (with libcap)')
-option('USE_IDN', type: 'boolean', value: true,
+option('IDN',              type: 'boolean', value: true,
 	description: 'IDN support (via libc)')
-option('USE_NLS', type: 'boolean', value: true,
+option('NLS',              type: 'boolean', value: true,
 	description: 'NLS support (via gettext)')
-option('NI6',     type: 'boolean', value: true,
+option('NI6',              type: 'boolean', value: true,
 	description: 'PING6 NodeInfo client (RFC4620)')
 option('NI6_NONCE_MEMORY', type: 'boolean', value: false,
 	description: 'PING6 NodeInfo nonce memory')
@@ -23,6 +23,8 @@ option('BUILD_CLOCKDIFF', type: 'boolean', value: true,
         description: 'Build clockdiff')
 option('BUILD_TRACEPATH', type: 'boolean', value: true,
         description: 'Build tracepath')
+option('BUILD_GAI',       type: 'boolean', value: true,
+        description: 'Build gai tool')
 
 # caps
 option('NO_CAPS',        type: 'boolean', value: true,

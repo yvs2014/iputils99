@@ -5,6 +5,7 @@
 #define _GNU_SOURCE
 #endif
 
+#include <stdbool.h>
 #include <time.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -44,6 +45,20 @@
 # define NI_FLAGS 0
 #endif /* NI_IDN */
 
+#ifndef NOOP
+#define NOOP ((void)0)
+#endif
+
+#ifdef USE_NLS
+#define SET_NLS do { \
+	setlocale(LC_ALL, ""); \
+	bindtextdomain(PACKAGE_NAME, LOCALEDIR); \
+	textdomain(PACKAGE_NAME); \
+} while (0)
+#else
+#define SET_NLS NOOP
+#endif
+
 #define INFO	"INFO"		// verbose output prefix
 #define WARN	"WARNING"	// warning prefix
 #define _INFO	_(INFO)
@@ -68,7 +83,10 @@ long strtol_or_err(const char *str, const char *errmesg, long min, long max);
 void close_stdout(void);
 void setmyname(const char *argv0);
 NORETURN void version_n_exit(int rc);
-NORETURN void usage_common(int rc, const char *options);
+NORETURN void usage_common(int rc, const char *options, bool more);
+
+int gai_wrapper(const char *restrict node, const char *restrict service,
+	const struct addrinfo *restrict hints, struct addrinfo **restrict res);
 
 #ifndef timespecsub
 void timespecsub(const struct timespec *a, const struct timespec *b, struct timespec *res);

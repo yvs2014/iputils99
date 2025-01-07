@@ -23,16 +23,24 @@ msgid "Usage"
 msgstr "გამოყენება"
 
 #
-msgid "[options] <destination>"
-msgstr "[პარამეტრები] <დანიშნულება>"
-
-#
 msgid "Options"
 msgstr "პარამეტრები"
 
 #
+msgid "options"
+msgstr "პარამეტრები"
+
+#
+msgid "TARGET"
+msgstr "სამიზნე"
+
+#
 msgid "For more details see"
 msgstr "მეტი დეტალების სანახავად იხილეთ"
+
+#
+msgid "No goal"
+msgstr ""
 
 # arping options
 msgid ""
@@ -48,7 +56,6 @@ msgid ""
 "  -i <interval> set interval between packets (default: 1 second)\n"
 "  -I <device>   which ethernet device to use\n"
 "  -s <source>   source IP address\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
 "  -f               პირველივე პასუხზე გამოსვლა\n"
 "  -q               ჩუმად ყოფნა\n"
@@ -62,11 +69,11 @@ msgstr ""
 "  -i <ინტერვალი>   პაკეტებს შორის ინტერვალის დაყენება (ნაგულისხმევი: 1 წამი)\n"
 "  -l <მოწყობილობა> გამოყენებადი ქსელის ინტერფეისის სახელი\n"
 "  -s <წყარო>       წყაროს IP მისამართი\n"
-"  <დანიშნულება>    DNS სახელი ან IP მისამართი\n"
 
 # clockdiff options
 msgid ""
-"                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
+"                without -o, use icmp timestamp only\n"
+"                (see RFC792, page 16)\n"
 "  -o            use IP timestamp and icmp echo\n"
 "  -o1           use three-term IP timestamp and icmp echo\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -74,10 +81,9 @@ msgid ""
 "  -I            alias of --time-format=iso\n"
 "  -h, --help    display this help\n"
 "  -V, --version print version and exit\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
-"                -o -ის გარეშე გამოიყენება მხოლოდ icmp დროის სანიშნი (იხ "
-"RFC0792, გვ 16)\n"
+"                -o -ის გარეშე გამოიყენება მხოლოდ icmp დროის სანიშნი\n"
+"                (იხ RFC792, გვ 16)\n"
 "  -o            IP დროის შტამპისა და icmp ექოს გამოყენება\n"
 "  -o1           3 IP დროის შტამპისა და icmp ექოს გამოყენება\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -85,11 +91,9 @@ msgstr ""
 "  -I            იგივე, რაც --time-format=iso\n"
 "  -h , --help   ამ შეტყობინების გამოტანა\n"
 "  -V, --version ვერსიის გამოტანა და მუშაობის დასრულება\n"
-"  <დანიშნულება> DNS სახელი ან IP მისამართი\n"
 
 # ping options
 msgid ""
-"  <destination>      DNS name or IP address\n"
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
 "  -B                 sticky source address\n"
@@ -139,7 +143,6 @@ msgid ""
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 msgstr ""
-"  <სამიზნე>           DNS სახელი ან IP მისამართი\n"
 "  -a                  audible ping-ის გამოყენება\n"
 "  -A                  adaptive ping-ის გამოყენება\n"
 "  -B                  წებოვანი წყაროს მისამართი\n"
@@ -202,7 +205,6 @@ msgid ""
 "  -n             no reverse DNS name resolution\n"
 "  -p <port>      use destination <port>\n"
 "  -V             print version and exit\n"
-"  <destination>  DNS name or IP address\n"
 msgstr ""
 "  -4            IPv4-ის გამოყენება\n"
 "  -6            IPv6-ის გამოყენება\n"
@@ -212,7 +214,6 @@ msgstr ""
 "  -n            DNS-ის გადაწყვეტის გამორთვა\n"
 "  -p  <პორტი>   დანიშნულების <პორტის> გამოყენება\n"
 "  -V            ვერსიის დაბეჭდვა და გამოსვლა\n"
-"  <დანიშნულება> DNS სახელი ან IP მისამართი\n"
 
 #
 msgid "Sent probes"
@@ -353,10 +354,6 @@ msgstr "IDN-ის დაშიფვრის შეცდომა"
 #
 msgid "Too long scope name"
 msgstr "რეგიონის მეტისმეტად გრძელი სახელი"
-
-#
-msgid "Memory allocation failed"
-msgstr "მეხსიერების გამოყოფის შეცდომა"
 
 #
 msgid "Inappropriate subject name"

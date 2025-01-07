@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include <err.h>
+#include <errno.h>
 
 void unmap_ai_sa4(struct addrinfo *ai) {
 	if (!ai || !ai->ai_addr)
@@ -23,12 +24,15 @@ void ping6_unspec(const char *target, const struct in6_addr *addr,
 {
 	if (!target || !addr || !hints)
 		return;
-	struct addrinfo *result = NULL, unspec = *hints;
+	struct addrinfo *res = NULL, unspec = *hints;
 	unspec.ai_family = AF_UNSPEC;
-	int rc = getaddrinfo(target, NULL, &unspec, &result);
-	if (rc)
-		errx(rc, "%s: %s", target, gai_strerror(rc));
-	for (struct addrinfo *ai = result; ai; ai = ai->ai_next) {
+	int rc = getaddrinfo(target, NULL, &unspec, &res);
+	if (rc) {
+		if (rc == EAI_SYSTEM)
+			err(errno, "%s", "getaddrinfo()");
+		errx(rc, "%s", gai_strerror(rc));
+	}
+	for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
 		if (ai->ai_family != AF_INET6)
 			continue;
 		struct sockaddr_in6 *sa = (struct sockaddr_in6 *)ai->ai_addr;
@@ -36,7 +40,7 @@ void ping6_unspec(const char *target, const struct in6_addr *addr,
 			if (!memcmp(addr, &sa->sin6_addr, sizeof(struct in6_addr)))
 				break;
 	}
-	if (result)
-		freeaddrinfo(result);
+	if (res)
+		freeaddrinfo(res);
 }
 

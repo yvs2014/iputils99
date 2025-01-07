@@ -2,7 +2,7 @@
 
 # local edition: yvs, 2024
 
-ping_src = common_sources
+ping_src = common_src
 ping_src += 'ping.c'
 ping_src += 'ping_aux.c'
 ping_src += 'ping4.c'
@@ -28,5 +28,12 @@ ping = executable('ping', ping_src,
 if setcap_ping
 	meson.add_install_script('../build-aux/setcap-setuid.sh',
 		bindir, 'ping', perm_type, setcap_path)
+endif
+
+if build_gai
+	executable('gai', common_src + ['common.c', 'gai.c'],
+		include_directories: include_directories('..'),
+		dependencies: deps + ping_extra_deps,
+		install: true)
 endif
 

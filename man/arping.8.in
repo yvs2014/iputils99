@@ -22,8 +22,7 @@
 .SH "NAME"
 arping \- send ARP REQUEST to a neighbour host
 .SH "SYNOPSIS"
-.HP \w'\fBarping\fR\ 'u
-\fBarping\fR [\fB\-AbDfhqUV\fR] [\fB\-c\ \fR\fB\fIcount\fR\fR] [\fB\-w\ \fR\fB\fIdeadline\fR\fR] [\fB\-i\ \fR\fB\fIinterval\fR\fR] [\fB\-s\ \fR\fB\fIsource\fR\fR] [\fB\-I\ \fR\fB\fIinterface\fR\fR] {destination}
+\fBarping\fR [\fB\-AbDfhqUV\fR] [\fB\-c\ \fR\fB\fIcount\fR\fR] [\fB\-w\ \fR\fB\fIdeadline\fR\fR] [\fB\-i\ \fR\fB\fIinterval\fR\fR] [\fB\-s\ \fR\fB\fIsource\fR\fR] [\fB\-I\ \fR\fB\fIinterface\fR\fR] TARGET
 .SH "DESCRIPTION"
 .PP
 Ping

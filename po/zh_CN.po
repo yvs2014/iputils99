@@ -23,16 +23,24 @@ msgid "Usage"
 msgstr "用法"
 
 #
-msgid "[options] <destination>"
-msgstr "[选项] <目标>"
-
-#
 msgid "Options"
 msgstr "选项"
 
 #
+msgid "options"
+msgstr "选项"
+
+#
+msgid "TARGET"
+msgstr "目标"
+
+#
 msgid "For more details see"
 msgstr "了解更多信息请参阅"
+
+#
+msgid "No goal"
+msgstr ""
 
 # arping options
 msgid ""
@@ -48,7 +56,6 @@ msgid ""
 "  -i <interval> set interval between packets (default: 1 second)\n"
 "  -I <device>   which ethernet device to use\n"
 "  -s <source>   source IP address\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
 "  -f            收到回复就退出\n"
 "  -q            不要显示信息\n"
@@ -62,11 +69,11 @@ msgstr ""
 "  -i <间隔>     设置两个包之间的间隔时间 (默认: 1 秒)\n"
 "  -I <设备>     指定使用的设备\n"
 "  -s <来源>     源 IP 地址\n"
-"  <目标>        DNS 名称或者 IP 地址\n"
 
 # clockdiff options
 msgid ""
-"                without -o, use icmp timestamp only (see RFC0792, page 16)\n"
+"                without -o, use icmp timestamp only\n"
+"                (see RFC792, page 16)\n"
 "  -o            use IP timestamp and icmp echo\n"
 "  -o1           use three-term IP timestamp and icmp echo\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -74,9 +81,9 @@ msgid ""
 "  -I            alias of --time-format=iso\n"
 "  -h, --help    display this help\n"
 "  -V, --version print version and exit\n"
-"  <destination> DNS name or IP address\n"
 msgstr ""
-"                如不指定 -o，则仅使用 ICMP 时间缀 (参阅 RFC0792，第 16 页)\n"
+"                如不指定 -o，则仅使用 ICMP 时间缀\n"
+"                (参阅 RFC792，第 16 页)\n"
 "  -o            使用 IP 时间缀和 ICMP 回复\n"
 "  -o1           使用 3-term IP 时间缀和 ICMP 回复\n"
 "  -T, --time-format <ctime|iso>\n"
@@ -84,11 +91,9 @@ msgstr ""
 "  -I            --time-format=iso 的别名\n"
 "  -h, --help    显示这个帮助\n"
 "  -V, --version 显示版本信息并退出\n"
-"  <目标>        DNS 名称或 IP 地址\n"
 
 # ping options
 msgid ""
-"  <destination>      DNS name or IP address\n"
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
 "  -B                 sticky source address\n"
@@ -138,7 +143,6 @@ msgid ""
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 msgstr ""
-"  <目标>             DNS 名称或 IP 地址\n"
 "  -a                 使用声音探测 ping\n"
 "  -A                 使用自适应 ping\n"
 "  -B                 粘性源地址\n"
@@ -193,7 +197,6 @@ msgid ""
 "  -n             no reverse DNS name resolution\n"
 "  -p <port>      use destination <port>\n"
 "  -V             print version and exit\n"
-"  <destination>  DNS name or IP address\n"
 msgstr ""
 "  -4             使用 IPv4\n"
 "  -6             使用 IPv6\n"
@@ -203,7 +206,6 @@ msgstr ""
 "  -n             不进行名称解析\n"
 "  -p <端口号>    目标端口号 <端口号>\n"
 "  -V             显示版本信息并退出\n"
-"  <目标>         目标主机 DNS 名称或 IP 地址\n"
 
 #
 msgid "Sent probes"
@@ -344,10 +346,6 @@ msgstr "IDN 编码错误"
 #
 msgid "Too long scope name"
 msgstr "作用域名称太长"
-
-#
-msgid "Memory allocation failed"
-msgstr "内存分配错误"
 
 #
 msgid "Inappropriate subject name"

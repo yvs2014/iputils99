@@ -95,7 +95,7 @@ xml:id="man.ping">
         <replaceable>timestamp option</replaceable></option>
       </arg>
       <arg choice="opt" rep="norepeat">hop...</arg>
-      <arg choice="req" rep="norepeat">destination</arg>
+      <arg choice="req" rep="norepeat">TARGET</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
 

@@ -11,7 +11,6 @@
 
 #include "iputils_common.h"
 
-#include <assert.h>
 #include <arpa/inet.h>
 #include <errno.h>
 #include <limits.h>
@@ -79,7 +78,13 @@ struct probehdr {
 	struct timespec ts;
 };
 
-struct run_state {
+typedef struct tracepath_flags {
+	bool no_resolve;
+	bool show_both;
+	bool mapped;
+} tracepath_flags;
+
+typedef struct run_state {
 	struct hhistory his[HIS_ARRAY_SIZE];
 	int hisptr;
 	struct sockaddr_storage target;
@@ -94,45 +99,32 @@ struct run_state {
 	void *pktbuf;
 	int hops_to;
 	int hops_from;
-	unsigned
-		no_resolve:1,
-		show_both:1,
-		mapped:1;
-};
+	tracepath_flags opt;
+} run_state;
 
 /*
  * All includes, definitions, struct declarations, and global variables are
  * above.  After this comment all you can find is functions.
  */
 
-static void data_wait(struct run_state const *const ctl)
-{
+static void data_wait(int fd) {
 	fd_set fds;
-	struct timeval tv = {
-		.tv_sec = 1,
-		.tv_usec = 0
-	};
-
 	FD_ZERO(&fds);
-	FD_SET(ctl->socket_fd, &fds);
-	select(ctl->socket_fd + 1, &fds, NULL, NULL, &tv);
+	FD_SET(fd, &fds);
+	struct timeval tv = { .tv_sec = 1, .tv_usec = 0 };
+	select(fd + 1, &fds, NULL, NULL, &tv);
 }
 
-static void print_host(struct run_state const *const ctl, char const *const a,
-		       char const *const b)
-{
-	int plen;
-
-	plen = printf("%s", a);
-	if (ctl->show_both)
+static void print_host(const char *a, const char *b, bool show_both) {
+	int plen = printf("%s", a);
+	if (show_both)
 		plen += printf(" (%s)", b);
 	if (plen >= HOST_COLUMN_SIZE)
 		plen = HOST_COLUMN_SIZE - 1;
 	printf("%*s", HOST_COLUMN_SIZE - plen, "");
 }
 
-static int recverr(struct run_state *const ctl)
-{
+static int recverr(run_state *rts) {
 	ssize_t recv_size;
 	struct probehdr rcvbuf;
 	char cbuf[ANCILLARY_DATA_LEN];
@@ -167,14 +159,14 @@ static int recverr(struct run_state *const ctl)
 	msg = reset;
 
 	clock_gettime(CLOCK_MONOTONIC, &ts);
-	recv_size = recvmsg(ctl->socket_fd, &msg, MSG_ERRQUEUE);
+	recv_size = recvmsg(rts->socket_fd, &msg, MSG_ERRQUEUE);
 	if (recv_size < 0) {
 		if (errno == EAGAIN)
 			return progress;
 		goto restart;
 	}
 
-	progress = ctl->mtu;
+	progress = rts->mtu;
 
 	rethops = -1;
 	sndhops = -1;
@@ -182,8 +174,8 @@ static int recverr(struct run_state *const ctl)
 	retts = NULL;
 	broken_router = 0;
 
-	slot = -ctl->base_port;
-	switch (ctl->ai->ai_family) {
+	slot = -rts->base_port;
+	switch (rts->ai->ai_family) {
 	case AF_INET6:
 		slot += ntohs(((struct sockaddr_in6 *)&addr)->sin6_port);
 		break;
@@ -191,10 +183,10 @@ static int recverr(struct run_state *const ctl)
 		slot += ntohs(((struct sockaddr_in *)&addr)->sin_port);
 		break;
 	}
-	if (slot >= 0 && slot < (HIS_ARRAY_SIZE - 1) && ctl->his[slot].hops) {
-		sndhops = ctl->his[slot].hops;
-		retts = &ctl->his[slot].sendtime;
-		ctl->his[slot].hops = 0;
+	if (slot >= 0 && slot < (HIS_ARRAY_SIZE - 1) && rts->his[slot].hops) {
+		sndhops = rts->his[slot].hops;
+		retts = &rts->his[slot].sendtime;
+		rts->his[slot].hops = 0;
 	}
 	if (recv_size == sizeof(rcvbuf)) {
 		if (rcvbuf.ttl == 0 || (rcvbuf.ts.tv_sec == 0 && rcvbuf.ts.tv_nsec == 0))
@@ -240,7 +232,7 @@ static int recverr(struct run_state *const ctl)
 		return 0;
 	}
 	if (e->ee_origin == SO_EE_ORIGIN_LOCAL)
-		printf("%2d?: [%s] ", ctl->ttl, _("LOCALHOST"));
+		printf("%2d?: [%s] ", rts->ttl, _("LOCALHOST"));
 	else if (e->ee_origin == SO_EE_ORIGIN_ICMP6 ||
 		 e->ee_origin == SO_EE_ORIGIN_ICMP) {
 		char abuf[NI_MAXHOST];
@@ -250,7 +242,7 @@ static int recverr(struct run_state *const ctl)
 		if (sndhops > 0)
 			printf("%2d:  ", sndhops);
 		else
-			printf("%2d?: ", ctl->ttl);
+			printf("%2d?: ", rts->ttl);
 
 		switch (sa->sa_family) {
 		case AF_INET6:
@@ -263,23 +255,21 @@ static int recverr(struct run_state *const ctl)
 			salen = 0;
 		}
 
-		if (ctl->no_resolve || ctl->show_both) {
+		if (rts->opt.no_resolve || rts->opt.show_both) {
 			if (getnameinfo(sa, salen, abuf, sizeof(abuf), NULL, 0, NI_NUMERICHOST))
 				strcpy(abuf, "???");
 		} else
 			abuf[0] = 0;
 
-		if (!ctl->no_resolve || ctl->show_both) {
+		if (!rts->opt.no_resolve || rts->opt.show_both) {
 			fflush(stdout);
 			if (getnameinfo(sa, salen, hnamebuf, sizeof(hnamebuf), NULL, 0, NI_FLAGS))
 				strcpy(hnamebuf, "???");
 		} else
 			hnamebuf[0] = 0;
 
-		if (ctl->no_resolve)
-			print_host(ctl, abuf, hnamebuf);
-		else
-			print_host(ctl, hnamebuf, abuf);
+		{ bool no = rts->opt.no_resolve;
+		  print_host(no ? abuf : hnamebuf, no ? hnamebuf : abuf, rts->opt.show_both); }
 	}
 
 	if (retts) {
@@ -303,17 +293,17 @@ static int recverr(struct run_state *const ctl)
 
 	switch (e->ee_errno) {
 	case ETIMEDOUT:
-		printf("\n");
+		putchar('\n');
 		break;
 	case EMSGSIZE:
 		printf("%s %d\n", _("pmtu"), e->ee_info);
-		ctl->mtu = e->ee_info;
-		progress = ctl->mtu;
+		rts->mtu = e->ee_info;
+		progress = rts->mtu;
 		break;
 	case ECONNREFUSED:
 		puts(_("reached"));
-		ctl->hops_to = sndhops < 0 ? ctl->ttl : sndhops;
-		ctl->hops_from = rethops;
+		rts->hops_to = (sndhops < 0) ? rts->ttl : sndhops;
+		rts->hops_from = rethops;
 		return 0;
 	case EPROTO:
 		printf("!P\n");
@@ -326,11 +316,12 @@ static int recverr(struct run_state *const ctl)
 		     e->ee_type == ICMPV6_TIME_EXCEED &&
 		     e->ee_code == ICMPV6_EXC_HOPLIMIT)) {
 			if (rethops >= 0) {
-				if ((sndhops >= 0 && rethops != sndhops) ||
-					(sndhops < 0 && rethops != ctl->ttl))
+				bool sent = (sndhops >= 0);
+				if (( sent && (rethops != sndhops )) ||
+				    (!sent && (rethops != rts->ttl)))
 					printf("%s %2d ", _("asymm"), rethops);
 			}
-			printf("\n");
+			putchar('\n');
 			break;
 		}
 		printf("!H\n");
@@ -349,52 +340,50 @@ static int recverr(struct run_state *const ctl)
 	goto restart;
 }
 
-static int probe_ttl(struct run_state *const ctl)
-{
-	int i;
-	struct probehdr *hdr = ctl->pktbuf;
-
-	memset(ctl->pktbuf, 0, ctl->mtu);
- restart:
-	for (i = 0; i < MAX_PROBES; i++) {
+static int probe_ttl(run_state *rts) {
+	struct probehdr *hdr = rts->pktbuf;
+	memset(rts->pktbuf, 0, rts->mtu);
+restart:
+	{ int i;
+	  for (i = 0; i < MAX_PROBES; i++) {
 		int res;
-
-		hdr->ttl = ctl->ttl;
-		switch (ctl->ai->ai_family) {
+		hdr->ttl = rts->ttl;
+		switch (rts->ai->ai_family) {
 		case AF_INET6:
-			((struct sockaddr_in6 *)&ctl->target)->sin6_port =
-			    htons(ctl->base_port + ctl->hisptr);
+			((struct sockaddr_in6 *)&rts->target)->sin6_port =
+			    htons(rts->base_port + rts->hisptr);
 			break;
 		case AF_INET:
-			((struct sockaddr_in *)&ctl->target)->sin_port =
-			    htons(ctl->base_port + ctl->hisptr);
+			((struct sockaddr_in *)&rts->target)->sin_port =
+			    htons(rts->base_port + rts->hisptr);
 			break;
 		}
 		clock_gettime(CLOCK_MONOTONIC, &hdr->ts);
-		ctl->his[ctl->hisptr].hops = ctl->ttl;
-		ctl->his[ctl->hisptr].sendtime = hdr->ts;
-		if (sendto(ctl->socket_fd, ctl->pktbuf, ctl->mtu - ctl->overhead, 0,
-			   (struct sockaddr *)&ctl->target, ctl->targetlen) > 0)
+		rts->his[rts->hisptr].hops     = rts->ttl;
+		rts->his[rts->hisptr].sendtime = hdr->ts;
+		if (sendto(rts->socket_fd, rts->pktbuf, rts->mtu - rts->overhead, 0,
+			   (struct sockaddr *)&rts->target, rts->targetlen) > 0)
 			break;
-		res = recverr(ctl);
-		ctl->his[ctl->hisptr].hops = 0;
+		res = recverr(rts);
+		rts->his[rts->hisptr].hops = 0;
 		if (res == 0)
 			return 0;
 		if (res > 0)
 			goto restart;
-	}
-	ctl->hisptr = (ctl->hisptr + 1) & (HIS_ARRAY_SIZE - 1);
+	  }
+	  rts->hisptr = (rts->hisptr + 1) & (HIS_ARRAY_SIZE - 1);
 
-	if (i < MAX_PROBES) {
-		data_wait(ctl);
-		if (recv(ctl->socket_fd, ctl->pktbuf, ctl->mtu, MSG_DONTWAIT) > 0) {
-			printf("%2d?: %s\n", ctl->ttl, _("reply received 8"));
+	  if (i < MAX_PROBES) {
+		data_wait(rts->socket_fd);
+		if (recv(rts->socket_fd, rts->pktbuf, rts->mtu, MSG_DONTWAIT) > 0) {
+			printf("%2d?: %s\n", rts->ttl, _("reply received 8"));
 			return 0;
 		}
-		return recverr(ctl);
+		return recverr(rts);
+	  }
 	}
 
-	printf("%2d:  %s\n", ctl->ttl, _("send fail"));
+	printf("%2d:  %s\n", rts->ttl, _("send fail"));
 	return 0;
 }
 
@@ -408,49 +397,33 @@ NORETURN static void usage(int rc) {
 "  -n             no reverse DNS name resolution\n"
 "  -p <port>      use destination <port>\n"
 "  -V             print version and exit\n"
-"  <destination>  DNS name or IP address\n"
 ;
-	usage_common(rc, options);
+	usage_common(rc, options, false);
 }
 
 int main(int argc, char **argv) {
 	setmyname(argv[0]);
-	struct run_state ctl = {
-		.max_hops = MAX_HOPS_DEFAULT,
-		.hops_to = -1,
-		.hops_from = -1,
-		0
-	};
-	struct addrinfo hints = {
-		.ai_family = AF_UNSPEC,
-		.ai_socktype = SOCK_DGRAM,
-		.ai_protocol = IPPROTO_UDP,
-		.ai_flags = AI_CANONNAME,
-	};
-	struct addrinfo *result;
-	int ch;
-	int status;
-	int on;
-	char *p;
-	char pbuf[NI_MAXSERV];
-
-#if defined(USE_IDN) && defined(AI_IDN)
-	hints.ai_flags |= AI_IDN;
-#endif
-
+	SET_NLS;
 	atexit(close_stdout);
-#ifdef USE_NLS
-	setlocale(LC_ALL, "");
-	bindtextdomain(PACKAGE_NAME, LOCALEDIR);
-	textdomain(PACKAGE_NAME);
-#endif
 
+	run_state rts = {
+		.max_hops  = MAX_HOPS_DEFAULT,
+		.hops_to   = -1,
+		.hops_from = -1,
+	};
+
+	struct addrinfo hints = {
+		.ai_family   = AF_UNSPEC,
+		.ai_socktype = SOCK_DGRAM,
+		.ai_flags    = AI_FLAGS,
+	};
 	/* Support being called using `tracepath4` or `tracepath6` symlinks */
 	if (argv[0][strlen(argv[0]) - 1] == '4')
 		hints.ai_family = AF_INET;
 	else if (argv[0][strlen(argv[0]) - 1] == '6')
 		hints.ai_family = AF_INET6;
 
+	int ch;
 	while ((ch = getopt(argc, argv, "46nbh?l:m:p:V")) != EOF) {
 		switch (ch) {
 		case '4':
@@ -463,19 +436,19 @@ int main(int argc, char **argv) {
 		}
 			break;
 		case 'n':
-			ctl.no_resolve = 1;
+			rts.opt.no_resolve = true;
 			break;
 		case 'b':
-			ctl.show_both = 1;
+			rts.opt.show_both = true;
 			break;
 		case 'l':
-			ctl.mtu = strtol_or_err(optarg, _("Invalid argument"), ctl.overhead, INT_MAX);
+			rts.mtu = strtol_or_err(optarg, _("Invalid argument"), rts.overhead, INT_MAX);
 			break;
 		case 'm':
-			ctl.max_hops = strtol_or_err(optarg, _("Invalid argument"), 0, MAX_HOPS_LIMIT);
+			rts.max_hops = strtol_or_err(optarg, _("Invalid argument"), 0, MAX_HOPS_LIMIT);
 			break;
 		case 'p':
-			ctl.base_port = strtol_or_err(optarg, _("Invalid argument"), 0, UINT16_MAX);
+			rts.base_port = strtol_or_err(optarg, _("Invalid argument"), 0, UINT16_MAX);
 			break;
 		case 'V':
 			version_n_exit(EXIT_SUCCESS);
@@ -497,132 +470,148 @@ int main(int argc, char **argv) {
 		usage(EINVAL);
 
 	/* Backward compatibility */
-	if (!ctl.base_port) {
-		p = strchr(argv[0], '/');
+	if (!rts.base_port) {
+		char *p = strchr(argv[0], '/');
 		if (p) {
 			*p = 0;
-			ctl.base_port = strtol_or_err(p + 1, _("Invalid argument"), 0, UINT16_MAX);
+			rts.base_port = strtol_or_err(p + 1, _("Invalid argument"), 0, UINT16_MAX);
 		} else
-			ctl.base_port = DEFAULT_BASEPORT;
+			rts.base_port = DEFAULT_BASEPORT;
 	}
-	sprintf(pbuf, "%u", ctl.base_port);
+	char pbuf[NI_MAXSERV];
+	sprintf(pbuf, "%u", rts.base_port);
 
-	status = getaddrinfo(argv[0], pbuf, &hints, &result);
-	if (status || !result) {
-		errx(EXIT_FAILURE, "%s: %s", argv[0], gai_strerror(status));
-		abort();
+	struct addrinfo *res = NULL;
+	int rc = gai_wrapper(argv[0], pbuf, &hints, &res);
+	if (rc) {
+		if (rc == EAI_SYSTEM)
+			err(errno, "%s", "getaddrinfo()");
+		errx(rc, "%s", gai_strerror(rc));
 	}
+	if (!res)
+		errx(EXIT_FAILURE, "%s", "getaddrinfo()");
 
-	for (ctl.ai = result; ctl.ai; ctl.ai = ctl.ai->ai_next) {
-		assert(ctl.ai != NULL);
-		if (ctl.ai->ai_family != AF_INET6 && ctl.ai->ai_family != AF_INET)
+	for (rts.ai = res; rts.ai; rts.ai = rts.ai->ai_next) {
+		int af = rts.ai->ai_family;
+		if ((af != AF_INET6) || (af != AF_INET))
 			continue;
-		ctl.socket_fd = socket(ctl.ai->ai_family, ctl.ai->ai_socktype, ctl.ai->ai_protocol);
-		if (ctl.socket_fd < 0)
+		rts.socket_fd = socket(af, rts.ai->ai_socktype, rts.ai->ai_protocol);
+		if (rts.socket_fd < 0)
 			continue;
-		memcpy(&ctl.target, ctl.ai->ai_addr, ctl.ai->ai_addrlen);
-		ctl.targetlen = ctl.ai->ai_addrlen;
+		memcpy(&rts.target, rts.ai->ai_addr, rts.ai->ai_addrlen);
+		rts.targetlen = rts.ai->ai_addrlen;
 		break;
 	}
-	if ((ctl.socket_fd < 0) || !ctl.ai)
+	if ((rts.socket_fd < 0) || !rts.ai)
 		err(EXIT_FAILURE, "socket/ai");
 
-	switch (ctl.ai->ai_family) {
+	switch (rts.ai->ai_family) {
 	case AF_INET6:
-		ctl.overhead = DEFAULT_OVERHEAD_IPV6;
-		if (!ctl.mtu)
-			ctl.mtu = DEFAULT_MTU_IPV6;
-		if (ctl.mtu <= ctl.overhead)
+		rts.overhead = DEFAULT_OVERHEAD_IPV6;
+		if (!rts.mtu)
+			rts.mtu = DEFAULT_MTU_IPV6;
+		if (rts.mtu <= rts.overhead)
 			goto pktlen_error;
 
-		on = IPV6_PMTUDISC_PROBE;
-		if (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_MTU_DISCOVER, &on, sizeof(on)) < 0) {
-		    on = IPV6_PMTUDISC_DO;
-		    if (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_MTU_DISCOVER, &on, sizeof(on)) < 0)
+		{ // path mtu
+		  int opt = IPV6_PMTUDISC_PROBE;
+		  if (setsockopt(rts.socket_fd, SOL_IPV6, IPV6_MTU_DISCOVER, &opt, sizeof(opt)) < 0) {
+		    opt = IPV6_PMTUDISC_DO;
+		    if (setsockopt(rts.socket_fd, SOL_IPV6, IPV6_MTU_DISCOVER, &opt, sizeof(opt)) < 0)
 			err(errno, "IPV6_MTU_DISCOVER");
+		  }
 		}
-		on = 1;
-		if (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_RECVERR, &on, sizeof(on)) < 0)
+		{ // recv error
+		  int on = 1;
+		  if (setsockopt(rts.socket_fd, SOL_IPV6, IPV6_RECVERR, &on, sizeof(on)) < 0)
 			err(errno, "IPV6_RECVERR");
-		if ((setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_HOPLIMIT, &on, sizeof(on)) < 0)
+		}
+		{ // hop limit
+		  int on = 1;
+		  if ((setsockopt(rts.socket_fd, SOL_IPV6, IPV6_HOPLIMIT, &on, sizeof(on)) < 0)
 #ifdef IPV6_RECVHOPLIMIT
-		    && (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_2292HOPLIMIT, &on, sizeof(on)) < 0)
+		    && (setsockopt(rts.socket_fd, SOL_IPV6, IPV6_2292HOPLIMIT, &on, sizeof(on)) < 0)
 #endif
 		    )
 			err(errno, "IPV6_HOPLIMIT");
-		if (!IN6_IS_ADDR_V4MAPPED(&(((struct sockaddr_in6 *)&ctl.target)->sin6_addr)))
+		}
+		if (!IN6_IS_ADDR_V4MAPPED(&(((struct sockaddr_in6 *)&rts.target)->sin6_addr)))
 			break;
-		ctl.mapped = 1;
+		rts.opt.mapped = true;
 		/*FALLTHROUGH*/
 	case AF_INET:
-		ctl.overhead = DEFAULT_OVERHEAD_IPV4;
-		if (!ctl.mtu)
-			ctl.mtu = DEFAULT_MTU_IPV4;
-		if (ctl.mtu <= ctl.overhead)
+		rts.overhead = DEFAULT_OVERHEAD_IPV4;
+		if (!rts.mtu)
+			rts.mtu = DEFAULT_MTU_IPV4;
+		if (rts.mtu <= rts.overhead)
 			goto pktlen_error;
 
-		on = IP_PMTUDISC_PROBE;
-		if (setsockopt(ctl.socket_fd, SOL_IP, IP_MTU_DISCOVER, &on, sizeof(on)) < 0)
+		{ // path mtu
+		  int opt = IP_PMTUDISC_PROBE;
+		  if (setsockopt(rts.socket_fd, SOL_IP, IP_MTU_DISCOVER, &opt, sizeof(opt)) < 0)
 			err(errno, "IP_MTU_DISCOVER");
-		on = 1;
-		if (setsockopt(ctl.socket_fd, SOL_IP, IP_RECVERR, &on, sizeof(on)) < 0)
+		}
+		{ // recv error
+		  int on = 1;
+		  if (setsockopt(rts.socket_fd, SOL_IP, IP_RECVERR, &on, sizeof(on)) < 0)
 			err(errno, "IP_RECVERR");
-		if (setsockopt(ctl.socket_fd, SOL_IP, IP_RECVTTL, &on, sizeof(on)) < 0)
+		}
+		{ // ttl
+		  int on = 1;
+		  if (setsockopt(rts.socket_fd, SOL_IP, IP_RECVTTL, &on, sizeof(on)) < 0)
 			err(errno, "IP_RECVTTL");
+		}
 	}
 
-	ctl.pktbuf = malloc(ctl.mtu);
-	if (!ctl.pktbuf)
-		err(errno, "malloc");
+	rts.pktbuf = malloc(rts.mtu);
+	if (!rts.pktbuf)
+		err(errno, "malloc(%d)", rts.mtu);
 
-	for (ctl.ttl = 1; ctl.ttl <= ctl.max_hops; ctl.ttl++) {
-		int res = -1;
-		int i;
-
-		on = ctl.ttl;
-		switch (ctl.ai->ai_family) {
+	for (rts.ttl = 1; rts.ttl <= rts.max_hops; rts.ttl++) {
+		int ttl = rts.ttl;
+		switch (rts.ai->ai_family) {
 		case AF_INET6:
-			if (setsockopt(ctl.socket_fd, SOL_IPV6, IPV6_UNICAST_HOPS, &on, sizeof(on)) < 0)
+			if (setsockopt(rts.socket_fd, SOL_IPV6, IPV6_UNICAST_HOPS, &ttl, sizeof(ttl)) < 0)
 				err(errno, "IPV6_UNICAST_HOPS");
-			if (!ctl.mapped)
+			if (!rts.opt.mapped)
 				break;
 			/*FALLTHROUGH*/
 		case AF_INET:
-			if (setsockopt(ctl.socket_fd, SOL_IP, IP_TTL, &on, sizeof(on)) < 0)
+			if (setsockopt(rts.socket_fd, SOL_IP, IP_TTL, &ttl, sizeof(ttl)) < 0)
 				err(errno, "IP_TTL");
 		}
 
  restart:
-		for (i = 0; i < 3; i++) {
-			int old_mtu;
-
-			old_mtu = ctl.mtu;
-			res = probe_ttl(&ctl);
-			if (ctl.mtu != old_mtu)
+		{ int res = -1;
+		  for (int i = 0; i < 3; i++) {
+			int old_mtu = rts.mtu;
+			res = probe_ttl(&rts);
+			if (rts.mtu != old_mtu)
 				goto restart;
 			if (res == 0)
 				goto done;
 			if (res > 0)
 				break;
+		  }
+		  if (res < 0)
+			printf("%2d:  %s\n", rts.ttl, _("no reply"));
 		}
-
-		if (res < 0)
-			printf("%2d:  %s\n", ctl.ttl, _("no reply"));
 	}
-	printf("     %s: %s%d\n", _("Too many hops"), _("pmtu="), ctl.mtu);
+	printf("     %s: %s%d\n", _("Too many hops"), _("pmtu="), rts.mtu);
 
  done:
-	freeaddrinfo(result);
-	printf("     %s: %s%d", _("Resume"), _("pmtu="), ctl.mtu);
-	if (ctl.hops_to >= 0)
-		printf(" %s=%d", _("hops="), ctl.hops_to);
-	if (ctl.hops_from >= 0)
-		printf(" %s=%d", _("back="), ctl.hops_from);
+	if (res)
+		freeaddrinfo(res);
+	printf("     %s: %s%d", _("Resume"), _("pmtu="), rts.mtu);
+	if (rts.hops_to >= 0)
+		printf(" %s=%d", _("hops="), rts.hops_to);
+	if (rts.hops_from >= 0)
+		printf(" %s=%d", _("back="), rts.hops_from);
 	printf("\n");
 	exit(EXIT_SUCCESS);
 
  pktlen_error:
 	errno = ERANGE;
-	err(errno, "%s: %d - %d", _("Packet length"), ctl.overhead, INT_MAX);
+	err(errno, "%s: %d - %d", _("Packet length"), rts.overhead, INT_MAX);
 }
 

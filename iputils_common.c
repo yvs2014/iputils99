@@ -6,6 +6,7 @@
 #include <time.h>
 #include <err.h>
 #include <errno.h>
+#include <locale.h>
 
 #if HAVE_GETRANDOM
 # include <sys/random.h>
@@ -25,13 +26,20 @@ long strtol_or_err(const char *str, const char *errmesg, long min, long max) {
 	if (!errno) {
 		char *end = NULL;
 		long num = strtol(str, &end, 10);
+		if (errno || (str == end) || (end && *end)) {
+			errno = 0;
+			num = strtoul(str, &end, 0x10);
+		}
 		if (!(errno || (str == end) || (end && *end))) {
 			if ((min <= num) && (num <= max))
 				return num;
-			err(ERANGE, "%s: '%s': %ld - %ld", errmesg, str, min, max);
+			errno = ERANGE;
+			err(errno, "%s: %s: %ld - %ld", errmesg, str, min, max);
 		}
 	}
-	err(errno ? errno : EXIT_FAILURE, "%s: '%s'", errmesg, str);
+	if (errno)
+		err(errno, "%s: %s", errmesg, str);
+	errx(EXIT_FAILURE, "%s: %s", errmesg, str);
 }
 
 #ifndef timespecsub
@@ -112,13 +120,29 @@ void version_n_exit(int rc) {
 	exit(rc);
 }
 
-void usage_common(int rc, const char *options) {
-	printf(	"\n%s:\n  %s %s\n"
-		"\n%s:\n%s"
-		"\n%s %s(8)\n",
-_("Usage"), myname, _( "[options] <destination>"),
-_("Options"), _(options),
-_("For more details see"), myname);
+void usage_common(int rc, const char *options, bool more) {
+	printf("\n%s:\n  %s", _("Usage"), myname);
+	if (options)
+		printf(" [%s]", _("options"));
+	printf(" %s%s\n", _("TARGET"), more ? " ..." : "");
+	if (options)
+		printf("\n%s:\n%s", _("Options"), _(options));
+	printf("\n%s %s(8)\n", _("For more details see"), myname);
 	exit(rc);
+}
+
+inline int gai_wrapper(const char *restrict node, const char *restrict service,
+	const struct addrinfo *restrict hints, struct addrinfo **restrict res)
+{	// if USE_NLS is defined, assume that some locale is already set
+#if defined(USE_IDN) && !defined(USE_NLS)
+	setlocale(LC_ALL, "");
+#endif
+	int rc = getaddrinfo(node, service, hints, res);
+#if defined(USE_IDN) && !defined(USE_NLS)
+	int keep = errno;
+	setlocale(LC_ALL, "C");
+	errno = keep;
+#endif
+	return rc;
 }
 

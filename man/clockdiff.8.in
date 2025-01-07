@@ -22,8 +22,7 @@
 .SH "NAME"
 clockdiff \- measure clock difference between hosts
 .SH "SYNOPSIS"
-.HP \w'\fBclockdiff\fR\ 'u
-\fBclockdiff\fR [\fB\-o\fR] [\fB\-o1\fR] [\fB\-\-time\-format\ \fR\fB\fIctime\ iso\fR\fR] [\fB\-V\fR] {destination}
+\fBclockdiff\fR [\fB\-o\fR] [\fB\-o1\fR] [\fB\-\-time\-format\ \fR\fB\fIctime\ iso\fR\fR] [\fB\-V\fR] TARGET
 .SH "DESCRIPTION"
 .PP
 \fBclockdiff\fR
