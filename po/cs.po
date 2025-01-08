@@ -4,10 +4,8 @@
 # This file is distributed under the same license as the iputils package.
 msgid ""
 msgstr ""
-"Project-Id-Version: iputils\n"
+"Project-Id-Version: iputils99\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-19 08:21+0100\n"
-"PO-Revision-Date: 2023-12-22 19:01+0000\n"
 "Last-Translator: Petr Vorel <petr.vorel@gmail.com>\n"
 "Language-Team: Czech <https://translate.fedoraproject.org/projects/iputils/"
 "iputils/cs/>\n"
@@ -324,19 +322,19 @@ msgid "Non-standard time format"
 msgstr "Nestandardní formát času"
 
 #
-msgid "host="
-msgstr "stroj="
+msgid "host"
+msgstr "stroj"
 
 #
-msgid "rtt="
+msgid "rtt"
+msgstr ""
+
+#
+msgid "delta"
 msgstr ""
 
 #
 msgid "ms"
-msgstr ""
-
-#
-msgid "delta="
 msgstr ""
 
 #
@@ -362,46 +360,6 @@ msgstr "Nevhodný název předmětu"
 #
 msgid "dn_comp() returned too long result"
 msgstr "funkce dn_comp() vrátila příliš dlouhý výsledek"
-
-#, c-format
-msgid ""
-"ping -6 -N <nodeinfo opt>\n"
-"Help:\n"
-"  help\n"
-"Query:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Subject:\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=name\n"
-"  subject-fqdn=name\n"
-msgstr ""
-"ping -6 -N <volby údajů o uzlu>\n"
-"Nápověda:\n"
-"  help\n"
-"Dotaz:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Předmět:\n"
-"  subject-ipv6=adresa\n"
-"  subject-ipv4=adresa\n"
-"  subject-name=jméno\n"
-"  subject-fqdn=jméno\n"
 
 #, fuzzy
 msgid "Unknown network interface"
@@ -602,10 +560,6 @@ msgstr "neznámý"
 #
 msgid "unknown code"
 msgstr "neznámý kód"
-
-#
-msgid "seq="
-msgstr "seq="
 
 #
 msgid "Packet too short"
@@ -938,24 +892,16 @@ msgid "bytes"
 msgstr "bajtů"
 
 #
-msgid "icmp_seq="
-msgstr "pořadí="
+msgid "icmp_seq"
+msgstr "pořadí"
 
 #
-msgid "ident="
+msgid "ident"
 msgstr ""
 
 #
-msgid "ttl="
-msgstr "TTL="
-
-#
-msgid " time="
-msgstr " čas="
-
-#
-msgid " ms"
-msgstr ""
+msgid "ttl"
+msgstr "TTL"
 
 #
 msgid "DUP"
@@ -1090,16 +1036,12 @@ msgid "Too many hops"
 msgstr ""
 
 #
-msgid "pmtu="
-msgstr "PMTU="
+msgid "hops"
+msgstr "skoků"
 
 #
-msgid "hops="
-msgstr "skoků="
-
-#
-msgid "back="
-msgstr "zpět="
+msgid "back"
+msgstr "zpět"
 
 #
 msgid "Packet length"

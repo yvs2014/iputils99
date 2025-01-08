@@ -4,10 +4,8 @@
 # This file is distributed under the same license as the iputils package.
 msgid ""
 msgstr ""
-"Project-Id-Version: iputils\n"
+"Project-Id-Version: iputils99\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-19 08:21+0100\n"
-"PO-Revision-Date: 2023-12-20 15:03+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://translate.fedoraproject.org/projects/"
 "iputils/iputils/uk/>\n"
@@ -350,20 +348,20 @@ msgid "Non-standard time format"
 msgstr "Нестандартний формат часу"
 
 #
-msgid "host="
-msgstr "вузол="
+msgid "host"
+msgstr "вузол"
 
 #
-msgid "rtt="
-msgstr "затримка="
+msgid "rtt"
+msgstr "затримка"
+
+#
+msgid "delta"
+msgstr "різниця"
 
 #
 msgid "ms"
-msgstr "мс"
-
-#
-msgid "delta="
-msgstr "різниця="
+msgstr "мсек"
 
 #
 msgid "Qtype conflict"
@@ -599,10 +597,6 @@ msgid "unknown code"
 msgstr "невідомий код"
 
 #
-msgid "seq="
-msgstr "посл="
-
-#
 msgid "Packet too short"
 msgstr "Занадто короткий пакет"
 
@@ -683,8 +677,8 @@ msgid "Too many intermediate hops"
 msgstr "Надто багато проміжних адрес"
 
 #
-msgid "max="
-msgstr "макс="
+msgid "max"
+msgstr "макс"
 
 #
 msgid "NodeInfo client is for IPv6 only"
@@ -955,24 +949,16 @@ msgid "bytes"
 msgstr "байт"
 
 #
-msgid "icmp_seq="
-msgstr "номер="
+msgid "icmp_seq"
+msgstr "номер"
 
 #
-msgid "ident="
-msgstr "ідент="
+msgid "ident"
+msgstr "ідент"
 
 #
-msgid "ttl="
-msgstr "ттл="
-
-#
-msgid " time="
-msgstr " час="
-
-#
-msgid " ms"
-msgstr " мсек"
+msgid "ttl"
+msgstr "ттл"
 
 #
 msgid "DUP"
@@ -1107,16 +1093,12 @@ msgid "Too many hops"
 msgstr "Надто багато переходів"
 
 #
-msgid "pmtu="
-msgstr "PMTU="
+msgid "hops"
+msgstr "переходів"
 
 #
-msgid "hops="
-msgstr "переходів="
-
-#
-msgid "back="
-msgstr "назад="
+msgid "back"
+msgstr "назад"
 
 #
 msgid "Packet length"

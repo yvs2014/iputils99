@@ -5,10 +5,8 @@
 # Copyright (c) Iputils Project, 2020-2021
 msgid ""
 msgstr ""
-"Project-Id-Version: iputils 20161105\n"
+"Project-Id-Version: iputils99\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-19 08:21+0100\n"
-"PO-Revision-Date: 2022-02-13 02:16+0000\n"
 "Last-Translator: Takuro Onoue <kusanaginoturugi@gmail.com>\n"
 "Language-Team: Japanese <https://translate.fedoraproject.org/projects/"
 "iputils/iputils/ja/>\n"
@@ -276,20 +274,20 @@ msgid "Non-standard time format"
 msgstr ""
 
 #
-msgid "host="
+msgid "host"
 msgstr ""
 
 #
-msgid "rtt="
+msgid "rtt"
+msgstr ""
+
+#
+msgid "delta"
 msgstr ""
 
 #
 msgid "ms"
 msgstr "ミリ秒"
-
-#
-msgid "delta="
-msgstr ""
 
 #
 msgid "Qtype conflict"
@@ -314,46 +312,6 @@ msgstr "不適切な名前です"
 #
 msgid "dn_comp() returned too long result"
 msgstr "dn_comp()の結果が長すぎます"
-
-#, c-format
-msgid ""
-"ping -6 -N <nodeinfo opt>\n"
-"Help:\n"
-"  help\n"
-"Query:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Subject:\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=name\n"
-"  subject-fqdn=name\n"
-msgstr ""
-"ping -6 -N <ノード情報 オプション>\n"
-"ヘルプ:\n"
-"  help\n"
-"問い合わせ:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"対象:\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=name\n"
-"  subject-fqdn=name\n"
 
 #
 msgid "Unknown network interface"
@@ -555,13 +513,9 @@ msgstr "拒絶"
 msgid "unknown"
 msgstr "不明"
 
-#, c-format
+#
 msgid "unknown code"
 msgstr "未知のコード"
-
-#
-msgid "seq="
-msgstr ""
 
 #
 msgid "Packet too short"
@@ -877,24 +831,16 @@ msgid "bytes"
 msgstr "バイト"
 
 #
-msgid "icmp_seq="
-msgstr "icmp_seq="
-
-#
-msgid "ident="
+msgid "icmp_seq"
 msgstr ""
 
 #
-msgid "ttl="
-msgstr "ttl="
+msgid "ident"
+msgstr ""
 
 #
-msgid " time="
-msgstr " 時間="
-
-#
-msgid " ms"
-msgstr " ミリ秒"
+msgid "ttl"
+msgstr ""
 
 #
 msgid "DUP"
@@ -1029,16 +975,12 @@ msgid "Too many hops"
 msgstr ""
 
 #
-msgid "pmtu="
-msgstr ""
+msgid "hops"
+msgstr "ホップ数"
 
 #
-msgid "hops="
-msgstr "ホップ数="
-
-#
-msgid "back="
-msgstr "戻りホップ数="
+msgid "back"
+msgstr "戻りホップ数"
 
 #
 msgid "Packet length"

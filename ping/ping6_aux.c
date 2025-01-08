@@ -318,7 +318,7 @@ void print6_ni_reply(bool ip6, const uint8_t *hdr, size_t len) {
 	default:
 		printf("%s (%02x)", _("unknown code"), ntohs(nih->ni_code));
 	}
-	printf("; %s%u;", _("seq="), ntohs(*(uint16_t *)nih->ni_nonce));
+	printf("; %s=%u;", _("icmp_seq"), ntohs(*(uint16_t *)nih->ni_nonce));
 }
 #endif /* ENABLE_NI6 */
 

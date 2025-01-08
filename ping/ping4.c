@@ -212,9 +212,9 @@ static inline bool ping4_icmp_extra_type(state_t *rts,
 	if (rts->opt.quiet || rts->opt.flood)
 		return true;
 	PRINT_TIMESTAMP;
-	printf("%s %s: %s%u ",
+	printf("%s %s: %s=%u ",
 		_("From"), sprint_addr(from, sizeof(*from), rts->opt.resolve),
-		_("icmp_seq="), ntohs(orig->un.echo.sequence));
+		_("icmp_seq"), ntohs(orig->un.echo.sequence));
 	if (bad)
 		printf("(%s!)", _("BAD CHECKSUM"));
 	print4_icmph(rts, icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp);
@@ -411,8 +411,8 @@ int ping4_run(state_t *rts, int argc, char **argv,
 				errx(EINVAL, "%s", _("Only 'tsprespec' is allowed with intermediate hops"));
 #define MAX_TS_ROUTES ((MAX_ROUTES + 1) / 2) /* 5 */
 			if (argc > MAX_TS_ROUTES)
-				errx(EINVAL, "%s, %s%d", _("Too many intermediate TS hops"),
-					_("max="), MAX_TS_ROUTES - 1);
+				errx(EINVAL, "%s, %s=%d", _("Too many intermediate TS hops"),
+					_("max"), MAX_TS_ROUTES - 1);
 		} else
 			rts->opt.sourceroute = true;
 	}
@@ -458,8 +458,8 @@ int ping4_run(state_t *rts, int argc, char **argv,
 			if (rts->route->n < MAX_ROUTES)
 				rts->route->data[rts->route->n++] = whereto->sin_addr.s_addr;
 			else
-				errx(EINVAL, "%s, %s%d", _("Too many intermediate hops"),
-					_("max="), MAX_ROUTES);
+				errx(EINVAL, "%s, %s=%d", _("Too many intermediate hops"),
+					_("max"), MAX_ROUTES);
 		}
 		argc--;
 		argv++;

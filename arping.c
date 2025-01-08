@@ -138,9 +138,7 @@ NORETURN static void usage(int rc) {
 
 #ifdef HAVE_LIBCAP
 static void arping_limit_capabilities(struct run_state *ctl) {
-	cap_t cap_p;
-
-	cap_p = cap_get_proc();
+	cap_t cap_p = cap_get_proc();
 	if (!cap_p)
 		err(errno, "cap_get_proc");
 
@@ -172,12 +170,10 @@ static void arping_limit_capabilities(struct run_state *ctl) {
 }
 
 static int arping_modify_capability_raw(struct run_state *ctl, int on) {
-	cap_t cap_p;
-
 	if (ctl->cap_raw != CAP_SET)
 		return on ? -1 : 0;
 
-	cap_p = cap_get_proc();
+	cap_t cap_p = cap_get_proc();
 	if (!cap_p)
 		err(errno, "cap_get_proc");
 
@@ -226,13 +222,9 @@ static inline int arping_disable_capability_raw(struct run_state *ctl) {
 	return arping_modify_capability_raw(ctl, 0);
 }
 
-static int send_pack(struct run_state *ctl)
-{
-	int err;
-	struct timespec now;
+static int send_pack(struct run_state *ctl) {
 	unsigned char buf[256];
 	struct arphdr *ah = (struct arphdr *)buf;
-	unsigned char *p = (unsigned char *)(ah + 1);
 	struct sockaddr_ll *ME = (struct sockaddr_ll *)&(ctl->me);
 	struct sockaddr_ll *HE = (struct sockaddr_ll *)&(ctl->he);
 
@@ -254,24 +246,23 @@ static int send_pack(struct run_state *ctl)
 	ah->ar_pln = 4;
 	ah->ar_op  = ctl->advert ? htons(ARPOP_REPLY) : htons(ARPOP_REQUEST);
 
+	unsigned char *p = (unsigned char *)(ah + 1);
 	memcpy(p, &ME->sll_addr, ah->ar_hln);
 	p += ME->sll_halen;
 
 	memcpy(p, &ctl->gsrc, 4);
 	p += 4;
 
-	if (ctl->advert)
-		memcpy(p, &ME->sll_addr, ah->ar_hln);
-	else
-		memcpy(p, &HE->sll_addr, ah->ar_hln);
+	memcpy(p, ctl->advert ? &ME->sll_addr : &HE->sll_addr, ah->ar_hln);
 	p += ah->ar_hln;
 
 	memcpy(p, &ctl->gdst, 4);
 	p += 4;
 
+	struct timespec now = {0};
 	clock_gettime(CLOCK_MONOTONIC, &now);
-	err = sendto(ctl->socketfd, buf, p - buf, 0, (struct sockaddr *)HE, sll_len(ah->ar_hln));
-	if (err == p - buf) {
+	int err = sendto(ctl->socketfd, buf, p - buf, 0, (struct sockaddr *)HE, sll_len(ah->ar_hln));
+	if (err == (p - buf)) {
 		ctl->last = now;
 		ctl->sent++;
 		if (!ctl->unicasting)
@@ -304,49 +295,37 @@ static int finish(const struct run_state *ctl) {
 	return (!ctl->received);
 }
 
-static void print_hex(unsigned char *p, int len)
-{
-	int i;
-
-	for (i = 0; i < len; i++) {
+static void print_hex(unsigned char *p, int len) {
+	for (int i = 0; i < len; i++) {
 		printf("%02X", p[i]);
-		if (i != len - 1)
+		if (i != (len - 1))
 			printf(":");
 	}
 }
 
-static int recv_pack(struct run_state *ctl, unsigned char *buf, ssize_t len,
-		     struct sockaddr_ll *FROM)
+static inline int print_pack(struct run_state *rts,
+	unsigned char *buf, ssize_t len, bool broadcast, uint16_t sll_hatype)
 {
-	struct timespec ts;
-	struct arphdr *ah = (struct arphdr *)buf;
-	unsigned char *p = (unsigned char *)(ah + 1);
-	struct in_addr src_ip, dst_ip;
-
+	struct timespec ts = {0};
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 
-	/* Filter out wild packets */
-	if (FROM->sll_pkttype != PACKET_HOST &&
-	    FROM->sll_pkttype != PACKET_BROADCAST &&
-	    FROM->sll_pkttype != PACKET_MULTICAST)
-		return 0;
-
+	struct arphdr *ah = (struct arphdr *)buf;
 	/* Only these types are recognised */
 	if (ah->ar_op != htons(ARPOP_REQUEST) &&
 	    ah->ar_op != htons(ARPOP_REPLY))
 		return 0;
 
 	/* ARPHRD check and this darned FDDI hack here :-( */
-	if (ah->ar_hrd != htons(FROM->sll_hatype) &&
-	    (FROM->sll_hatype != ARPHRD_FDDI || ah->ar_hrd != htons(ARPHRD_ETHER)))
+	if ((ah->ar_hrd != htons(sll_hatype)) &&
+	   ((sll_hatype != ARPHRD_FDDI) || (ah->ar_hrd != htons(ARPHRD_ETHER))))
 		return 0;
 
 	/*
 	 * Protocol must be IP - but exceptions everywhere. AX.25 and NETROM
 	 * use the AX.25 PID value not the DIX code for the protocol.
 	 */
-	if (ah->ar_hrd == htons(ARPHRD_AX25) ||
-	    ah->ar_hrd == htons(ARPHRD_NETROM)) {
+	if ((ah->ar_hrd == htons(ARPHRD_AX25)) ||
+	    (ah->ar_hrd == htons(ARPHRD_NETROM))) {
 		if (ah->ar_pro != htons(AX25_P_IP))
 			return 0;
 	} else if (ah->ar_pro != htons(ETH_P_IP))
@@ -354,18 +333,25 @@ static int recv_pack(struct run_state *ctl, unsigned char *buf, ssize_t len,
 
 	if (ah->ar_pln != 4)
 		return 0;
-	if (ah->ar_hln != ((struct sockaddr_ll *)&ctl->me)->sll_halen)
+	if (ah->ar_hln != ((struct sockaddr_ll *)&rts->me)->sll_halen)
 		return 0;
 	if (len < (ssize_t) sizeof(*ah) + 2 * (4 + ah->ar_hln))
 		return 0;
+
+	unsigned char *p = (unsigned char *)(ah + 1);
+	struct in_addr src_ip;
 	memcpy(&src_ip, p + ah->ar_hln, 4);
+	struct in_addr dst_ip;
 	memcpy(&dst_ip, p + ah->ar_hln + 4 + ah->ar_hln, 4);
-	if (!ctl->dad) {
-		if (src_ip.s_addr != ctl->gdst.s_addr)
+
+	if (!rts->dad) {
+		if (src_ip.s_addr != rts->gdst.s_addr)
 			return 0;
-		if (ctl->gsrc.s_addr != dst_ip.s_addr)
+		if (rts->gsrc.s_addr != dst_ip.s_addr)
 			return 0;
-		if (memcmp(p + ah->ar_hln + 4, ((struct sockaddr_ll *)&ctl->me)->sll_addr, ah->ar_hln))
+		if (memcmp(p + ah->ar_hln + 4,
+				((struct sockaddr_ll *)&rts->me)->sll_addr,
+				ah->ar_hln))
 			return 0;
 	} else {
 		/*
@@ -382,79 +368,83 @@ static int recv_pack(struct run_state *ctl, unsigned char *buf, ssize_t len,
 		 * also that it matches to dst_ip, otherwise
 		 * dst_ip/dst_hw do not matter.
 		 */
-		if (src_ip.s_addr != ctl->gdst.s_addr)
+		if (src_ip.s_addr != rts->gdst.s_addr)
 			return 0;
-		if (memcmp(p, ((struct sockaddr_ll *)&ctl->me)->sll_addr,
-			   ((struct sockaddr_ll *)&ctl->me)->sll_halen) == 0)
+		struct sockaddr_ll *sll = (struct sockaddr_ll *)&rts->me;
+		if (!memcmp(p, sll->sll_addr, sll->sll_halen))
 			return 0;
-		if (ctl->gsrc.s_addr && ctl->gsrc.s_addr != dst_ip.s_addr)
+		if (rts->gsrc.s_addr && (rts->gsrc.s_addr != dst_ip.s_addr))
 			return 0;
 	}
-	if (!ctl->quiet) {
+	if (!rts->quiet) {
 		bool printed = false;
-		printf("%s%s %s",
-			FROM->sll_pkttype == PACKET_HOST ? _("Unicast") : _("Broadcast"),
+		printf("%s%s %s", broadcast ? _("Broadcast") : _("Unicast"),
 			_(" from"), inet_ntoa(src_ip));
 		printf(" [");
 		print_hex(p, ah->ar_hln);
-		printf("] ");
-		if (dst_ip.s_addr != ctl->gsrc.s_addr) {
-			printf("%s %s", _("for"), inet_ntoa(dst_ip));
+		printf("]");
+		if (dst_ip.s_addr != rts->gsrc.s_addr) {
+			printf(" %s %s", _("for"), inet_ntoa(dst_ip));
 			printed = true;
 		}
-		if (memcmp(p + ah->ar_hln + 4, ((struct sockaddr_ll *)&ctl->me)->sll_addr, ah->ar_hln)) {
+		if (memcmp(p + ah->ar_hln + 4,
+			((struct sockaddr_ll *)&rts->me)->sll_addr,
+			ah->ar_hln))
+		{
 			if (!printed)
-				printf("%s ", _("for"));
-			printf("[");
+				printf(" %s", _("for"));
+			printf(" [");
 			print_hex(p + ah->ar_hln + 4, ah->ar_hln);
 			printf("]");
 		}
-		if (ctl->last.tv_sec) {
-			long usecs = (ts.tv_sec - ctl->last.tv_sec) * 1000000 +
-				(ts.tv_nsec - ctl->last.tv_nsec + 500) / 1000;
+		if (rts->last.tv_sec) {
+			long usecs = (ts.tv_sec - rts->last.tv_sec) * 1000000 +
+				(ts.tv_nsec - rts->last.tv_nsec + 500) / 1000;
 			long msecs = (usecs + 500) / 1000;
 			usecs -= msecs * 1000 - 500;
-			printf(" %ld.%03ld%s", msecs, usecs, _(" ms"));
+			printf(" %ld.%03ld %s", msecs, usecs, _("ms"));
 		} else
 			printf(" %s?", _("UNSOLICITED"));
 		putchar('\n');
 		fflush(stdout);
 	}
-	ctl->received++;
-	if (ctl->timeout && (ctl->received == ctl->count))
+	rts->received++;
+	if (rts->timeout && (rts->received == rts->count))
 		return FINAL_PACKS;
-	if (FROM->sll_pkttype != PACKET_HOST)
-		ctl->brd_recv++;
+	if (broadcast)
+		rts->brd_recv++;
 	if (ah->ar_op == htons(ARPOP_REQUEST))
-		ctl->req_recv++;
-	if (ctl->quit_on_reply || (ctl->count == 0 && ctl->received == ctl->sent))
+		rts->req_recv++;
+	if (rts->quit_on_reply ||
+			((rts->count == 0) && (rts->received == rts->sent)))
 		return FINAL_PACKS;
-	if (!ctl->broadcast_only) {
-		memcpy(((struct sockaddr_ll *)&ctl->he)->sll_addr, p,
-		       ((struct sockaddr_ll *)&ctl->me)->sll_halen);
-		ctl->unicasting = 1;
+	if (!rts->broadcast_only) {
+		memcpy(((struct sockaddr_ll *)&rts->he)->sll_addr, p,
+		       ((struct sockaddr_ll *)&rts->me)->sll_halen);
+		rts->unicasting = 1;
 	}
 	return 1;
 }
 
-static int outgoing_device(struct run_state *const ctl, struct nlmsghdr *nh)
-{
-	struct rtmsg *rm = NLMSG_DATA(nh);
-	size_t len = RTM_PAYLOAD(nh);
-	struct rtattr *ra;
-
+static int outgoing_device(struct run_state *const ctl, struct nlmsghdr *nh) {
 	if (nh->nlmsg_type != RTM_NEWROUTE) {
 		warnx("NETLINK new route message type");
 		return 1;
 	}
-	for (ra = RTM_RTA(rm); RTA_OK(ra, (unsigned short)len); ra = RTA_NEXT(ra, len)) {
+
+	struct rtmsg *rm = NLMSG_DATA(nh);
+	size_t len = RTM_PAYLOAD(nh);
+	for (struct rtattr *ra = RTM_RTA(rm);
+			RTA_OK(ra, (unsigned short)len);
+			ra = RTA_NEXT(ra, len))
+	{
 		if (ra->rta_type == RTA_OIF) {
 			int *oif = RTA_DATA(ra);
 			static char dev_name[IF_NAMESIZE];
 
 			ctl->device.ifindex = *oif;
 			if (!if_indextoname(ctl->device.ifindex, dev_name)) {
-				warn("if_indextoname failed");
+				warn("if_indextoname()");
 				return 1;
 			}
 			ctl->device.name = dev_name;
@@ -466,24 +456,22 @@ static int outgoing_device(struct run_state *const ctl, struct nlmsghdr *nh)
 static void netlink_query(struct run_state *const ctl, const int flags,
 			  const int type, void const *const arg, size_t len)
 {
-	const size_t buffer_size = 4096;
-	int fd;
 	static uint32_t seq;
-	struct msghdr mh = { 0 };
-	struct sockaddr_nl sa = {.nl_family = AF_NETLINK };
-	struct nlmsghdr *nh, *unmodified_nh;
-	struct iovec iov;
-	ssize_t msg_len;
-	int ret = 1;
 
-	mh.msg_name = (void *)&sa;
-	mh.msg_namelen = sizeof(sa);
-	mh.msg_iov = &iov;
-	mh.msg_iovlen = 1;
+	struct sockaddr_nl sa = {.nl_family = AF_NETLINK};
+	struct iovec iov = {0};
+	struct msghdr mh = {
+		.msg_name = (void *)&sa,
+		.msg_namelen = sizeof(sa),
+		.msg_iov = &iov,
+		.msg_iovlen = 1,
+	};
 
-	unmodified_nh = nh = calloc(1, buffer_size);
+	const size_t buffer_size = 4096;
+	struct nlmsghdr *unmodified_nh = calloc(1, buffer_size);
+	struct nlmsghdr *nh = unmodified_nh;
 	if (!nh)
-		err(errno, "allocating %zu bytes failed", buffer_size);
+		err(errno, "calloc(%zu)", buffer_size);
 
 	nh->nlmsg_len = NLMSG_LENGTH(len);
 	nh->nlmsg_flags = flags;
@@ -494,18 +482,21 @@ static void netlink_query(struct run_state *const ctl, const int flags,
 	iov.iov_base = nh;
 	iov.iov_len = buffer_size;
 
-	fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+	int ret = 1;
+	int fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
 	if (fd < 0) {
-		warn("NETLINK_ROUTE socket failed");
+		warn("socket(NETLINK_ROUTE)");
 		goto fail;
 	}
 	if (sendmsg(fd, &mh, 0) < 0) {
-		warn("NETLINK_ROUTE socket failed");
+		warn("sendmsg(NETLINK_ROUTE)");
 		goto fail;
 	}
+
+	ssize_t msg_len = 0;
 	do {
 		msg_len = recvmsg(fd, &mh, 0);
-	} while (msg_len < 0 && errno == EINTR);
+	} while ((msg_len < 0) && (errno == EINTR));
 
 	for (nh = iov.iov_base; NLMSG_OK(nh, msg_len); nh = NLMSG_NEXT(nh, msg_len)) {
 		if (nh->nlmsg_seq != seq)
@@ -532,15 +523,8 @@ static void netlink_query(struct run_state *const ctl, const int flags,
 		exit(EXIT_FAILURE);
 }
 
-static void guess_device(struct run_state *const ctl)
-{
-	size_t addr_len, len;
-	struct {
-		struct rtmsg rm;
-		struct rtattr ra;
-		char addr[16];
-	} query = { {0}, {0}, {0} };
-
+static void guess_device(struct run_state *const ctl) {
+	size_t addr_len;
 	switch (ctl->gdst_family) {
 	case AF_INET:
 		addr_len = 4;
@@ -550,21 +534,28 @@ static void guess_device(struct run_state *const ctl)
 		break;
 	default:
 		errx(EXIT_FAILURE, "unknown address family, please use -I option");
-		abort();
 	}
 
-	query.rm.rtm_family = ctl->gdst_family;
-	query.ra.rta_len = RTA_LENGTH(addr_len);
-	query.ra.rta_type = RTA_DST;
+	struct {
+		struct rtmsg  rm;
+		struct rtattr ra;
+		char addr[16];
+	} query = {
+		.rm.rtm_family = ctl->gdst_family,
+		.ra = {
+			.rta_len  = RTA_LENGTH(addr_len),
+			.rta_type = RTA_DST,
+		},
+	};
 	memcpy(RTA_DATA(&query.ra), &ctl->gdst, addr_len);
-	len = NLMSG_ALIGN(sizeof(struct rtmsg)) + RTA_LENGTH(addr_len);
+	size_t len = NLMSG_ALIGN(sizeof(struct rtmsg)) + RTA_LENGTH(addr_len);
 	netlink_query(ctl, NLM_F_REQUEST, RTM_GETROUTE, &query, len);
 }
 
 /* Common check for ifa->ifa_flags */
 static int check_ifflags(struct run_state const *const ctl, unsigned ifflags) {
 	if (!(ifflags & IFF_UP)) {
-		if (ctl->device.name != NULL) {
+		if (ctl->device.name) {
 			if (!ctl->quiet)
 				warnx("%s: %s", ctl->device.name, _("Interface is down"));
 			exit(EINVAL);
@@ -572,7 +563,7 @@ static int check_ifflags(struct run_state const *const ctl, unsigned ifflags) {
 		return -1;
 	}
 	if (ifflags & (IFF_NOARP | IFF_LOOPBACK)) {
-		if (ctl->device.name != NULL) {
+		if (ctl->device.name) {
 			if (!ctl->quiet)
 				warnx("%s: %s", ctl->device.name, _("Interface is not ARPable"));
 			exit(ctl->dad ? EXIT_SUCCESS : EINVAL);
@@ -600,19 +591,15 @@ static int check_ifflags(struct run_state const *const ctl, unsigned ifflags) {
  * "device" variable for later reference.
  *
  */
-static int check_device(struct run_state *ctl)
-{
-	int rc;
-	struct ifaddrs *ifa;
-	int n = 0;
-
-	rc = getifaddrs(&ctl->ifa0);
+static int check_device(struct run_state *ctl) {
+	int rc = getifaddrs(&ctl->ifa0);
 	if (rc) {
 		warn("getifaddrs");
 		return -1;
 	}
 
-	for (ifa = ctl->ifa0; ifa; ifa = ifa->ifa_next) {
+	int n = 0;
+	for (struct ifaddrs *ifa = ctl->ifa0; ifa; ifa = ifa->ifa_next) {
 		if (!ifa->ifa_addr)
 			continue;
 		if (ifa->ifa_addr->sa_family != AF_PACKET)
@@ -634,7 +621,7 @@ static int check_device(struct run_state *ctl)
 			break;
 	}
 
-	if (n == 1 && ctl->device.ifa) {
+	if ((n == 1) && ctl->device.ifa) {
 		ctl->device.ifindex = if_nametoindex(ctl->device.ifa->ifa_name);
 		if (!ctl->device.ifindex) {
 			warn("if_nametoindex");
@@ -671,10 +658,7 @@ static void find_broadcast_address(struct run_state *ctl)
 	memset(he->sll_addr, -1, he->sll_halen);
 }
 
-static int event_loop(struct run_state *ctl)
-{
-	int exit_loop = 0, rc = 0;
-	ssize_t s;
+static int event_loop(struct run_state *ctl) {
 	enum {
 		POLLFD_SIGNAL = 0,
 		POLLFD_TIMER,
@@ -682,140 +666,147 @@ static int event_loop(struct run_state *ctl)
 		POLLFD_SOCKET,
 		POLLFD_COUNT
 	};
-	struct pollfd pfds[POLLFD_COUNT];
-
-	sigset_t mask;
-	int sfd;
-	struct signalfd_siginfo sigval;
-
-	int tfd;
-	struct itimerspec timerfd_vals = {
-		.it_interval.tv_sec = ctl->interval,
-		.it_interval.tv_nsec = 0,
-		.it_value.tv_sec = ctl->interval,
-		.it_value.tv_nsec = 0
-	};
-	int timeoutfd;
-	struct itimerspec timeoutfd_vals = {
-		.it_interval.tv_sec = ctl->timeout,
-		.it_interval.tv_nsec = 0,
-		.it_value.tv_sec = ctl->timeout,
-		.it_value.tv_nsec = 0
-	};
-	uint64_t exp, total_expires = 1;
-
-	unsigned char packet[4096];
-	struct sockaddr_storage from = {0};
-	socklen_t addr_len = sizeof(from);
 
 	/* signalfd */
+	sigset_t mask;
 	sigemptyset(&mask);
 	sigaddset(&mask, SIGINT);
 	sigaddset(&mask, SIGQUIT);
 	sigaddset(&mask, SIGTERM);
-	if (sigprocmask(SIG_BLOCK, &mask, NULL) == -1) {
-		warn("sigprocmask failed");
+	if (sigprocmask(SIG_BLOCK, &mask, NULL) < 0) {
+		warn("sigprocmask()");
 		return 1;
 	}
-	sfd = signalfd(-1, &mask, 0);
-	if (sfd == -1) {
-		warn("signalfd");
+	int sfd = signalfd(-1, &mask, 0);
+	if (sfd < 0) {
+		warn("signalfd()");
 		return 1;
 	}
-	pfds[POLLFD_SIGNAL].fd = sfd;
+	struct pollfd pfds[POLLFD_COUNT];
+	pfds[POLLFD_SIGNAL].fd     = sfd;
 	pfds[POLLFD_SIGNAL].events = POLLIN | POLLERR | POLLHUP;
 
 	/* interval timerfd */
-	tfd = timerfd_create(CLOCK_MONOTONIC, 0);
-	if (tfd == -1) {
-		warn("timerfd_create failed");
+	int tfd = timerfd_create(CLOCK_MONOTONIC, 0);
+	if (tfd < 0) {
+		warn("timerfd_create()");
 		return 1;
 	}
+	struct itimerspec timerfd_vals = {
+		.it_interval.tv_sec  = ctl->interval,
+		.it_value.tv_sec     = ctl->interval,
+	};
 	if (timerfd_settime(tfd, 0, &timerfd_vals, NULL)) {
-		warn("timerfd_settime failed");
+		warn("timerfd_settime()");
 		return 1;
 	}
-	pfds[POLLFD_TIMER].fd = tfd;
+	pfds[POLLFD_TIMER].fd     = tfd;
 	pfds[POLLFD_TIMER].events = POLLIN | POLLERR | POLLHUP;
 
 	/* timeout timerfd */
-	timeoutfd = timerfd_create(CLOCK_MONOTONIC, 0);
-	if (timeoutfd == -1) {
-		warn("timerfd_create failed");
+	int timeoutfd = timerfd_create(CLOCK_MONOTONIC, 0);
+	if (timeoutfd < 0) {
+		warn("timerfd_create()");
 		return 1;
 	}
+	struct itimerspec timeoutfd_vals = {
+		.it_interval.tv_sec = ctl->timeout,
+		.it_value.tv_sec    = ctl->timeout,
+	};
 	if (timerfd_settime(timeoutfd, 0, &timeoutfd_vals, NULL)) {
-		warn("timerfd_settime failed");
+		warn("timerfd_settime()");
 		return 1;
 	}
-	pfds[POLLFD_TIMEOUT].fd = timeoutfd;
+	pfds[POLLFD_TIMEOUT].fd     = timeoutfd;
 	pfds[POLLFD_TIMEOUT].events = POLLIN | POLLERR | POLLHUP;
 
 	/* socket */
-	pfds[POLLFD_SOCKET].fd = ctl->socketfd;
+	pfds[POLLFD_SOCKET].fd     = ctl->socketfd;
 	pfds[POLLFD_SOCKET].events = POLLIN | POLLERR | POLLHUP;
 	send_pack(ctl);
 
+	unsigned char packet[4096];
+	uint64_t total_expires = 1;
+	int exit_loop = 0, rc = 0;
 	while (!exit_loop) {
-		int ret;
-		size_t i;
-
-		ret = poll(pfds, POLLFD_COUNT, -1);
-		if (ret <= 0) {
+		if (poll(pfds, POLLFD_COUNT, -1) <= 0) {
 			if (errno == EAGAIN)
 				continue;
 			if (errno)
-				warn("poll failed");
+				warn("poll()");
 			exit_loop = 1;
 			continue;
 		}
 
-		for (i = 0; i < POLLFD_COUNT; i++) {
-			if (pfds[i].revents == 0)
+		for (size_t i = 0; i < POLLFD_COUNT; i++) {
+			if (!pfds[i].revents)
 				continue;
 			switch (i) {
-			case POLLFD_SIGNAL:
-				s = read(sfd, &sigval, sizeof(struct signalfd_siginfo));
-				if (s != sizeof(struct signalfd_siginfo)) {
-					warn("could not read signalfd");
+			case POLLFD_SIGNAL: {
+				struct signalfd_siginfo sigval = {0};
+				if (read(sfd, &sigval, sizeof(sigval)) != sizeof(sigval))
+				{
+					if (errno)
+						warn("read(signalfd)");
+					else
+						warnx("read(signalfd)");
 					continue;
 				}
-				if (sigval.ssi_signo == SIGINT || sigval.ssi_signo == SIGQUIT ||
-				    sigval.ssi_signo == SIGTERM)
+				if ((sigval.ssi_signo == SIGINT ) ||
+				    (sigval.ssi_signo == SIGQUIT) ||
+				    (sigval.ssi_signo == SIGTERM))
 					exit_loop = 1;
 				else
 					warn("unexpected signal: %d", sigval.ssi_signo);
-				break;
-			case POLLFD_TIMER:
-				s = read(tfd, &exp, sizeof(uint64_t));
-				if (s != sizeof(uint64_t)) {
-					warn("could not read timerfd");
+			}	break;
+			case POLLFD_TIMER: {
+				uint64_t exp = 0;
+				if (read(tfd, &exp, sizeof(exp)) != sizeof(exp))
+				{
+					if (errno)
+						warn("read(timerfd)");
+					else
+						warnx("read(timerfd)");
 					continue;
 				}
 				total_expires += exp;
-				if (0 < ctl->count && (uint64_t)ctl->count < total_expires) {
+				if ((0 < ctl->count) && ((uint64_t)ctl->count < total_expires)) {
 					exit_loop = 1;
 					continue;
 				}
 				send_pack(ctl);
-				break;
+			}	break;
 			case POLLFD_TIMEOUT:
 				exit_loop = 1;
 				break;
-			case POLLFD_SOCKET:
-				memset(&from, 0, sizeof(from));
-				s = recvfrom(ctl->socketfd, packet, sizeof(packet), 0,
-					      (struct sockaddr *)&from, &addr_len);
-				if (s < 0) {
-					warn("recvfrom");
+			case POLLFD_SOCKET: {
+				struct sockaddr_storage from;
+				socklen_t socklen = sizeof(from);
+				memset(&from, 0, socklen);
+				ssize_t size = recvfrom(ctl->socketfd, packet, sizeof(packet), 0,
+					      (struct sockaddr *)&from, &socklen);
+				if (size < 0) {
+					warn("recvfrom()");
 					if (errno == ENETDOWN)
 						rc = 2;
 					continue;
 				}
-				if (recv_pack
-				    (ctl, packet, s, (struct sockaddr_ll *)&from) == FINAL_PACKS)
+				struct sockaddr_ll *sll = (struct sockaddr_ll *)&from;
+				bool broadcast = false;
+				switch (sll->sll_pkttype) {
+					case PACKET_HOST:
+						break;
+					case PACKET_BROADCAST:
+					case PACKET_MULTICAST:
+						broadcast = true;
+						break;
+					default: /* Filter out wild packets */
+						continue;
+				}
+				if (print_pack(ctl, packet, size, broadcast, sll->sll_hatype)
+						== FINAL_PACKS)
 					exit_loop = 1;
-				break;
+			}	break;
 			default:
 				abort();
 			}
@@ -829,9 +820,9 @@ static int event_loop(struct run_state *ctl)
 		/* nothing */;
 	else if (ctl->dad && ctl->quit_on_reply)
 		/* Duplicate address detection mode return value */
-		rc |= !(ctl->brd_sent != ctl->received);
-	else if (ctl->timeout && !(ctl->count > 0))
-		rc |= !(ctl->received > 0);
+		rc |= (ctl->brd_sent == ctl->received);
+	else if (ctl->timeout && (ctl->count <= 0))
+		rc |= (ctl->received <= 0);
 	else
 		rc |= (ctl->sent != ctl->received);
 	return rc;
@@ -913,7 +904,7 @@ int main(int argc, char **argv) {
 	arping_enable_capability_raw(&ctl);
 	ctl.socketfd = socket(PF_PACKET, SOCK_DGRAM, 0);
 	if (ctl.socketfd < 0)
-		err(errno, "socket");
+		err(errno, "socket()");
 	arping_disable_capability_raw(&ctl);
 
 	ctl.target = *argv;
@@ -957,13 +948,13 @@ int main(int argc, char **argv) {
 	if (ctl.source && inet_aton(ctl.source, &ctl.gsrc) != 1)
 		errx(EINVAL, "invalid source %s", ctl.source);
 
-	if (!ctl.dad && ctl.unsolicited && ctl.source == NULL)
+	if (!ctl.dad && ctl.unsolicited && !ctl.source)
 		ctl.gsrc = ctl.gdst;
 
 	if (!ctl.dad || ctl.source) {
 		int probe_fd = socket(AF_INET, SOCK_DGRAM, 0);
 		if (probe_fd < 0)
-			err(errno, "socket");
+			err(errno, "socket()");
 		if (ctl.device.name) {
 			arping_enable_capability_raw(&ctl);
 			if (setsockopt(probe_fd, SOL_SOCKET, SO_BINDTODEVICE, ctl.device.name,
@@ -976,21 +967,19 @@ int main(int argc, char **argv) {
 		if (ctl.source || ctl.gsrc.s_addr) {
 			saddr.sin_addr = ctl.gsrc;
 			if (bind(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
-				err(errno, "bind");
+				err(errno, "bind()");
 		} else if (!ctl.dad) {
-			int on = 1;
-			socklen_t alen = sizeof(saddr);
-
 			saddr.sin_port = htons(1025);
 			saddr.sin_addr = ctl.gdst;
-
 			if (!ctl.unsolicited) {
-				if (setsockopt(probe_fd, SOL_SOCKET, SO_DONTROUTE, (char *)&on, sizeof(on)) < 0)
+				int on = 1;
+				if (setsockopt(probe_fd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof(on)) < 0)
 					warn("%s: %s", _WARN, "setsockopt(SO_DONTROUTE)");
 				if (connect(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
-					err(errno, "connect");
+					err(errno, "connect()");
+				socklen_t alen = sizeof(saddr);
 				if (getsockname(probe_fd, (struct sockaddr *)&saddr, &alen) < 0)
-					err(errno, "getsockname");
+					err(errno, "getsockname()");
 			}
 			ctl.gsrc = saddr.sin_addr;
 		}
@@ -1001,12 +990,11 @@ int main(int argc, char **argv) {
 	((struct sockaddr_ll *)&ctl.me)->sll_ifindex = ctl.device.ifindex;
 	((struct sockaddr_ll *)&ctl.me)->sll_protocol = htons(ETH_P_ARP);
 	if (bind(ctl.socketfd, (struct sockaddr *)&ctl.me, sizeof(ctl.me)) < 0)
-		err(errno, "bind");
+		err(errno, "bind()");
 	{
 		socklen_t alen = sizeof(ctl.me);
-
 		if (getsockname(ctl.socketfd, (struct sockaddr *)&ctl.me, &alen) < 0)
-			err(errno, "getsockname");
+			err(errno, "getsockname()");
 	}
 	if (((struct sockaddr_ll *)&ctl.me)->sll_halen == 0) {
 		if (!ctl.quiet)

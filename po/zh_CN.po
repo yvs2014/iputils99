@@ -4,10 +4,8 @@
 # This file is distributed under the same license as the iputils package.
 msgid ""
 msgstr ""
-"Project-Id-Version: iputils\n"
+"Project-Id-Version: iputils99\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-19 08:21+0100\n"
-"PO-Revision-Date: 2023-12-20 15:03+0000\n"
 "Last-Translator: yangyangdaji <1504305527@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://translate.fedoraproject.org/"
 "projects/iputils/iputils/zh_CN/>\n"
@@ -316,20 +314,20 @@ msgid "Non-standard time format"
 msgstr "以非标准格式时间"
 
 #
-msgid "host="
-msgstr "主机="
+msgid "host"
+msgstr "主机"
 
 #
-msgid "rtt="
-msgstr "来回延迟="
+msgid "rtt"
+msgstr "来回延迟"
+
+#
+msgid "delta"
+msgstr "相差"
 
 #
 msgid "ms"
 msgstr "毫秒"
-
-#
-msgid "delta="
-msgstr "相差="
 
 #
 msgid "Qtype conflict"
@@ -558,10 +556,6 @@ msgstr "未知"
 #
 msgid "unknown code"
 msgstr "未知代码"
-
-#
-msgid "seq="
-msgstr "seq="
 
 #
 msgid "Packet too short"
@@ -886,24 +880,16 @@ msgid "bytes"
 msgstr "字节"
 
 #
-msgid "icmp_seq="
+msgid "icmp_seq"
 msgstr ""
 
 #
-msgid "ident="
-msgstr "标识="
+msgid "ident"
+msgstr "标识"
 
 #
-msgid "ttl="
+msgid "ttl"
 msgstr ""
-
-#
-msgid " time="
-msgstr " 时间="
-
-#
-msgid " ms"
-msgstr " 毫秒"
 
 #
 msgid "DUP"
@@ -959,7 +945,7 @@ msgstr "包丢失"
 
 # time %ld ms
 msgid "time"
-msgstr "耗时"
+msgstr "时间"
 
 # rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
 msgid "rtt min/avg/max/mdev"
@@ -999,7 +985,7 @@ msgstr "(这条损坏的路由返回了错误的数据)"
 
 #
 msgid "pmtu"
-msgstr "PMTU"
+msgstr "路径MTU"
 
 #
 msgid "reached"
@@ -1038,16 +1024,12 @@ msgid "Too many hops"
 msgstr ""
 
 #
-msgid "pmtu="
-msgstr "路径MTU="
+msgid "hops"
+msgstr "跃点"
 
 #
-msgid "hops="
-msgstr "跃点="
-
-#
-msgid "back="
-msgstr "返回="
+msgid "back"
+msgstr "返回"
 
 #
 msgid "Packet length"

@@ -9,7 +9,7 @@ option('IDN',              type: 'boolean', value: true,
 	description: 'IDN support (via libc)')
 option('NLS',              type: 'boolean', value: true,
 	description: 'NLS support (via gettext)')
-option('NI6',              type: 'boolean', value: true,
+option('NI6',              type: 'boolean', value: false,
 	description: 'PING6 NodeInfo client (RFC4620)')
 option('NI6_NONCE_MEMORY', type: 'boolean', value: false,
 	description: 'PING6 NodeInfo nonce memory')

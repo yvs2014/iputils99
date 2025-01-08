@@ -374,7 +374,7 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 	if (rts->opt.outstanding) {
 		if ((rts->ntransmitted > 0) && !rcvd_test(rts, rts->ntransmitted)) {
 			PRINT_TIMESTAMP;
-			printf("%s (%s%lu)\n", _("No answer yet"), _("icmp_seq="), rts->ntransmitted % MAX_DUP_CHK);
+			printf("%s (%s=%lu)\n", _("No answer yet"), _("icmp_seq"), rts->ntransmitted % MAX_DUP_CHK);
 			fflush(stdout);
 		}
 	}
@@ -499,7 +499,7 @@ void print_headline(const state_t *rts, size_t nodatalen) {
 		printf(", %s 0x%05x", _("flow"), ntohl(rts->flowlabel));
 	if (rts->device || rts->opt.strictsource) {
 		const char *from = sprint_addr(&rts->source, len, false);
-		printf(", %s %s %s:", _("from"), from, rts->device ? rts->device : "");
+		printf("%s %s %s:", _(" from"), from, rts->device ? rts->device : "");
 	}
 	printf(" %zu(%zu) %s\n", rts->datalen, rts->datalen + nodatalen, _("data bytes"));
 }
@@ -511,8 +511,8 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 
 	// interval restrictions
 	if (rts->uid && (rts->interval < MIN_USER_MS))
-		errx(EINVAL, "%s: %s %u%s, %s", _("Cannot flood"),
-			_("Minimal user interval must be >="), MIN_USER_MS, _(" ms"),
+		errx(EINVAL, "%s: %s %u %s, %s", _("Cannot flood"),
+			_("Minimal user interval must be >="), MIN_USER_MS, _("ms"),
 			_("see -i option for details"));
 	if (rts->interval >= (INT_MAX / rts->preload))
 		errx(EINVAL, "%s: %d", _("Illegal preload and/or interval"), rts->interval);
@@ -612,8 +612,8 @@ static bool finish(const state_t *rts) {
 		printf(", %g%% %s",
 			((rts->ntransmitted - rts->nreceived) * 100.) / rts->ntransmitted,
 			_("packet loss"));
-		printf(", %s %ld%s", _("time"),
-			1000 * tv.tv_sec + (tv.tv_nsec + 500000) / 1000000, _(" ms"));
+		printf(", %s %ld %s", _("time"),
+			1000 * tv.tv_sec + (tv.tv_nsec + 500000) / 1000000, _("ms"));
 	}
 	putchar('\n');
 
@@ -627,13 +627,13 @@ static bool finish(const state_t *rts) {
 			(rts->tsum2 - ((rts->tsum * rts->tsum) / total)) / total :
 			(rts->tsum2 / total) - tmavg * tmavg;
 		double tmdev = sqrt((tmvar < 0) ? -tmvar : tmvar);
-		printf("%s = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld%s",
+		printf("%s = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld %s",
 			_("rtt min/avg/max/mdev"),
 			rts->tmin             / 1000,   rts->tmin % 1000,
 			(unsigned long)(tmavg / 1000),      tmavg % 1000,
 			rts->tmax             / 1000,   rts->tmax % 1000,
 			(long)tmdev           / 1000, (long)tmdev % 1000,
-			_(" ms"));
+			_("ms"));
 		comma = ',';
 	}
 	if (rts->pipesize > 1) {
@@ -648,10 +648,10 @@ static bool finish(const state_t *rts) {
 		if (comma)
 			printf("%c ", comma);
 		int ipg = (1000000 * (long long)tv.tv_sec + tv.tv_nsec / 1000) / (rts->ntransmitted - 1);
-		printf("%s = %d.%03d/%d.%03d%s", _("ipg/ewma"),
+		printf("%s = %d.%03d/%d.%03d %s", _("ipg/ewma"),
 		       ipg      / 1000,            ipg % 1000,
 		       rts->rtt / 8000, (rts->rtt / 8) % 1000,
-		       _(" ms"));
+		       _("ms"));
 	}
 	putchar('\n');
 	return (!rts->nreceived || (rts->deadline && (rts->nreceived < rts->npackets)));
@@ -671,13 +671,13 @@ static void fin_status(const state_t *rts) {
 	fprintf(stderr, ", %d%% %s", loss, _("loss"));
 	if (rts->nreceived && rts->timing) {
 		long tavg = rts->tsum / (rts->nreceived + rts->nrepeats);
-		fprintf(stderr, ", %s = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld%s",
+		fprintf(stderr, ", %s = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld %s",
 			_("min/avg/ewma/max"),
 			rts->tmin / 1000, rts->tmin      % 1000,
 			tavg      / 1000, tavg           % 1000,
 			rts->rtt  / 8000, (rts->rtt / 8) % 1000,
 			rts->tmax / 1000, rts->tmax      % 1000,
-			_(" ms"));
+			_("ms"));
 	}
 	putc('\n', stderr);
 	in_fin_status = false;
@@ -987,18 +987,18 @@ bool stats_noflush(state_t *rts, const uint8_t *icmp, int icmplen,
 	if (print) /* seq */
 		print(rts->ip6, icmp, received);
 	else
-		printf("%s%u", _("icmp_seq="), seq);
+		printf("%s=%u", _("icmp_seq"), seq);
 	if (rts->opt.verbose)
-		printf(" %s%u", _("ident="), ntohs(rts->ident16));
+		printf(" %s=%u", _("ident"), ntohs(rts->ident16));
 	if (hops >= 0)
-		printf(" %s%d", _("ttl="), hops);
+		printf(" %s=%d", _("ttl"), hops);
 	if (received < (sizeof(struct icmphdr) + rts->datalen)) {
 		printf(" (%s)\n", _("truncated"));
 		return true;
 	}
 
 	if (rts->timing) {
-		fputs(_(" time="), stdout);
+		printf(" %s=", _("time"));
 		if      (triptime >= (100000 - 50))
 			printf("%ld", (triptime + 500) / 1000);
 		else if (triptime >= (10000 - 5))
@@ -1009,7 +1009,7 @@ bool stats_noflush(state_t *rts, const uint8_t *icmp, int icmplen,
 			       ((triptime + 5) % 1000) / 10);
 		else
 			printf("%ld.%03ld", triptime / 1000, triptime % 1000);
-		fputs(_(" ms"), stdout);
+		printf(" %s", _("ms"));
 	}
 	char* exclame[3] = {
 		(dup && (!rts->multicast || rts->opt.verbose)) ? "DUP" : NULL,

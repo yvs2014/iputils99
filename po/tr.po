@@ -4,10 +4,8 @@
 # This file is distributed under the same license as the iputils package.
 msgid ""
 msgstr ""
-"Project-Id-Version: iputils\n"
+"Project-Id-Version: iputils99\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-19 08:21+0100\n"
-"PO-Revision-Date: 2024-01-11 16:35+0000\n"
 "Last-Translator: Oğuz Ersen <oguz@ersen.moe>\n"
 "Language-Team: Turkish <https://translate.fedoraproject.org/projects/iputils/"
 "iputils/tr/>\n"
@@ -318,20 +316,20 @@ msgid "Non-standard time format"
 msgstr "Standart dışı bir biçimde zaman"
 
 #
-msgid "host="
-msgstr "ana makine="
+msgid "host"
+msgstr "ana_makine"
 
 #
-msgid "rtt="
+msgid "rtt"
 msgstr ""
+
+#
+msgid "delta"
+msgstr "fark"
 
 #
 msgid "ms"
 msgstr ""
-
-#
-msgid "delta="
-msgstr "fark="
 
 #
 msgid "Qtype conflict"
@@ -356,46 +354,6 @@ msgstr "Uygun olmayan hedef adı"
 #
 msgid "dn_comp() returned too long result"
 msgstr "dn_comp() çok uzun bir sonuç döndürdü"
-
-#, c-format
-msgid ""
-"ping -6 -N <nodeinfo opt>\n"
-"Help:\n"
-"  help\n"
-"Query:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Subject:\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=name\n"
-"  subject-fqdn=name\n"
-msgstr ""
-"ping -6 -N <düğüm bilgisi seçeneği>\n"
-"Yardım:\n"
-"  help\n"
-"Sorgu:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Hedef:\n"
-"  subject-ipv6=adres\n"
-"  subject-ipv4=adres\n"
-"  subject-name=ad\n"
-"  subject-fqdn=ad\n"
 
 #, fuzzy
 msgid "Unknown network interface"
@@ -600,10 +558,6 @@ msgstr "bilinmeyen"
 #
 msgid "unknown code"
 msgstr "bilinmeyen kod"
-
-#
-msgid "seq="
-msgstr "seq="
 
 #
 msgid "Packet too short"
@@ -930,24 +884,16 @@ msgid "bytes"
 msgstr "bayt"
 
 #
-msgid "icmp_seq="
+msgid "icmp_seq"
 msgstr ""
 
 #
-msgid "ident="
+msgid "ident"
 msgstr ""
 
 #
-msgid "ttl="
+msgid "ttl"
 msgstr ""
-
-#
-msgid " time="
-msgstr " zaman="
-
-#
-msgid " ms"
-msgstr " ms"
 
 #
 msgid "DUP"
@@ -1082,16 +1028,12 @@ msgid "Too many hops"
 msgstr ""
 
 #
-msgid "pmtu="
-msgstr "pmtu="
+msgid "hops"
+msgstr "atlama"
 
 #
-msgid "hops="
-msgstr "atlama="
-
-#
-msgid "back="
-msgstr "geri="
+msgid "back"
+msgstr "geri"
 
 #
 msgid "Packet length"

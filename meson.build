@@ -11,7 +11,7 @@ project('iputils99', 'c',
 	meson_version: '>=0.47',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
-			check: false).stdout().strip() : '20250107',
+			check: false).stdout().strip() : '20250108',
 )
 
 base    = 'iputils'

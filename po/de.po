@@ -4,10 +4,8 @@
 # This file is distributed under the same license as the iputils package.
 msgid ""
 msgstr ""
-"Project-Id-Version: iputils\n"
+"Project-Id-Version: iputils99\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-19 08:21+0100\n"
-"PO-Revision-Date: 2023-12-20 15:03+0000\n"
 "Last-Translator: Marek Küthe <m.k@mk16.de>\n"
 "Language-Team: German <https://translate.fedoraproject.org/projects/iputils/"
 "iputils/de/>\n"
@@ -329,19 +327,19 @@ msgid "Non-standard time format"
 msgstr "Zeit in einem nicht standardkonformen Format"
 
 #
-msgid "host="
+msgid "host"
 msgstr ""
 
 #
-msgid "rtt="
+msgid "rtt"
+msgstr ""
+
+#
+msgid "delta"
 msgstr ""
 
 #
 msgid "ms"
-msgstr ""
-
-#
-msgid "delta="
 msgstr ""
 
 #
@@ -367,46 +365,6 @@ msgstr "Unpassender Subjektname"
 #
 msgid "dn_comp() returned too long result"
 msgstr "dn_comp() gab ein zu langes Ergebnis zurück"
-
-#, c-format
-msgid ""
-"ping -6 -N <nodeinfo opt>\n"
-"Help:\n"
-"  help\n"
-"Query:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Subject:\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=name\n"
-"  subject-fqdn=name\n"
-msgstr ""
-"ping -6 -N <Knoteninfo opt>\n"
-"Hilfe:\n"
-"  help\n"
-"Anfrage:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Subject:\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=name\n"
-"  subject-fqdn=name\n"
 
 #
 msgid "Unknown network interface"
@@ -611,10 +569,6 @@ msgstr "unbekannt"
 #
 msgid "unknown code"
 msgstr "unbekannter Code"
-
-#
-msgid "seq="
-msgstr "seq="
 
 #
 msgid "Packet too short"
@@ -941,23 +895,15 @@ msgid "bytes"
 msgstr "Bytes"
 
 #
-msgid "icmp_seq="
+msgid "icmp_seq"
 msgstr ""
 
 #
-msgid "ident="
+msgid "ident"
 msgstr ""
 
 #
-msgid "ttl="
-msgstr ""
-
-#
-msgid " time="
-msgstr " Zeit="
-
-#
-msgid " ms"
+msgid "ttl"
 msgstr ""
 
 #
@@ -1093,16 +1039,12 @@ msgid "Too many hops"
 msgstr ""
 
 #
-msgid "pmtu="
+msgid "hops"
 msgstr ""
 
 #
-msgid "hops="
-msgstr ""
-
-#
-msgid "back="
-msgstr "zurück="
+msgid "back"
+msgstr "zurück"
 
 #
 msgid "Packet length"

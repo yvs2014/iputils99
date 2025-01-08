@@ -105,10 +105,7 @@ enum {
 	PACKET_IN = 1024
 };
 
-enum {
-	time_format_ctime,
-	time_format_iso
-};
+static const char* ts_format[] = {"%FT%T%z" /*iso*/, "%c" /*local*/};
 
 struct run_state {
 	uint16_t id;
@@ -124,7 +121,7 @@ struct run_state {
 	long min_rtt;
 	long rtt_sigma;
 	char *hisname;
-	int time_format;
+	const char *time_format;
 	bool interactive;
 };
 
@@ -155,8 +152,7 @@ struct measure_vars {
  *
  * This implementation is TAHOE version.
  */
-static inline int addcarry(int sum)
-{
+static inline int addcarry(int sum) {
 	if (sum & 0xffff0000) {
 		sum &= 0xffff;
 		sum++;
@@ -164,7 +160,7 @@ static inline int addcarry(int sum)
 	return sum;
 }
 
-static int clockdiff_in_cksum(unsigned short *addr, int len) {
+static int clockdiff_in_cksum(const unsigned short *addr, int len) {
 	union word {
 		char c[2];
 		unsigned short s;
@@ -200,24 +196,12 @@ static int clockdiff_in_cksum(unsigned short *addr, int len) {
 	return (~sum & 0xffff);
 }
 
-static int measure_inner_loop(struct run_state *ctl, struct measure_vars *mv)
-{
-	long delta1;
-	long delta2;
-	long diff;
-	long histime = 0;
-	long histime1 = 0;
-	long recvtime;
-	long sendtime;
+static int measure_inner_loop(struct run_state *ctl, struct measure_vars *mv) {
+	{ long tmo = MAX(ctl->rtt + ctl->rtt_sigma, 1);
+	  mv->tout.tv_sec  = tmo / 1000;
+	  mv->tout.tv_nsec = (tmo - (tmo / 1000) * 1000) * 1000000; }
+
 	struct pollfd p = { .fd = ctl->sock_raw, .events = POLLIN | POLLHUP };
-
-	{
-		long tmo = MAX(ctl->rtt + ctl->rtt_sigma, 1);
-
-		mv->tout.tv_sec = tmo / 1000;
-		mv->tout.tv_nsec = (tmo - (tmo / 1000) * 1000) * 1000000;
-	}
-
 	mv->count = ppoll(&p, 1, &mv->tout, NULL);
 	if (mv->count <= 0)
 		return BREAK;
@@ -230,17 +214,23 @@ static int measure_inner_loop(struct run_state *ctl, struct measure_vars *mv)
 
 	mv->icp = (struct icmphdr *)(mv->packet + (mv->ip->ihl << 2));
 
-	if (((ctl->ip_opt_len && mv->icp->type == ICMP_ECHOREPLY
-	      && mv->packet[20] == IPOPT_TIMESTAMP)
-	     || mv->icp->type == ICMP_TIMESTAMPREPLY)
-	    && mv->icp->un.echo.id == ctl->id && mv->icp->un.echo.sequence >= ctl->seqno0
-	    && mv->icp->un.echo.sequence <= ctl->seqno) {
-		int i;
-		uint8_t *opt = mv->packet + 20;
+	long recvtime, sendtime;
+	long histime  = 0;
+	long histime1 = 0;
+	bool reply_with_ts = (mv->icp->type == ICMP_TIMESTAMPREPLY) ||
+		(ctl->ip_opt_len                    &&
+		 (mv->icp->type  == ICMP_ECHOREPLY) &&
+		 (mv->packet[20] == IPOPT_TIMESTAMP));
 
+	if (reply_with_ts
+	    && (mv->icp->un.echo.id       == ctl->id)
+	    && (mv->icp->un.echo.sequence >= ctl->seqno0)
+	    && (mv->icp->un.echo.sequence <= ctl->seqno))
+	{
 		if (ctl->acked < mv->icp->un.echo.sequence)
 			ctl->acked = mv->icp->un.echo.sequence;
 		if (ctl->ip_opt_len) {
+			uint8_t *opt = mv->packet + 20;
 			if ((opt[3] & 0xF) != IPOPT_TS_PRESPEC) {
 				warnx("%s: %d", _("Wrong timestamp"), opt[3] & 0xF);
 				return NONSTDTIME;
@@ -250,7 +240,7 @@ static int measure_inner_loop(struct run_state *ctl, struct measure_vars *mv)
 					 warnx("%s: %d", _("Overflow hops"), opt[3] >> 4);
 			}
 			sendtime = recvtime = histime = histime1 = 0;
-			for (i = 0; i < (opt[2] - 5) / 8; i++) {
+			for (int i = 0; i < (opt[2] - 5) / 8; i++) {
 				uint32_t *timep = (uint32_t *) (opt + 4 + i * 8 + 4);
 				uint32_t t = ntohl(*timep);
 
@@ -280,9 +270,9 @@ static int measure_inner_loop(struct run_state *ctl, struct measure_vars *mv)
 					mv->ts1.tv_nsec / 1000000;
 			sendtime = ntohl(*(uint32_t *) (mv->icp + 1));
 		}
-		diff = recvtime - sendtime;
-		/* diff can be less than 0 around midnight */
-		if (diff < 0)
+
+		long diff = recvtime - sendtime;
+		if (diff < 0) /* diff can be less than 0 around midnight */
 			return CONTINUE;
 		ctl->rtt = (ctl->rtt * 3 + diff) / 4;
 		ctl->rtt_sigma = (ctl->rtt_sigma * 3 + labs(diff - ctl->rtt)) / 4;
@@ -302,7 +292,7 @@ static int measure_inner_loop(struct run_state *ctl, struct measure_vars *mv)
 			fflush(stdout);
 		}
 
-		delta1 = histime - sendtime;
+		long delta1 = histime - sendtime;
 		/*
 		 * Handles wrap-around to avoid that around midnight small time
 		 * differences appear enormous.  However, the two machine's clocks must
@@ -313,10 +303,8 @@ static int measure_inner_loop(struct run_state *ctl, struct measure_vars *mv)
 		else if (delta1 > BIASP)
 			delta1 -= MODULO;
 
-		if (ctl->ip_opt_len)
-			delta2 = recvtime - histime1;
-		else
-			delta2 = recvtime - histime;
+		long delta2 = recvtime;
+		delta2 -= ctl->ip_opt_len ? histime1 : histime;
 		if (delta2 < BIASN)
 			delta2 += MODULO;
 		else if (delta2 > BIASP)
@@ -342,22 +330,19 @@ static int measure_inner_loop(struct run_state *ctl, struct measure_vars *mv)
 /*
  * Measures the differences between machines' clocks using ICMP timestamp messages.
  */
-static int measure(struct run_state *ctl)
-{
+static int measure(struct run_state *ctl) {
 	struct measure_vars mv = {
 		.min1 = 0x7fffffff,
 		.min2 = 0x7fffffff
 	};
-	unsigned char opacket[64] = { 0 };
-	struct icmphdr *oicp = (struct icmphdr *)opacket;
-	struct pollfd p = { .fd = ctl->sock_raw, .events = POLLIN | POLLHUP };
-
 	mv.ip = (struct iphdr *)mv.packet;
-	ctl->min_rtt = 0x7fffffff;
-	ctl->measure_delta = HOSTDOWN;
+
+	ctl->min_rtt        = 0x7fffffff;
+	ctl->measure_delta  = HOSTDOWN;
 	ctl->measure_delta1 = HOSTDOWN;
 
 	/* empties the icmp input queue */
+	struct pollfd p = { .fd = ctl->sock_raw, .events = POLLIN | POLLHUP };
 	while (ppoll(&p, 1, &mv.tout, NULL)) {
 		mv.length = sizeof(struct sockaddr_in);
 		mv.cc = recvfrom(ctl->sock_raw, mv.packet, PACKET_IN, 0, NULL, &mv.length);
@@ -374,6 +359,9 @@ static int measure(struct run_state *ctl)
 	 */
 
 	mv.length = sizeof(struct sockaddr_in);
+	unsigned char opacket[64] = {0};
+	struct icmphdr *oicp = (struct icmphdr *)opacket;
+
 	if (ctl->ip_opt_len)
 		oicp->type = ICMP_ECHO;
 	else
@@ -432,8 +420,7 @@ static int measure(struct run_state *ctl)
 	return GOOD;
 }
 
-static void drop_rights(void)
-{
+static void drop_rights(void) {
 #ifdef HAVE_LIBCAP
 	cap_t caps = cap_init();
 	if (cap_set_proc(caps))
@@ -461,15 +448,15 @@ NORETURN static void usage(int rc) {
 }
 
 static void parse_opts(struct run_state *ctl, int argc, char **argv) {
-	static const struct option longopts[] = {
-		{"time-format", required_argument, NULL, 'T'},
-		{"version", no_argument, NULL, 'V'},
-		{"help", no_argument, NULL, 'h'},
-		{NULL, 0, NULL, 0}
+	const struct option longopts[] = {
+		{ "time-format", required_argument, NULL, 'T' },
+		{ "version",     no_argument,       NULL, 'V' },
+		{ "help",        no_argument,       NULL, 'h' },
+		{ NULL,          0,                 NULL, 0   },
 	};
-	int c;
-	while ((c = getopt_long(argc, argv, "o1T:IVh", longopts, NULL)) != -1)
-		switch (c) {
+	int ch;
+	while ((ch = getopt_long(argc, argv, "o1T:IVh", longopts, NULL)) != -1)
+		switch (ch) {
 		case 'o':
 			ctl->ip_opt_len = 4 + 4 * 8;
 			break;
@@ -478,16 +465,16 @@ static void parse_opts(struct run_state *ctl, int argc, char **argv) {
 			break;
 		case 'T':
 			if (!strcmp(optarg, "iso"))
-				ctl->time_format = time_format_iso;
+				ctl->time_format = ts_format[0];
 			else if (!strcmp(optarg, "ctime"))
-				ctl->time_format = time_format_ctime;
+				ctl->time_format = ts_format[1];
 			else
 				errx(EXIT_FAILURE,
 					"Invalid time-format argument: %s",
 					optarg);
 			break;
 		case 'I':
-			ctl->time_format = time_format_iso;
+			ctl->time_format = ts_format[0];
 			break;
 		case 'V':
 			version_n_exit(EXIT_SUCCESS);
@@ -503,7 +490,7 @@ int main(int argc, char **argv) {
 	SET_NLS;
 	atexit(close_stdout);
 
-	struct run_state rts = {.rtt = 1000, .time_format = time_format_ctime};
+	struct run_state rts = {.rtt = 1000, .time_format = ts_format[1]};
 	parse_opts(&rts, argc, argv);
 	argc -= optind;
 	argv += optind;
@@ -594,17 +581,15 @@ int main(int argc, char **argv) {
 	  if (rts.interactive) {
 		struct tm tm = {0};
 		localtime_r(&now, &tm);
-		char s[32];
-		const char *fmt = (rts.time_format == time_format_iso) ?
-			"%Y-%m-%dT%H:%M:%S%z" : "%a %b %e %H:%M:%S %Y";
-		if (!strftime(s, sizeof(s), fmt, &tm))
-			s[0] = 0;
+		char ts[64];
+		if (!strftime(ts, sizeof(ts), rts.time_format, &tm))
+			ts[0] = 0;
 		const char *ms = _("ms");
-		printf("\n%s%s %s%ld(%ld)%s/%ld%s %s%d%s/%d%s %s\n",
-			_("host="), rts.hisname,
-			_("rtt="), rts.rtt, rts.rtt_sigma, ms, rts.min_rtt, ms,
-			_("delta="), rts.measure_delta, ms, rts.measure_delta1, ms,
-			s);
+		printf("\n%s=%s %s=%ld(%ld)%s/%ld%s %s=%d%s/%d%s [%s]\n",
+			_("host"), rts.hisname,
+			_("rtt"), rts.rtt, rts.rtt_sigma, ms, rts.min_rtt, ms,
+			_("delta"), rts.measure_delta, ms, rts.measure_delta1, ms,
+			ts);
 	  } else
 		printf("%ld %d %d\n", now, rts.measure_delta, rts.measure_delta1);
 	}

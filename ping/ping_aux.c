@@ -160,10 +160,10 @@ void pmtu_interval(state_t *rts) {
 	int pmtudo = rts->ip6 ? IPV6_PMTUDISC_DO : IP_PMTUDISC_DO;
 	if (rts->uid) {
 		if (rts->interval < MIN_MCAST_MS) {
-			errx(EINVAL, "%s %u%s, %s", _(rts->ip6 ?
+			errx(EINVAL, "%s %u %s, %s", _(rts->ip6 ?
 				"Minimal user interval for multicast ping must be >=" :
 				"Minimal user interval for broadcast ping must be >="),
-				MIN_MCAST_MS, _(" ms"), _("see -i option for details"));
+				MIN_MCAST_MS, _("ms"), _("see -i option for details"));
 		}
 		if ((rts->pmtudisc >= 0) && (rts->pmtudisc != pmtudo))
 			errx(EINVAL, "%s %s", _(rts->ip6 ?
@@ -295,7 +295,7 @@ void print_addr_seq(const state_t *rts, uint16_t seq,
 		const void *sa = ee + 1;
 		printf("%s %s: %s=%u ",
 			_("From"), sprint_addr(sa, salen, rts->opt.resolve),
-			_("icmp_seq="), seq);
+			_("icmp_seq"), seq);
 		if (rts->ip6) {
 			print6_icmp(ee->ee_type, ee->ee_code, ee->ee_info);
 			putchar('\n');

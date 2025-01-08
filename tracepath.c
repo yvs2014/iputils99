@@ -272,7 +272,7 @@ restart:
 	if (retts) {
 		struct timespec res;
 		timespecsub(&ts, retts, &res);
-		printf("%3ld.%03ld%s",
+		printf("%3ld.%03ld %s",
 			res.tv_sec * 1000 + res.tv_nsec / 1000000,
 			(res.tv_nsec % 1000000) / 1000,
 			_("ms"));
@@ -316,7 +316,7 @@ restart:
 				bool sent = (sndhops >= 0);
 				if (( sent && (rethops != sndhops )) ||
 				    (!sent && (rethops != rts->ttl)))
-					printf("%s %2d ", _("asymm"), rethops);
+					printf("(%s %d)", _("asymm"), rethops);
 			}
 			putchar('\n');
 			break;
@@ -601,16 +601,16 @@ restart:
 		if (rc < 0)
 			printf("%2d:  %s\n", rts.ttl, _("no reply"));
 	}
-	printf("     %s: %s%d\n", _("Too many hops"), _("pmtu="), rts.mtu);
+	printf("     %s: %s=%d\n", _("Too many hops"), _("pmtu"), rts.mtu);
 
 done:
 	if (res)
 		freeaddrinfo(res);
-	printf("     %s: %s%d", _("Resume"), _("pmtu="), rts.mtu);
+	printf("     %s: %s=%d", _("Resume"), _("pmtu"), rts.mtu);
 	if (rts.hops_to >= 0)
-		printf(" %s%d", _("hops="), rts.hops_to);
+		printf(" %s=%d", _("hops"), rts.hops_to);
 	if (rts.hops_from >= 0)
-		printf(" %s%d", _("back="), rts.hops_from);
+		printf(" %s=%d", _("back"), rts.hops_from);
 	printf("\n");
 	exit(EXIT_SUCCESS);
 

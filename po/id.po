@@ -4,10 +4,8 @@
 # This file is distributed under the same license as the iputils package.
 msgid ""
 msgstr ""
-"Project-Id-Version: iputils\n"
+"Project-Id-Version: iputils99\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-19 08:21+0100\n"
-"PO-Revision-Date: 2024-01-05 07:36+0000\n"
 "Last-Translator: Andika Triwidada <andika@gmail.com>\n"
 "Language-Team: Indonesian <https://translate.fedoraproject.org/projects/"
 "iputils/iputils/id/>\n"
@@ -273,19 +271,19 @@ msgid "Non-standard time format"
 msgstr "Waktu dalam format non-standar"
 
 #
-msgid "host="
+msgid "host"
 msgstr ""
 
 #
-msgid "rtt="
+msgid "rtt"
+msgstr ""
+
+#
+msgid "delta"
 msgstr ""
 
 #
 msgid "ms"
-msgstr ""
-
-#
-msgid "delta="
 msgstr ""
 
 #
@@ -311,46 +309,6 @@ msgstr "Nama subjek tidak tepat"
 #
 msgid "dn_comp() returned too long result"
 msgstr "dn_comp() mengembalikan hasil yang terlalu panjang"
-
-#, c-format
-msgid ""
-"ping -6 -N <nodeinfo opt>\n"
-"Help:\n"
-"  help\n"
-"Query:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Subject:\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=name\n"
-"  subject-fqdn=name\n"
-msgstr ""
-"ping -6 -N <nodeinfo opt>\n"
-"Bantuan:\n"
-"  help\n"
-"Pertanyaan:\n"
-"  name\n"
-"  ipv6\n"
-"  ipv6-all\n"
-"  ipv6-compatible\n"
-"  ipv6-global\n"
-"  ipv6-linklocal\n"
-"  ipv6-sitelocal\n"
-"  ipv4\n"
-"  ipv4-all\n"
-"Subjek:\n"
-"  subject-ipv6=addr\n"
-"  subject-ipv4=addr\n"
-"  subject-name=name\n"
-"  subject-fqdn=name\n"
 
 #, fuzzy
 msgid "Unknown network interface"
@@ -500,8 +458,7 @@ msgstr "Echo permintaan"
 msgid "Echo reply"
 msgstr "Echo balasan"
 
-#: ping/ping6_common.c:484
-#, c-format
+#
 msgid "MLD Query"
 msgstr "Query MLD"
 
@@ -556,10 +513,6 @@ msgstr "tidak diketahui"
 #
 msgid "unknown code"
 msgstr "kode tidak diketahui"
-
-#
-msgid "seq="
-msgstr "seq="
 
 #
 msgid "Packet too short"
@@ -886,23 +839,15 @@ msgid "bytes"
 msgstr "byte"
 
 #
-msgid "icmp_seq="
+msgid "icmp_seq"
 msgstr ""
 
 #
-msgid "ident="
+msgid "ident"
 msgstr ""
 
 #
-msgid "ttl="
-msgstr ""
-
-#
-msgid " time="
-msgstr " waktu="
-
-#
-msgid " ms"
+msgid "ttl"
 msgstr ""
 
 #
@@ -1038,16 +983,12 @@ msgid "Too many hops"
 msgstr ""
 
 #
-msgid "pmtu="
-msgstr ""
+msgid "hops"
+msgstr "hop"
 
 #
-msgid "hops="
-msgstr "hop="
-
-#
-msgid "back="
-msgstr "kembali="
+msgid "back"
+msgstr "kembali"
 
 #
 msgid "Packet length"
