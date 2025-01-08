@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 #include <err.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -14,7 +15,6 @@
 #include <locale.h>
 
 #include "iputils_common.h"
-#include "common.h"
 
 typedef struct gai_opts {
 	int af;
@@ -118,7 +118,7 @@ static void parse_opt(int argc, char **argv, gai_opt_s *gai_opt) {
 			if (gai_opt->flags < 0)
 				gai_opt->flags = 0;
 			gai_opt->flags |= (opt == 'f') ?
-				strtoul_or_err(optarg, _("Invalid argument"), 0, USHRT_MAX) :
+				strtoll_or_err(optarg, _("Invalid argument"), 0, USHRT_MAX) :
 				ai_macro2value(opt, optarg);
 			break;
 		case 'v':
@@ -130,6 +130,17 @@ static void parse_opt(int argc, char **argv, gai_opt_s *gai_opt) {
 			gai_usage(EXIT_FAILURE);
                 }
 	}
+}
+
+static void println_gni(const void *sa, socklen_t salen) {
+	char addr[NI_MAXHOST] = {0};
+	getnameinfo(sa, salen, addr, sizeof(addr), NULL, 0, NI_FLAGS | NI_NUMERICHOST);
+	char name[NI_MAXHOST] = {0};
+	getnameinfo(sa, salen, name, sizeof(name), NULL, 0, NI_FLAGS);
+	if (*name && strncmp(name, addr, NI_MAXHOST))
+		printf("%s (%s)\n", name, addr);
+	else
+		puts(addr);
 }
 
 int main(int argc, char **argv) {
@@ -183,8 +194,8 @@ int main(int argc, char **argv) {
 				re = EXIT_FAILURE;
 				continue;
 			}
-			printf("%s ip%c: %s\n", name, (af == AF_INET) ? '4' : '6',
-				sprint_addr(ai->ai_addr, len, true));
+			printf("%s ip%c: ", name, (af == AF_INET) ? '4' : '6');
+			println_gni(ai->ai_addr, len);
 		}
 	}
 

@@ -288,9 +288,9 @@ void print_addr_seq(const state_t *rts, uint16_t seq,
 {
 	if (rts->opt.quiet)
 		return;
-	if (rts->opt.flood)
-		write(STDOUT_FILENO, "\bE", 2);
-	else {
+	if (rts->opt.flood) {
+		if (write(STDOUT_FILENO, "\bE", 2)) {};
+	} else {
 		PRINT_TIMESTAMP;
 		const void *sa = ee + 1;
 		printf("%s %s: %s=%u ",
@@ -307,9 +307,9 @@ void print_addr_seq(const state_t *rts, uint16_t seq,
 
 // func_set:receive_error:print_local_ee
 inline void print_local_ee(const state_t *rts, const struct sock_extended_err *ee) {
-	if (rts->opt.flood)
-		write(STDOUT_FILENO, "E", 1);
-	else if (ee->ee_errno != EMSGSIZE)
+	if (rts->opt.flood) {
+		if (write(STDOUT_FILENO, "E", 1)) {};
+	} else if (ee->ee_errno != EMSGSIZE)
 		warnx("%s", _("Local error"));
 	else
 		warnx("%s: %s: mtu=%u", _("Local error"), _("Message too long"), ee->ee_info);

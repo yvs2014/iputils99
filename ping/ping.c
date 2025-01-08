@@ -233,8 +233,7 @@ static inline void opt_s(state_t *rts, const char *str) {
 		errx(EXIT_FAILURE, "%s: %s", _WARN,
 			_("NodeInfo packet can only have a header"));
 #endif
-	unsigned long len = strtoul_or_err(str, _("Invalid argument"),
-		0, MAXPAYLOAD);
+	unsigned len = strtoll_or_err(str, _("Invalid argument"), 0, MAXPAYLOAD);
 	unsigned char *pack = calloc(1, PACKHDRLEN + len);
 	if (!pack)
 		err(errno, "calloc(%zu)", PACKHDRLEN + len);
@@ -270,7 +269,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->opt.broadcast = true;
 			break;
 		case 'e':
-			rts->ident16 = htons(strtoul_or_err(optarg,
+			rts->ident16 = htons(strtoll_or_err(optarg,
 				_("Invalid argument"), 0, USHRT_MAX));
 			rts->custom_ident = rts->ident16;
 			break;
@@ -313,7 +312,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->opt.strictsource = true;
 			break;
 		case 'c':
-			rts->npackets = strtol_or_err(optarg, _("Invalid argument"), 1, LONG_MAX);
+			rts->npackets = strtoll_or_err(optarg, _("Invalid argument"), 1, LONG_MAX);
 			break;
 		case 'C':
 			rts->opt.connect_sk = true;
@@ -340,7 +339,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			opt_I(rts, optarg);
 			break;
 		case 'l':
-			rts->preload = strtol_or_err(optarg, _("Invalid argument"), 1, MAX_DUP_CHK);
+			rts->preload = strtoll_or_err(optarg, _("Invalid argument"), 1, MAX_DUP_CHK);
 			if (rts->uid && (rts->preload > 3))
 				errx(EINVAL, "%s: %d", _("Cannot set preload to value greater than 3"), rts->preload);
 			break;
@@ -348,7 +347,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->opt.noloop = true;
 			break;
 		case 'm':
-			rts->mark = strtoul_or_err(optarg, _("Invalid argument"), 0, UINT_MAX);
+			rts->mark = strtoll_or_err(optarg, _("Invalid argument"), 0, UINT_MAX);
 			rts->opt.mark = true;
 			break;
 		case 'M':
@@ -397,10 +396,10 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			opt_s(rts, optarg);
 			break;
 		case 'S':
-			rts->sndbuf = strtol_or_err(optarg, _("Invalid argument"), 1, INT_MAX);
+			rts->sndbuf = strtoll_or_err(optarg, _("Invalid argument"), 1, INT_MAX);
 			break;
 		case 't':
-			rts->ttl = strtol_or_err(optarg, _("Invalid argument"), 0, UCHAR_MAX);
+			rts->ttl = strtoll_or_err(optarg, _("Invalid argument"), 0, UCHAR_MAX);
 			rts->opt.ttl = true;
 			break;
 		case 'U':
@@ -410,7 +409,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->opt.verbose = true;
 			break;
 		case 'w':
-			rts->deadline = strtol_or_err(optarg, _("Invalid argument"), 0, INT_MAX);
+			rts->deadline = strtoll_or_err(optarg, _("Invalid argument"), 0, INT_MAX);
 			break;
 		case 'W': {
 			double value = strtod_or_err(optarg, _("Bad linger time"),

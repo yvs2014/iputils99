@@ -394,7 +394,7 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 #define PIPESIZE_OKAY (rts->pipesize  < rts->screen_width)
 #define INFLIGHT_OKAY (in_flight(rts) < rts->screen_width)
 				if ((PRELOAD_OKAY && PIPESIZE_OKAY) || INFLIGHT_OKAY)
-					write(STDOUT_FILENO, ".", 1);
+					if (write(STDOUT_FILENO, ".", 1)) {};
 			}
 			return (rts->interval - tokens);
 		}
@@ -453,9 +453,9 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 	/* Pretend we sent packet */
 	advance_ntransmitted(rts);
 	if (!rc && !rts->opt.quiet) {
-		if (rts->opt.flood)
-			write(STDOUT_FILENO, "E", 1);
-		else
+		if (rts->opt.flood) {
+			if (write(STDOUT_FILENO, "E", 1)) {};
+		} else
 			warn("sendmsg");
 	}
 	tokens = 0;
@@ -975,10 +975,11 @@ bool stats_noflush(state_t *rts, const uint8_t *icmp, int icmplen,
 	if (rts->opt.quiet)
 		return true;
 	if (rts->opt.flood) {
-		if (ack)
-			write(STDOUT_FILENO, "\b \b", 3);
-		else
-			write(STDOUT_FILENO, "\bC", 2);
+		if (ack) {
+			if (write(STDOUT_FILENO, "\b \b", 3)) {};
+		} else {
+			if (write(STDOUT_FILENO, "\bC", 2)) {};
+		}
 		return true;
 	}
 
@@ -1052,29 +1053,6 @@ inline bool gather_stats(state_t *rts, const void *icmp, int icmplen,
 	if (finished)
 		fflush(stdout);
 	return finished;
-}
-
-unsigned long strtoul_or_err(const char *str, const char *errmesg,
-	unsigned long min, unsigned long max)
-{
-	errno = (str && *str) ? 0 : EINVAL;
-	if (!errno) {
-		char *end = NULL;
-		unsigned long num = strtoul(str, &end, 10);
-		if (errno || (str == end) || (end && *end)) {
-			errno = 0;
-			num = strtoul(str, &end, 0x10);
-		}
-		if (!(errno || (str == end) || (end && *end))) {
-			if ((min <= num) && (num <= max))
-				return num;
-			errno = ERANGE;
-			err(errno, "%s: %s: %lu-%lu", errmesg, str, min, max);
-		}
-	}
-	if (errno)
-		err(errno, "%s: %s", errmesg, str);
-	errx(EXIT_FAILURE, "%s: %s", errmesg, str);
 }
 
 double strtod_or_err(const char *str, const char *errmesg,

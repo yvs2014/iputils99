@@ -25,20 +25,22 @@ void close_stdout(void) {
 			err(errno, "stderr");
 }
 
-long strtol_or_err(const char *str, const char *errmesg, long min, long max) {
+long long strtoll_or_err(const char *str, const char *errmesg,
+		long long min, long long max)
+{
 	errno = (str && *str) ? 0 : EINVAL;
 	if (!errno) {
 		char *end = NULL;
-		long num = strtol(str, &end, 10);
+		long long num = strtoll(str, &end, 10);
 		if (errno || (str == end) || (end && *end)) {
 			errno = 0;
-			num = strtoul(str, &end, 0x10);
+			num = strtoll(str, &end, 16);
 		}
 		if (!(errno || (str == end) || (end && *end))) {
 			if ((min <= num) && (num <= max))
 				return num;
 			errno = ERANGE;
-			err(errno, "%s: %s: %ld - %ld", errmesg, str, min, max);
+			err(errno, "%s: %s: %lld - %lld", errmesg, str, min, max);
 		}
 	}
 	if (errno)

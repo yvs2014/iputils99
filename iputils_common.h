@@ -79,7 +79,8 @@
 #define NORETURN
 #endif
 
-long strtol_or_err(const char *str, const char *errmesg, long min, long max);
+long long strtoll_or_err(const char *str, const char *errmesg,
+	long long min, long long max);
 void close_stdout(void);
 void setmyname(const char *argv0);
 NORETURN void version_n_exit(int rc);

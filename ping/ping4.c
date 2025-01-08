@@ -308,7 +308,8 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 			break;
 		}
 		if (rts->opt.flood && !(rts->opt.verbose || rts->opt.quiet)) {
-			write(STDOUT_FILENO, "!EC", bad ? 3 : 2);
+			if (write(STDOUT_FILENO, "!EC", bad ? 3 : 2)) {};
+//			otherwise: (void)!write
 			return false;
 		}
 		if (!rts->opt.verbose || rts->uid)

@@ -30,10 +30,3 @@ if setcap_ping
 		bindir, 'ping', perm_type, setcap_path)
 endif
 
-if build_gai
-	executable('gai', common_src + ['common.c', 'gai.c'],
-		include_directories: include_directories('..'),
-		dependencies: deps + ping_extra_deps,
-		install: true)
-endif
-

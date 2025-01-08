@@ -865,13 +865,13 @@ int main(int argc, char **argv) {
 			ctl.quiet = 1;
 			break;
 		case 'c':
-			ctl.count = strtol_or_err(optarg, _("Invalid argument"), 1, INT_MAX);
+			ctl.count = strtoll_or_err(optarg, _("Invalid argument"), 1, INT_MAX);
 			break;
 		case 'w':
-			ctl.timeout = strtol_or_err(optarg, _("Invalid argument"), 0, INT_MAX);
+			ctl.timeout = strtoll_or_err(optarg, _("Invalid argument"), 0, INT_MAX);
 			break;
 		case 'i':
-			ctl.interval = strtol_or_err(optarg, _("Invalid argument"), 0, INT_MAX);
+			ctl.interval = strtoll_or_err(optarg, _("Invalid argument"), 0, INT_MAX);
 			break;
 		case 'I':
 			ctl.device.name = optarg;

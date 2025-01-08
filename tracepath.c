@@ -443,13 +443,13 @@ int main(int argc, char **argv) {
 			rts.opt.show_both = true;
 			break;
 		case 'l':
-			rts.mtu = strtol_or_err(optarg, _("Invalid argument"), rts.overhead, INT_MAX);
+			rts.mtu = strtoll_or_err(optarg, _("Invalid argument"), rts.overhead, INT_MAX);
 			break;
 		case 'm':
-			rts.max_hops = strtol_or_err(optarg, _("Invalid argument"), 0, MAX_HOPS_LIMIT);
+			rts.max_hops = strtoll_or_err(optarg, _("Invalid argument"), 0, MAX_HOPS_LIMIT);
 			break;
 		case 'p':
-			rts.base_port = strtol_or_err(optarg, _("Invalid argument"), 0, UINT16_MAX);
+			rts.base_port = strtoll_or_err(optarg, _("Invalid argument"), 0, UINT16_MAX);
 			break;
 		case 'V':
 			version_n_exit(EXIT_SUCCESS);
@@ -475,7 +475,7 @@ int main(int argc, char **argv) {
 		char *p = strchr(argv[0], '/');
 		if (p) {
 			*p = 0;
-			rts.base_port = strtol_or_err(p + 1, _("Invalid argument"), 0, UINT16_MAX);
+			rts.base_port = strtoll_or_err(p + 1, _("Invalid argument"), 0, UINT16_MAX);
 		} else
 			rts.base_port = DEFAULT_BASEPORT;
 	}

@@ -7,13 +7,14 @@ Included
 --------
 - ping
 - arping
-- tracepath
 - clockdiff
+- tracepath
+- gai
 
 Build
 -----
 ```
-meson setup _build
+meson setup _build --buildtype=release
 meson compile -C _build
 ```
 

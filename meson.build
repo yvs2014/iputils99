@@ -169,11 +169,6 @@ common_src = files(base + '_common.c')
 if build_ping
 	subdir('ping')
 	manpage += 'ping'
-	if build_gai
-		manpage += 'gai'
-	endif
-else
-	build_gai = false
 endif
 
 if build_arping
@@ -200,6 +195,12 @@ if build_tracepath
 	tracepath = executable('tracepath', common_src + ['tracepath.c'],
 		dependencies: deps, install: true)
 	manpage += 'tracepath'
+endif
+
+if build_gai
+	gai = executable('gai', common_src + ['gai.c'],
+		dependencies: deps, install: true)
+	manpage += 'gai'
 endif
 
 if manpage.length() > 0
