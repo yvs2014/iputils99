@@ -81,6 +81,7 @@
 #include <netinet/icmp6.h>
 #include <linux/in6.h>
 #include <linux/errqueue.h>
+#include <linux/filter.h>
 
 #ifndef IPV6_FLOWLABEL_MGR
 # define IPV6_FLOWLABEL_MGR 32
@@ -309,12 +310,32 @@ static inline bool get_subnet_anycast(const struct sockaddr_in6 *whereto) {
 	return true;
 }
 
+static inline void setsock6_filter(const state_t *rts, const sock_t *sock) {
+	struct sock_filter filter[] = { // no need to be static?
+		BPF_STMT(BPF_LD	 | BPF_H   | BPF_ABS, 4),	/* Load ident */
+		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K,
+			htons(rts->ident16), 			/* Compare ident */
+			0, 1),
+		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Okay, it's ours */
+		BPF_STMT(BPF_LD  | BPF_B   | BPF_ABS, 0),	/* Load type */
+		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K,
+			ICMP6_ECHO_REPLY, 			/* Compare type */
+			1, 0),
+		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Okay, pass it down */
+		BPF_STMT(BPF_RET | BPF_K, 0), 			/* Reject wrong ident */
+	};
+	const struct sock_fprog fprog = {
+		.len    = ARRAY_SIZE(filter),
+		.filter = filter,
+	};
+	setsock_filter(rts, sock, &fprog);
+}
 
-/* return >= 0: exit with this code, < 0: go on to next addrinfo result */
+/* Return >= 0: exit with this code, < 0: go on to next addrinfo result */
 int ping6_run(state_t *rts, int argc, char **argv,
 		struct addrinfo *ai, const sock_t *sock)
 {
-	static fnset_t ping6_func_set = {
+	fnset_t ping6_func_set = {
 		.send_probe     = ping6_send_probe,
 		.receive_error  = ping6_receive_error,
 		.parse_reply    = ping6_parse_reply,
@@ -323,6 +344,9 @@ int ping6_run(state_t *rts, int argc, char **argv,
 	rts->ip6 = true;
 	cmsg_t cmsg6 = {0};
 	rts->cmsg = &cmsg6;
+
+	if (sock->raw)
+		setsock6_filter(rts, sock);
 
 	struct sockaddr_in6 *source   = (struct sockaddr_in6 *)&rts->source;
 	struct sockaddr_in6 *firsthop = (struct sockaddr_in6 *)&rts->firsthop;

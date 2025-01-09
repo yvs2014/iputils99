@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define ARRAY_SIZE(arr) \
+#define NI6_ARRAY_SIZE(arr) \
   (sizeof(arr) / sizeof((arr)[0]) + \
    sizeof(__typeof__(int[1 - 2 * \
 	  !!__builtin_types_compatible_p(__typeof__(arr), \

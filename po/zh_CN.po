@@ -566,10 +566,6 @@ msgid "WARNING"
 msgstr "警告"
 
 #
-msgid "failed to install socket filter"
-msgstr "无法安装套接字过滤器"
-
-#
 msgid "=> missing cap_net_raw+p capability"
 msgstr "=> 缺少 cap_net_raw+p"
 

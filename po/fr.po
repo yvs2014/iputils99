@@ -581,10 +581,6 @@ msgid "WARNING"
 msgstr "AVERTISSEMENT"
 
 #
-msgid "failed to install socket filter"
-msgstr "échec de l’installation du filtre de socket"
-
-#
 msgid "=> missing cap_net_raw+p capability"
 msgstr "=> capacité cap_net_raw+p manquante"
 

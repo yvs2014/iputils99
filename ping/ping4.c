@@ -72,6 +72,7 @@
 
 //#include <linux/icmp.h> /* conflicted with <netinet/ip_icmp.h> */
 #include <linux/errqueue.h>
+#include <linux/filter.h>
 
 #ifndef ICMP_FILTER
 #define ICMP_FILTER	1
@@ -196,10 +197,11 @@ static inline bool ping4_icmp_extra_type(state_t *rts,
 		const struct sockaddr_in *from, bool raw, bool bad)
 {
 	const struct iphdr *iph = (struct iphdr *)(icmp + 1);
-	const struct icmphdr *orig = (struct icmphdr *)((unsigned char *)iph + iph->ihl * 4);
-	size_t minhl = 8 + iph->ihl * 4 + 8;
-	if ((received < (8 + sizeof(struct iphdr) + 8)) || (received < minhl))
-		return true;
+	uint8_t ihl = iph->ihl * 4;
+	const struct icmphdr *orig = (struct icmphdr *)((unsigned char *)iph + ihl);
+	if ((received < (sizeof(struct iphdr) + 2 * sizeof(struct icmphdr))) ||
+	    (received < (ihl                  + 2 * sizeof(struct icmphdr))))
+			return true;
 	const struct sockaddr_in *sin = (struct sockaddr_in *)&rts->whereto;
 	if ((orig->type != ICMP_ECHO)            ||
 	    (iph->daddr != sin->sin_addr.s_addr) ||
@@ -386,11 +388,33 @@ static inline void set_src_space(int fd, const route_t *route, bool dontroute) {
 		err(errno, "record route");
 }
 
-/* return >= 0: exit with this code, < 0: go on to next addrinfo result */
+static inline void setsock4_filter(const state_t *rts, const sock_t *sock) {
+	struct sock_filter filter[] = { // no need to be static?
+		BPF_STMT(BPF_LDX | BPF_B   | BPF_MSH, 0),	/* Skip IP header due BSD */
+		BPF_STMT(BPF_LD  | BPF_H   | BPF_IND, 4),	/* Load ident */
+		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K,
+			htons(rts->ident16),			/* Compare ident */
+			0, 1),
+		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Okay, it's ours */
+		BPF_STMT(BPF_LD  | BPF_B   | BPF_IND, 0),	/* Load type */
+		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K,
+			ICMP_ECHOREPLY,				/* Compare type */
+			1, 0),
+		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Okay, pass it down */
+		BPF_STMT(BPF_RET | BPF_K, 0),			/* Reject wrong ident */
+	};
+	const struct sock_fprog fprog = {
+		.len    = ARRAY_SIZE(filter),
+		.filter = filter,
+	};
+	setsock_filter(rts, sock, &fprog);
+}
+
+/* Return >= 0: exit with this code, < 0: go on to next addrinfo result */
 int ping4_run(state_t *rts, int argc, char **argv,
 		struct addrinfo *ai, const sock_t *sock)
 {
-	static fnset_t ping4_func_set = {
+	fnset_t ping4_func_set = {
 		.send_probe     = ping4_send_probe,
 		.receive_error  = ping4_receive_error,
 		.parse_reply    = ping4_parse_reply,
@@ -399,6 +423,9 @@ int ping4_run(state_t *rts, int argc, char **argv,
 	rts->ip6 = false;
 	route_t route4 = {0};
 	rts->route = &route4;
+
+	if (sock->raw)
+		setsock4_filter(rts, sock);
 
 	struct sockaddr_in *source  = (struct sockaddr_in *)&rts->source;
 	struct sockaddr_in *whereto = (struct sockaddr_in *)&rts->whereto;

@@ -1,9 +1,5 @@
 // part of iputils_common.c that used in node_info.c only
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
 #include <unistd.h>
 #include <string.h>
 #include <arpa/inet.h>

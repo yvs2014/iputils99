@@ -72,7 +72,6 @@
 #include <ifaddrs.h>
 #include <net/if.h>
 #include <linux/in6.h>
-#include <linux/errqueue.h>
 
 #define DX_SHIFT(str) (((str)[0] == '0') && (((str)[1] == 'x') || ((str)[1] == 'X')) ? 2 : 0)
 unsigned parse_flow(const char *str) {
@@ -110,6 +109,21 @@ inline unsigned if_name2index(const char *ifname) {
 	if (!rc)
 		errx(EINVAL, "%s: %s", _("Unknown network interface"), ifname);
 	return rc;
+}
+
+void setsock_filter(const state_t *rts,
+	const sock_t *sock, const struct sock_fprog *prog)
+{
+	if (rts->opt.verbose)
+		warnx("%s: ip%c sock=%d raw=%d ident=0x%04x", _INFO,
+			rts->ip6 ? '6' : '4', sock->fd, sock->raw, rts->ident16);
+	if (setsockopt(sock->fd, SOL_SOCKET, SO_ATTACH_FILTER, prog, sizeof(*prog)) < 0)
+		err(errno, "%s", "setsockopt(SO_ATTACH_FILTER)");
+#ifdef SO_LOCK_FILTER
+	int on = 1;
+	if (setsockopt(sock->fd, SOL_SOCKET, SO_LOCK_FILTER, &on, sizeof(on)) < 0)
+		warn("%s", "setsockopt(SO_LOCK_FILTER)");
+#endif
 }
 
 // return setsockopt's return_code and keep its errno

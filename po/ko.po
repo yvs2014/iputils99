@@ -573,10 +573,6 @@ msgid "WARNING"
 msgstr "경고"
 
 #
-msgid "failed to install socket filter"
-msgstr "소켓 필터를 설치하는데 실패함"
-
-#
 msgid "=> missing cap_net_raw+p capability"
 msgstr "=> cap_net_raw+p가 없습니다"
 

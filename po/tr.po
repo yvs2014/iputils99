@@ -568,10 +568,6 @@ msgid "WARNING"
 msgstr "UYARI"
 
 #
-msgid "failed to install socket filter"
-msgstr "soket filtresi kurulamadı"
-
-#
 msgid "=> missing cap_net_raw+p capability"
 msgstr "=> eksik cap_net_raw+p özelliği"
 

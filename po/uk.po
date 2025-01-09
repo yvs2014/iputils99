@@ -605,10 +605,6 @@ msgid "WARNING"
 msgstr "УВАГА"
 
 #
-msgid "failed to install socket filter"
-msgstr "не вдалося встановити фільтрування на сокет"
-
-#
 msgid "=> missing cap_net_raw+p capability"
 msgstr "=> не вистачає cap_net_raw+p"
 
@@ -1039,6 +1035,10 @@ msgstr "втрачено"
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
 msgid "min/avg/ewma/max"
 msgstr "мін/сер/EWMA/макс"
+
+#
+msgid "Lack of packet filtration"
+msgstr "Фільтрація пакетів відсутня"
 
 #
 msgid "No info"

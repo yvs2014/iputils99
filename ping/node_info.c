@@ -365,7 +365,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 	}
 
 	dpp = dnptrs;
-	lastdnptr = &dnptrs[ARRAY_SIZE(dnptrs)];
+	lastdnptr = &dnptrs[NI6_ARRAY_SIZE(dnptrs)];
 
 	*dpp++ = (unsigned char *)buf;
 	*dpp++ = NULL;

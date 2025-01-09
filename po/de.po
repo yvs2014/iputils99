@@ -579,10 +579,6 @@ msgid "WARNING"
 msgstr "WARNUNG"
 
 #
-msgid "failed to install socket filter"
-msgstr "Socket-Filter konnte nicht installiert werden"
-
-#
 msgid "=> missing cap_net_raw+p capability"
 msgstr "=> fehlende cap_net_raw+p Fähigkeit"
 

@@ -14,6 +14,8 @@ project('iputils99', 'c',
 			check: false).stdout().strip() : '20250108',
 )
 
+add_project_arguments('-D_GNU_SOURCE', language: 'c')
+
 base    = 'iputils'
 name    = meson.project_name()
 version = meson.project_version()
@@ -68,15 +70,16 @@ if arping_device != ''
 endif
 
 if build_ping
+	extra_files = []
 	extra_funcs += {'arc4random_uniform': {'hdr': ['stdlib.h']}}
-	extra_files = ['md5.c']
 	ni6 = get_option('NI6')
-        if ni6	# RFC4620 builtin client
+	if ni6	# RFC4620 builtin client
 		conf.set('ENABLE_NI6', 1, description: 'build with RFC4620 NodeInfo client')
 		if get_option('NI6_NONCE_MEMORY')
 			conf.set('NI6_NONCE_MEMORY', 1,
 				description: 'ping6 NodeInfo with nonce memory')
 		endif
+		extra_files += 'md5.c'
 		extra_files += base + '_ni_aux.c'
 		extra_funcs += {'getrandom': {'hdr': ['sys/random.h']}}
 	else

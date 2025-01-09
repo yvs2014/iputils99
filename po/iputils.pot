@@ -521,10 +521,6 @@ msgid "WARNING"
 msgstr ""
 
 #
-msgid "failed to install socket filter"
-msgstr ""
-
-#
 msgid "=> missing cap_net_raw+p capability"
 msgstr ""
 
@@ -952,6 +948,10 @@ msgstr ""
 
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
 msgid "min/avg/ewma/max"
+msgstr ""
+
+#
+msgid "Lack of packet filtration"
 msgstr ""
 
 #

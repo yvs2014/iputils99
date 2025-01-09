@@ -570,10 +570,6 @@ msgid "WARNING"
 msgstr "POZOR"
 
 #
-msgid "failed to install socket filter"
-msgstr "soketový filtr se nepodařilo nainstalovat"
-
-#
 msgid "=> missing cap_net_raw+p capability"
 msgstr "=> chybí cap_net_raw+p capability"
 

@@ -3,10 +3,13 @@
 
 #include "common.h"
 #include <linux/errqueue.h>
+#include <linux/filter.h>
 
 unsigned parse_flow(const char *str);
 unsigned char parse_tos(const char *str);
 unsigned if_name2index(const char *ifname);
+void setsock_filter(const state_t *rts,
+	const sock_t *sock, const struct sock_fprog *prog);
 int setsock_bindopt(int fd, const char *device, socklen_t slen, unsigned mcast_face);
 void set_device(bool ip6, const char *device, socklen_t len,
 	unsigned pkt_face, unsigned mcast_face, int fd1, int fd2);

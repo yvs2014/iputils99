@@ -430,9 +430,9 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 
 
 int main(int argc, char **argv) {
-	static run_fn ping_run[2] = { ping4_run, ping6_run };
+	run_fn ping_run[2] = { ping4_run, ping6_run };
 	//
-	static state_t rts = {
+	state_t rts = {
 		.interval     = 1000,
 		.preload      = 1,
 		.lingertime   = MAXWAIT * 1000,

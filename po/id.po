@@ -523,10 +523,6 @@ msgid "WARNING"
 msgstr "PERINGATAN"
 
 #
-msgid "failed to install socket filter"
-msgstr "gagal menginstall filter socket"
-
-#
 msgid "=> missing cap_net_raw+p capability"
 msgstr ""
 

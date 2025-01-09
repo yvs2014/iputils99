@@ -1,9 +1,6 @@
 #ifndef PING_EXTRA_H
 #define PING_EXTRA_H
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>

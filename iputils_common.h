@@ -1,10 +1,6 @@
 #ifndef IPUTILS_COMMON_H
 #define IPUTILS_COMMON_H
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
 #include <stdbool.h>
 #include <time.h>
 #include <sys/time.h>
@@ -44,6 +40,10 @@
 #else
 # define NI_FLAGS 0
 #endif /* NI_IDN */
+
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#endif
 
 #ifndef NOOP
 #define NOOP ((void)0)

@@ -1,10 +1,6 @@
 #ifndef PING_COMMON_H
 #define PING_COMMON_H
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <unistd.h>

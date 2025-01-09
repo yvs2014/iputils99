@@ -570,10 +570,6 @@ msgid "WARNING"
 msgstr "გაფრთხილება"
 
 #
-msgid "failed to install socket filter"
-msgstr "სოკეტის ფილტრის დაყენების შეცდომა"
-
-#
 msgid "=> missing cap_net_raw+p capability"
 msgstr "=> აკლია cap_net_raw+p შესაძლებლობა"
 
