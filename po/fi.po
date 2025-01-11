@@ -390,30 +390,6 @@ msgid "does not fragment"
 msgstr "ei pirstoudu"
 
 #
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "setsockopt(RAW_CHECKSUM) epäonnistui - yritä jatkaa"
-
-#
-msgid "Cannot set multicast hop limit"
-msgstr "Ei voi asettaa moni-lähetyksen hyppyrajaa"
-
-#
-msgid "Cannot set unicast hop limit"
-msgstr "Ei voi asettaa yksi-lähetyksen hyppyrajaa"
-
-#
-msgid "Cannot receive hop limit"
-msgstr "Ei voi vastaanottaa hyppyrajaa"
-
-#
-msgid "Cannot set flowlabel"
-msgstr "Virtausnimiötä ei voi asettaa"
-
-#
-msgid "Cannot send flowinfo"
-msgstr "Ei voi lähettää virtaustietoja"
-
-#
 msgid "PING"
 msgstr ""
 
@@ -638,20 +614,8 @@ msgid "Cannot set broadcasting"
 msgstr "Laaja-lähetystä ei voi asettaa"
 
 #
-msgid "getifaddrs() failed"
-msgstr "getifaddrs() epäonnistui"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "Ei voi poistaa monilähetyksen takaisin-silmukkaa käytöstä"
-
-#
-msgid "Cannot set multicast time-to-live"
-msgstr "Ei voi asettaa monilähetyksen elon aikaa (TTL)"
-
-#
-msgid "Cannot set unicast time-to-live"
-msgstr "Yksi-lähetyksen elon aikaa (TTL) ei voi asettaa"
 
 # %ld data bytes
 msgid "data bytes"
@@ -937,9 +901,9 @@ msgstr "vioittuneet"
 msgid "errors"
 msgstr "virhettä"
 
-# %g%% packet loss
-msgid "packet loss"
-msgstr "paketin menetys"
+# n% lost
+msgid "lost"
+msgstr "menetystä"
 
 # time %ld ms
 msgid "time"
@@ -960,10 +924,6 @@ msgstr ""
 # %ld/%ld packets
 msgid "packets"
 msgstr "pakettia"
-
-# %d%% loss
-msgid "loss"
-msgstr "menetystä"
 
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
 msgid "min/avg/ewma/max"

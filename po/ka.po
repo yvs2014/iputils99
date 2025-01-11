@@ -394,30 +394,6 @@ msgid "does not fragment"
 msgstr "არ იხლიჩება"
 
 #
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "setsockopt(RAW_CHECKSUM) -ის შეცდომა - გაგრძელების მცდელობა"
-
-#
-msgid "Cannot set multicast hop limit"
-msgstr "ტრანსლაციის ჰოპების ლიმიტის დაყენების შეცდომა"
-
-#
-msgid "Cannot set unicast hop limit"
-msgstr "უნიკასტ პაკეტის ჰოპების ლიმიტის დაყენების შეცდომა"
-
-#
-msgid "Cannot receive hop limit"
-msgstr "ჰოპების ლიმიტის მიღების შეცდომა"
-
-#
-msgid "Cannot set flowlabel"
-msgstr "დინების ჭდის დადების შეცდომა"
-
-#
-msgid "Cannot send flowinfo"
-msgstr "დინების ინფორმაციის გაგზავნის შეცდომა"
-
-#
 msgid "PING"
 msgstr ""
 
@@ -642,20 +618,8 @@ msgid "Cannot set broadcasting"
 msgstr "გადაცემის დაყენების შეცდომა"
 
 #
-msgid "getifaddrs() failed"
-msgstr "getifaddrs()-ის შეცდომა"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "გადაცემის მარყუჟის გათიშვის შეცდომა"
-
-#
-msgid "Cannot set multicast time-to-live"
-msgstr "გადაცემის TTL-ის დაყენების შეცდომა"
-
-#
-msgid "Cannot set unicast time-to-live"
-msgstr "უნიკასტის TTL-ის დაყენების შეცდომა"
 
 # %ld data bytes
 msgid "data bytes"
@@ -945,9 +909,9 @@ msgstr "გაფუჭებული"
 msgid "errors"
 msgstr "შეცდომა"
 
-# %g%% packet loss
-msgid "packet loss"
-msgstr "პაკეტი დაიკარგა"
+# n% lost
+msgid "lost"
+msgstr "დაკარგულია"
 
 # time %ld ms
 msgid "time"
@@ -968,10 +932,6 @@ msgstr ""
 # %ld/%ld packets
 msgid "packets"
 msgstr "პაკეტი"
-
-# %d%% loss
-msgid "loss"
-msgstr "დაკარგულია"
 
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
 msgid "min/avg/ewma/max"

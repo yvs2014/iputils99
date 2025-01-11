@@ -405,30 +405,6 @@ msgid "does not fragment"
 msgstr "ne fragmente pas"
 
 #
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "setsockopt(RAW_CHECKSUM) a échoué - essayez de continuer"
-
-#
-msgid "Cannot set multicast hop limit"
-msgstr "Impossible de définir la limite de saut de multidiffusion"
-
-#
-msgid "Cannot set unicast hop limit"
-msgstr "Impossible de définir de limite de saut de monodiffusion"
-
-#
-msgid "Cannot receive hop limit"
-msgstr "Impossible de recevoir la limite de saut"
-
-#
-msgid "Cannot set flowlabel"
-msgstr "Impossible de définir le label de flux"
-
-#
-msgid "Cannot send flowinfo"
-msgstr "Impossible d'envoyer l'information de flux"
-
-#
 msgid "PING"
 msgstr ""
 
@@ -653,20 +629,8 @@ msgid "Cannot set broadcasting"
 msgstr "Impossible de définir la multidiffusion"
 
 #
-msgid "getifaddrs() failed"
-msgstr "échec de getifaddrs()"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "Impossible de désactiver la boucle de retour pour la multidiffusion"
-
-#
-msgid "Cannot set multicast time-to-live"
-msgstr "Impossible de définir la durée de vie de la multidiffusion"
-
-#
-msgid "Cannot set unicast time-to-live"
-msgstr "Impossible de définir la durée de vie de la monodiffusion"
 
 # %ld data bytes
 msgid "data bytes"
@@ -929,33 +893,33 @@ msgstr "attendu 0x"
 msgid "got 0x"
 msgstr "reçu 0x"
 
-# hostname%s
+# hostname ping statistics
 msgid " ping statistics"
 msgstr " ping statistiques"
 
-# %ld %s
+# %ld packets transmitted
 msgid "packets transmitted"
 msgstr "paquets transmis"
 
-# %ld %s
+# %ld received
 msgid "received"
 msgstr "reçus"
 
-# %ld %s
+# %ld duplicates
 msgid "duplicates"
 msgstr "dupliqués"
 
-# %ld %s
+# %ld corrupted
 msgid "corrupted"
 msgstr "corrompus"
 
-# %ld %s
+# %ld errors
 msgid "errors"
 msgstr "erreurs"
 
-# %g%% %s
-msgid "packet loss"
-msgstr "paquets perdus"
+# n% lost
+msgid "lost"
+msgstr "perdus"
 
 # time %ld ms
 msgid "time"
@@ -976,10 +940,6 @@ msgstr "ipg/mmpe"
 # %ld/%ld packets
 msgid "packets"
 msgstr "paquets"
-
-# %d%% loss
-msgid "loss"
-msgstr "perdus"
 
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
 msgid "min/avg/ewma/max"

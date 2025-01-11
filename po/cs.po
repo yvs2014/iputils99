@@ -398,30 +398,6 @@ msgid "does not fragment"
 msgstr "se nefragmentuje"
 
 #
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "volání setsockopt(RAW_CHECKSUM) selhalo – pokračuje se"
-
-#
-msgid "Cannot set multicast hop limit"
-msgstr "Omezení na počet skoků při multicastu nelze nastavit"
-
-#
-msgid "Cannot set unicast hop limit"
-msgstr "Omezení na počet skoků při unicastu nelze nastavit"
-
-#
-msgid "Cannot receive hop limit"
-msgstr "Nedaří se získat údaj o omezení počtu skoků"
-
-#
-msgid "Cannot set flowlabel"
-msgstr "Jmenovku toku nelze nastavit"
-
-#
-msgid "Cannot send flowinfo"
-msgstr "Údaje o toku nelze poslat"
-
-#
 msgid "PING"
 msgstr ""
 
@@ -642,20 +618,8 @@ msgid "Cannot set broadcasting"
 msgstr "Všesměr nelze nastavit"
 
 #
-msgid "getifaddrs() failed"
-msgstr "getifaddrs() nezafungovala"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "Příjem vlastních multicastových dotazů nelze zakázat"
-
-#
-msgid "Cannot set multicast time-to-live"
-msgstr "Délku životnosti nelze u multicastu nastavit"
-
-#
-msgid "Cannot set unicast time-to-live"
-msgstr "Délku životnosti nelze u unicastu nastavit"
 
 # %ld data bytes
 msgid "data bytes"
@@ -947,9 +911,9 @@ msgstr "poškozených"
 msgid "errors"
 msgstr "chyb"
 
-# %g%% packet loss
-msgid "packet loss"
-msgstr "ztráta paketů"
+# n% lost
+msgid "lost"
+msgstr "ztráta"
 
 # time %ld ms
 msgid "time"
@@ -970,10 +934,6 @@ msgstr "IPG/klouz.prům"
 # %ld/%ld packets
 msgid "packets"
 msgstr "paketů"
-
-# %d%% loss
-msgid "loss"
-msgstr "ztráta"
 
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
 msgid "min/avg/ewma/max"

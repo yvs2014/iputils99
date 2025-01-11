@@ -118,11 +118,11 @@ void setsock_filter(const state_t *rts,
 		warnx("%s: ip%c sock=%d raw=%d ident=0x%04x", _INFO,
 			rts->ip6 ? '6' : '4', sock->fd, sock->raw, rts->ident16);
 	if (setsockopt(sock->fd, SOL_SOCKET, SO_ATTACH_FILTER, prog, sizeof(*prog)) < 0)
-		err(errno, "%s", "setsockopt(SO_ATTACH_FILTER)");
+		err(errno, "setsockopt(%s)", "SO_ATTACH_FILTER");
 #ifdef SO_LOCK_FILTER
 	int on = 1;
 	if (setsockopt(sock->fd, SOL_SOCKET, SO_LOCK_FILTER, &on, sizeof(on)) < 0)
-		warn("%s", "setsockopt(SO_LOCK_FILTER)");
+		warn("setsockopt(%s)", "SO_LOCK_FILTER");
 #endif
 }
 
@@ -135,14 +135,14 @@ int setsock_bindopt(int fd, const char *device, socklen_t slen, unsigned mcast_f
 	errno = keep;
 	if ((rc < 0) && mcast_face) {
 		struct ip_mreqn imr = { .imr_ifindex = mcast_face };
-		rc = setsockopt(fd, SOL_IP, IP_MULTICAST_IF, &imr, sizeof(imr));
+		rc = setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF, &imr, sizeof(imr));
 	}
 	return rc;
 }
 
 inline void setsock_recverr(int fd, bool ip6) {
 	int on = 1;
-	if (setsockopt(fd, ip6 ? IPPROTO_IPV6 : SOL_IP,
+	if (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
 		ip6 ? IPV6_RECVERR : IP_RECVERR, &on, sizeof(on)) < 0)
 			warn("%s: setsockopt(%s)", _WARN,
 		ip6 ? "IPV6_RECVERR" : "IP_RECVERR");
@@ -160,13 +160,19 @@ void setsock_ttl(int fd, bool ip6, int ttl) {
 	int level = ip6 ? IPPROTO_IPV6 : IPPROTO_IP;
 	if (setsockopt(fd, level, ip6 ? IPV6_MULTICAST_HOPS : IP_MULTICAST_TTL,
 		&ttl, sizeof(ttl)) < 0)
-			err(errno, "%s", _("Cannot set multicast time-to-live"));
-	int uni = ip6 ? ttl : 1;
+			err(errno, "setsockopt(%s)", "MULTICAST_TTL");
 	if (setsockopt(fd, level, ip6 ? IPV6_UNICAST_HOPS : IP_TTL,
-		&uni, sizeof(uni)) < 0)
-			err(errno, "%s", ip6 ?
-		_("Cannot set unicast hop limit") :
-		_("Cannot set unicast time-to-live"));
+		&ttl, sizeof(ttl)) < 0)
+			err(errno, "setsockopt(%s)", "UNICAST_TTL");
+}
+
+int getsock_ttl(int fd, bool ip6) {
+	int ttl = -1;
+	socklen_t len = sizeof(ttl);
+	if (getsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
+		ip6 ? IPV6_UNICAST_HOPS : IP_TTL, &ttl, &len))
+			errno = 0;
+	return (ttl <= UCHAR_MAX) ? ttl : -1;
 }
 
 void pmtu_interval(state_t *rts) {
@@ -193,7 +199,7 @@ static void set_pktinfo(int level, int name, const void *val, socklen_t len, int
 	ENABLE_CAPABILITY_RAW;
 	if ((setsockopt(fd1, level, name, val, len) < 0) ||
 	    (setsockopt(fd2, level, name, val, len) < 0))
-		err(errno, "setsockopt(PKTINFO)");
+		err(errno, "setsockopt(%s)", "PKTINFO");
 	DISABLE_CAPABILITY_RAW;
 }
 #endif
@@ -216,17 +222,17 @@ void set_device(bool ip6, const char *device, socklen_t len,
 #endif
 	if ((setsock_bindopt(fd1, device, len, mcast_face) < 0) ||
 	    (setsock_bindopt(fd2, device, len, mcast_face) < 0))
-		err(errno, "setsockopt(BINDIFACE=%s)", device);
+		err(errno, "setsockopt(%s): %s", "BINDIFACE", device);
 }
 
 void mtudisc_n_bind(state_t *rts, const sock_t *sock) {
 	// called once at setup
 	if (rts->pmtudisc >= 0) {
-		int level = rts->ip6 ? IPPROTO_IPV6      : SOL_IP;
+		int level = rts->ip6 ? IPPROTO_IPV6      : IPPROTO_IP;
 		int name  = rts->ip6 ? IPV6_MTU_DISCOVER : IP_MTU_DISCOVER;
 		if (setsockopt(sock->fd, level, name,
 				&rts->pmtudisc, sizeof(rts->pmtudisc)) < 0)
-			err(errno, "MTU_DISCOVER");
+			err(errno, "setsockopt(%s)", "MTU_DISCOVER");
 	}
 	bool set_ident = (rts->custom_ident > 0) && !sock->raw;
 	if (set_ident) {
@@ -240,7 +246,7 @@ void mtudisc_n_bind(state_t *rts, const sock_t *sock) {
 			sizeof(struct sockaddr_in6) :
 			sizeof(struct sockaddr_in);
 		if (bind(sock->fd, (struct sockaddr *)&rts->source, socklen) < 0)
-			err(errno, "bind icmp socket");
+			err(errno, "bind(%s)", "icmp-socket");
 	}
 }
 
@@ -248,7 +254,7 @@ void cmp_srcdev(const state_t *rts) {
 	// called once before loop
 	struct ifaddrs *list = NULL;
 	if (getifaddrs(&list))
-		err(errno, "%s", _("getifaddrs() failed"));
+		err(errno, "%s", "getifaddrs()");
 	uint16_t af = rts->ip6 ? AF_INET6 : AF_INET;
 	size_t len  = rts->ip6 ? 16 : 4;
 	size_t off  = rts->ip6 ?
@@ -280,14 +286,14 @@ void set_estimate_buf(state_t *rts, int fd,
 		rts->sndbuf = ((icmplen + rts->datalen + 511) / 512) *
 			(iplen + extra + 2 * icmplen + DEFIPPAYLOAD + 160);
 	if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &rts->sndbuf, sizeof(rts->sndbuf)) < 0)
-		warn("setsockopt(SO_SNDBUF)");
+		warn("setsockopt(%s)", "SO_SNDBUF");
 	//
 	int hold = rts->sndbuf * rts->preload;
 	socklen_t size = sizeof(hold);
 	if (hold < (IP_MAXPACKET + 1))
 		hold = (IP_MAXPACKET + 1);
 	if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &hold, size) < 0)
-		warn("setsockopt(SO_RCVBUF)");
+		warn("setsockopt(%s)", "SO_RCVBUF");
 	//
 	int rcvbuf = hold;
 	if (!getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &hold, &size))

@@ -131,7 +131,7 @@ static inline void ping4_raw_ack(int fd) {
 		(1 << ICMP_ECHOREPLY)
 	)};
 	if (setsockopt(fd, SOL_RAW, ICMP_FILTER, &filt, sizeof(filt)) < 0)
-		err(errno, "setsockopt(ICMP_FILTER)");
+		err(errno, "setsockopt(%s)", "ICMP_FILTER");
 }
 
 // func_set:receive_error
@@ -160,7 +160,7 @@ static int ping4_receive_error(state_t *rts, const sock_t *sock) {
 	} else {
 		struct sock_extended_err *ee = NULL;
 		for (struct cmsghdr *m = CMSG_FIRSTHDR(&msg); m; m = CMSG_NXTHDR(&msg, m))
-			if ((m->cmsg_level == SOL_IP) && (m->cmsg_type == IP_RECVERR))
+			if ((m->cmsg_level == IPPROTO_IP) && (m->cmsg_type == IP_RECVERR))
 				ee = (struct sock_extended_err *)CMSG_DATA(m);
 		if (!ee)
 			abort();
@@ -238,10 +238,10 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 
 	/* Check the IP header */
 	struct iphdr *ip = (struct iphdr *)base;
-	size_t hlen   = 0;
-	int reply_ttl = 0;
 	uint8_t *opts = base;
-	ssize_t olen  = 0;
+	ssize_t olen  =  0;
+	size_t  hlen  =  0;
+	int away      = -1;
 	if (raw) {
 		hlen = ip->ihl * 4;
 		if ((received < (hlen + sizeof(struct icmphdr))) || (ip->ihl < 5)) {
@@ -251,16 +251,16 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 					_("Packet too short"), received, _("bytes"));
 			return true;
 		}
-		reply_ttl = ip->ttl;
+		away = ip->ttl;
 		opts += sizeof(struct iphdr);
 		olen = (ssize_t)hlen - sizeof(struct iphdr);
 	} else for (struct cmsghdr *c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c)) {
-		if (c->cmsg_level == SOL_IP)
+		if (c->cmsg_level == IPPROTO_IP)
 			switch (c->cmsg_type) {
 			case IP_TTL:
 				if (c->cmsg_len >= sizeof(int)) {
 					uint8_t *ttl = CMSG_DATA(c);
-					reply_ttl = (int)*ttl;
+					away = (int)*ttl;
 				}
 				break;
 			case IP_RETOPTS:
@@ -289,7 +289,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 		bool okay = (from->sin_addr.s_addr == sin->sin_addr.s_addr)
 			|| rts->multicast || rts->opt.broadcast;
 		if (gather_stats(rts, icmp, sizeof(*icmp), received,
-			ntohs(icmp->un.echo.sequence), reply_ttl, at, NULL,
+			ntohs(icmp->un.echo.sequence), away, at, NULL,
 			sprint_addr(from, sizeof(*from), rts->opt.resolve),
 			ack, !okay))
 				return false;
@@ -571,13 +571,13 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 			      (1 << ICMP_REDIRECT)	|
 			      (1 << ICMP_ECHOREPLY));
 		if (setsockopt(sock->fd, SOL_RAW, ICMP_FILTER, &filt, sizeof filt) < 0)
-			warn("%s: %s", _WARN, "setsockopt(ICMP_FILTER)");
+			warn("%s: setsockopt(%s)", _WARN, "ICMP_FILTER");
 	} else {
 		int on = 1;
-		if (setsockopt(sock->fd, SOL_IP, IP_RECVTTL, &on, sizeof(on)) < 0)
-			warn("%s: %s", _WARN, "setsockopt(IP_RECVTTL)");
-		if (setsockopt(sock->fd, SOL_IP, IP_RETOPTS, &on, sizeof(on)) < 0)
-			warn("%s: %s", _WARN, "setsockopt(IP_RETOPTS)");
+		if (setsockopt(sock->fd, IPPROTO_IP, IP_RECVTTL, &on, sizeof(on)) < 0)
+			warn("%s: setsockopt(%s)", _WARN, "IP_RECVTTL");
+		if (setsockopt(sock->fd, IPPROTO_IP, IP_RETOPTS, &on, sizeof(on)) < 0)
+			warn("%s: setsockopt(%s)", _WARN, "IP_RETOPTS");
 	}
 
 	int optlen = (rts->opt.rroute || rts->opt.timestamp || rts->opt.sourceroute) ?
@@ -599,11 +599,12 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 
 	if (rts->opt.noloop)
 		setsock_noloop(sock->fd, rts->ip6);
-	if (rts->opt.ttl)
+	if (rts->ttl >= 0)
 		setsock_ttl(sock->fd, rts->ip6, rts->ttl);
+	rts->ttl = getsock_ttl(sock->fd, rts->ip6);
 	if (rts->opt.connect_sk)
 		if (connect(sock->fd, (struct sockaddr *)whereto, sizeof(*whereto)) < 0)
-			err(errno, "connect");
+			err(errno, "%s", "connect()");
 
 	mtudisc_n_bind(rts, sock);
 	setsock_recverr(sock->fd, rts->ip6);

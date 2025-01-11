@@ -347,30 +347,6 @@ msgid "does not fragment"
 msgstr "tidak terfragmentasi"
 
 #
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "setsockopt(RAW_CHECKSUM) gagal - coba lanjutkan"
-
-#
-msgid "Cannot set multicast hop limit"
-msgstr "Tidak bisa mengatur batas hop multicast"
-
-#
-msgid "Cannot set unicast hop limit"
-msgstr "Tidak bisa mengatur batas hop unicast"
-
-#
-msgid "Cannot receive hop limit"
-msgstr "Tidak dapat menerima batas hop"
-
-#
-msgid "Cannot set flowlabel"
-msgstr "Tidak bisa mengatur flowlabel"
-
-#
-msgid "Cannot send flowinfo"
-msgstr "Tidak bisa mengirim flowinfo"
-
-#
 msgid "PING"
 msgstr ""
 
@@ -595,20 +571,8 @@ msgid "Cannot set broadcasting"
 msgstr "Tidak bisa mengatur broadcast"
 
 #
-msgid "getifaddrs() failed"
-msgstr "getifaddrs() gagal"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "tidak bisa menonaktifkan loopback multicast"
-
-#
-msgid "Cannot set multicast time-to-live"
-msgstr "Tidak bisa mengatur time-to-live multicast"
-
-#
-msgid "Cannot set unicast time-to-live"
-msgstr "Tidak bisa mengatur time-to-live unicast"
 
 # %ld data bytes
 msgid "data bytes"
@@ -894,9 +858,9 @@ msgstr "korup"
 msgid "errors"
 msgstr "error"
 
-# %g%% packet loss
-msgid "packet loss"
-msgstr "paket hilang"
+# n% lost
+msgid "lost"
+msgstr "hilang"
 
 # time %ld ms
 msgid "time"
@@ -917,10 +881,6 @@ msgstr ""
 # %ld/%ld packets
 msgid "packets"
 msgstr "paket"
-
-# %d%% loss
-msgid "loss"
-msgstr "hilang"
 
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
 msgid "min/avg/ewma/max"

@@ -397,30 +397,6 @@ msgid "does not fragment"
 msgstr ""
 
 #
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "setsockopt(RAW_CHECKSUM) 실패함 - 계속 시도"
-
-#
-msgid "Cannot set multicast hop limit"
-msgstr "다중 전송 건너뛰기 한계 값을 설정 할 수 없습니다"
-
-#
-msgid "Cannot set unicast hop limit"
-msgstr "단일 전송 건너뛰기 한계값을 설정 할 수 없습니다"
-
-#
-msgid "Cannot receive hop limit"
-msgstr "건너뛰기 제한을 받을 수 없습니다"
-
-#
-msgid "Cannot set flowlabel"
-msgstr "흐름부호(flowlabel)를 설정 할 수 없습니다"
-
-#
-msgid "Cannot send flowinfo"
-msgstr "흐름 정보를 보낼 수 없습니다"
-
-#
 msgid "PING"
 msgstr ""
 
@@ -649,20 +625,8 @@ msgid "Cannot set broadcasting"
 msgstr "광역전송 중에 설정 할 수 없습니다"
 
 #
-msgid "getifaddrs() failed"
-msgstr "getifaddrs() 실패함"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "광역전송 루프백을 비활성화 할 수 없습니다"
-
-#
-msgid "Cannot set multicast time-to-live"
-msgstr "광역전송 유효기간(ttl)을 설정 할 수 없습니다"
-
-#
-msgid "Cannot set unicast time-to-live"
-msgstr "단일전송 유효기간(ttl)을 설정 할 수 없습니다"
 
 # %ld data bytes
 msgid "data bytes"
@@ -948,9 +912,9 @@ msgstr "손상됨"
 msgid "errors"
 msgstr "오류"
 
-# %g%% packet loss
-msgid "packet loss"
-msgstr "패킷 손실"
+# n% lost
+msgid "lost"
+msgstr "손실"
 
 # time %ld ms
 msgid "time"
@@ -971,10 +935,6 @@ msgstr "ipg/지수가중평균"
 # %ld/%ld packets
 msgid "packets"
 msgstr "패킷"
-
-# %d%% loss
-msgid "loss"
-msgstr "손실"
 
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
 msgid "min/avg/ewma/max"

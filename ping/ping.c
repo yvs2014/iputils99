@@ -400,7 +400,6 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			break;
 		case 't':
 			rts->ttl = strtoll_or_err(optarg, _("Invalid argument"), 0, UCHAR_MAX);
-			rts->opt.ttl = true;
 			break;
 		case 'U':
 			rts->opt.latency = true;
@@ -433,21 +432,24 @@ int main(int argc, char **argv) {
 	run_fn ping_run[2] = { ping4_run, ping6_run };
 	//
 	state_t rts = {
+		.datalen      = DEFDATALEN,
+		.custom_ident = -1,
 		.interval     = 1000,
 		.preload      = 1,
 		.lingertime   = MAXWAIT * 1000,
 		.confirm_flag = MSG_CONFIRM,
+		.pmtudisc     = -1,
+		.ttl          = -1,
+		.min_away     = -1,
+		.max_away     = -1,
 		.tmin         = LONG_MAX,
 		.pipesize     = -1,
-		.datalen      = DEFDATALEN,
-		.custom_ident = -1,
-		.opt.resolve  = true,
-		.screen_width = USHRT_MAX,
 #ifdef HAVE_LIBCAP
 		.cap_raw      = CAP_NET_RAW,
 		.cap_admin    = CAP_NET_ADMIN,
 #endif
-		.pmtudisc     = -1,
+		.screen_width = USHRT_MAX,
+		.opt.resolve  = true,
 	};
 
 	rts.uid = limit_capabilities(&rts);

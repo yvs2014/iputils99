@@ -428,7 +428,7 @@ static inline int print_pack(struct run_state *rts,
 
 static int outgoing_device(struct run_state *const ctl, struct nlmsghdr *nh) {
 	if (nh->nlmsg_type != RTM_NEWROUTE) {
-		warnx("NETLINK new route message type");
+		warnx("NETLINK: %s", "new route message type");
 		return 1;
 	}
 
@@ -444,7 +444,7 @@ static int outgoing_device(struct run_state *const ctl, struct nlmsghdr *nh) {
 
 			ctl->device.ifindex = *oif;
 			if (!if_indextoname(ctl->device.ifindex, dev_name)) {
-				warn("if_indextoname()");
+				warn("if_indextoname(%u)", ctl->device.ifindex);
 				return 1;
 			}
 			ctl->device.name = dev_name;
@@ -485,11 +485,11 @@ static void netlink_query(struct run_state *const ctl, const int flags,
 	int ret = 1;
 	int fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
 	if (fd < 0) {
-		warn("socket(NETLINK_ROUTE)");
+		warn("socket(%s, %s)", "PF_NETLINK", "SOCK_RAW");
 		goto fail;
 	}
 	if (sendmsg(fd, &mh, 0) < 0) {
-		warn("sendmsg(NETLINK_ROUTE)");
+		warn("sendmsg(%s)", "NETLINK_ROUTE");
 		goto fail;
 	}
 
@@ -505,7 +505,7 @@ static void netlink_query(struct run_state *const ctl, const int flags,
 		case NLMSG_ERROR:
 		case NLMSG_OVERRUN:
 			errno = EIO;
-			warnx("NETLINK_ROUTE unexpected iov element");
+			warnx("NETLINK_ROUTE: %s", "unexpected iov element");
 			goto fail;
 		case NLMSG_DONE:
 			ret = 0;
@@ -533,7 +533,7 @@ static void guess_device(struct run_state *const ctl) {
 		addr_len = 16;
 		break;
 	default:
-		errx(EXIT_FAILURE, "unknown address family, please use -I option");
+		errx(EXIT_FAILURE, "%s", _("No suitable device found, please use -I option"));
 	}
 
 	struct {
@@ -594,7 +594,7 @@ static int check_ifflags(struct run_state const *const ctl, unsigned ifflags) {
 static int check_device(struct run_state *ctl) {
 	int rc = getifaddrs(&ctl->ifa0);
 	if (rc) {
-		warn("getifaddrs");
+		warn("%s", "getifaddrs()");
 		return -1;
 	}
 
@@ -624,7 +624,7 @@ static int check_device(struct run_state *ctl) {
 	if ((n == 1) && ctl->device.ifa) {
 		ctl->device.ifindex = if_nametoindex(ctl->device.ifa->ifa_name);
 		if (!ctl->device.ifindex) {
-			warn("if_nametoindex");
+			warn("if_nametoindex(%s)", ctl->device.ifa->ifa_name);
 			freeifaddrs(ctl->ifa0);
 			return -1;
 		}
@@ -674,12 +674,12 @@ static int event_loop(struct run_state *ctl) {
 	sigaddset(&mask, SIGQUIT);
 	sigaddset(&mask, SIGTERM);
 	if (sigprocmask(SIG_BLOCK, &mask, NULL) < 0) {
-		warn("sigprocmask()");
+		warn("%s", "sigprocmask()");
 		return 1;
 	}
 	int sfd = signalfd(-1, &mask, 0);
 	if (sfd < 0) {
-		warn("signalfd()");
+		warn("%s", "signalfd()");
 		return 1;
 	}
 	struct pollfd pfds[POLLFD_COUNT];
@@ -689,7 +689,7 @@ static int event_loop(struct run_state *ctl) {
 	/* interval timerfd */
 	int tfd = timerfd_create(CLOCK_MONOTONIC, 0);
 	if (tfd < 0) {
-		warn("timerfd_create()");
+		warn("%s", "timerfd_create()");
 		return 1;
 	}
 	struct itimerspec timerfd_vals = {
@@ -697,7 +697,7 @@ static int event_loop(struct run_state *ctl) {
 		.it_value.tv_sec     = ctl->interval,
 	};
 	if (timerfd_settime(tfd, 0, &timerfd_vals, NULL)) {
-		warn("timerfd_settime()");
+		warn("%s", "timerfd_settime()");
 		return 1;
 	}
 	pfds[POLLFD_TIMER].fd     = tfd;
@@ -706,7 +706,7 @@ static int event_loop(struct run_state *ctl) {
 	/* timeout timerfd */
 	int timeoutfd = timerfd_create(CLOCK_MONOTONIC, 0);
 	if (timeoutfd < 0) {
-		warn("timerfd_create()");
+		warn("%s", "timerfd_create()");
 		return 1;
 	}
 	struct itimerspec timeoutfd_vals = {
@@ -714,7 +714,7 @@ static int event_loop(struct run_state *ctl) {
 		.it_value.tv_sec    = ctl->timeout,
 	};
 	if (timerfd_settime(timeoutfd, 0, &timeoutfd_vals, NULL)) {
-		warn("timerfd_settime()");
+		warn("%s", "timerfd_settime()");
 		return 1;
 	}
 	pfds[POLLFD_TIMEOUT].fd     = timeoutfd;
@@ -733,7 +733,7 @@ static int event_loop(struct run_state *ctl) {
 			if (errno == EAGAIN)
 				continue;
 			if (errno)
-				warn("poll()");
+				warn("%s", "poll()");
 			exit_loop = 1;
 			continue;
 		}
@@ -747,9 +747,9 @@ static int event_loop(struct run_state *ctl) {
 				if (read(sfd, &sigval, sizeof(sigval)) != sizeof(sigval))
 				{
 					if (errno)
-						warn("read(signalfd)");
+						warn("read(%s)", "signalfd");
 					else
-						warnx("read(signalfd)");
+						warnx("read(%s)", "signalfd");
 					continue;
 				}
 				if ((sigval.ssi_signo == SIGINT ) ||
@@ -764,9 +764,9 @@ static int event_loop(struct run_state *ctl) {
 				if (read(tfd, &exp, sizeof(exp)) != sizeof(exp))
 				{
 					if (errno)
-						warn("read(timerfd)");
+						warn("read(%s)", "timerfd");
 					else
-						warnx("read(timerfd)");
+						warnx("read(%s)", "timerfd");
 					continue;
 				}
 				total_expires += exp;
@@ -786,7 +786,7 @@ static int event_loop(struct run_state *ctl) {
 				ssize_t size = recvfrom(ctl->socketfd, packet, sizeof(packet), 0,
 					      (struct sockaddr *)&from, &socklen);
 				if (size < 0) {
-					warn("recvfrom()");
+					warn("%s", "recvfrom()");
 					if (errno == ENETDOWN)
 						rc = 2;
 					continue;
@@ -904,7 +904,7 @@ int main(int argc, char **argv) {
 	arping_enable_capability_raw(&ctl);
 	ctl.socketfd = socket(PF_PACKET, SOCK_DGRAM, 0);
 	if (ctl.socketfd < 0)
-		err(errno, "socket()");
+		err(errno, "socket(%s, %s)", "PF_PACKET", "SOCK_DGRAM");
 	arping_disable_capability_raw(&ctl);
 
 	ctl.target = *argv;
@@ -954,7 +954,7 @@ int main(int argc, char **argv) {
 	if (!ctl.dad || ctl.source) {
 		int probe_fd = socket(AF_INET, SOCK_DGRAM, 0);
 		if (probe_fd < 0)
-			err(errno, "socket()");
+			err(errno, "socket(%s, %s)", "AF_INET", "SOCK_DGRAM");
 		if (ctl.device.name) {
 			arping_enable_capability_raw(&ctl);
 			if (setsockopt(probe_fd, SOL_SOCKET, SO_BINDTODEVICE, ctl.device.name,
@@ -967,19 +967,19 @@ int main(int argc, char **argv) {
 		if (ctl.source || ctl.gsrc.s_addr) {
 			saddr.sin_addr = ctl.gsrc;
 			if (bind(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
-				err(errno, "bind()");
+				err(errno, "%s", "bind()");
 		} else if (!ctl.dad) {
 			saddr.sin_port = htons(1025);
 			saddr.sin_addr = ctl.gdst;
 			if (!ctl.unsolicited) {
 				int on = 1;
 				if (setsockopt(probe_fd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof(on)) < 0)
-					warn("%s: %s", _WARN, "setsockopt(SO_DONTROUTE)");
+					warn("%s: setsockopt(%s)", _WARN, "SO_DONTROUTE");
 				if (connect(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
-					err(errno, "connect()");
+					err(errno, "%s", "connect()");
 				socklen_t alen = sizeof(saddr);
 				if (getsockname(probe_fd, (struct sockaddr *)&saddr, &alen) < 0)
-					err(errno, "getsockname()");
+					err(errno, "%s", "getsockname()");
 			}
 			ctl.gsrc = saddr.sin_addr;
 		}
@@ -994,7 +994,7 @@ int main(int argc, char **argv) {
 	{
 		socklen_t alen = sizeof(ctl.me);
 		if (getsockname(ctl.socketfd, (struct sockaddr *)&ctl.me, &alen) < 0)
-			err(errno, "getsockname()");
+			err(errno, "%s", "getsockname()");
 	}
 	if (((struct sockaddr_ll *)&ctl.me)->sll_halen == 0) {
 		if (!ctl.quiet)

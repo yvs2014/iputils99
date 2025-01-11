@@ -350,30 +350,6 @@ msgid "does not fragment"
 msgstr ""
 
 #
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "setsockopt(RAW_CHECKSUM) に失敗しました。再試行します"
-
-#
-msgid "Cannot set multicast hop limit"
-msgstr "マルチキャスト・ホップ数の上限を設定できません"
-
-#
-msgid "Cannot set unicast hop limit"
-msgstr "ユニキャスト・ホップ数の上限を設定できません"
-
-#
-msgid "Cannot receive hop limit"
-msgstr "ホップ数の上限を設定できません"
-
-#
-msgid "Cannot set flowlabel"
-msgstr "フローラベルを設定できません"
-
-#
-msgid "Cannot send flowinfo"
-msgstr "フロー情報を送信できません"
-
-#
 msgid "PING"
 msgstr ""
 
@@ -598,20 +574,8 @@ msgid "Cannot set broadcasting"
 msgstr "ブロードキャストを設定できません"
 
 #
-msgid "getifaddrs() failed"
-msgstr "getifaddrs() に失敗しました"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "マルチキャスト・ループバックを無効にできません"
-
-#
-msgid "Cannot set multicast time-to-live"
-msgstr "マルチキャストTTLを設定できません"
-
-#
-msgid "Cannot set unicast time-to-live"
-msgstr "ユニキャストTTLを設定できません"
 
 # %ld data bytes
 msgid "data bytes"
@@ -890,9 +854,9 @@ msgstr "破損"
 msgid "errors"
 msgstr "エラー"
 
-# %g%% packet loss
-msgid "packet loss"
-msgstr "パケット損失"
+# n% lost
+msgid "lost"
+msgstr "損失"
 
 # time %ld ms
 msgid "time"
@@ -913,10 +877,6 @@ msgstr ""
 # %ld/%ld packets
 msgid "packets"
 msgstr "パケット, パケット損失"
-
-# %d%% loss
-msgid "loss"
-msgstr "パケット損失"
 
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
 msgid "min/avg/ewma/max"

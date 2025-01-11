@@ -403,30 +403,6 @@ msgid "does not fragment"
 msgstr "fragmentiert nicht"
 
 #
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "Fehler bei setsockopt(RAW_CHECKSUM) - versuche fortzufahren"
-
-#
-msgid "Cannot set multicast hop limit"
-msgstr "Kann Multicast Hop Limit nicht setzen"
-
-#
-msgid "Cannot set unicast hop limit"
-msgstr "Kann Unicast Hop Limit nicht setzen"
-
-#
-msgid "Cannot receive hop limit"
-msgstr "Kann Hop Limit nicht empfangen"
-
-#
-msgid "Cannot set flowlabel"
-msgstr "Kann Flowlabel nicht setzen"
-
-#
-msgid "Cannot send flowinfo"
-msgstr "Kann Flussinformationen nicht senden"
-
-#
 msgid "PING"
 msgstr ""
 
@@ -651,20 +627,8 @@ msgid "Cannot set broadcasting"
 msgstr "kann broadcasting nicht einstellen"
 
 #
-msgid "getifaddrs() failed"
-msgstr "getifaddrs() fehlgeschlagen"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "Kann Multicast-Loopback nicht deaktivieren"
-
-#
-msgid "Cannot set multicast time-to-live"
-msgstr "Kann Multicast TTL nicht einstellen"
-
-#
-msgid "Cannot set unicast time-to-live"
-msgstr "Kann Unicast TTL nicht einstellen"
 
 # %ld data bytes
 msgid "data bytes"
@@ -950,9 +914,9 @@ msgstr "beschädigt"
 msgid "errors"
 msgstr "Fehler"
 
-# %g%% packet loss
-msgid "packet loss"
-msgstr "Paketverlust"
+# n% lost
+msgid "lost"
+msgstr "Verlust"
 
 # time %ld ms
 msgid "time"
@@ -973,10 +937,6 @@ msgstr ""
 # %ld/%ld packets
 msgid "packets"
 msgstr "Pakete"
-
-# %d%% loss
-msgid "loss"
-msgstr "Verlust"
 
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
 msgid "min/avg/ewma/max"

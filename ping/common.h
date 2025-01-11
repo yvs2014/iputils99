@@ -89,7 +89,6 @@ typedef struct ping_bool_opts {
 	bool sourceroute;
 	bool strictsource;
 	bool timestamp;
-	bool ttl;
 	bool verbose;
 	bool connect_sk;
 	bool broadcast;
@@ -123,9 +122,11 @@ typedef struct ping_state {
 	int confirm_flag;
 	const char *device;
 	int pmtudisc;
-	int ttl;
 	unsigned mark;
-	//
+	// ttl related
+	int ttl;
+	int min_away;
+	int max_away;
 	// timing
 	bool timing;			/* flag to do timing */
 	long tmin;			/* minimum round trip time */
@@ -142,27 +143,24 @@ typedef struct ping_state {
 	struct sockaddr_storage firsthop;
 	uint8_t qos;				/* TOS/TCLASS */
 	bool multicast;
-	//
 #ifdef HAVE_LIBCAP
 	cap_value_t cap_raw;
 	cap_value_t cap_admin;
 #endif
-	//
-	// boolean options
-	struct ping_bool_opts opt;
-	//
-	/* Used by ping4 only */
-	uint8_t ipt_flg;		// ip option: timestamp flags
-	unsigned short screen_width;	// termios.h: ws_col type
-	route_t *route;     // allocated in ping4
-	//
-	/* Used by ping6 only */
+	// ping4 only
+	uint8_t ipt_flg;	/* ip option: timestamp flags */
+	route_t *route;		/* allocated in ping4 */
+	// ping6 only
 	uint32_t flowlabel;
 	bool subnet_router_anycast;
-	cmsg_t *cmsg;       // allocated in ping6
+	cmsg_t *cmsg;		/* allocated in ping6 */
 #ifdef ENABLE_NI6
-	struct ping_ni *ni; // allocated with -N option
+	struct ping_ni *ni;	/* allocated with -N option */
 #endif
+	// termios.h: ws_col type
+	unsigned short screen_width;
+	// boolean options
+	struct ping_bool_opts opt;
 } state_t;
 
 typedef struct fnset_t {
@@ -208,7 +206,7 @@ void print_headline(const state_t *rts, size_t nodatalen);
 int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
 	 const fnset_t* fnset);
 bool gather_stats(state_t *rts, const void *icmp, int icmplen,
-	size_t received, uint16_t seq, int hops, const struct timeval *at,
+	size_t received, uint16_t seq, int away, const struct timeval *at,
 	void (*print)(bool ip6, const uint8_t *hdr, size_t len),
 	const char *from, bool ack, bool wrong);
 void fill_payload(int quiet, const char *str, unsigned char *payload, size_t len);

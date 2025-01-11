@@ -425,32 +425,8 @@ msgid "does not fragment"
 msgstr "не фрагментується"
 
 #
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "помилка setsockopt(RAW_CHECKSUM) - намагаємося продовжити"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "Неможливо вимкнути петльовий інтерфейс групової розсилки"
-
-#
-msgid "Cannot set multicast hop limit"
-msgstr "Не вдалося обмежити кількість переходів для групової розсилки"
-
-#
-msgid "Cannot set unicast hop limit"
-msgstr "Не вдалося обмежити кількість переходів"
-
-#
-msgid "Cannot receive hop limit"
-msgstr "Не вдалося отримати максимальну кількість переходів"
-
-#
-msgid "Cannot set flowlabel"
-msgstr "Не вдалося встановити відмітку потоку"
-
-#
-msgid "Cannot send flowinfo"
-msgstr "Не вдалося надіслати відомості щодо потоку"
 
 #
 msgid "PING"
@@ -707,18 +683,6 @@ msgstr "Пінгування всієї підмережі"
 #
 msgid "Cannot set broadcasting"
 msgstr "Не вдалося встановити пінгування всієї підмережі"
-
-#
-msgid "getifaddrs() failed"
-msgstr "помилка getifaddrs()"
-
-#
-msgid "Cannot set multicast time-to-live"
-msgstr "Не вдалося встановити TTL для групової розсилки"
-
-#
-msgid "Cannot set unicast time-to-live"
-msgstr "Не вдалося встановити TTL"
 
 # %ld data bytes
 msgid "data bytes"
@@ -1004,13 +968,17 @@ msgstr "пошкоджено"
 msgid "errors"
 msgstr "помилок"
 
-# %g%% packet loss
-msgid "packet loss"
-msgstr "пакетів втрачено"
+# n% lost
+msgid "lost"
+msgstr "втрачено"
 
 # time %ld ms
 msgid "time"
 msgstr "час"
+
+# %d hops away
+msgid "hops away"
+msgstr "переходів"
 
 # rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
 msgid "rtt min/avg/max/mdev"
@@ -1027,10 +995,6 @@ msgstr "IPG/EWMA"
 # %ld/%ld packets
 msgid "packets"
 msgstr "пакетів"
-
-# %d%% loss
-msgid "loss"
-msgstr "втрачено"
 
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
 msgid "min/avg/ewma/max"

@@ -390,30 +390,6 @@ msgid "does not fragment"
 msgstr ""
 
 #
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "setsockopt(RAW_CHECKSUM) 失败 - 尝试继续"
-
-#
-msgid "Cannot set multicast hop limit"
-msgstr "无法设置组播跃点限制"
-
-#
-msgid "Cannot set unicast hop limit"
-msgstr "无法设置单播跃点限制"
-
-#
-msgid "Cannot receive hop limit"
-msgstr "无法接收跃点限制"
-
-#
-msgid "Cannot set flowlabel"
-msgstr "无法设置流标签"
-
-#
-msgid "Cannot send flowinfo"
-msgstr "无法发送流信息"
-
-#
 msgid "PING"
 msgstr ""
 
@@ -636,20 +612,8 @@ msgid "Cannot set broadcasting"
 msgstr "不能设置广播"
 
 #
-msgid "getifaddrs() failed"
-msgstr "getifaddrs() 失败"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "无法禁用组播环回"
-
-#
-msgid "Cannot set multicast time-to-live"
-msgstr "不能设置多播 TTL"
-
-#
-msgid "Cannot set unicast time-to-live"
-msgstr "不能设置单拨的 TTL"
 
 # %ld data bytes
 msgid "data bytes"
@@ -935,9 +899,9 @@ msgstr "损坏"
 msgid "errors"
 msgstr "错误"
 
-# %g%% packet loss
-msgid "packet loss"
-msgstr "包丢失"
+# n% lost
+msgid "lost"
+msgstr "丢失"
 
 # time %ld ms
 msgid "time"
@@ -958,10 +922,6 @@ msgstr ""
 # %ld/%ld packets
 msgid "packets"
 msgstr "个包"
-
-# %d%% loss
-msgid "loss"
-msgstr "丢失"
 
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
 msgid "min/avg/ewma/max"

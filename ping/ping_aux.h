@@ -18,6 +18,7 @@ void cmp_srcdev(const state_t *rts);
 void setsock_recverr(int fd, bool ip6);
 void setsock_noloop(int fd, bool ip6);
 void setsock_ttl(int fd, bool ip6, int ttl);
+int  getsock_ttl(int fd, bool ip6);
 void pmtu_interval(state_t *rts);
 void set_estimate_buf(state_t *rts, int fd,
 	size_t iplen, size_t extra, size_t icmplen);

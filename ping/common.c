@@ -64,12 +64,20 @@ static uid_t euid;
 #include <netinet/icmp6.h>
 #include <linux/sockios.h>
 
-#define MIN_USER_MS		10	// Minimal interval for non-root users, in milliseconds
-#define MIN_GAP_MS		10	// Minimal interpacket gap, in milliseconds
+#define MIN_USER_MS	10	// Minimal interval for non-root users, in milliseconds
+#define MIN_GAP_MS	10	// Minimal interpacket gap, in milliseconds
 #define SCHINT(a)	(((a) < MIN_GAP_MS) ? MIN_GAP_MS : (a))
 
-#define	BITMAP_ARR(bit)	(rts->rcvd_tbl.bitmap[(bit) >> BITMAP_SHIFT])		// Identify word in array
-#define	BITMAP_BIT(bit)	(((bitmap_t)1) << ((bit) & ((1 << BITMAP_SHIFT) - 1)))	// Identify bit in word
+#define BITMAP_ARR(bit)	(rts->rcvd_tbl.bitmap[(bit) >> BITMAP_SHIFT])		// Identify word in array
+#define BITMAP_BIT(bit)	(((bitmap_t)1) << ((bit) & ((1 << BITMAP_SHIFT) - 1)))	// Identify bit in word
+
+#ifndef NI_MAXADDR
+#define NI_MAXADDR	40	// Enough for the longest ip6addr in chars (39 + \0)
+#endif
+#ifndef NI_MAXNAME
+#define NI_MAXNAME	NI_MAXHOST
+#endif
+
 
 static inline bitmap_t rcvd_test(const state_t *rts, uint16_t seq) {
 	unsigned bit = seq % MAX_DUP_CHK;
@@ -488,7 +496,7 @@ void sock_setmark(state_t *rts, int fd) {
 inline void sock_settos(int fd, int qos, bool ip6) {
 	if (qos && (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
 	    ip6 ? IPV6_TCLASS : IP_TOS, &qos, sizeof(qos)) < 0))
-		err(errno, "setsockopt(QoS)");
+		err(errno, "setsockopt(%s)", "QoS");
 }
 
 void print_headline(const state_t *rts, size_t nodatalen) {
@@ -593,11 +601,8 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 }
 
 
-/* Print out statistics, and give up */
+/* Print out statistics */
 static bool finish(const state_t *rts) {
-	struct timespec tv = {0};
-	timespecsub(&rts->cur_time, &rts->start_time, &tv);
-
 	putchar('\n');
 	fflush(stdout);
 	printf("--- %s%s ---\n", rts->hostname, _(" ping statistics"));
@@ -609,13 +614,16 @@ static bool finish(const state_t *rts) {
 		printf(", +%ld %s", rts->nchecksum, _("corrupted"));
 	if (rts->nerrors)
 		printf(", +%ld %s", rts->nerrors,   _("errors"));
-
-	if (rts->ntransmitted) {
-		printf(", %g%% %s",
-			((rts->ntransmitted - rts->nreceived) * 100.) / rts->ntransmitted,
-			_("packet loss"));
-		printf(", %s %ld %s", _("time"),
-			1000 * tv.tv_sec + (tv.tv_nsec + 500000) / 1000000, _("ms"));
+	if (rts->ntransmitted)
+		printf(", %g%% %s", (rts->ntransmitted - rts->nreceived) * 100.
+			/ rts->ntransmitted, _("lost"));
+	if (!rts->opt.broadcast && (rts->ttl >= 0) && (rts->min_away >= 0)
+		&& /* not altered somewhere */ (rts->ttl >= rts->max_away)) {
+		if (rts->min_away == rts->max_away)
+			printf(", %d %s", rts->ttl - rts->min_away, _("hops away"));
+		else
+			printf(", %d-%d %s", rts->ttl - rts->max_away,
+				rts->ttl - rts->min_away, _("hops away"));
 	}
 	putchar('\n');
 
@@ -649,6 +657,8 @@ static bool finish(const state_t *rts) {
 			&& rts->nreceived && (rts->ntransmitted > 1)) {
 		if (comma)
 			printf("%c ", comma);
+		struct timespec tv = {0};
+		timespecsub(&rts->cur_time, &rts->start_time, &tv);
 		int ipg = (1000000 * (long long)tv.tv_sec + tv.tv_nsec / 1000) / (rts->ntransmitted - 1);
 		printf("%s = %d.%03d/%d.%03d %s", _("ipg/ewma"),
 		       ipg      / 1000,            ipg % 1000,
@@ -665,12 +675,12 @@ static void fin_status(const state_t *rts) {
 	if (in_fin_status)
 		return;
 	in_fin_status = true;
-	int loss = rts->ntransmitted ?
+	int lost = rts->ntransmitted ?
 		(100ll * (rts->ntransmitted - rts->nreceived)) / rts->ntransmitted
 		: 0;
 	// stderr due to signals
 	fprintf(stderr, "%ld/%ld %s", rts->nreceived, rts->ntransmitted, _("packets"));
-	fprintf(stderr, ", %d%% %s", loss, _("loss"));
+	fprintf(stderr, ", %d%% %s", lost, _("lost"));
 	if (rts->nreceived && rts->timing) {
 		long tavg = rts->tsum / (rts->nreceived + rts->nrepeats);
 		fprintf(stderr, ", %s = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld %s",
@@ -872,7 +882,7 @@ int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
 }
 
 bool stats_noflush(state_t *rts, const uint8_t *icmp, int icmplen,
-	size_t received, uint16_t seq, int hops, const struct timeval *at,
+	size_t received, uint16_t seq, int away, const struct timeval *at,
 	void (*print)(bool ip6, const uint8_t *hdr, size_t len),
 	const char *from, bool ack, bool wrong)
 {
@@ -934,6 +944,15 @@ bool stats_noflush(state_t *rts, const uint8_t *icmp, int icmplen,
 		rcvd_set(rts, seq);
 	rts->confirm = rts->confirm_flag;
 
+	if (away >= 0) { // keep ttl distanse
+		if (rts->min_away < 0)
+			rts->min_away = rts->max_away = away;
+		else if (away < rts->min_away)
+			rts->min_away = away;
+		else if (away > rts->max_away)
+			rts->max_away = away;
+	}
+
 	if (rts->opt.quiet)
 		return true;
 	if (rts->opt.flood) {
@@ -953,27 +972,15 @@ bool stats_noflush(state_t *rts, const uint8_t *icmp, int icmplen,
 		printf("%s=%u", _("icmp_seq"), seq);
 	if (rts->opt.verbose)
 		printf(" %s=%u", _("ident"), ntohs(rts->ident16));
-	if (hops >= 0)
-		printf(" %s=%d", _("ttl"), hops);
+	if (away >= 0)
+		printf(" %s=%d", _("ttl"), away);
 	if (received < (sizeof(struct icmphdr) + rts->datalen)) {
 		printf(" (%s)\n", _("truncated"));
 		return true;
 	}
 
-	if (rts->timing) {
-		printf(" %s=", _("time"));
-		if      (triptime >= (100000 - 50))
-			printf("%ld", (triptime + 500) / 1000);
-		else if (triptime >= (10000 - 5))
-			printf("%ld.%01ld", (triptime + 50) / 1000,
-			       ((triptime + 50) % 1000) / 100);
-		else if (triptime >= 1000)
-			printf("%ld.%02ld", (triptime + 5) / 1000,
-			       ((triptime + 5) % 1000) / 10);
-		else
-			printf("%ld.%03ld", triptime / 1000, triptime % 1000);
-		printf(" %s", _("ms"));
-	}
+	if (rts->timing)
+		printf(" %s=%.3f %s", _("time"), triptime / 1000., _("ms"));
 	char* exclame[3] = {
 		(dup && (!rts->multicast || rts->opt.verbose)) ? "DUP" : NULL,
 		ack ? NULL : "BAD CHECKSUM",
@@ -1006,11 +1013,11 @@ bool stats_noflush(state_t *rts, const uint8_t *icmp, int icmplen,
 }
 
 inline bool gather_stats(state_t *rts, const void *icmp, int icmplen,
-	size_t received, uint16_t seq, int hops, const struct timeval *at,
+	size_t received, uint16_t seq, int away, const struct timeval *at,
 	void (*print)(bool ip6, const uint8_t *hdr, size_t len),
 	const char *from, bool ack, bool wrong)
 {
-	bool finished = stats_noflush(rts, icmp, icmplen, received, seq, hops,
+	bool finished = stats_noflush(rts, icmp, icmplen, received, seq, away,
 		at, print, from, ack, wrong);
 	if (finished)
 		fflush(stdout);
@@ -1041,33 +1048,34 @@ double strtod_or_err(const char *str, const char *errmesg,
 	errx(EXIT_FAILURE, "%s: %s", errmesg, str);
 }
 
-/* Return a host address optionally with a hostname */
+/* Return hostaddr and hostname (optionally), note: last request is cached */
 const char *sprint_addr(const void *sa, socklen_t salen, bool resolve) {
-	static char buffer[2 * NI_MAXHOST + 4] = ""; // "NI_MAXHOST (NI_MAXHOST)"
+	// "NI_MAXNAME (NI_MAXADDR)"
+	static char nicached[NI_MAXNAME + 2 + NI_MAXADDR + 1];
 	static struct sockaddr_storage last_sa = {0};
 	static socklen_t last_salen = 0;
 	if ((salen == last_salen) && !memcmp(sa, &last_sa, salen))
-		return buffer;
+		return nicached;
 	memcpy(&last_sa, sa, salen);
 	last_salen = salen;
 	in_print_addr = !setjmp(label_in_print_addr);
-	char address[NI_MAXHOST] = "";
-	getnameinfo(sa, salen, address, sizeof(address), NULL, 0, NI_FLAGS | NI_NUMERICHOST);
+	char addr[NI_MAXADDR] = {0};
+	getnameinfo(sa, salen, addr, sizeof(addr), NULL, 0, NI_FLAGS | NI_NUMERICHOST);
 	//
-	char name[NI_MAXHOST] = "";
+	char name[NI_MAXNAME] = {0};
 	if (resolve && !exiting)
 		getnameinfo(sa, salen, name, sizeof(name), NULL, 0, NI_FLAGS);
 	//
 	int rc = -1;
-	if (*name && strncmp(name, address, NI_MAXHOST))
-		rc = snprintf(buffer, sizeof(buffer), "%s (%s)", name, address);
+	if (*name && strncmp(name, addr, NI_MAXADDR))
+		rc = snprintf(nicached, sizeof(nicached), "%s (%s)", name, addr);
 	else
-		rc = snprintf(buffer, sizeof(buffer), "%s", address);
+		rc = snprintf(nicached, sizeof(nicached), "%s", addr);
 	if (rc < 0)
-		buffer[0] = 0;
+		nicached[0] = 0;
 	//
 	in_print_addr = false;
-	return buffer;
+	return nicached;
 }
 
 inline void acknowledge(state_t *rts, uint16_t seq) {

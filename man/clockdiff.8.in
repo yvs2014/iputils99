@@ -22,12 +22,12 @@
 .SH "NAME"
 clockdiff \- measure clock difference between hosts
 .SH "SYNOPSIS"
-\fBclockdiff\fR [\fB\-o\fR] [\fB\-o1\fR] [\fB\-\-time\-format\ \fR\fB\fIctime\ iso\fR\fR] [\fB\-V\fR] TARGET
+\fBclockdiff\fR [\fB\-o\fR] [\fB\-o1\fR] [\fB\-\-time\-format\fR \fB\fIctime|iso\fR\fR] [\fB\-V\fR] TARGET
 .SH "DESCRIPTION"
 .PP
 \fBclockdiff\fR
 Measures clock difference between us and
-\fIdestination\fR
+\fITARGET\fR
 with 1 msec resolution using ICMP TIMESTAMP [2] packets or, optionally, IP TIMESTAMP option [3] added to ICMP ECHO\&. [1]
 .SH "OPTIONS"
 .PP

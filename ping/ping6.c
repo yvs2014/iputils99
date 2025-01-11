@@ -236,7 +236,7 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 	struct sockaddr_in6 *from = addr;
 	uint8_t *base = msg->msg_iov->iov_base;
 
-	int hops = -1;
+	int away = -1;
 	for (struct cmsghdr *c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c)) {
 		if (c->cmsg_level == IPPROTO_IPV6)
 			switch (c->cmsg_type) {
@@ -245,7 +245,7 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 			case IPV6_2292HOPLIMIT:
 #endif
 				if (c->cmsg_len >= CMSG_LEN(sizeof(int)))
-					memcpy(&hops, CMSG_DATA(c), sizeof(hops));
+					memcpy(&away, CMSG_DATA(c), sizeof(away));
 				break;
 			default: break;
 			}
@@ -269,7 +269,7 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 		    || rts->multicast || rts->subnet_router_anycast;
 		const char *peer = sprint_addr(from, sizeof(*from), rts->opt.resolve);
 		if (gather_stats(rts, icmp, sizeof(*icmp), received,
-			ntohs(icmp->icmp6_seq), hops, at, NULL,
+			ntohs(icmp->icmp6_seq), away, at, NULL,
 			peer, true, !okay))
 				return false;
 	}
@@ -283,7 +283,7 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 			return true;
 		const char *peer = sprint_addr(from, sizeof(*from), rts->opt.resolve);
 		if (gather_stats(rts, (uint8_t *)icmp, sizeof(*icmp), received,
-			seq, hops, at, print6_ni_reply, peer, true, false))
+			seq, away, at, print6_ni_reply, peer, true, false))
 				return false;
 	}
 #endif
@@ -456,7 +456,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 			DISABLE_CAPABILITY_RAW;
 			if (rc < 0) {
 				errno = keep;
-				err(errno, "SO_BINDTODEVICE %s", rts->device);
+				err(errno, "setsockopt(%s): %s", "SO_BINDTODEVICE", rts->device);
 			}
 		}
 	}
@@ -468,7 +468,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		int csum_offset = 2;
 		if (setsockopt(sock->fd, SOL_RAW, IPV6_CHECKSUM, &csum_offset, sizeof(csum_offset)) < 0)
 		/* checksum should be enabled by default and setting this option might fail anyway */
-			warn("%s", _("setsockopt(RAW_CHECKSUM) failed - try to continue"));
+			warn("setsockopt(%s)", "RAW_CHECKSUM");
 		/* select icmp echo reply as icmp type to receive */
 		struct icmp6_filter filter = {0};
 		ICMP6_FILTER_SETBLOCKALL(&filter);
@@ -479,13 +479,14 @@ int ping6_run(state_t *rts, int argc, char **argv,
 #endif
 			ICMP6_FILTER_SETPASS(ICMP6_ECHO_REPLY, &filter);
 		if (setsockopt(sock->fd, IPPROTO_ICMPV6, ICMP6_FILTER, &filter, sizeof(filter)) < 0)
-			err(errno, "setsockopt(ICMP6_FILTER)");
+			err(errno, "setsockopt(%s)", "ICMP6_FILTER");
 	}
 
 	if (rts->opt.noloop)
 		setsock_noloop(sock->fd, rts->ip6);
-	if (rts->opt.ttl)
+	if (rts->ttl >= 0)
 		setsock_ttl(sock->fd, rts->ip6, rts->ttl);
+	rts->ttl = getsock_ttl(sock->fd, rts->ip6);
 
 	{ int on = 1;
 	  if (
@@ -495,7 +496,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 #else
 	(setsockopt(sock->fd, IPPROTO_IPV6, IPV6_HOPLIMIT,     &on, sizeof(on)) < 0)
 #endif
-	  ) err(errno, "%s", _("Cannot receive hop limit"));
+	  ) err(errno, "setsockopt(%s)", "IPV6_RECVHOPLIMIT, enable");
 	}
 
 	if (rts->opt.flowinfo) {
@@ -508,11 +509,11 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		freq->flr_share  = IPV6_FL_S_EXCL;
 		memcpy(&freq->flr_dst, &whereto->sin6_addr, sizeof(whereto->sin6_addr));
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWLABEL_MGR, freq, sizeof(*freq)) < 0)
-			err(errno, "%s", _("Cannot set flowlabel"));
+			err(errno, "setsockopt(%s)", "IPV6_FLOWLABEL");
 		whereto->sin6_flowinfo = rts->flowlabel = freq->flr_label;
 		int on = 1;
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND, &on, sizeof(on)) < 0)
-			err(errno, "%s", _("Cannot send flowinfo"));
+			err(errno, "setsockopt(%s)", "IPV6_FLOWINFO");
 	}
 
 	rts->subnet_router_anycast = get_subnet_anycast(whereto);

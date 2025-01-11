@@ -337,31 +337,7 @@ msgid "does not fragment"
 msgstr ""
 
 #
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr ""
-
-#
 msgid "Cannot disable multicast loopback"
-msgstr ""
-
-#
-msgid "Cannot set multicast hop limit"
-msgstr ""
-
-#
-msgid "Cannot set unicast hop limit"
-msgstr ""
-
-#
-msgid "Cannot receive hop limit"
-msgstr ""
-
-#
-msgid "Cannot set flowlabel"
-msgstr ""
-
-#
-msgid "Cannot send flowinfo"
 msgstr ""
 
 #
@@ -619,19 +595,7 @@ msgid "Cannot set broadcasting"
 msgstr ""
 
 #
-msgid "getifaddrs() failed"
-msgstr ""
-
-#
 msgid "Cannot disable multicast loopback"
-msgstr ""
-
-#
-msgid "Cannot set multicast time-to-live"
-msgstr ""
-
-#
-msgid "Cannot set unicast time-to-live"
 msgstr ""
 
 # %ld data bytes
@@ -918,12 +882,16 @@ msgstr ""
 msgid "errors"
 msgstr ""
 
-# %g%% packet loss
-msgid "packet loss"
+# n% lost
+msgid "lost"
 msgstr ""
 
 # time %ld ms
 msgid "time"
+msgstr ""
+
+# %d hops away
+msgid "hops away"
 msgstr ""
 
 # rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
@@ -940,10 +908,6 @@ msgstr ""
 
 # %ld/%ld packets
 msgid "packets"
-msgstr ""
-
-# %d%% loss
-msgid "loss"
 msgstr ""
 
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms

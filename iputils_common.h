@@ -14,9 +14,6 @@
 #define _(Text) Text
 #endif
 
-#ifndef SOL_IPV6
-# define SOL_IPV6 IPPROTO_IPV6
-#endif
 #ifndef IP_PMTUDISC_DO
 # define IP_PMTUDISC_DO		2
 #endif

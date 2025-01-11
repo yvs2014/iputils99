@@ -392,30 +392,6 @@ msgid "does not fragment"
 msgstr ""
 
 #
-msgid "setsockopt(RAW_CHECKSUM) failed - try to continue"
-msgstr "setsockopt(RAW_CHECKSUM) başarısız - devam etmeyi dene"
-
-#
-msgid "Cannot set multicast hop limit"
-msgstr "Çok noktaya yayın atlama sınırı ayarlanamıyor"
-
-#
-msgid "Cannot set unicast hop limit"
-msgstr "Tek noktaya yayın atlama sınırı ayarlanamıyor"
-
-#
-msgid "Cannot receive hop limit"
-msgstr "Atlama sınırı alınamıyor"
-
-#
-msgid "Cannot set flowlabel"
-msgstr "Akış etiketi ayarlanamıyor"
-
-#
-msgid "Cannot send flowinfo"
-msgstr "Akış bilgisi gönderilemiyor"
-
-#
 msgid "PING"
 msgstr ""
 
@@ -640,20 +616,8 @@ msgid "Cannot set broadcasting"
 msgstr "Genel yayın ayarlanamıyor"
 
 #
-msgid "getifaddrs() failed"
-msgstr "getifaddrs() başarısız"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "Çok noktaya yayın geri dönüşü devre dışı bırakılamıyor"
-
-#
-msgid "Cannot set multicast time-to-live"
-msgstr "Çok noktaya yayın yaşam süresi ayarlanamıyor"
-
-#
-msgid "Cannot set unicast time-to-live"
-msgstr "Tek noktaya yayın yaşam süresi ayarlanamıyor"
 
 # %ld data bytes
 msgid "data bytes"
@@ -939,9 +903,9 @@ msgstr "bozuk"
 msgid "errors"
 msgstr "hata"
 
-# %g%% packet loss
-msgid "packet loss"
-msgstr "paket kaybı"
+# n% lost
+msgid "lost"
+msgstr "kayıp"
 
 # time %ld ms
 msgid "time"
@@ -962,10 +926,6 @@ msgstr ""
 # %ld/%ld packets
 msgid "packets"
 msgstr "paket"
-
-# %d%% loss
-msgid "loss"
-msgstr "kayıp"
 
 # min/avg/ewma/max = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld ms
 msgid "min/avg/ewma/max"

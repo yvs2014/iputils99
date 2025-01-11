@@ -3,17 +3,20 @@
 # local edition: yvs, 2024
 
 cmds = []
+if build_ping
+  cmds += ping
+endif
+if build_arping
+  cmds += arping
+endif
 if build_clockdiff
   cmds += clockdiff
 endif
 if build_tracepath
   cmds += tracepath
 endif
-if build_arping
-  cmds += arping
-endif
-if build_ping
-  cmds += ping
+if build_gai
+  cmds += gai
 endif
 
 args = ['-V']

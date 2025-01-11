@@ -192,7 +192,7 @@ restart:
 		cmsg = CMSG_NXTHDR(&msg, cmsg))
 	{
 		switch (cmsg->cmsg_level) {
-		case SOL_IPV6:
+		case IPPROTO_IPV6:
 			switch (cmsg->cmsg_type) {
 			case IPV6_RECVERR:
 				e = (struct sock_extended_err *)CMSG_DATA(cmsg);
@@ -207,7 +207,7 @@ restart:
 				printf("cmsg6:%d\n ", cmsg->cmsg_type);
 			}
 			break;
-		case SOL_IP:
+		case IPPROTO_IP:
 			switch (cmsg->cmsg_type) {
 			case IP_RECVERR:
 				e = (struct sock_extended_err *)CMSG_DATA(cmsg);
@@ -519,25 +519,32 @@ int main(int argc, char **argv) {
 
 		{ // path mtu
 		  int opt = IPV6_PMTUDISC_PROBE;
-		  if (setsockopt(rts.socket_fd, SOL_IPV6, IPV6_MTU_DISCOVER, &opt, sizeof(opt)) < 0) {
-		    opt = IPV6_PMTUDISC_DO;
-		    if (setsockopt(rts.socket_fd, SOL_IPV6, IPV6_MTU_DISCOVER, &opt, sizeof(opt)) < 0)
-			err(errno, "IPV6_MTU_DISCOVER");
+		  if (setsockopt(rts.socket_fd, IPPROTO_IPV6, IPV6_MTU_DISCOVER,
+				&opt, sizeof(opt)) < 0) {
+			opt = IPV6_PMTUDISC_DO;
+			if (setsockopt(rts.socket_fd, IPPROTO_IPV6, IPV6_MTU_DISCOVER,
+					&opt, sizeof(opt)) < 0)
+				err(errno, "setsockopt(%s)", "IPV6_MTU_DISCOVER");
 		  }
 		}
 		{ // recv error
 		  int on = 1;
-		  if (setsockopt(rts.socket_fd, SOL_IPV6, IPV6_RECVERR, &on, sizeof(on)) < 0)
-			err(errno, "IPV6_RECVERR");
+		  if (setsockopt(rts.socket_fd, IPPROTO_IPV6, IPV6_RECVERR, &on, sizeof(on)) < 0)
+			err(errno, "setsockopt(%s)", "IPV6_RECVERR");
 		}
 		{ // hop limit
 		  int on = 1;
-		  if ((setsockopt(rts.socket_fd, SOL_IPV6, IPV6_HOPLIMIT, &on, sizeof(on)) < 0)
+		  if (
 #ifdef IPV6_RECVHOPLIMIT
-		    && (setsockopt(rts.socket_fd, SOL_IPV6, IPV6_2292HOPLIMIT, &on, sizeof(on)) < 0)
+			(setsockopt(rts.socket_fd, IPPROTO_IPV6, IPV6_RECVHOPLIMIT,
+				&on, sizeof(on)) < 0) &&
+			(setsockopt(rts.socket_fd, IPPROTO_IPV6, IPV6_2292HOPLIMIT,
+				&on, sizeof(on)) < 0)
+#else
+			(setsockopt(rts.socket_fd, IPPROTO_IPV6, IPV6_HOPLIMIT,
+				&on, sizeof(on)) < 0)
 #endif
-		    )
-			err(errno, "IPV6_HOPLIMIT");
+		  ) err(errno, "setsockopt(%s)", "IPV6_RECVHOPLIMIT, enable");
 		}
 		if (!IN6_IS_ADDR_V4MAPPED(&(((struct sockaddr_in6 *)&rts.target)->sin6_addr)))
 			break;
@@ -552,18 +559,18 @@ int main(int argc, char **argv) {
 
 		{ // path mtu
 		  int opt = IP_PMTUDISC_PROBE;
-		  if (setsockopt(rts.socket_fd, SOL_IP, IP_MTU_DISCOVER, &opt, sizeof(opt)) < 0)
-			err(errno, "IP_MTU_DISCOVER");
+		  if (setsockopt(rts.socket_fd, IPPROTO_IP, IP_MTU_DISCOVER, &opt, sizeof(opt)) < 0)
+			err(errno, "setsockopt(%s)", "IP_MTU_DISCOVER");
 		}
 		{ // recv error
 		  int on = 1;
-		  if (setsockopt(rts.socket_fd, SOL_IP, IP_RECVERR, &on, sizeof(on)) < 0)
-			err(errno, "IP_RECVERR");
+		  if (setsockopt(rts.socket_fd, IPPROTO_IP, IP_RECVERR, &on, sizeof(on)) < 0)
+			err(errno, "setsockopt(%s)", "IP_RECVERR");
 		}
 		{ // ttl
 		  int on = 1;
-		  if (setsockopt(rts.socket_fd, SOL_IP, IP_RECVTTL, &on, sizeof(on)) < 0)
-			err(errno, "IP_RECVTTL");
+		  if (setsockopt(rts.socket_fd, IPPROTO_IP, IP_RECVTTL, &on, sizeof(on)) < 0)
+			err(errno, "setsockopt(%s)", "IP_RECVTTL");
 		}
 	}
 
@@ -575,14 +582,16 @@ int main(int argc, char **argv) {
 		int ttl = rts.ttl;
 		switch (af) {
 		case AF_INET6:
-			if (setsockopt(rts.socket_fd, SOL_IPV6, IPV6_UNICAST_HOPS, &ttl, sizeof(ttl)) < 0)
-				err(errno, "IPV6_UNICAST_HOPS");
+			if (setsockopt(rts.socket_fd, IPPROTO_IPV6, IPV6_UNICAST_HOPS,
+					&ttl, sizeof(ttl)) < 0)
+				err(errno, "setsockopt(%s)", "IPV6_UNICAST_HOPS");
 			if (!rts.opt.mapped)
 				break;
 			/*FALLTHROUGH*/
 		case AF_INET:
-			if (setsockopt(rts.socket_fd, SOL_IP, IP_TTL, &ttl, sizeof(ttl)) < 0)
-				err(errno, "IP_TTL");
+			if (setsockopt(rts.socket_fd, IPPROTO_IP, IP_TTL,
+					&ttl, sizeof(ttl)) < 0)
+				err(errno, "setsockopt(%s)", "IP_TTL");
 		}
 
 		int rc = -1;
