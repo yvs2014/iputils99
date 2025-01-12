@@ -2,11 +2,11 @@
 // local additions by yvs@
 // -- fixups: ip4-in-ip6-space, ip6-link-local-scope
 
-#include "extra.h"
-
 #include <string.h>
 #include <err.h>
 #include <errno.h>
+
+#include "extra.h"
 
 void unmap_ai_sa4(struct addrinfo *ai) {
 	if (!ai || !ai->ai_addr)

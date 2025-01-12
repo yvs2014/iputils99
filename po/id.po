@@ -33,6 +33,10 @@ msgid "TARGET"
 msgstr "TUJUAN"
 
 #
+msgid "HOST"
+msgstr ""
+
+#
 msgid "For more details see"
 msgstr "Untuk lebih jelasnya lihat"
 

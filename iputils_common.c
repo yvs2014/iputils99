@@ -87,10 +87,31 @@ void setmyname(const char *argv0) {
 		myname = argv0 ? argv0 : "";
 }
 
-void version_n_exit(int rc) {
+#ifdef HAVE_LIBCAP
+#define CAP_FEATURE	'+'
+#else
+#define CAP_FEATURE	'-'
+#endif
+#ifdef USE_IDN
+#define IDN_FEATURE	'+'
+#else
+#define IDN_FEATURE	'-'
+#endif
+#ifdef USE_NLS
+#define NLS_FEATURE	'+'
+#else
+#define NLS_FEATURE	'-'
+#endif
+#ifdef ENABLE_RFC4620
+#define RFC4620_FEATURE	'+'
+#else
+#define RFC4620_FEATURE	'-'
+#endif
+
+void version_n_exit(int rc, int features) {
 	if (!myname)
 		setmyname(NULL);
-	printf("%s %s%s: %cCAP %cIDN %cNLS %cNI6\n",
+	printf("%s %s%s",
 		myname,
 #ifdef PACKAGE_NAME
 		PACKAGE_NAME,
@@ -98,39 +119,31 @@ void version_n_exit(int rc) {
 		"iputils",
 #endif
 #ifdef PACKAGE_VERSION
-		"_" PACKAGE_VERSION,
+		"_" PACKAGE_VERSION
 #else
-		"",
-#endif
-#ifdef HAVE_LIBCAP
-		'+',
-#else
-		'-',
-#endif
-#ifdef USE_IDN
-		'+',
-#else
-		'-',
-#endif
-#ifdef USE_NLS
-		'+',
-#else
-		'-',
-#endif
-#ifdef ENABLE_NI6
-		'+'
-#else
-		'-'
+		""
 #endif
 	);
+	if (features) {
+		putchar(':');
+		if (features & FEAT_CAP)
+			printf(" %cCAP",     CAP_FEATURE);
+		if (features & FEAT_IDN)
+			printf(" %cIDN",     IDN_FEATURE);
+		if (features & FEAT_NLS)
+			printf(" %cNLS",     NLS_FEATURE);
+		if (features & FEAT_RFC4620)
+			printf(" %cRFC4620", RFC4620_FEATURE);
+	}
+	putchar('\n');
 	exit(rc);
 }
 
-void usage_common(int rc, const char *options, bool more) {
+void usage_common(int rc, const char *options, const char *target, bool more) {
 	printf("\n%s:\n  %s", _("Usage"), myname);
 	if (options)
 		printf(" [%s]", _("options"));
-	printf(" %s%s\n", _("TARGET"), more ? " ..." : "");
+	printf(" %s%s\n", _(target), more ? " ..." : "");
 	if (options)
 		printf("\n%s:\n%s", _("Options"), _(options));
 	printf("\n%s %s(8)\n", _("For more details see"), myname);

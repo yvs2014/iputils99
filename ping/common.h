@@ -11,7 +11,7 @@
 # include <sys/capability.h>
 #endif
 
-#ifdef ENABLE_NI6
+#ifdef ENABLE_RFC4620
 #include "node_info.h"
 #endif
 
@@ -154,7 +154,7 @@ typedef struct ping_state {
 	uint32_t flowlabel;
 	bool subnet_router_anycast;
 	cmsg_t *cmsg;		/* allocated in ping6 */
-#ifdef ENABLE_NI6
+#ifdef ENABLE_RFC4620
 	struct ping_ni *ni;	/* allocated with -N option */
 #endif
 	// termios.h: ws_col type

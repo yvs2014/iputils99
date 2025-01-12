@@ -34,6 +34,10 @@ msgid "TARGET"
 msgstr "대상"
 
 #
+msgid "HOST"
+msgstr "호스트이름"
+
+#
 msgid "For more details see"
 msgstr "자세한 정보는 참고하세요:"
 
@@ -321,7 +325,7 @@ msgstr "시간을 비-표준 형식으로"
 
 #
 msgid "host"
-msgstr ""
+msgstr "호스트이름"
 
 #
 msgid "rtt"

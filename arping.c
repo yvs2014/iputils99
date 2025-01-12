@@ -133,7 +133,7 @@ NORETURN static void usage(int rc) {
 "  -I <device>   which ethernet device to use\n"
 "  -s <source>   source IP address\n"
 ;
-	usage_common(rc, options, false);
+	usage_common(rc, options, "TARGET", !MORE);
 }
 
 #ifdef HAVE_LIBCAP
@@ -883,7 +883,7 @@ int main(int argc, char **argv) {
 			ctl.source = optarg;
 			break;
 		case 'V':
-			version_n_exit(EXIT_SUCCESS);
+			version_n_exit(EXIT_SUCCESS, FEAT_CAP | FEAT_IDN | FEAT_NLS);
 		case 'h':
 		case '?':
 			usage(EXIT_SUCCESS);

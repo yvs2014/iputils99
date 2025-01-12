@@ -1,14 +1,14 @@
-#ifndef IPUTILS_NI_AUX_H
-#define IPUTILS_NI_AUX_H
+#ifndef NI_AUX_H
+#define NI_AUX_H
 
 #include <stdint.h>
 
-#define NI6_ARRAY_SIZE(arr) \
+#define NI_ARRAY_SIZE(arr) \
   (sizeof(arr) / sizeof((arr)[0]) + \
    sizeof(__typeof__(int[1 - 2 * \
 	  !!__builtin_types_compatible_p(__typeof__(arr), \
 					 __typeof__(&arr[0]))])) * 0)
-#ifdef NI6_NONCE_MEMORY
+#ifdef NI_NONCE_MEMORY
 void iputils_srand(void);
 #endif
 

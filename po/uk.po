@@ -33,6 +33,10 @@ msgid "TARGET"
 msgstr "ЦІЛЬ"
 
 #
+msgid "HOST"
+msgstr "ВУЗОЛ"
+
+#
 msgid "For more details see"
 msgstr "Докладніший опис можна знайти в"
 

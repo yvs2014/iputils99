@@ -52,12 +52,6 @@
 // local changes by yvs@
 // ping.c auxiliary functions
 
-#include "iputils_common.h"
-#include "common.h"
-#include "ping_aux.h"
-#include "ping4_aux.h"
-#include "ping6_aux.h"
-
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -72,6 +66,12 @@
 #include <ifaddrs.h>
 #include <net/if.h>
 #include <linux/in6.h>
+
+#include "iputils_common.h"
+#include "common.h"
+#include "ping_aux.h"
+#include "ping4_aux.h"
+#include "ping6_aux.h"
 
 #define DX_SHIFT(str) (((str)[0] == '0') && (((str)[1] == 'x') || ((str)[1] == 'X')) ? 2 : 0)
 unsigned parse_flow(const char *str) {

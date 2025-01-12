@@ -33,6 +33,10 @@ msgid "TARGET"
 msgstr "CIBLE"
 
 #
+msgid "HOST"
+msgstr "HÔTE"
+
+#
 msgid "For more details see"
 msgstr "Pour plus de détails, consultez"
 

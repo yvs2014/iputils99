@@ -1,9 +1,11 @@
 #ifndef PING_AUX_H
 #define PING_AUX_H
 
-#include "common.h"
+#include <netdb.h>
 #include <linux/errqueue.h>
 #include <linux/filter.h>
+
+#include "common.h"
 
 unsigned parse_flow(const char *str);
 unsigned char parse_tos(const char *str);

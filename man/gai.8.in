@@ -22,11 +22,11 @@
 .SH "NAME"
 gai \- resolve names using getaddrinfo()
 .SH "SYNOPSIS"
-\fBgai\fR [\fB\-hfFivV46\fR] TARGET \&.\&.\&.
+\fBgai\fR [\fB\-hfFivV46\fR] HOST \&.\&.\&.
 .SH "DESCRIPTION"
 .PP
 \fBgai\fR
-resolves target names as if with the getaddrinfo(3) routine and prints them to standard output
+resolves names as if with the getaddrinfo(3) routine and prints them to standard output
 .SH "OPTIONS"
 .PP
 \fB\-4\fR
@@ -74,7 +74,7 @@ AI_NUMERICSERV	0x0400
 .PP
 \fB\-i\fR
 .RS 4
-Convert IDN names using libidn2\&. It is available unless IDN is transparently supported\&.
+Convert IDN names using libidn2 (if IDN is not transparently supported)
 .RE
 .PP
 \fB\-h\fR
@@ -97,4 +97,4 @@ The \fBgai\fR command is handy to test \fBai_flags\fR on different libc versions
 .PP
 .SH "SEE ALSO"
 .PP
-\fBgetaddrinfo\fR(3)
+\fBgetaddrinfo\fR(3), \fBgetnameinfo\fR(3)

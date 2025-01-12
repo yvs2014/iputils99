@@ -30,9 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#include "common.h"
-#include "iputils_common.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -49,20 +46,24 @@
 #include <math.h>
 #include <assert.h>
 #include <err.h>
-
-#ifndef HZ
-#define HZ sysconf(_SC_CLK_TCK)
+#include <netinet/ip_icmp.h>
+#include <netinet/icmp6.h>
+#include <sys/socket.h>
+#ifndef SIOCGSTAMP
+#include <linux/sockios.h>
 #endif
-
 #ifdef HAVE_LIBCAP
-# include <sys/prctl.h>
+#include <sys/prctl.h>
 #else
 static uid_t euid;
 #endif
 
-#include <netinet/ip_icmp.h>
-#include <netinet/icmp6.h>
-#include <linux/sockios.h>
+#include "common.h"
+#include "iputils_common.h"
+
+#ifndef HZ
+#define HZ sysconf(_SC_CLK_TCK)
+#endif
 
 #define MIN_USER_MS	10	// Minimal interval for non-root users, in milliseconds
 #define MIN_GAP_MS	10	// Minimal interpacket gap, in milliseconds
@@ -140,7 +141,7 @@ void usage(int rc) {
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 ;
-	usage_common(rc, options, false);
+	usage_common(rc, options, "TARGET", !MORE);
 }
 
 uid_t limit_capabilities(const state_t *rts) {
@@ -862,7 +863,7 @@ int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
 {
 	/* can we time transfer */
 	rts->timing = (rts->datalen >= sizeof(struct timeval));
-#ifdef ENABLE_NI6
+#ifdef ENABLE_RFC4620
 	if (rts->ip6 && rts->ni && rts->timing)
 		rts->timing = (rts->ni->query < 0);
 #endif

@@ -1,6 +1,6 @@
-# Copyright (c) Iputils Project, 2017-2021
+# Copyright (c) Iputils Project, 2017-2025
 
-# local edition: yvs, 2024
+# local edition: yvs, 2024-2025
 
 project('iputils99', 'c',
 	default_options: [
@@ -11,7 +11,7 @@ project('iputils99', 'c',
 	meson_version: '>=0.47',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
-			check: false).stdout().strip() : '20250108',
+			check: false).stdout().strip() : '20250112',
 )
 
 add_project_arguments('-D_GNU_SOURCE', language: 'c')
@@ -70,38 +70,32 @@ if arping_device != ''
 endif
 
 if build_ping
-	extra_files = []
 	extra_funcs += {'arc4random_uniform': {'hdr': ['stdlib.h']}}
-	ni6 = get_option('NI6')
-	if ni6	# RFC4620 builtin client
-		conf.set('ENABLE_NI6', 1, description: 'build with RFC4620 NodeInfo client')
-		if get_option('NI6_NONCE_MEMORY')
-			conf.set('NI6_NONCE_MEMORY', 1,
+	rfc4620 = get_option('RFC4620')
+	if rfc4620	# RFC4620 builtin client
+		conf.set('ENABLE_RFC4620', 1, description: 'build with RFC4620 NodeInfo client')
+		if get_option('NI_NONCE_MEMORY')
+			conf.set('NI_NONCE_MEMORY', 1,
 				description: 'ping6 NodeInfo with nonce memory')
 		endif
-		extra_files += 'md5.c'
-		extra_files += base + '_ni_aux.c'
 		extra_funcs += {'getrandom': {'hdr': ['sys/random.h']}}
 	else
 		manexcl += {'ping': ['N']}
 	endif
-	ping_extra = files(extra_files)
 endif
 
 idn = get_option('IDN')
-idn_via = ''
+idn_via = '' # libc
 if idn	# If available: use AI_IDN for getaddrinfo() queries
 	ai_prfx = '#define _GNU_SOURCE\n#include <netdb.h>\n'
 	if cc.get_define('AI_IDN', prefix: ai_prfx) == ''
 		warning('IDN is not transparently supported')
 		deps += dependency('libidn2', required: true)
 		conf.set('USE_LIBIDN2', 1, description: 'Use libidn2 conversion')
-		idn_via = ' (libidn2)'
-	else
-		idn_via = '(via libc)'
+		idn_via = '(libidn2)'
         endif
 	conf.set('USE_IDN', 1, description: 'libc IDN support')
-        if ni6 # idna_to_dns_encoding() for nodeinfo IDN
+        if rfc4620	# idna_to_dns_encoding() for nodeinfo IDN
 		extra_funcs += {'__idna_to_dns_encoding': {}}
         endif
 endif
@@ -232,11 +226,11 @@ if meson.version().version_compare('>=0.53')
 			build_gai,
 	}}
 	sections += {'CONFIGURATION': {
-		'Caps   (libcap)' : cap,
-		'IDN  @0@ '.format(idn_via): idn,
-		'NLS   (gettext)' : nls,
-		'NI6   (rfc4620)' : ni6,
-		'Tests'           : tst,
+		'Caps'    : cap,
+		'IDN @0@ '.format(idn_via): idn,
+		'NLS'     : nls,
+		'RFC4620' : rfc4620,
+		'Tests'   : tst,
 	}}
 	sections += {'DIRECTORIES': {
 		'prefix'   : prefix,
@@ -265,11 +259,11 @@ output += '  (caps/suid ' + setcap_clockdiff.to_string() + ')\n'
 output += 'tracepath:\t'  + build_tracepath.to_string()  +  '\n'
 
 output += '\nCONFIGURATION\n'
-output += 'Caps  (libcap):\t' + cap.to_string() + '\n'
-output += 'IDN @0@:\t'.format(idn_via != '' ? idn_via : '\t') + idn.to_string() + '\n'
-output += 'NLS  (gettext):\t' + nls.to_string() + '\n'
-output += 'NI6  (rfc4620):\t' + ni6.to_string() + '\n'
-output += 'Tests:\t\t'        + tst.to_string() + '\n'
+output += 'Caps:\t\t'  + cap.to_string()     + '\n'
+output += 'IDN@0@\t'.format(idn_via != '' ? (' ' + idn_via + ':') : ':\t') + idn.to_string() + '\n'
+output += 'NLS:\t\t'   + nls.to_string()     + '\n'
+output += 'RFC4620:\t' + rfc4620.to_string() + '\n'
+output += 'Tests:\t\t' + tst.to_string()     + '\n'
 
 output += '\nDIRECTORIES\n'
 output += 'prefix:\t\t'  + prefix    + '\n'

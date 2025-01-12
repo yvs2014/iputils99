@@ -52,12 +52,6 @@
 // local changes by yvs@
 // part of ping.c
 
-#include "iputils_common.h"
-#include "common.h"
-#include "ping_aux.h"
-#include "ping4_aux.h"
-#include "ping4.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -69,10 +63,15 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
 //#include <linux/icmp.h> /* conflicted with <netinet/ip_icmp.h> */
 #include <linux/errqueue.h>
 #include <linux/filter.h>
+
+#include "iputils_common.h"
+#include "common.h"
+#include "ping_aux.h"
+#include "ping4_aux.h"
+#include "ping4.h"
 
 #ifndef ICMP_FILTER
 #define ICMP_FILTER	1

@@ -33,6 +33,10 @@ msgid "TARGET"
 msgstr "CÍL"
 
 #
+msgid "HOST"
+msgstr "STROJ"
+
+#
 msgid "For more details see"
 msgstr "Podrobnosti naleznete v"
 

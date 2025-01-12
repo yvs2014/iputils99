@@ -52,15 +52,15 @@
 // local changes by yvs@
 // ping4.c auxiliary functions
 
-#include "iputils_common.h"
-#include "ping4_aux.h"
-
-#include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "iputils_common.h"
+#include "ping4_aux.h"
+
+#include <stdio.h>
 #if BYTE_ORDER == LITTLE_ENDIAN
 # define ODDBYTE(v)	(v)
 #elif BYTE_ORDER == BIG_ENDIAN

@@ -32,6 +32,10 @@ msgid "TARGET"
 msgstr "KOHDE"
 
 #
+msgid "HOST"
+msgstr "ISÄNTÄ"
+
+#
 msgid "For more details see"
 msgstr "Katso lisätietoja"
 

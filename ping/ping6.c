@@ -61,27 +61,26 @@
 // local changes by yvs@
 // part of ping.c
 
-#include "iputils_common.h"
-#ifdef ENABLE_NI6
-#include "iputils_ni.h"
-#include "node_info.h"
-#endif
-#include "common.h"
-#include "ping_aux.h"
-#include "ping6_aux.h"
-#include "ping6.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <err.h>
-
 #include <netinet/ip6.h>
 #include <netinet/icmp6.h>
 #include <linux/in6.h>
 #include <linux/errqueue.h>
 #include <linux/filter.h>
+
+#include "iputils_common.h"
+#include "common.h"
+#include "ping_aux.h"
+#include "ping6_aux.h"
+#include "ping6.h"
+#ifdef ENABLE_RFC4620
+#include "node_info.h"
+#include "ni_defs.h"
+#endif
 
 #ifndef IPV6_FLOWLABEL_MGR
 # define IPV6_FLOWLABEL_MGR 32
@@ -93,7 +92,7 @@
 // func_set:send_probe
 static ssize_t ping6_send_probe(state_t *rts, int fd, uint8_t *packet) {
 	ssize_t len =
-#ifdef ENABLE_NI6
+#ifdef ENABLE_RFC4620
 	(rts->ni && niquery_is_enabled(rts->ni)) ?
 		build_ni_hdr(rts->ni, rts->ntransmitted, packet) :
 #endif
@@ -273,7 +272,7 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 			peer, true, !okay))
 				return false;
 	}
-#ifdef ENABLE_NI6
+#ifdef ENABLE_RFC4620
 	else if (icmp->icmp6_type == IPUTILS_NI_ICMP6_REPLY) {
 		if (!rts->ni)
 			return true;
@@ -353,7 +352,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 	struct sockaddr_in6 *whereto  = (struct sockaddr_in6 *)&rts->whereto;
 	source->sin6_family = AF_INET6;
 
-#ifdef ENABLE_NI6
+#ifdef ENABLE_RFC4620
 	if (rts->ni && niquery_is_enabled(rts->ni)) {
 		niquery_init_nonce(rts->ni);
 		if (!niquery_is_subject_valid(rts->ni)) {
@@ -370,7 +369,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 	} else if (argc == 1) {
 		target = *argv;
 	}
-#ifdef ENABLE_NI6
+#ifdef ENABLE_RFC4620
 	else if (rts->ni) {
 		if ((rts->ni->query < 0) && (rts->ni->subject_type != IPUTILS_NI_ICMP6_SUBJ_FQDN))
 			usage(EINVAL);
@@ -472,7 +471,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		/* select icmp echo reply as icmp type to receive */
 		struct icmp6_filter filter = {0};
 		ICMP6_FILTER_SETBLOCKALL(&filter);
-#ifdef ENABLE_NI6
+#ifdef ENABLE_RFC4620
 		if (rts->ni && niquery_is_enabled(rts->ni))
 			ICMP6_FILTER_SETPASS(IPUTILS_NI_ICMP6_REPLY, &filter);
 		else

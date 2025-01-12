@@ -33,6 +33,10 @@ msgid "TARGET"
 msgstr "目标"
 
 #
+msgid "HOST"
+msgstr "主机"
+
+#
 msgid "For more details see"
 msgstr "了解更多信息请参阅"
 

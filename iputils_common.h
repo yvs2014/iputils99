@@ -80,8 +80,19 @@ long long strtoll_or_err(const char *str, const char *errmesg,
 	long long min, long long max);
 void close_stdout(void);
 void setmyname(const char *argv0);
-NORETURN void version_n_exit(int rc);
-NORETURN void usage_common(int rc, const char *options, bool more);
+
+NORETURN void usage_common(int rc, const char *options, const char *target, bool more);
+#ifndef MORE
+#define MORE true
+#endif
+
+NORETURN void version_n_exit(int rc, int features);
+enum {
+	FEAT_CAP     = 0x1,
+	FEAT_IDN     = 0x2,
+	FEAT_NLS     = 0x4,
+	FEAT_RFC4620 = 0x8,
+};
 
 int gai_wrapper(const char *restrict node, const char *restrict service,
 	const struct addrinfo *restrict hints, struct addrinfo **restrict res);

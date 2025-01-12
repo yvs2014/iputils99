@@ -1,5 +1,5 @@
-#ifndef IPUTILS_NI_H
-#define IPUTILS_NI_H
+#ifndef NI_DEFS_H
+#define NI_DEFS_H
 
 /* Shared network information definitions */
 #include <asm/byteorder.h>
@@ -36,4 +36,4 @@
 #define IPUTILS_NI_IPV4_FLAG_TRUNCATE	IPUTILS_NI_IPV6_FLAG_TRUNCATE
 #define IPUTILS_NI_IPV4_FLAG_ALL	IPUTILS_NI_IPV6_FLAG_ALL
 
-#endif /* IPUTILS_NI_H */
+#endif

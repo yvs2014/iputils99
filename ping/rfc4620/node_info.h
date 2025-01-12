@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <netinet/icmp6.h>
-#ifndef NI6_NONCE_MEMORY
+#ifndef NI_NONCE_MEMORY
 #include <sys/time.h>
 #endif
 
@@ -17,7 +17,7 @@ struct ping_ni {
 	int subject_len;
 	int subject_type;
 	char *group;
-#if NI6_NONCE_MEMORY
+#if NI_NONCE_MEMORY
 	uint8_t *nonce_ptr;
 #else
 	struct {

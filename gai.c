@@ -37,7 +37,7 @@ NORETURN static void gai_usage(int rc) {
 "  -v        verbose output\n"
 "  -V        print version and exit\n"
 ;
-	usage_common(rc, options, true);
+	usage_common(rc, options, "HOST", MORE);
 }
 
 /* known AI_xxx: 16 is long enough */
@@ -123,7 +123,7 @@ static void parse_opt(int argc, char **argv, gai_opt_s *gai_opt) {
 			gai_opt->verbose = true;
 			break;
 		case 'V':
-			version_n_exit(EXIT_SUCCESS);
+			version_n_exit(EXIT_SUCCESS, FEAT_IDN | FEAT_NLS);
 		default:
 			gai_usage(EXIT_FAILURE);
                 }

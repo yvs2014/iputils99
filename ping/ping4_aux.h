@@ -1,8 +1,8 @@
 #ifndef PING4_AUX_H
 #define PING4_AUX_H
 
-#include "common.h"
 #include <netinet/ip_icmp.h>
+#include "common.h"
 
 uint16_t in_cksum(const uint16_t *addr, int len, uint16_t csum);
 

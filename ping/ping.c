@@ -51,16 +51,6 @@
 
 // local changes by yvs@
 
-#include "iputils_common.h"
-#include "common.h"
-#include "ping_aux.h"
-#include "ping4.h"
-#include "ping6.h"
-#include "extra.h"
-#ifdef ENABLE_NI6
-#include "node_info.h"
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -74,9 +64,18 @@
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <ifaddrs.h>
-
 #ifdef USE_NLS
 #include <locale.h>
+#endif
+
+#include "iputils_common.h"
+#include "common.h"
+#include "ping_aux.h"
+#include "ping4.h"
+#include "ping6.h"
+#include "extra.h"
+#ifdef ENABLE_RFC4620
+#include "node_info.h"
 #endif
 
 #ifndef MSG_CONFIRM
@@ -204,7 +203,7 @@ static inline void opt_I(state_t *rts, const char *str) {
 	}
 }
 
-#ifdef ENABLE_NI6
+#ifdef ENABLE_RFC4620
 static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) {
 	if (rts->datalen != DEFDATALEN) // '-s' indication
 		errx(EINVAL, "%s: %s", _WARN,
@@ -228,7 +227,7 @@ static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) 
 #endif
 
 static inline void opt_s(state_t *rts, const char *str) {
-#ifdef ENABLE_NI6
+#ifdef ENABLE_RFC4620
 	if (rts->ni)
 		errx(EXIT_FAILURE, "%s: %s", _WARN,
 			_("NodeInfo packet can only have a header"));
@@ -255,7 +254,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 		case '4':
 		case '6': {
 			bool ip4 = (ch == '4');
-#ifdef ENABLE_NI6
+#ifdef ENABLE_RFC4620
 			if (rts->ni && ip4) // '-N' indication
 				errx(EINVAL, "%s: %s", _WARN, _("NodeInfo client is for IPv6 only"));
 #endif
@@ -296,7 +295,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->flowlabel = parse_flow(optarg);
 			rts->opt.flowinfo = true;
 			break;
-#ifdef ENABLE_NI6
+#ifdef ENABLE_RFC4620
 		case 'N':
 			opt_N(rts, optarg, hints);
 			break;
@@ -418,7 +417,8 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 		}
 			break;
 		case 'V':
-			version_n_exit(EXIT_SUCCESS);
+			version_n_exit(EXIT_SUCCESS,
+				FEAT_CAP | FEAT_IDN | FEAT_NLS | FEAT_RFC4620);
 		case 'h':
 			usage(EXIT_SUCCESS);
 		default:
@@ -563,7 +563,7 @@ int main(int argc, char **argv) {
 		freeaddrinfo(res);
 	if (rts.outpack)
 		free(rts.outpack);
-#ifdef ENABLE_NI6
+#ifdef ENABLE_RFC4620
 	if (rts.ni)
 		free(rts.ni);
 #endif

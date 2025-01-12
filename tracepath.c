@@ -397,7 +397,7 @@ NORETURN static void usage(int rc) {
 "  -p <port>      use destination <port>\n"
 "  -V             print version and exit\n"
 ;
-	usage_common(rc, options, false);
+	usage_common(rc, options, "TARGET", !MORE);
 }
 
 int main(int argc, char **argv) {
@@ -452,7 +452,7 @@ int main(int argc, char **argv) {
 			rts.base_port = strtoll_or_err(optarg, _("Invalid argument"), 0, UINT16_MAX);
 			break;
 		case 'V':
-			version_n_exit(EXIT_SUCCESS);
+			version_n_exit(EXIT_SUCCESS, FEAT_IDN | FEAT_NLS);
 		case 'h':
 		case '?':
 			usage(EXIT_SUCCESS);

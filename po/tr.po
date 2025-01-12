@@ -33,6 +33,10 @@ msgid "TARGET"
 msgstr "HEDEF"
 
 #
+msgid "HOST"
+msgstr "MAKINE_ADINI"
+
+#
 msgid "For more details see"
 msgstr "Daha fazla bilgi için:"
 
