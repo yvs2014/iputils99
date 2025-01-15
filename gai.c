@@ -1,4 +1,6 @@
 
+// yvs, 2025
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -12,7 +14,8 @@
 #include <netdb.h>
 #include <locale.h>
 
-#include "iputils_common.h"
+#include "iputils.h"
+#include "str2num.h"
 
 typedef struct gai_opts {
 	int af;
@@ -116,7 +119,7 @@ static void parse_opt(int argc, char **argv, gai_opt_s *gai_opt) {
 			if (gai_opt->flags < 0)
 				gai_opt->flags = 0;
 			gai_opt->flags |= (opt == 'f') ?
-				strtoll_or_err(optarg, _("Invalid argument"), 0, USHRT_MAX) :
+				VALID_INTSTR(0, USHRT_MAX) :
 				ai_macro2value(opt, optarg);
 			break;
 		case 'v':

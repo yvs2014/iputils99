@@ -1,5 +1,5 @@
-#ifndef IPUTILS_COMMON_H
-#define IPUTILS_COMMON_H
+#ifndef IPUTILS_H
+#define IPUTILS_H
 
 #include <stdbool.h>
 #include <time.h>
@@ -76,8 +76,6 @@
 #define NORETURN
 #endif
 
-long long strtoll_or_err(const char *str, const char *errmesg,
-	long long min, long long max);
 void close_stdout(void);
 void setmyname(const char *argv0);
 

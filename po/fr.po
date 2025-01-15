@@ -560,13 +560,9 @@ msgstr "Paquet trop court"
 msgid "WARNING"
 msgstr "AVERTISSEMENT"
 
-#
-msgid "=> missing cap_net_raw+p capability"
-msgstr "=> capacité cap_net_raw+p manquante"
-
-#
-msgid "=> missing cap_net_admin+p capability"
-msgstr "=> capacité cap_net_admin+p manquante"
+# missing capability: %s
+msgid "=> missing capability"
+msgstr "=> capacité manquante"
 
 #
 msgid "Bad value for flowinfo"
@@ -825,9 +821,9 @@ msgid "No answer yet"
 msgstr "Encore aucune réponse"
 
 #
-msgid "probably, rcvbuf is not enough to hold preload"
+msgid "Probably, rcvbuf is not enough to hold preload"
 msgstr ""
-"probablement, le rcvbuf n’est pas suffisant pour maintenir le préchargement"
+"Probablement, le rcvbuf n’est pas suffisant pour maintenir le préchargement"
 
 #
 msgid "failed to set mark"
@@ -928,6 +924,14 @@ msgstr "perdus"
 # time %ld ms
 msgid "time"
 msgstr "temps"
+
+# probably ...
+msgid "probably"
+msgstr "probablement"
+
+# %d hops away
+msgid "hops away"
+msgstr "sauts"
 
 # rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
 msgid "rtt min/avg/max/mdev"

@@ -11,7 +11,7 @@ project('iputils99', 'c',
 	meson_version: '>=0.47',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
-			check: false).stdout().strip() : '20250112',
+			check: false).stdout().strip() : '20250115',
 )
 
 add_project_arguments('-D_GNU_SOURCE', language: 'c')
@@ -74,14 +74,23 @@ if build_ping
 	rfc4620 = get_option('RFC4620')
 	if rfc4620	# RFC4620 builtin client
 		conf.set('ENABLE_RFC4620', 1, description: 'build with RFC4620 NodeInfo client')
-		if get_option('NI_NONCE_MEMORY')
-			conf.set('NI_NONCE_MEMORY', 1,
+		if get_option('NONCE_MEMORY')
+			conf.set('NONCE_MEMORY', 1,
 				description: 'ping6 NodeInfo with nonce memory')
 		endif
 		extra_funcs += {'getrandom': {'hdr': ['sys/random.h']}}
 	else
 		manexcl += {'ping': ['N']}
 	endif
+endif
+
+# warn if there's no PKTINFO
+pkti_prfx = '#include <netinet/in.h>\n'
+if cc.get_define('IP_PKTINFO', prefix: pkti_prfx) == ''
+	warning('IP_PKTINFO: not found')
+endif
+if cc.get_define('IPV6_PKTINFO', prefix: pkti_prfx) == ''
+	warning('IPV6_PKTINFO: not found')
 endif
 
 idn = get_option('IDN')
@@ -161,41 +170,56 @@ endif
 
 # build stage
 #
-common_src = files(base + '_common.c')
+aux = 'aux'
+aux_src = []
+ext_src = []
+subdir(aux)
+src = aux_src + ext_src
+
+aux_inc = aux
+cap_sh = join_paths(aux, 'setcap-setuid.sh')
 
 if build_ping
 	subdir('ping')
+	if setcap_ping # TODO: combine ping/arping/clockdif
+		meson.add_install_script(cap_sh, bindir,
+			'ping', perm_type, setcap_path)
+	endif
 	manpage += 'ping'
 endif
 
 if build_arping
-	arping = executable('arping', common_src + ['arping.c'],
+	arping = executable('arping', src + ['arping.c'],
+		include_directories: include_directories(aux_inc),
 		dependencies: deps, install: true)
 	if setcap_arping
-		meson.add_install_script('build-aux/setcap-setuid.sh',
-			bindir, 'arping', perm_type, setcap_path)
+		meson.add_install_script(cap_sh, bindir,
+			'arping', perm_type, setcap_path)
 	endif
 	manpage += 'arping'
 endif
 
 if build_clockdiff
-	clockdiff = executable('clockdiff', common_src + ['clockdiff.c'],
+	clockdiff = executable('clockdiff', src + ['clockdiff.c'],
+		include_directories: include_directories(aux_inc),
 		dependencies: deps, install: true)
 	if setcap_clockdiff
-		meson.add_install_script('build-aux/setcap-setuid.sh',
-			bindir, 'clockdiff', perm_type, setcap_path)
+		meson.add_install_script(cap_sh, bindir,
+			'clockdiff', perm_type, setcap_path)
 	endif
 	manpage += 'clockdiff'
 endif
 
 if build_tracepath
-	tracepath = executable('tracepath', common_src + ['tracepath.c'],
+	tracepath = executable('tracepath', aux_src + ['tracepath.c'],
+		include_directories: include_directories(aux_inc),
 		dependencies: deps, install: true)
 	manpage += 'tracepath'
 endif
 
 if build_gai
-	gai = executable('gai', common_src + ['gai.c'],
+	gai = executable('gai', aux_src + ['gai.c'],
+		include_directories: include_directories(aux_inc),
 		dependencies: deps, install: true)
 	manpage += 'gai'
 endif

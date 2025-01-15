@@ -61,9 +61,10 @@
 #include <netinet/icmp6.h>
 #include <resolv.h>
 
-#include "iputils_common.h"
-#include "common.h"
 #include "ping6_aux.h"
+
+#include "iputils.h"
+#include "common.h"
 #ifdef ENABLE_RFC4620
 #include "node_info.h"
 #include "ni_defs.h"

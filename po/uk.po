@@ -584,13 +584,9 @@ msgstr "Занадто короткий пакет"
 msgid "WARNING"
 msgstr "УВАГА"
 
-#
-msgid "=> missing cap_net_raw+p capability"
-msgstr "=> не вистачає cap_net_raw+p"
-
-#
-msgid "=> missing cap_net_admin+p capability"
-msgstr "=> не вистачає cap_net_admin+p"
+# missing capability: %s
+msgid "=> missing capability"
+msgstr "=> відсутність властивості"
 
 #
 msgid "Bad value for flowinfo"
@@ -979,6 +975,10 @@ msgstr "втрачено"
 # time %ld ms
 msgid "time"
 msgstr "час"
+
+# probably ...
+msgid "probably"
+msgstr "ймовірно"
 
 # %d hops away
 msgid "hops away"

@@ -547,13 +547,9 @@ msgstr "Paket çok kısa"
 msgid "WARNING"
 msgstr "UYARI"
 
-#
-msgid "=> missing cap_net_raw+p capability"
-msgstr "=> eksik cap_net_raw+p özelliği"
-
-#
-msgid "=> missing cap_net_admin+p capability"
-msgstr "=> eksik cap_net_admin+p özelliği"
+# missing capability: %s
+msgid "=> missing capability"
+msgstr "=> eksik özelliği"
 
 #
 msgid "Bad value for flowinfo"

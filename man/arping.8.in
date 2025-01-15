@@ -31,21 +31,21 @@ on device
 \fIinterface\fR
 by ARP packets, using source address
 \fIsource\fR\&.
-.PP
-arping supports IPv4 addresses only\&. For IPv6, see
+.br
+\fBarping\fR
+supports IPv4 addresses only\&. For IPv6, see
 \fBndisc6\fR(8)\&.
 .SH "OPTIONS"
 .PP
 \fB\-A\fR
 .RS 4
 The same as
-\fB\-U\fR, but ARP REPLY packets used instead of ARP REQUEST\&.
+\fB\-U\fR, but ARP REPLY packets used instead of ARP REQUEST
 .RE
 .PP
 \fB\-b\fR
 .RS 4
-Send only MAC level broadcasts\&. Normally
-\fBarping\fR
+Send only MAC level broadcasts\&. Normally \fBarping\fR
 starts from sending broadcast, and switch to unicast after reply received\&.
 .RE
 .PP
@@ -67,22 +67,22 @@ Duplicate address detection mode (DAD)\&. See RFC2131, 4\&.4\&.1\&. Returns 0, i
 .PP
 \fB\-f\fR
 .RS 4
-Finish after the first reply confirming that target is alive\&.
+Finish after the first reply confirming that target is alive
 .RE
 .PP
 \fB\-I \fR\fB\fIinterface\fR\fR
 .RS 4
-Name of network device where to send ARP REQUEST packets\&.
+Name of network device where to send ARP REQUEST packets
 .RE
 .PP
 \fB\-h\fR
 .RS 4
-Print help page and exit\&.
+Print help page and exit
 .RE
 .PP
 \fB\-q\fR
 .RS 4
-Quiet output\&. Nothing is displayed\&.
+Quiet output
 .RE
 .PP
 \fB\-s \fR\fB\fIsource\fR\fR
@@ -109,12 +109,12 @@ or
 .PP
 \fB\-U\fR
 .RS 4
-Unsolicited ARP mode to update neighbours\*(Aq ARP caches\&. No replies are expected\&.
+Unsolicited ARP mode to update neighbours\*(Aq ARP caches\&. No replies are expected
 .RE
 .PP
 \fB\-V\fR
 .RS 4
-Print version of the program and exit\&.
+Print version of the program and exit
 .RE
 .PP
 \fB\-w \fR\fB\fIdeadline\fR\fR
@@ -130,14 +130,14 @@ replies are received before the deadline expiration, otherwise status 1\&.
 .PP
 \fB\-i \fR\fB\fIinterval\fR\fR
 .RS 4
-Specify an interval, in seconds, between packets\&.
+Specify an \fIinterval\fR\ between packets, in seconds
 .RE
 .SH "SEE ALSO"
 .PP
 \fBndisc6\fR(8),
 \fBping\fR(8),
 \fBclockdiff\fR(8),
-\fBtracepath\fR(8)\&.
+\fBtracepath\fR(8)
 .SH "AUTHOR"
 .PP
 \fBarping\fR
@@ -151,4 +151,4 @@ requires CAP_NET_RAW capability to be executed\&. It is not recommended to be us
 \fBarping\fR
 is part of
 \fIiputils\fR
-package\&.
+package

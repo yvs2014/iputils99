@@ -101,10 +101,10 @@ was compiled by Alexey Kuznetsov <kuznet@ms2\&.inr\&.ac\&.ru>\&. It was based on
 .SH "SECURITY"
 .PP
 \fBclockdiff\fR
-requires CAP_NET_RAW and CAP_SYS_NICE capabilities to be executed\&. It is safe to be used as set\-uid root\&.
+requires CAP_NET_RAW and CAP_SYS_NICE capabilities to be executed
 .SH "AVAILABILITY"
 .PP
 \fBclockdiff\fR
 is part of
 \fIiputils\fR
-package\&.
+package

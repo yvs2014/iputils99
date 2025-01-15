@@ -1,9 +1,9 @@
-// part of iputils_common.c that used in node_info.c only
+// part of 'iputils' that used in node_info.c only
 
 #include <unistd.h>
 #include <string.h>
 #include <arpa/inet.h>
-#ifdef NI_NONCE_MEMORY
+#ifdef NONCE_MEMORY
 #include <stdlib.h>
 #include <errno.h>
 #include <time.h>
@@ -14,7 +14,7 @@
 
 #include "ni_aux.h"
 
-#ifdef NI_NONCE_MEMORY
+#ifdef NONCE_MEMORY
 static unsigned srand_fallback(void) {
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME, &ts);

@@ -42,17 +42,17 @@ can also send IPv6 Node Information Queries (RFC4620)\&. Intermediate
 .PP
 \fB\-4\fR
 .RS 4
-Use IPv4 only\&.
+Use IPv4 only
 .RE
 .PP
 \fB\-6\fR
 .RS 4
-Use IPv6 only\&.
+Use IPv6 only
 .RE
 .PP
 \fB\-a\fR
 .RS 4
-Audible ping\&.
+Audible ping
 .RE
 .PP
 \fB\-A\fR
@@ -63,7 +63,7 @@ Adaptive ping\&. Interpacket interval adapts to round\-trip time, so that effect
 .PP
 \fB\-b\fR
 .RS 4
-Allow pinging a broadcast address\&.
+Allow pinging a broadcast address
 .RE
 .PP
 \fB\-B\fR
@@ -90,7 +90,7 @@ ECHO_REPLY packets, until the timeout expires\&.
 .PP
 \fB\-C\fR
 .RS 4
-Call connect() syscall on socket creation\&.
+Call connect() syscall on socket creation
 .RE
 .PP
 \fB\-d\fR
@@ -100,7 +100,7 @@ Set the SO_DEBUG option on the socket being used\&. Essentially, this socket opt
 .PP
 \fB\-D\fR
 .RS 4
-Print timestamp (unix time + microseconds as in gettimeofday) before each line\&.
+Print timestamp (Unix time and microseconds) before each line
 .RE
 .PP
 \fB\-e\fR \fIidentifier\fR
@@ -125,7 +125,7 @@ IPv6 only\&. Allocate and set 20 bit flow label (in hex) on echo request packets
 .PP
 \fB\-h\fR
 .RS 4
-Show help\&.
+Show help
 .RE
 .PP
 \fB\-H\fR
@@ -203,57 +203,57 @@ IPv6 only\&. Send IPv6 Node Information Queries (RFC4620), instead of Echo Reque
 .PP
 \fBhelp\fR
 .RS 4
-Show help for NI support\&.
+Show help for NI support
 .RE
 .PP
 \fBname\fR
 .RS 4
-Queries for Node Names\&.
+Queries for Node Names
 .RE
 .PP
 \fBipv6\fR
 .RS 4
-Queries for IPv6 Addresses\&. There are several IPv6 specific flags\&.
+Queries for IPv6 Addresses:
 .PP
 \fBipv6\-global\fR
 .RS 4
-Request IPv6 global\-scope addresses\&.
+Request IPv6 global\-scope addresses
 .RE
-.PP
+.br
 \fBipv6\-sitelocal\fR
 .RS 4
-Request IPv6 site\-local addresses\&.
+Request IPv6 site\-local addresses
 .RE
-.PP
+.br
 \fBipv6\-linklocal\fR
 .RS 4
-Request IPv6 link\-local addresses\&.
+Request IPv6 link\-local addresses
 .RE
-.PP
+.br
 \fBipv6\-all\fR
 .RS 4
-Request IPv6 addresses on other interfaces\&.
+Request IPv6 addresses on other interfaces
 .RE
 .RE
 .PP
 \fBipv4\fR
 .RS 4
-Queries for IPv4 Addresses\&. There is one IPv4 specific flag\&.
+Queries for IPv4 Addresses:
 .PP
 \fBipv4\-all\fR
 .RS 4
-Request IPv4 addresses on other interfaces\&.
+Request IPv4 addresses on other interfaces
 .RE
 .RE
 .PP
 \fBsubject\-ipv6=\fR\fIipv6addr\fR
 .RS 4
-IPv6 subject address\&.
+IPv6 subject address
 .RE
 .PP
 \fBsubject\-ipv4=\fR\fIipv4addr\fR
 .RS 4
-IPv4 subject address\&.
+IPv4 subject address
 .RE
 .PP
 \fBsubject\-name=\fR\fInodename\fR
@@ -364,7 +364,7 @@ Verbose output\&. Do not suppress DUP replies when pinging multicast address\&.
 .PP
 \fB\-V\fR
 .RS 4
-Show version and exit\&.
+Show version and exit
 .RE
 .PP
 \fB\-w\fR \fIdeadline\fR
@@ -430,9 +430,9 @@ There are two ways to specify the output interface:
 The destination address is postfixed with
 \fI%\fR
 and the output interface name or ifindex, for example:
-.sp
+.br
 \fBping fe80::5054:ff:fe70:67bc%eth0\fR
-.sp
+.br
 \fBping fe80::5054:ff:fe70:67bc%2\fR
 .RE
 .PP
@@ -522,7 +522,7 @@ the
 .SH "SEE ALSO"
 .PP
 \fBip\fR(8),
-\fBss\fR(8)\&.
+\fBss\fR(8)
 .SH "HISTORY"
 .PP
 The
@@ -551,4 +551,4 @@ option) or when the identification field set to 0 for ECHO_REQUEST (see
 \fBping\fR
 is part of
 \fIiputils\fR
-package\&.
+package

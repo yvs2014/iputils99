@@ -549,13 +549,9 @@ msgstr "პაკეტი ძალიან მოკლეა"
 msgid "WARNING"
 msgstr "გაფრთხილება"
 
-#
-msgid "=> missing cap_net_raw+p capability"
-msgstr "=> აკლია cap_net_raw+p შესაძლებლობა"
-
-#
-msgid "=> missing cap_net_admin+p capability"
-msgstr "=> აკლია cap_net_admin+p შესაძლებლობა"
+# missing capability: %s
+msgid "=> missing capability"
+msgstr "=> აკლია შესაძლებლობა"
 
 #
 msgid "Bad value for flowinfo"

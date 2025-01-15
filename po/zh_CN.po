@@ -545,13 +545,9 @@ msgstr "过短的包"
 msgid "WARNING"
 msgstr "警告"
 
-#
-msgid "=> missing cap_net_raw+p capability"
-msgstr "=> 缺少 cap_net_raw+p"
-
-#
-msgid "=> missing cap_net_admin+p capability"
-msgstr "=> 缺少 cap_net_admin+p"
+# missing capability: %s
+msgid "=> missing capability"
+msgstr "=> 缺少"
 
 #
 msgid "Bad value for flowinfo"

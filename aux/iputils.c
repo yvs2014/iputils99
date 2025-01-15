@@ -1,20 +1,14 @@
 
-#include "iputils_common.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <err.h>
 #include <errno.h>
-#include <locale.h>
-
-#ifdef HAVE_GETRANDOM
-# include <sys/random.h>
-#endif
-
 #ifdef USE_LIBIDN2
 #include <idn2.h>
 #endif
+
+#include "iputils.h"
 
 void close_stdout(void) {
 	if (fclose(stdout))
@@ -23,29 +17,6 @@ void close_stdout(void) {
 	if (fclose(stderr))
 		if ((errno != EBADF) && (errno != EPIPE))
 			err(errno, "stderr");
-}
-
-long long strtoll_or_err(const char *str, const char *errmesg,
-		long long min, long long max)
-{
-	errno = (str && *str) ? 0 : EINVAL;
-	if (!errno) {
-		char *end = NULL;
-		long long num = strtoll(str, &end, 10);
-		if (errno || (str == end) || (end && *end)) {
-			errno = 0;
-			num = strtoll(str, &end, 16);
-		}
-		if (!(errno || (str == end) || (end && *end))) {
-			if ((min <= num) && (num <= max))
-				return num;
-			errno = ERANGE;
-			err(errno, "%s: %s: %lld - %lld", errmesg, str, min, max);
-		}
-	}
-	if (errno)
-		err(errno, "%s: %s", errmesg, str);
-	errx(EXIT_FAILURE, "%s: %s", errmesg, str);
 }
 
 #ifndef timespecsub

@@ -67,11 +67,13 @@
 #include <linux/errqueue.h>
 #include <linux/filter.h>
 
-#include "iputils_common.h"
+#include "ping4.h"
+
+#include "iputils.h"
 #include "common.h"
+#include "stats.h"
 #include "ping_aux.h"
 #include "ping4_aux.h"
-#include "ping4.h"
 
 #ifndef ICMP_FILTER
 #define ICMP_FILTER	1
@@ -284,13 +286,19 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 		if (!IS_OURS(rts, raw, icmp->un.echo.id))
 			return true;	/* 'Twas not our ECHO */
 		struct sockaddr_in *sin = (struct sockaddr_in *)&rts->whereto;
-		bool ack  = (in_cksum((uint16_t *)icmp, received, 0) == 0);
-		bool okay = (from->sin_addr.s_addr == sin->sin_addr.s_addr)
-			|| rts->multicast || rts->opt.broadcast;
-		if (gather_stats(rts, icmp, sizeof(*icmp), received,
-			ntohs(icmp->un.echo.sequence), away, at, NULL,
-			sprint_addr(from, sizeof(*from), rts->opt.resolve),
-			ack, !okay))
+		stat_aux_t stat = {
+			.from = sprint_addr(from, sizeof(*from), rts->opt.resolve),
+			.seq  = ntohs(icmp->un.echo.sequence),
+			.rcvd = received,
+			.tv   = at,
+			.icmp = (const uint8_t *)icmp,
+			.data = (const uint8_t *)(icmp + 1),
+			.ack  = !in_cksum((uint16_t *)icmp, received, 0),
+			.okay = (from->sin_addr.s_addr == sin->sin_addr.s_addr)
+				|| rts->multicast || rts->opt.broadcast,
+			.away = away,
+		};
+		if (statistics(rts, &stat))
 				return false;
 	} else {
 		/* We fall here when a redirect or source quench arrived */
@@ -492,23 +500,16 @@ int ping4_run(state_t *rts, int argc, char **argv,
 		argv++;
 	}
 
-	socklen_t slen = 0;
-	unsigned iface = 0;
-	unsigned mcast = 0;
-	if (rts->device) {
-		slen  = strlen(rts->device) + 1;
-		iface = if_name2index(rts->device);
-		if (iface && IN_MULTICAST(ntohl(whereto->sin_addr.s_addr)))
-			mcast = iface;
-	}
-
 	if (!source->sin_addr.s_addr) {
 		int probe_fd = socket(AF_INET, SOCK_DGRAM, 0);
 		if (probe_fd < 0)
 			err(errno, "socket");
-
-		if (rts->device)
-			set_device(false, rts->device, slen, iface, mcast, probe_fd, sock->fd);
+		if (rts->device) {
+			struct in_pktinfo ipi = { .ipi_ifindex = if_name2index(rts->device) };
+			if ((setsockopt(probe_fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
+			    (setsockopt(sock->fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0))
+				err(errno, "setsockopt(%s, %s)", "IP_PKTINFO", rts->device);
+		}
 		sock_settos(probe_fd, rts->qos, rts->ip6);
 		sock_setmark(rts, probe_fd);
 
@@ -551,8 +552,9 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 			cmp_srcdev(rts);
 
 	} else if (rts->device) {
-		if (setsock_bindopt(sock->fd, rts->device, slen, mcast) < 0)
-			err(errno, "setsock_bindopt(%s)", rts->device);
+		struct in_pktinfo ipi = { .ipi_ifindex = if_name2index(rts->device) };
+		if (setsockopt(sock->fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0)
+			err(errno, "setsockopt(%s, %s)", "IP_PKTINFO", rts->device);
 	}
 
 	if (!whereto->sin_addr.s_addr)
@@ -600,7 +602,6 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 		setsock_noloop(sock->fd, rts->ip6);
 	if (rts->ttl >= 0)
 		setsock_ttl(sock->fd, rts->ip6, rts->ttl);
-	rts->ttl = getsock_ttl(sock->fd, rts->ip6);
 	if (rts->opt.connect_sk)
 		if (connect(sock->fd, (struct sockaddr *)whereto, sizeof(*whereto)) < 0)
 			err(errno, "%s", "connect()");
@@ -610,7 +611,7 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 	set_estimate_buf(rts, sock->fd, sizeof(struct iphdr), optlen, sizeof(struct icmphdr));
 
 	size_t hlen = sizeof(struct iphdr) + sizeof(struct icmphdr);
-	print_headline(rts, hlen + optlen);
+	headline(rts, hlen + optlen);
 	hlen = (hlen + MAX_IPOPTLEN) * 2; // (ip+optlen+icmp)*2
 	return setup_n_loop(rts, hlen, sock, &ping4_func_set);
 }

@@ -502,12 +502,8 @@ msgstr "Paket terlalu singkat"
 msgid "WARNING"
 msgstr "PERINGATAN"
 
-#
-msgid "=> missing cap_net_raw+p capability"
-msgstr ""
-
-#
-msgid "=> missing cap_net_admin+p capability"
+# missing capability: %s
+msgid "=> missing capability"
 msgstr ""
 
 #

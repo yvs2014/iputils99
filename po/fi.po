@@ -545,13 +545,9 @@ msgstr "Paketti liian lyhyt"
 msgid "WARNING"
 msgstr "VAROITUS"
 
-#
-msgid "=> missing cap_net_raw+p capability"
-msgstr "=> puuttuu cap_net_raw+p-ominaisuus"
-
-#
-msgid "=> missing cap_net_admin+p capability"
-msgstr "=> puuttuu cap_net_admin+p-ominaisuus"
+# missing capability: %s
+msgid "=> missing capability"
+msgstr "=> ominaisuuden puute"
 
 #
 msgid "Bad value for flowinfo"

@@ -549,13 +549,9 @@ msgstr "Paket je příliš krátký"
 msgid "WARNING"
 msgstr "POZOR"
 
-#
-msgid "=> missing cap_net_raw+p capability"
-msgstr "=> chybí cap_net_raw+p capability"
-
-#
-msgid "=> missing cap_net_admin+p capability"
-msgstr "=> chybí cap_net_admin+p capability"
+# missing capability: %s
+msgid "=> missing capability"
+msgstr "=> chybí capability"
 
 #
 msgid "Bad value for flowinfo"
@@ -818,10 +814,8 @@ msgid "No answer yet"
 msgstr "Žádná odpověď"
 
 #
-msgid "probably, rcvbuf is not enough to hold preload"
-msgstr ""
-"vyrovnávací paměť příjmu pravděpodobně není dost velká, aby pojala "
-"přednačítané"
+msgid "Probably, rcvbuf is not enough to hold preload"
+msgstr "Příjmu pravděpodobně není dost velká, aby pojala přednačítané"
 
 #
 msgid "failed to set mark"
@@ -922,6 +916,14 @@ msgstr "ztráta"
 # time %ld ms
 msgid "time"
 msgstr "čas"
+
+# probably ...
+msgid "probably"
+msgstr "pravděpodobně"
+
+# %d hops away
+msgid "hops away"
+msgstr "skoků"
 
 # rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
 msgid "rtt min/avg/max/mdev"

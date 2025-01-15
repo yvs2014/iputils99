@@ -47,8 +47,8 @@
 #include <netdb.h>
 #endif
 
-#include "iputils_common.h"
-#if defined(NI_NONCE_MEMORY) || !defined(SCOPE_DELIMITER)
+#include "iputils.h"
+#if defined(NONCE_MEMORY) || !defined(SCOPE_DELIMITER)
 #include "common.h"
 #endif
 #include "node_info.h"
@@ -108,11 +108,11 @@ int niquery_is_enabled(struct ping_ni *ni)
 
 void niquery_init_nonce(struct ping_ni *ni)
 {
-#if NI_NONCE_MEMORY
+#if NONCE_MEMORY
 	iputils_srand();
-	ni->nonce_ptr = calloc(NI_NONCE_SIZE, MAX_DUP_CHK);
+	ni->nonce_ptr = calloc(NONCE_SIZE, MAX_DUP_CHK);
 	if (!ni->nonce_ptr)
-		err(errno, "calloc(%u, %u)", NI_NONCE_SIZE, MAX_DUP_CHK);
+		err(errno, "calloc(%u, %u)", NONCE_SIZE, MAX_DUP_CHK);
 
 	ni->nonce_ptr[0] = ~0;
 #else
@@ -121,7 +121,7 @@ void niquery_init_nonce(struct ping_ni *ni)
 #endif
 }
 
-#if !NI_NONCE_MEMORY
+#if !NONCE_MEMORY
 static int niquery_nonce(struct ping_ni *ni, uint8_t *nonce, int fill)
 {
 	static uint8_t digest[IPUTILS_MD5LENGTH];
@@ -140,11 +140,11 @@ static int niquery_nonce(struct ping_ni *ni, uint8_t *nonce, int fill)
 	}
 
 	if (fill) {
-		memcpy(nonce + sizeof(uint16_t), digest, NI_NONCE_SIZE - sizeof(uint16_t));
+		memcpy(nonce + sizeof(uint16_t), digest, NONCE_SIZE - sizeof(uint16_t));
 		return 0;
 	}
 
-	if (memcmp(nonce + sizeof(uint16_t), digest, NI_NONCE_SIZE - sizeof(uint16_t)))
+	if (memcmp(nonce + sizeof(uint16_t), digest, NONCE_SIZE - sizeof(uint16_t)))
 		return -1;
 
 	return ntohsp((uint16_t *)nonce);
@@ -154,15 +154,15 @@ static int niquery_nonce(struct ping_ni *ni, uint8_t *nonce, int fill)
 void niquery_fill_nonce(struct ping_ni *ni, uint16_t seq, uint8_t *nonce)
 {
 	uint16_t v = htons(seq);
-#if NI_NONCE_MEMORY
+#if NONCE_MEMORY
 	int i;
 
-	memcpy(&ni->nonce_ptr[NI_NONCE_SIZE * (seq % MAX_DUP_CHK)], &v, sizeof(v));
+	memcpy(&ni->nonce_ptr[NONCE_SIZE * (seq % MAX_DUP_CHK)], &v, sizeof(v));
 
-	for (i = sizeof(v); i < NI_NONCE_SIZE; i++)
-		ni->nonce_ptr[NI_NONCE_SIZE * (seq % MAX_DUP_CHK) + i] = 0x100 * (rand() / (RAND_MAX + 1.0));
+	for (i = sizeof(v); i < NONCE_SIZE; i++)
+		ni->nonce_ptr[NONCE_SIZE * (seq % MAX_DUP_CHK) + i] = 0x100 * (rand() / (RAND_MAX + 1.0));
 
-	memcpy(nonce, &ni->nonce_ptr[NI_NONCE_SIZE * (seq % MAX_DUP_CHK)], NI_NONCE_SIZE);
+	memcpy(nonce, &ni->nonce_ptr[NONCE_SIZE * (seq % MAX_DUP_CHK)], NONCE_SIZE);
 #else
 	memcpy(nonce, &v, sizeof(v));
 	niquery_nonce(ni, nonce, 1);
@@ -171,9 +171,9 @@ void niquery_fill_nonce(struct ping_ni *ni, uint16_t seq, uint8_t *nonce)
 
 int niquery_check_nonce(struct ping_ni *ni, uint8_t *nonce)
 {
-#if NI_NONCE_MEMORY
+#if NONCE_MEMORY
 	uint16_t seq = ntohsp((uint16_t *)nonce);
-	if (memcmp(nonce, &ni->nonce_ptr[NI_NONCE_SIZE * (seq % MAX_DUP_CHK)], NI_NONCE_SIZE))
+	if (memcmp(nonce, &ni->nonce_ptr[NONCE_SIZE * (seq % MAX_DUP_CHK)], NONCE_SIZE))
 		return -1;
 	return seq;
 #else

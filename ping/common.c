@@ -32,34 +32,31 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
 #include <ctype.h>
+#include <err.h>
 #include <errno.h>
-#include <locale.h>
-#include <limits.h>
+#include <assert.h>
 #include <signal.h>
+#include <setjmp.h>
 #include <sched.h>
 #include <sys/ioctl.h>
-#include <sys/socket.h>
 #include <poll.h>
-#include <math.h>
-#include <assert.h>
-#include <err.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/icmp6.h>
 #include <sys/socket.h>
 #ifndef SIOCGSTAMP
 #include <linux/sockios.h>
 #endif
-#ifdef HAVE_LIBCAP
-#include <sys/prctl.h>
-#else
-static uid_t euid;
-#endif
 
 #include "common.h"
-#include "iputils_common.h"
+
+#include "iputils.h"
+#include "stats.h"
+#ifdef HAVE_LIBCAP
+#include "caps.h"
+#else
+#include "perm.h"
+#endif
 
 #ifndef HZ
 #define HZ sysconf(_SC_CLK_TCK)
@@ -69,9 +66,6 @@ static uid_t euid;
 #define MIN_GAP_MS	10	// Minimal interpacket gap, in milliseconds
 #define SCHINT(a)	(((a) < MIN_GAP_MS) ? MIN_GAP_MS : (a))
 
-#define BITMAP_ARR(bit)	(rts->rcvd_tbl.bitmap[(bit) >> BITMAP_SHIFT])		// Identify word in array
-#define BITMAP_BIT(bit)	(((bitmap_t)1) << ((bit) & ((1 << BITMAP_SHIFT) - 1)))	// Identify bit in word
-
 #ifndef NI_MAXADDR
 #define NI_MAXADDR	40	// Enough for the longest ip6addr in chars (39 + \0)
 #endif
@@ -79,22 +73,27 @@ static uid_t euid;
 #define NI_MAXNAME	NI_MAXHOST
 #endif
 
+// Identify word in array
+#define BITMAP_ARR(bit)	((map)[(bit) >> BITMAP_SHIFT])
+// Identify bit in word
+#define BITMAP_BIT(bit)	(((bitmap_t)1) << ((bit) & ((1 << BITMAP_SHIFT) - 1)))
 
-static inline bitmap_t rcvd_test(const state_t *rts, uint16_t seq) {
+inline bitmap_t rcvd_test(uint16_t seq, const bitmap_t *map) {
 	unsigned bit = seq % MAX_DUP_CHK;
 	return BITMAP_ARR(bit) & BITMAP_BIT(bit);
 }
-static inline void rcvd_set(state_t *rts, uint16_t seq) {
+inline void rcvd_set(uint16_t seq, bitmap_t *map) {
 	unsigned bit = seq % MAX_DUP_CHK;
 	BITMAP_ARR(bit) |= BITMAP_BIT(bit);
 }
 
-static inline void rcvd_clear(state_t *rts, uint16_t seq) {
+inline void rcvd_clear(uint16_t seq, bitmap_t *map) {
 	unsigned bit = seq % MAX_DUP_CHK;
 	BITMAP_ARR(bit) &= ~BITMAP_BIT(bit);
 }
 
 void usage(int rc) {
+	drop_priv();
 	const char *options =
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
@@ -142,88 +141,6 @@ void usage(int rc) {
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 ;
 	usage_common(rc, options, "TARGET", !MORE);
-}
-
-uid_t limit_capabilities(const state_t *rts) {
-#ifdef HAVE_LIBCAP
-	// set proc
-	cap_t proc = cap_get_proc();
-	if (!proc)
-		err(errno, "cap_get_proc");
-	// set caps
-	cap_t cap = cap_init();
-	if (!cap)
-		err(errno, "cap_init");
-	// set flags
-	cap_flag_value_t flag = CAP_CLEAR;
-	cap_get_flag(proc, CAP_NET_ADMIN, CAP_PERMITTED, &flag);
-	if (flag != CAP_CLEAR)
-		cap_set_flag(cap, CAP_PERMITTED, 1, &rts->cap_admin, CAP_SET);
-	flag = CAP_CLEAR;
-	cap_get_flag(proc, CAP_NET_RAW, CAP_PERMITTED, &flag);
-	if (flag != CAP_CLEAR)
-		cap_set_flag(cap, CAP_PERMITTED, 1, &rts->cap_raw,   CAP_SET);
-	if (cap_set_proc(cap) < 0)
-		err(errno, "cap_set_proc");
-	cap_free(cap);
-	cap_free(proc);
-	// set state
-	if (prctl(PR_SET_KEEPCAPS, 1) < 0)
-		err(errno, "prctl");
-	if (setuid(getuid()) < 0)
-		err(errno, "setuid");
-	if (prctl(PR_SET_KEEPCAPS, 0) < 0)
-		err(errno, "prctl");
-#else
-	euid = geteuid();
-#endif
-	uid_t uid = getuid();
-#ifndef HAVE_LIBCAP
-	if (seteuid(uid))
-		err(errno, "setuid");
-#endif
-	return uid;
-}
-
-#ifdef HAVE_LIBCAP
-int modify_capability(cap_value_t cap, cap_flag_value_t on) {
-	int rc = -1;
-	cap_t cap_p = cap_get_proc();
-	if (cap_p) {
-		cap_flag_value_t cap_ok = CAP_CLEAR;
-		cap_get_flag(cap_p, cap, CAP_PERMITTED, &cap_ok);
-		if (cap_ok != CAP_CLEAR) {
-			cap_set_flag(cap_p, CAP_EFFECTIVE, 1, &cap, on);
-			if (cap_set_proc(cap_p) < 0)
-				warn("cap_set_proc");
-			else
-				rc = 0;
-		} else
-			rc = on ? -1 : 0;
-		cap_free(cap_p);
-	} else
-		warn("cap_get_proc");
-	return rc;
-}
-#else
-int modify_capability(int on) {
-	int rc = seteuid(on ? euid : getuid());
-	if (rc)
-		err(errno, "seteuid");
-	return rc;
-}
-#endif
-
-void drop_capabilities(void) {
-#ifdef HAVE_LIBCAP
-	cap_t cap = cap_init();
-	if (cap_set_proc(cap) < 0)
-		err(errno, "cap_set_proc");
-	cap_free(cap);
-#else
-	if (setuid(getuid()) < 0)
-		err(errno, "setuid");
-#endif
 }
 
 // Fill payload area (supposed to be without timestamp area) with supplied pattern
@@ -309,21 +226,13 @@ static int schedule_exit(const state_t *rts, int next) {
 	return next;
 }
 
-static inline int get_interval(const state_t *rts) {
+int get_interval(const state_t *rts) {
 	int interval = rts->interval;
 	int est = rts->rtt ? (rts->rtt / 8) : (interval * 1000);
 	interval = (est + rts->rtt_addend + 500) / 1000;
 	if (rts->uid && (interval < MIN_USER_MS))
 		interval = MIN_USER_MS;
 	return interval;
-}
-
-/* Print timestamp */
-void print_timestamp(void) {
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	printf("[%lu.%06lu] ",
-	       (unsigned long)tv.tv_sec, (unsigned long)tv.tv_usec);
 }
 
 static inline int in_flight(const state_t *rts) {
@@ -371,9 +280,9 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 				return rest;
 		}
 		ntokens += tokens;
-		long tmp = (long)rts->interval * rts->preload;
-		if (tmp < ntokens)
-			ntokens = tmp;
+		long maxtokens = (long)rts->interval * rts->preload;
+		if (ntokens > maxtokens)
+			ntokens = maxtokens;
 		if (ntokens < rts->interval)
 			return rts->interval - ntokens;
 
@@ -381,8 +290,8 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 		tokens = ntokens - rts->interval;
 	}
 
-	if (rts->opt.outstanding) {
-		if ((rts->ntransmitted > 0) && !rcvd_test(rts, rts->ntransmitted)) {
+	if (rts->opt.outstanding && (rts->ntransmitted > 0)) {
+		if(!rcvd_test(rts->ntransmitted, rts->bitmap)) {
 			PRINT_TIMESTAMP;
 			printf("%s (%s=%lu)\n", _("No answer yet"), _("icmp_seq"), rts->ntransmitted % MAX_DUP_CHK);
 			fflush(stdout);
@@ -392,7 +301,7 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 	int rc;
 	int hard_local_error = 0;
 	do {
-		rcvd_clear(rts, rts->ntransmitted + 1);
+		rcvd_clear(rts->ntransmitted + 1, rts->bitmap);
 		rc = fnset->send_probe(rts, sock->fd, rts->outpack);
 		if (rc == 0) {	// No error
 			oom_count = 0;
@@ -477,16 +386,18 @@ void sock_setmark(state_t *rts, int fd) {
 #ifdef SO_MARK
 	if (!rts->opt.mark)
 		return;
-	ENABLE_CAPABILITY_ADMIN;
+//	NET_ADMIN_ON;  /* legacy? */
+	NET_RAW_ON;
 	int rc = setsockopt(fd, SOL_SOCKET, SO_MARK, &rts->mark, sizeof(rts->mark));
 	int keep = errno;
-	DISABLE_CAPABILITY_ADMIN;
+	NET_RAW_OFF;
+//	NET_ADMIN_OFF; /* legacy? */
 	if (rc < 0) {
 		errno = keep;
 		warn("%s: %s: %u", _WARN, _("failed to set mark"), rts->mark);
 		errno = keep;
 		if (errno == EPERM)
-			warnx("%s", _("=> missing cap_net_admin+p capability"));
+			warn("%s: %s", _("=> missing capability"), "cap_net_raw+p");
 		rts->opt.mark = false;
 	}
 #else
@@ -498,21 +409,6 @@ inline void sock_settos(int fd, int qos, bool ip6) {
 	if (qos && (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
 	    ip6 ? IPV6_TCLASS : IP_TOS, &qos, sizeof(qos)) < 0))
 		err(errno, "setsockopt(%s)", "QoS");
-}
-
-void print_headline(const state_t *rts, size_t nodatalen) {
-	// called once at ping setup
-	socklen_t len = rts->ip6 ?
-		sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
-	const char *target = sprint_addr(&rts->whereto, len, false);
-	printf("%s %s (%s)", _("PING"), rts->hostname, target);
-	if (rts->ip6 && rts->flowlabel)
-		printf(", %s 0x%05x", _("flow"), ntohl(rts->flowlabel));
-	if (rts->device || rts->opt.strictsource) {
-		const char *from = sprint_addr(&rts->source, len, false);
-		printf("%s %s %s:", _(" from"), from, rts->device ? rts->device : "");
-	}
-	printf(" %zu(%zu) %s\n", rts->datalen, rts->datalen + nodatalen, _("data bytes"));
 }
 
 /* Protocol independent setup and parameter checks */
@@ -601,101 +497,6 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 	}
 }
 
-
-/* Print out statistics */
-static bool finish(const state_t *rts) {
-	putchar('\n');
-	fflush(stdout);
-	printf("--- %s%s ---\n", rts->hostname, _(" ping statistics"));
-	printf("%ld %s", rts->ntransmitted, _("packets transmitted"));
-	printf(", %ld %s",  rts->nreceived, _("received"));
-	if (rts->nrepeats)
-		printf(", +%ld %s", rts->nrepeats,  _("duplicates"));
-	if (rts->nchecksum)
-		printf(", +%ld %s", rts->nchecksum, _("corrupted"));
-	if (rts->nerrors)
-		printf(", +%ld %s", rts->nerrors,   _("errors"));
-	if (rts->ntransmitted)
-		printf(", %g%% %s", (rts->ntransmitted - rts->nreceived) * 100.
-			/ rts->ntransmitted, _("lost"));
-	if (!rts->opt.broadcast && (rts->ttl >= 0) && (rts->min_away >= 0)
-		&& /* not altered somewhere */ (rts->ttl >= rts->max_away)) {
-		if (rts->min_away == rts->max_away)
-			printf(", %d %s", rts->ttl - rts->min_away, _("hops away"));
-		else
-			printf(", %d-%d %s", rts->ttl - rts->max_away,
-				rts->ttl - rts->min_away, _("hops away"));
-	}
-	putchar('\n');
-
-	char comma = ',';
-	if (rts->nreceived && rts->timing) {
-		long total = rts->nreceived + rts->nrepeats;
-		long tmavg = rts->tsum / total;
-		long long tmvar = (rts->tsum < INT_MAX) ?
-			/* This slightly clumsy computation order is important to avoid
-			 * integer rounding errors for small ping times */
-			(rts->tsum2 - ((rts->tsum * rts->tsum) / total)) / total :
-			(rts->tsum2 / total) - tmavg * tmavg;
-		double tmdev = sqrt((tmvar < 0) ? -tmvar : tmvar);
-		printf("%s = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld %s",
-			_("rtt min/avg/max/mdev"),
-			rts->tmin             / 1000,   rts->tmin % 1000,
-			(unsigned long)(tmavg / 1000),      tmavg % 1000,
-			rts->tmax             / 1000,   rts->tmax % 1000,
-			(long)tmdev           / 1000, (long)tmdev % 1000,
-			_("ms"));
-		comma = ',';
-	}
-	if (rts->pipesize > 1) {
-		if (comma)
-			printf("%c ", comma);
-		printf("%s %d", _("pipe"), rts->pipesize);
-		comma = ',';
-	}
-
-	if ((!rts->interval || rts->opt.flood || rts->opt.adaptive)
-			&& rts->nreceived && (rts->ntransmitted > 1)) {
-		if (comma)
-			printf("%c ", comma);
-		struct timespec tv = {0};
-		timespecsub(&rts->cur_time, &rts->start_time, &tv);
-		int ipg = (1000000 * (long long)tv.tv_sec + tv.tv_nsec / 1000) / (rts->ntransmitted - 1);
-		printf("%s = %d.%03d/%d.%03d %s", _("ipg/ewma"),
-		       ipg      / 1000,            ipg % 1000,
-		       rts->rtt / 8000, (rts->rtt / 8) % 1000,
-		       _("ms"));
-	}
-	putchar('\n');
-	return (!rts->nreceived || (rts->deadline && (rts->nreceived < rts->npackets)));
-}
-
-
-static void fin_status(const state_t *rts) {
-	static bool in_fin_status;
-	if (in_fin_status)
-		return;
-	in_fin_status = true;
-	int lost = rts->ntransmitted ?
-		(100ll * (rts->ntransmitted - rts->nreceived)) / rts->ntransmitted
-		: 0;
-	// stderr due to signals
-	fprintf(stderr, "%ld/%ld %s", rts->nreceived, rts->ntransmitted, _("packets"));
-	fprintf(stderr, ", %d%% %s", lost, _("lost"));
-	if (rts->nreceived && rts->timing) {
-		long tavg = rts->tsum / (rts->nreceived + rts->nrepeats);
-		fprintf(stderr, ", %s = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld %s",
-			_("min/avg/ewma/max"),
-			rts->tmin / 1000, rts->tmin      % 1000,
-			tavg      / 1000, tavg           % 1000,
-			rts->rtt  / 8000, (rts->rtt / 8) % 1000,
-			rts->tmax / 1000, rts->tmax      % 1000,
-			_("ms"));
-	}
-	putc('\n', stderr);
-	in_fin_status = false;
-}
-
 #ifdef SO_TIMESTAMP
 static inline struct timeval *msghdr_timeval(struct msghdr *msg) {
 	struct timeval *tv = NULL;
@@ -724,7 +525,7 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
 			break;
 		/* Check for and do special actions */
 		if (snapshot) { // SIGQUIT
-			fin_status(rts);
+			print_status(rts);
 			snapshot = false;
 		}
 
@@ -854,7 +655,7 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
 			 * and return to pinger. */
 		}
 	}
-	return finish(rts);
+	return resume(rts);
 }
 
 
@@ -872,7 +673,7 @@ int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
 	uint8_t *packet = malloc(packlen);
 	if (packet) {
 		ping_setup(rts, sock);
-		drop_capabilities();
+		drop_priv();
 		int rc = main_loop(rts, fnset, sock, packet, packlen);
 		free(packet);
 		return rc;
@@ -880,173 +681,6 @@ int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
 	if (errno)
 		err(errno, "malloc(%zu)", packlen);
 	errx(EXIT_FAILURE, "malloc(%zu)", packlen);
-}
-
-bool stats_noflush(state_t *rts, const uint8_t *icmp, int icmplen,
-	size_t received, uint16_t seq, int away, const struct timeval *at,
-	void (*print)(bool ip6, const uint8_t *hdr, size_t len),
-	const char *from, bool ack, bool wrong)
-{
-// note: do not use inet_ntoa() and sprint_addr() inside, it requires a static buffer
-	++rts->nreceived;
-	if (ack)
-		acknowledge(rts, seq);
-
-	const uint8_t *ptr = icmp + icmplen;
-	long triptime = 0;
-
-	if (rts->timing && (received >= (sizeof(struct icmphdr) + sizeof(struct timeval)))) {
-		struct timeval peer;
-		memcpy(&peer, ptr, sizeof(peer));
-		struct timeval tv;
-		memcpy(&tv,    at, sizeof(tv));
-		do {
-			timersub(&tv, &peer, &tv);
-			triptime = tv.tv_sec * 1000000 + tv.tv_usec;
-			if (triptime >= 0)
-				break;
-			warnx("%s: %s: %ldus", _WARN,
-				_("Time of day goes back, taking countermeasures"),
-				triptime);
-			if (rts->opt.latency) {
-				triptime = 0;
-				break;
-			}
-			rts->opt.latency = true;
-			gettimeofday(&tv, NULL);
-		} while (1);
-		if (triptime > (MAXWAIT * 1000000))
-			triptime = MAXWAIT * 1000000;
-		if (ack) {
-			rts->tsum  += triptime;
-			rts->tsum2 += (double)((long long)triptime * (long long)triptime);
-			if (triptime < rts->tmin)
-				rts->tmin = triptime;
-			if (triptime > rts->tmax)
-				rts->tmax = triptime;
-			if (!rts->rtt)
-				rts->rtt = triptime * 8;
-			else
-				rts->rtt += triptime - rts->rtt / 8;
-			if (rts->opt.adaptive)
-				rts->interval = get_interval(rts);
-		}
-	}
-
-	bool dup = false;
-	if (!ack) {
-		++rts->nchecksum;
-		--rts->nreceived;
-	} else if (rcvd_test(rts, seq)) {
-		++rts->nrepeats;
-		--rts->nreceived;
-		dup = true;
-	} else
-		rcvd_set(rts, seq);
-	rts->confirm = rts->confirm_flag;
-
-	if (away >= 0) { // keep ttl distanse
-		if (rts->min_away < 0)
-			rts->min_away = rts->max_away = away;
-		else if (away < rts->min_away)
-			rts->min_away = away;
-		else if (away > rts->max_away)
-			rts->max_away = away;
-	}
-
-	if (rts->opt.quiet)
-		return true;
-	if (rts->opt.flood) {
-		if (ack) {
-			if (write(STDOUT_FILENO, "\b \b", 3)) {};
-		} else {
-			if (write(STDOUT_FILENO, "\bC", 2)) {};
-		}
-		return true;
-	}
-
-	PRINT_TIMESTAMP;
-	printf("%zd %s%s %s: ", received, _("bytes"), _(" from"), from);
-	if (print) /* seq */
-		print(rts->ip6, icmp, received);
-	else
-		printf("%s=%u", _("icmp_seq"), seq);
-	if (rts->opt.verbose)
-		printf(" %s=%u", _("ident"), ntohs(rts->ident16));
-	if (away >= 0)
-		printf(" %s=%d", _("ttl"), away);
-	if (received < (sizeof(struct icmphdr) + rts->datalen)) {
-		printf(" (%s)\n", _("truncated"));
-		return true;
-	}
-
-	if (rts->timing)
-		printf(" %s=%.3f %s", _("time"), triptime / 1000., _("ms"));
-	char* exclame[3] = {
-		(dup && (!rts->multicast || rts->opt.verbose)) ? "DUP" : NULL,
-		ack ? NULL : "BAD CHECKSUM",
-		wrong ? "DIFFERENT ADDRESS" : NULL,
-	};
-	for (int i = 0; i < 3; i++)
-		if (exclame[i])
-			printf(" (%s!)", exclame[i]);
-
-	/* check the data */
-	const uint8_t *cp = ptr + sizeof(struct timeval);
-	const uint8_t *dp = &rts->outpack[sizeof(struct icmphdr) + sizeof(struct timeval)];
-	for (size_t i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp, ++dp) {
-		if (*cp == *dp)
-			continue;
-		putchar('\n');
-		printf("\n%s %zu (%s%02x, %s%02x) ",
-			_("wrong byte #"),  i,
-			_("expected 0x"), *dp,
-			_("got 0x"),      *cp);
-		cp = ptr + sizeof(struct timeval);
-		for (i = sizeof(struct timeval); i < rts->datalen; ++i, ++cp) {
-			if ((i % 32) == sizeof(struct timeval))
-				printf("\n#%zu\t", i);
-			printf("%x ", *cp);
-		}
-	}
-
-	return false;
-}
-
-inline bool gather_stats(state_t *rts, const void *icmp, int icmplen,
-	size_t received, uint16_t seq, int away, const struct timeval *at,
-	void (*print)(bool ip6, const uint8_t *hdr, size_t len),
-	const char *from, bool ack, bool wrong)
-{
-	bool finished = stats_noflush(rts, icmp, icmplen, received, seq, away,
-		at, print, from, ack, wrong);
-	if (finished)
-		fflush(stdout);
-	return finished;
-}
-
-double strtod_or_err(const char *str, const char *errmesg,
-	double min, double max)
-{
-	errno = (str && *str) ? 0 : EINVAL;
-	if (!errno) {
-		char *end = NULL;
-/* Here we always use "C" LC_NUMERIC to have dots as decimal separators */
-		setlocale(LC_NUMERIC, "C");
-		double num = strtod(str, &end);
-		int keep = errno;
-		setlocale(LC_NUMERIC, "");
-		errno = keep;
-		if (!(errno || (str == end) || (end && *end))) {
-			if (isgreaterequal(num, min) && islessequal(num, max))
-				return num;
-			errno = ERANGE;
-			err(errno, "%s: %s: %g-%g", errmesg, str, min, max);
-		}
-	}
-	if (errno)
-		err(errno, "%s: %s", errmesg, str);
-	errx(EXIT_FAILURE, "%s: %s", errmesg, str);
 }
 
 /* Return hostaddr and hostname (optionally), note: last request is cached */

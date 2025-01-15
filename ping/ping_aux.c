@@ -67,9 +67,11 @@
 #include <net/if.h>
 #include <linux/in6.h>
 
-#include "iputils_common.h"
-#include "common.h"
 #include "ping_aux.h"
+
+#include "iputils.h"
+#include "common.h"
+#include "stats.h"
 #include "ping4_aux.h"
 #include "ping6_aux.h"
 
@@ -126,20 +128,6 @@ void setsock_filter(const state_t *rts,
 #endif
 }
 
-// return setsockopt's return_code and keep its errno
-int setsock_bindopt(int fd, const char *device, socklen_t slen, unsigned mcast_face) {
-	ENABLE_CAPABILITY_RAW;
-	int rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, device, slen);
-	int keep = errno;
-	DISABLE_CAPABILITY_RAW;
-	errno = keep;
-	if ((rc < 0) && mcast_face) {
-		struct ip_mreqn imr = { .imr_ifindex = mcast_face };
-		rc = setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF, &imr, sizeof(imr));
-	}
-	return rc;
-}
-
 inline void setsock_recverr(int fd, bool ip6) {
 	int on = 1;
 	if (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
@@ -166,15 +154,6 @@ void setsock_ttl(int fd, bool ip6, int ttl) {
 			err(errno, "setsockopt(%s)", "UNICAST_TTL");
 }
 
-int getsock_ttl(int fd, bool ip6) {
-	int ttl = -1;
-	socklen_t len = sizeof(ttl);
-	if (getsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
-		ip6 ? IPV6_UNICAST_HOPS : IP_TTL, &ttl, &len))
-			errno = 0;
-	return (ttl <= UCHAR_MAX) ? ttl : -1;
-}
-
 void pmtu_interval(state_t *rts) {
 	rts->multicast = true;
 	int pmtudo = rts->ip6 ? IPV6_PMTUDISC_DO : IP_PMTUDISC_DO;
@@ -192,37 +171,6 @@ void pmtu_interval(state_t *rts) {
 	}
 	if (rts->pmtudisc < 0)
 		rts->pmtudisc = pmtudo;
-}
-
-#if defined(IP_PKTINFO) || defined(IPV6_PKTINFO)
-static void set_pktinfo(int level, int name, const void *val, socklen_t len, int fd1, int fd2) {
-	ENABLE_CAPABILITY_RAW;
-	if ((setsockopt(fd1, level, name, val, len) < 0) ||
-	    (setsockopt(fd2, level, name, val, len) < 0))
-		err(errno, "setsockopt(%s)", "PKTINFO");
-	DISABLE_CAPABILITY_RAW;
-}
-#endif
-
-void set_device(bool ip6, const char *device, socklen_t len,
-	unsigned pkt_face, unsigned mcast_face, int fd1, int fd2)
-{
-#if defined(IP_PKTINFO) || defined(IPV6_PKTINFO)
-	if (ip6) {
-#ifdef IPV6_PKTINFO
-		struct in6_pktinfo ipi = { .ipi6_ifindex = pkt_face };
-		set_pktinfo(IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi), fd1, fd2);
-#endif
-	} else {
-#ifdef IP_PKTINFO
-		struct in_pktinfo  ipi = { .ipi_ifindex  = pkt_face };
-		set_pktinfo(IPPROTO_IP,   IP_PKTINFO,   &ipi, sizeof(ipi), fd1, fd2);
-#endif
-	}
-#endif
-	if ((setsock_bindopt(fd1, device, len, mcast_face) < 0) ||
-	    (setsock_bindopt(fd2, device, len, mcast_face) < 0))
-		err(errno, "setsockopt(%s): %s", "BINDIFACE", device);
 }
 
 void mtudisc_n_bind(state_t *rts, const sock_t *sock) {
@@ -269,9 +217,9 @@ void cmp_srcdev(const state_t *rts) {
 			break;
 	}
 	if (!ifa)
-		warnx("%s: %s %s",
+		warnx("%s: %s %s", _WARN,
 			_("Source address might be selected on device other than:"),
-			_WARN, rts->device);
+			rts->device);
 	if (list)
 		freeifaddrs(list);
 }

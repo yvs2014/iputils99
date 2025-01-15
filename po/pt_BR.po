@@ -557,13 +557,9 @@ msgstr "Pacote curto demais"
 msgid "WARNING"
 msgstr "AVISO"
 
-#
-msgid "=> missing cap_net_raw+p capability"
-msgstr "=> faltando a capacidade cap_net_raw+p"
-
-#
-msgid "=> missing cap_net_admin+p capability"
-msgstr "=> faltando a capacidade cap_net_admin+p"
+# missing capability: %s
+msgid "=> missing capability"
+msgstr "=> faltando a capacidade"
 
 #
 msgid "Bad value for flowinfo"
@@ -924,6 +920,14 @@ msgstr "perdido"
 # time %ld ms
 msgid "time"
 msgstr "tempo"
+
+# probably ...
+msgid "probably"
+msgstr "provavelmente"
+
+# %d hops away
+msgid "hops away"
+msgstr "saltos"
 
 # rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
 msgid "rtt min/avg/max/mdev"

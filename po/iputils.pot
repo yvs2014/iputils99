@@ -500,12 +500,8 @@ msgstr ""
 msgid "WARNING"
 msgstr ""
 
-#
-msgid "=> missing cap_net_raw+p capability"
-msgstr ""
-
-#
-msgid "=> missing cap_net_admin+p capability"
+# missing capability: %s
+msgid "=> missing capability"
 msgstr ""
 
 #
@@ -892,6 +888,10 @@ msgstr ""
 
 # time %ld ms
 msgid "time"
+msgstr ""
+
+# probably ...
+msgid "probably"
 msgstr ""
 
 # %d hops away

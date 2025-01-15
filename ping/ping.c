@@ -68,12 +68,18 @@
 #include <locale.h>
 #endif
 
-#include "iputils_common.h"
+#include "iputils.h"
+#include "str2num.h"
 #include "common.h"
 #include "ping_aux.h"
 #include "ping4.h"
 #include "ping6.h"
 #include "extra.h"
+#ifdef HAVE_LIBCAP
+#include "caps.h"
+#else
+#include "perm.h"
+#endif
 #ifdef ENABLE_RFC4620
 #include "node_info.h"
 #endif
@@ -161,19 +167,28 @@ static void open_socket(sock_t *sock, int af, int proto, bool verbose) {
 		}
 	}
 	if (sock->raw) {
-		ENABLE_CAPABILITY_RAW;
+		NET_RAW_ON;
 		sock->fd = socket(af, SOCK_RAW, proto);
 		num = errno;
-		DISABLE_CAPABILITY_RAW;
+		NET_RAW_OFF;
 	}
 	if (verbose)
 		warnx("%s: %s %s socket", _INFO, PINGTYPE(sock->raw), AFTYPE(af));
 	if (sock->fd >= 0)
 		return;
 	// failed
-	if (sock->raw && geteuid())
-		warnx("%s", _("=> missing cap_net_raw+p capability"));
-	err(num ? num : EXIT_FAILURE, "socket");
+	if (sock->raw && geteuid()) {
+		errno = num;
+		if (errno)
+			warn("%s: %s", _("=> missing capability"), "cap_net_raw+p");
+		else
+			warnx("%s: %s", _("=> missing capability"), "cap_net_raw+p");
+	}
+	errno = num;
+	if (errno)
+		err(errno, "%s", __func__);
+	else
+		errx(EXIT_FAILURE, "%s", __func__);
 }
 
 static inline void opt_I(state_t *rts, const char *str) {
@@ -226,13 +241,13 @@ static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) 
 }
 #endif
 
-static inline void opt_s(state_t *rts, const char *str) {
+static inline void opt_s(state_t *rts) {
 #ifdef ENABLE_RFC4620
 	if (rts->ni)
 		errx(EXIT_FAILURE, "%s: %s", _WARN,
 			_("NodeInfo packet can only have a header"));
 #endif
-	unsigned len = strtoll_or_err(str, _("Invalid argument"), 0, MAXPAYLOAD);
+	unsigned len = VALID_INTSTR(0, MAXPAYLOAD);
 	unsigned char *pack = calloc(1, PACKHDRLEN + len);
 	if (!pack)
 		err(errno, "calloc(%zu)", PACKHDRLEN + len);
@@ -256,7 +271,8 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			bool ip4 = (ch == '4');
 #ifdef ENABLE_RFC4620
 			if (rts->ni && ip4) // '-N' indication
-				errx(EINVAL, "%s: %s", _WARN, _("NodeInfo client is for IPv6 only"));
+				errx(EINVAL, "%s: %s", _WARN,
+					_("NodeInfo client is for IPv6 only"));
 #endif
 			int incompat = ip4 ? AF_INET6 : AF_INET;
 			if (hints->ai_family == incompat)
@@ -268,8 +284,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->opt.broadcast = true;
 			break;
 		case 'e':
-			rts->ident16 = htons(strtoll_or_err(optarg,
-				_("Invalid argument"), 0, USHRT_MAX));
+			rts->ident16 = htons(VALID_INTSTR(0, USHRT_MAX));
 			rts->custom_ident = rts->ident16;
 			break;
 		case 'R':
@@ -311,7 +326,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->opt.strictsource = true;
 			break;
 		case 'c':
-			rts->npackets = strtoll_or_err(optarg, _("Invalid argument"), 1, LONG_MAX);
+			rts->npackets = VALID_INTSTR(1, LONG_MAX);
 			break;
 		case 'C':
 			rts->opt.connect_sk = true;
@@ -328,8 +343,8 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->opt.resolve = true;
 			break;
 		case 'i': {
-			double value = strtod_or_err(optarg, _("Bad timing interval"),
-				0, (double)INT_MAX / 1000);
+			double value = str2dbl(optarg, 0, (double)INT_MAX / 1000,
+				_("Bad timing interval"));
 			rts->interval = (int)(value * 1000);
 			rts->opt.interval = true;
 		}
@@ -338,15 +353,16 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			opt_I(rts, optarg);
 			break;
 		case 'l':
-			rts->preload = strtoll_or_err(optarg, _("Invalid argument"), 1, MAX_DUP_CHK);
+			rts->preload = VALID_INTSTR(1, MAX_DUP_CHK);
 			if (rts->uid && (rts->preload > 3))
-				errx(EINVAL, "%s: %d", _("Cannot set preload to value greater than 3"), rts->preload);
+				errx(EINVAL, "%s: %d",
+_("Cannot set preload to value greater than 3"), rts->preload);
 			break;
 		case 'L':
 			rts->opt.noloop = true;
 			break;
 		case 'm':
-			rts->mark = strtoll_or_err(optarg, _("Invalid argument"), 0, UINT_MAX);
+			rts->mark = VALID_INTSTR(0, UINT_MAX);
 			rts->opt.mark = true;
 			break;
 		case 'M':
@@ -359,7 +375,8 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			else if (strcmp(optarg, "probe") == 0)
 				rts->pmtudisc = IP_PMTUDISC_PROBE;
 			else
-				errx(EINVAL, "%s: %c %s", _("Invalid argument"), ch, optarg);
+				errx(EINVAL, "%s: %c %s",
+					_("Invalid argument"), ch, optarg);
 			break;
 		case 'n':
 			rts->opt.resolve = false;
@@ -392,13 +409,13 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->opt.so_dontroute = true;
 			break;
 		case 's':
-			opt_s(rts, optarg);
+			opt_s(rts);
 			break;
 		case 'S':
-			rts->sndbuf = strtoll_or_err(optarg, _("Invalid argument"), 1, INT_MAX);
+			rts->sndbuf = VALID_INTSTR(1, INT_MAX);
 			break;
 		case 't':
-			rts->ttl = strtoll_or_err(optarg, _("Invalid argument"), 0, UCHAR_MAX);
+			rts->ttl = VALID_INTSTR(0, UCHAR_MAX);
 			break;
 		case 'U':
 			rts->opt.latency = true;
@@ -407,11 +424,11 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			rts->opt.verbose = true;
 			break;
 		case 'w':
-			rts->deadline = strtoll_or_err(optarg, _("Invalid argument"), 0, INT_MAX);
+			rts->deadline = VALID_INTSTR(0, INT_MAX);
 			break;
 		case 'W': {
-			double value = strtod_or_err(optarg, _("Bad linger time"),
-				0, (double)INT_MAX / 1000);
+			double value = str2dbl(optarg, 0, (double)INT_MAX / 1000,
+				_("Bad linger time"));
 			/* lingertime will be converted to usec later */
 			rts->lingertime = (int)(value * 1000);
 		}
@@ -434,9 +451,9 @@ int main(int argc, char **argv) {
 	state_t rts = {
 		.datalen      = DEFDATALEN,
 		.custom_ident = -1,
-		.interval     = 1000,
-		.preload      = 1,
-		.lingertime   = MAXWAIT * 1000,
+		.interval     = 1000,		/* in ms */
+		.preload      =  1,
+		.lingertime   = MAXWAIT * 1000,	/* in ms */
 		.confirm_flag = MSG_CONFIRM,
 		.pmtudisc     = -1,
 		.ttl          = -1,
@@ -444,15 +461,19 @@ int main(int argc, char **argv) {
 		.max_away     = -1,
 		.tmin         = LONG_MAX,
 		.pipesize     = -1,
-#ifdef HAVE_LIBCAP
-		.cap_raw      = CAP_NET_RAW,
-		.cap_admin    = CAP_NET_ADMIN,
-#endif
 		.screen_width = USHRT_MAX,
 		.opt.resolve  = true,
 	};
 
-	rts.uid = limit_capabilities(&rts);
+#ifdef HAVE_LIBCAP
+	// limit caps to net_raw
+	{ cap_value_t caps[] = {CAP_NET_RAW/*, CAP_NET_ADMIN*/};
+	  limit_cap(caps, ARRAY_SIZE(caps)); }
+	NET_RAW_OFF;
+#else
+	keep_euid();
+#endif
+	rts.uid = getuid();
 
 	setmyname(argv[0]);
 	SET_NLS;
@@ -485,7 +506,7 @@ int main(int argc, char **argv) {
 	const char *target = argv[argc - 1];
 
 	if (rts.custom_ident < 0) {
-#ifdef ARC4RANDOM_UNIFORM
+#ifdef HAVE_ARC4RANDOM_UNIFORM
 		rts.ident16 = arc4random_uniform(USHRT_MAX) + 1;
 #else
 		rts.ident16 = htons(getpid() & USHRT_MAX);

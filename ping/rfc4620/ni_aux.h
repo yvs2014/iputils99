@@ -8,7 +8,7 @@
    sizeof(__typeof__(int[1 - 2 * \
 	  !!__builtin_types_compatible_p(__typeof__(arr), \
 					 __typeof__(&arr[0]))])) * 0)
-#ifdef NI_NONCE_MEMORY
+#ifdef NONCE_MEMORY
 void iputils_srand(void);
 #endif
 

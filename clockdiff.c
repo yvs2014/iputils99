@@ -49,8 +49,6 @@
  * number of messages sent in each measurement.
  */
 
-#include "iputils_common.h"
-
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -72,12 +70,16 @@
 #include <time.h>
 #include <err.h>
 #include <errno.h>
-
-#ifdef HAVE_LIBCAP
-#include <sys/capability.h>
-#endif
 #ifdef USE_NLS
 #include <locale.h>
+#endif
+
+#include "iputils.h"
+
+#ifdef HAVE_LIBCAP
+#include "caps.h"
+#else
+#include "perm.h"
 #endif
 
 enum {
@@ -101,7 +103,7 @@ enum {
 static const char* ts_format[] = {"%FT%T%z" /*iso*/, "%c" /*local*/};
 
 typedef struct run_state {
-	uint16_t id;
+	uint16_t id16;
 	int sock;
 	struct sockaddr_in server;
 	int ip_opt_len;
@@ -213,7 +215,7 @@ static int measure_inner_loop(state_t *rts, struct measure_vars *mv) {
 		 (mv->packet[20] == IPOPT_TIMESTAMP));
 
 	if (reply_with_ts
-	    && (mv->icmp->un.echo.id       == rts->id)
+	    && (mv->icmp->un.echo.id       == rts->id16)
 	    && (mv->icmp->un.echo.sequence >= rts->seqno0)
 	    && (mv->icmp->un.echo.sequence <= rts->seqno))
 	{
@@ -356,7 +358,7 @@ static int measure(state_t *rts) {
 	oicp->type       = rts->ip_opt_len ? ICMP_ECHO : ICMP_TIMESTAMP;
 	oicp->code       = 0;
 	oicp->checksum   = 0;
-	oicp->un.echo.id = rts->id;
+	oicp->un.echo.id = rts->id16;
 	((uint32_t *)(oicp + 1))[0] = 0;
 	((uint32_t *)(oicp + 1))[1] = 0;
 	((uint32_t *)(oicp + 1))[2] = 0;
@@ -407,19 +409,8 @@ static int measure(state_t *rts) {
 	return GOOD;
 }
 
-static void drop_rights(void) {
-#ifdef HAVE_LIBCAP
-	cap_t caps = cap_init();
-	if (cap_set_proc(caps))
-		err(errno, "cap_set_proc");
-	cap_free(caps);
-#endif
-	if (setuid(getuid()))
-		err(errno, "setuid");
-}
-
 NORETURN static void usage(int rc) {
-	drop_rights();
+	drop_priv();
 	const char *options =
 "                without -o, use icmp timestamp only\n"
 "                (see RFC792, page 16)\n"
@@ -473,6 +464,16 @@ static void parse_opts(state_t *rts, int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
+#ifdef HAVE_LIBCAP
+	// limit caps to net_raw|sys_nice
+	{ cap_value_t caps[] = {CAP_NET_RAW, CAP_SYS_NICE};
+	  limit_cap(caps, ARRAY_SIZE(caps)); }
+	NET_RAW_OFF;
+	SYS_NICE_OFF;
+#else
+	keep_euid();
+#endif
+
 	setmyname(argv[0]);
 	SET_NLS;
 	atexit(close_stdout);
@@ -488,20 +489,37 @@ int main(int argc, char **argv) {
 	} else if (argc != 1)
 		usage(EINVAL);
 
-	rts.sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-	if (rts.sock < 0)
+	{
+	  NET_RAW_ON;
+	  rts.sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+	  int keep = errno;
+	  NET_RAW_OFF;
+	  if (rts.sock < 0) {
+		errno = keep;
 		err(errno, "socket(%s, %s)", "AF_INET", "SOCK_RAW");
+	  }
+	}
 	{ int inc = -16;
-	  if (nice(inc) == -1)
+	  SYS_NICE_ON;
+	  int rc = nice(inc);
+	  int keep = errno;
+	  SYS_NICE_OFF;
+	  if (rc == -1) {
+		errno = keep;
 		err(errno, "nice(%d)", inc);
+	  }
 	}
 
-	drop_rights();
+	drop_priv();
 
 	if (isatty(fileno(stdin)) && isatty(fileno(stdout)))
 		rts.interactive = true;
 
-	rts.id = getpid();
+#ifdef HAVE_ARC4RANDOM_UNIFORM
+	rts.id16 = arc4random_uniform(USHRT_MAX) + 1;
+#else
+	rts.id16 = htons(getpid() & USHRT_MAX);
+#endif
 
 	{ // resolv
 	  const struct addrinfo hints = {
@@ -522,7 +540,6 @@ int main(int argc, char **argv) {
 	  memcpy(&rts.server, res->ai_addr, sizeof(rts.server));
 	  freeaddrinfo(res);
 	}
-
 	if (connect(rts.sock, (struct sockaddr *)&rts.server, sizeof(rts.server)) < 0)
 		err(errno, "%s", "connect()");
 	if (rts.ip_opt_len) {

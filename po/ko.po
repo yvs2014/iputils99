@@ -552,13 +552,9 @@ msgstr "패킷이 너무 짧음"
 msgid "WARNING"
 msgstr "경고"
 
-#
-msgid "=> missing cap_net_raw+p capability"
-msgstr "=> cap_net_raw+p가 없습니다"
-
-#
-msgid "=> missing cap_net_admin+p capability"
-msgstr "=> cap_net_admin+p가 없습니다"
+# missing capability: %s
+msgid "=> missing capability"
+msgstr ""
 
 #
 msgid "Bad value for flowinfo"

@@ -10,8 +10,6 @@
  * 		YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
  */
 
-#include "iputils_common.h"
-
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <linux/if_ether.h>
@@ -33,14 +31,16 @@
 #include <sys/timerfd.h>
 #include <err.h>
 #include <errno.h>
-
-#ifdef HAVE_LIBCAP
-# include <sys/capability.h>
-# include <sys/prctl.h>
-#endif
-
 #ifdef USE_NLS
 #include <locale.h>
+#endif
+
+#include "iputils.h"
+#include "str2num.h"
+#ifdef HAVE_LIBCAP
+#include "caps.h"
+#else
+#include "perm.h"
 #endif
 
 /*
@@ -66,7 +66,17 @@ struct device {
 	struct ifaddrs *ifa;
 };
 
-struct run_state {
+typedef struct arping_opt_s {
+	bool dad;
+	bool quiet;
+	bool advert;
+	bool quit; // on reply
+	bool unicast;
+	bool broadcast;
+	bool unsolicited;
+} arping_opt_t;
+
+typedef struct run_state {
 	struct device device;
 	char *source;
 	struct ifaddrs *ifa0;
@@ -77,7 +87,7 @@ struct run_state {
 	int count;
 	int timeout;
 	unsigned interval;
-	int socketfd;
+	int sock;
 	struct sockaddr_storage me;
 	struct sockaddr_storage he;
 	struct timespec start;
@@ -87,38 +97,23 @@ struct run_state {
 	int received;
 	int brd_recv;
 	int req_recv;
-#ifdef HAVE_LIBCAP
-	cap_flag_value_t cap_raw;
-#else
-	uid_t euid;
-#endif
-	unsigned
-		advert:1,
-		broadcast_only:1,
-		dad:1,
-		quiet:1,
-		quit_on_reply:1,
-		unicasting:1,
-		unsolicited:1;
-};
+	arping_opt_t opt;
+} state_t;
 
-#ifdef HAVE_LIBCAP
-static const cap_value_t caps[] = { CAP_NET_RAW };
-#endif
 
 /*
  * All includes, definitions, struct declarations, and global variables are
  * above.  After this comment all you can find is functions.
  */
 
-static inline size_t sll_len(size_t halen)
-{
+static inline size_t sll_len(size_t halen) {
 	size_t len = offsetof(struct sockaddr_ll, sll_addr) + halen;
 	return (len < sizeof(struct sockaddr_ll)) ?
 		sizeof(struct sockaddr_ll) : len;
 }
 
 NORETURN static void usage(int rc) {
+	drop_priv();
 	const char *options =
 "  -f            quit on first reply\n"
 "  -q            be quiet\n"
@@ -136,93 +131,7 @@ NORETURN static void usage(int rc) {
 	usage_common(rc, options, "TARGET", !MORE);
 }
 
-#ifdef HAVE_LIBCAP
-static void arping_limit_capabilities(struct run_state *ctl) {
-	cap_t cap_p = cap_get_proc();
-	if (!cap_p)
-		err(errno, "cap_get_proc");
-
-	cap_get_flag(cap_p, CAP_NET_RAW, CAP_PERMITTED, &ctl->cap_raw);
-
-	if (ctl->cap_raw != CAP_CLEAR) {
-		if (cap_clear(cap_p) < 0)
-			err(errno, "cap_clear");
-
-		cap_set_flag(cap_p, CAP_PERMITTED, 1, caps, CAP_SET);
-
-		if (cap_set_proc(cap_p) < 0) {
-			warn("cap_set_proc");
-			if (errno != EPERM)
-				exit(errno);
-		}
-	}
-
-	if (prctl(PR_SET_KEEPCAPS, 1) < 0)
-		err(errno, "prctl");
-
-	if (setuid(getuid()) < 0)
-		err(errno, "setuid");
-
-	if (prctl(PR_SET_KEEPCAPS, 0) < 0)
-		err(errno, "prctl");
-
-	cap_free(cap_p);
-}
-
-static int arping_modify_capability_raw(struct run_state *ctl, int on) {
-	if (ctl->cap_raw != CAP_SET)
-		return on ? -1 : 0;
-
-	cap_t cap_p = cap_get_proc();
-	if (!cap_p)
-		err(errno, "cap_get_proc");
-
-	cap_set_flag(cap_p, CAP_EFFECTIVE, 1, caps, on ? CAP_SET : CAP_CLEAR);
-
-	if (cap_set_proc(cap_p) < 0)
-		err(errno, "cap_set_proc");
-
-	cap_free(cap_p);
-	return 0;
-}
-
-static void arping_drop_capabilities(void) {
-	cap_t cap_p = cap_init();
-
-	if (!cap_p)
-		err(errno, "cap_init");
-
-	if (cap_set_proc(cap_p) < 0)
-		err(errno, "cap_set_proc");
-
-	cap_free(cap_p);
-}
-#else	/* HAVE_LIBCAP */
-static inline void arping_limit_capabilities(struct run_state *ctl) {
-	ctl->euid = geteuid();
-}
-
-static int arping_modify_capability_raw(struct run_state *ctl, int on) {
-	if (setuid(on ? ctl->euid : getuid()))
-		err(errno, "setuid");
-	return 0;
-}
-
-static inline void arping_drop_capabilities(void) {
-	if (setuid(getuid()))
-		err(errno, "setuid");
-}
-#endif	/* HAVE_LIBCAP */
-
-static inline int arping_enable_capability_raw(struct run_state *ctl) {
-	return arping_modify_capability_raw(ctl, 1);
-}
-
-static inline int arping_disable_capability_raw(struct run_state *ctl) {
-	return arping_modify_capability_raw(ctl, 0);
-}
-
-static int send_pack(struct run_state *ctl) {
+static int send_pack(state_t *ctl) {
 	unsigned char buf[256];
 	struct arphdr *ah = (struct arphdr *)buf;
 	struct sockaddr_ll *ME = (struct sockaddr_ll *)&(ctl->me);
@@ -244,7 +153,7 @@ static int send_pack(struct run_state *ctl) {
 
 	ah->ar_hln = ME->sll_halen;
 	ah->ar_pln = 4;
-	ah->ar_op  = ctl->advert ? htons(ARPOP_REPLY) : htons(ARPOP_REQUEST);
+	ah->ar_op  = ctl->opt.advert ? htons(ARPOP_REPLY) : htons(ARPOP_REQUEST);
 
 	unsigned char *p = (unsigned char *)(ah + 1);
 	memcpy(p, &ME->sll_addr, ah->ar_hln);
@@ -253,7 +162,7 @@ static int send_pack(struct run_state *ctl) {
 	memcpy(p, &ctl->gsrc, 4);
 	p += 4;
 
-	memcpy(p, ctl->advert ? &ME->sll_addr : &HE->sll_addr, ah->ar_hln);
+	memcpy(p, ctl->opt.advert ? &ME->sll_addr : &HE->sll_addr, ah->ar_hln);
 	p += ah->ar_hln;
 
 	memcpy(p, &ctl->gdst, 4);
@@ -261,38 +170,39 @@ static int send_pack(struct run_state *ctl) {
 
 	struct timespec now = {0};
 	clock_gettime(CLOCK_MONOTONIC, &now);
-	int err = sendto(ctl->socketfd, buf, p - buf, 0, (struct sockaddr *)HE, sll_len(ah->ar_hln));
+	int err = sendto(ctl->sock, buf, p - buf, 0, (struct sockaddr *)HE, sll_len(ah->ar_hln));
 	if (err == (p - buf)) {
 		ctl->last = now;
 		ctl->sent++;
-		if (!ctl->unicasting)
+		if (!ctl->opt.unicast)
 			ctl->brd_sent++;
 	}
 	return err;
 }
 
-static int finish(const struct run_state *ctl) {
-	if (!ctl->quiet) {
-		printf("%s: %d", _("Sent probes"), ctl->sent);
-		printf(" (%d %s)\n", ctl->brd_sent, _("broadcasts"));
-		printf("%s: %d", _("Received responses"), ctl->received);
-		if (ctl->brd_recv || ctl->req_recv) {
+static bool finish(const state_t *rts) {
+	if (!rts->opt.quiet) {
+		printf("%s: %d", _("Sent probes"), rts->sent);
+		printf(" (%d %s)\n", rts->brd_sent, _("broadcasts"));
+		printf("%s: %d", _("Received responses"), rts->received);
+		if (rts->brd_recv || rts->req_recv) {
 			printf(" (");
-			if (ctl->req_recv)
-				printf("%d %s", ctl->req_recv, _("requests"));
-			if (ctl->brd_recv)
-				printf("%s%d %s", ctl->req_recv ? ", " : "",
-					ctl->brd_recv, _("broadcasts"));
+			if (rts->req_recv)
+				printf("%d %s", rts->req_recv, _("requests"));
+			if (rts->brd_recv)
+				printf("%s%d %s", rts->req_recv ? ", " : "",
+					rts->brd_recv, _("broadcasts"));
 			printf(")");
 		}
 		printf("\n");
 		fflush(stdout);
 	}
-	if (ctl->dad)
-		return (!!ctl->received);
-	if (ctl->unsolicited)
-		return 0;
-	return (!ctl->received);
+	bool got = rts->received ? true : false;
+	if (rts->opt.dad)
+		return got;
+	if (rts->opt.unsolicited)
+		return false;
+	return !got;
 }
 
 static void print_hex(unsigned char *p, int len) {
@@ -303,7 +213,7 @@ static void print_hex(unsigned char *p, int len) {
 	}
 }
 
-static inline int print_pack(struct run_state *rts,
+static inline int print_pack(state_t *rts,
 	unsigned char *buf, ssize_t len, bool broadcast, uint16_t sll_hatype)
 {
 	struct timespec ts = {0};
@@ -344,7 +254,7 @@ static inline int print_pack(struct run_state *rts,
 	struct in_addr dst_ip;
 	memcpy(&dst_ip, p + ah->ar_hln + 4 + ah->ar_hln, 4);
 
-	if (!rts->dad) {
+	if (!rts->opt.dad) {
 		if (src_ip.s_addr != rts->gdst.s_addr)
 			return 0;
 		if (rts->gsrc.s_addr != dst_ip.s_addr)
@@ -376,7 +286,7 @@ static inline int print_pack(struct run_state *rts,
 		if (rts->gsrc.s_addr && (rts->gsrc.s_addr != dst_ip.s_addr))
 			return 0;
 	}
-	if (!rts->quiet) {
+	if (!rts->opt.quiet) {
 		bool printed = false;
 		printf("%s%s %s", broadcast ? _("Broadcast") : _("Unicast"),
 			_(" from"), inet_ntoa(src_ip));
@@ -398,11 +308,10 @@ static inline int print_pack(struct run_state *rts,
 			printf("]");
 		}
 		if (rts->last.tv_sec) {
-			long usecs = (ts.tv_sec - rts->last.tv_sec) * 1000000 +
-				(ts.tv_nsec - rts->last.tv_nsec + 500) / 1000;
-			long msecs = (usecs + 500) / 1000;
-			usecs -= msecs * 1000 - 500;
-			printf(" %ld.%03ld %s", msecs, usecs, _("ms"));
+			struct timespec sub = {0};
+			timespecsub(&ts, &rts->last, &sub);
+			double ms = sub.tv_sec * 1000 + sub.tv_nsec / 1000000.;
+			printf(" %.3f %s", ms, _("ms"));
 		} else
 			printf(" %s?", _("UNSOLICITED"));
 		putchar('\n');
@@ -415,18 +324,17 @@ static inline int print_pack(struct run_state *rts,
 		rts->brd_recv++;
 	if (ah->ar_op == htons(ARPOP_REQUEST))
 		rts->req_recv++;
-	if (rts->quit_on_reply ||
-			((rts->count == 0) && (rts->received == rts->sent)))
+	if (rts->opt.quit || (!rts->count && (rts->received == rts->sent)))
 		return FINAL_PACKS;
-	if (!rts->broadcast_only) {
+	if (!rts->opt.broadcast) {
 		memcpy(((struct sockaddr_ll *)&rts->he)->sll_addr, p,
 		       ((struct sockaddr_ll *)&rts->me)->sll_halen);
-		rts->unicasting = 1;
+		rts->opt.unicast = true;
 	}
 	return 1;
 }
 
-static int outgoing_device(struct run_state *const ctl, struct nlmsghdr *nh) {
+static int outgoing_device(state_t *ctl, struct nlmsghdr *nh) {
 	if (nh->nlmsg_type != RTM_NEWROUTE) {
 		warnx("NETLINK: %s", "new route message type");
 		return 1;
@@ -453,8 +361,8 @@ static int outgoing_device(struct run_state *const ctl, struct nlmsghdr *nh) {
 	return 0;
 }
 
-static void netlink_query(struct run_state *const ctl, const int flags,
-			  const int type, void const *const arg, size_t len)
+static void netlink_query(state_t *ctl,
+		int flags, int type, const void *arg, size_t len)
 {
 	static uint32_t seq;
 
@@ -523,7 +431,7 @@ static void netlink_query(struct run_state *const ctl, const int flags,
 		exit(EXIT_FAILURE);
 }
 
-static void guess_device(struct run_state *const ctl) {
+static void guess_device(state_t *ctl) {
 	size_t addr_len;
 	switch (ctl->gdst_family) {
 	case AF_INET:
@@ -553,10 +461,10 @@ static void guess_device(struct run_state *const ctl) {
 }
 
 /* Common check for ifa->ifa_flags */
-static int check_ifflags(struct run_state const *const ctl, unsigned ifflags) {
+static int check_ifflags(const state_t *ctl, unsigned ifflags) {
 	if (!(ifflags & IFF_UP)) {
 		if (ctl->device.name) {
-			if (!ctl->quiet)
+			if (!ctl->opt.quiet)
 				warnx("%s: %s", ctl->device.name, _("Interface is down"));
 			exit(EINVAL);
 		}
@@ -564,9 +472,9 @@ static int check_ifflags(struct run_state const *const ctl, unsigned ifflags) {
 	}
 	if (ifflags & (IFF_NOARP | IFF_LOOPBACK)) {
 		if (ctl->device.name) {
-			if (!ctl->quiet)
+			if (!ctl->opt.quiet)
 				warnx("%s: %s", ctl->device.name, _("Interface is not ARPable"));
-			exit(ctl->dad ? EXIT_SUCCESS : EINVAL);
+			exit(ctl->opt.dad ? EXIT_SUCCESS : EINVAL);
 		}
 		return -1;
 	}
@@ -591,7 +499,7 @@ static int check_ifflags(struct run_state const *const ctl, unsigned ifflags) {
  * "device" variable for later reference.
  *
  */
-static int check_device(struct run_state *ctl) {
+static int check_device(state_t *ctl) {
 	int rc = getifaddrs(&ctl->ifa0);
 	if (rc) {
 		warn("%s", "getifaddrs()");
@@ -635,14 +543,11 @@ static int check_device(struct run_state *ctl) {
 }
 
 /*
- * find_broadcast_address()
- *
  * This fills the device "broadcast address"
  * based on information found by check_device() function.
  */
-static void find_broadcast_address(struct run_state *ctl)
-{
-	struct sockaddr_ll *he = (struct sockaddr_ll *)&(ctl->he);
+static void find_brd_addr(const state_t *ctl) {
+	struct sockaddr_ll *he = (struct sockaddr_ll *)&ctl->he;
 
 	if (ctl->device.ifa) {
 		struct sockaddr_ll *sll =
@@ -653,12 +558,12 @@ static void find_broadcast_address(struct run_state *ctl)
 			return;
 		}
 	}
-	if (!ctl->quiet)
+	if (!ctl->opt.quiet)
 		warnx("%s: %s", _WARN, _("Using default broadcast address"));
 	memset(he->sll_addr, -1, he->sll_halen);
 }
 
-static int event_loop(struct run_state *ctl) {
+static int event_loop(state_t *ctl) {
 	enum {
 		POLLFD_SIGNAL = 0,
 		POLLFD_TIMER,
@@ -721,7 +626,7 @@ static int event_loop(struct run_state *ctl) {
 	pfds[POLLFD_TIMEOUT].events = POLLIN | POLLERR | POLLHUP;
 
 	/* socket */
-	pfds[POLLFD_SOCKET].fd     = ctl->socketfd;
+	pfds[POLLFD_SOCKET].fd     = ctl->sock;
 	pfds[POLLFD_SOCKET].events = POLLIN | POLLERR | POLLHUP;
 	send_pack(ctl);
 
@@ -783,7 +688,7 @@ static int event_loop(struct run_state *ctl) {
 				struct sockaddr_storage from;
 				socklen_t socklen = sizeof(from);
 				memset(&from, 0, socklen);
-				ssize_t size = recvfrom(ctl->socketfd, packet, sizeof(packet), 0,
+				ssize_t size = recvfrom(ctl->sock, packet, sizeof(packet), 0,
 					      (struct sockaddr *)&from, &socklen);
 				if (size < 0) {
 					warn("%s", "recvfrom()");
@@ -816,9 +721,9 @@ static int event_loop(struct run_state *ctl) {
 	close(tfd);
 	freeifaddrs(ctl->ifa0);
 	rc |= finish(ctl);
-	if (ctl->unsolicited)
+	if (ctl->opt.unsolicited)
 		/* nothing */;
-	else if (ctl->dad && ctl->quit_on_reply)
+	else if (ctl->opt.dad && ctl->opt.quit)
 		/* Duplicate address detection mode return value */
 		rc |= (ctl->brd_sent == ctl->received);
 	else if (ctl->timeout && (ctl->count <= 0))
@@ -828,59 +733,180 @@ static int event_loop(struct run_state *ctl) {
 	return rc;
 }
 
-int main(int argc, char **argv) {
-	struct run_state ctl = {
-		.device   = {.name = DEFAULT_DEVICE},
-		.count    = -1,
-		.interval =  1,
-#ifdef HAVE_LIBCAP
-		.cap_raw  = CAP_CLEAR,
-#endif
+static inline void bind_sock(state_t *rts) {
+	((struct sockaddr_ll *)&rts->me)->sll_family = AF_PACKET;
+	((struct sockaddr_ll *)&rts->me)->sll_ifindex = rts->device.ifindex;
+	((struct sockaddr_ll *)&rts->me)->sll_protocol = htons(ETH_P_ARP);
+	if (bind(rts->sock, (struct sockaddr *)&rts->me, sizeof(rts->me)) < 0)
+		err(errno, "bind()");
+	socklen_t alen = sizeof(rts->me);
+	if (getsockname(rts->sock, (struct sockaddr *)&rts->me, &alen) < 0)
+		err(errno, "%s", "getsockname()");
+	if (((struct sockaddr_ll *)&rts->me)->sll_halen == 0) {
+		if (!rts->opt.quiet)
+			warnx("%s: %s (%s)", rts->device.name,
+_("Interface is not ARPable"), _("no ll address"));
+		exit(rts->opt.dad ? EXIT_SUCCESS : EXIT_FAILURE);
+	}
+	rts->he = rts->me;
+}
+
+static inline int arping_sock(void) {
+	NET_RAW_ON;
+	int sock = socket(PF_PACKET, SOCK_DGRAM, 0);
+	int keep = errno;
+	NET_RAW_OFF;
+	if (sock < 0) {
+		errno = keep;
+		err(errno, "socket(%s, %s)", "PF_PACKET", "SOCK_DGRAM");
+	}
+	return sock;
+}
+
+
+static inline void arping_setup(state_t *rts) {
+	if (rts->device.name && !rts->device.name[0])
+		rts->device.name = NULL;
+
+	if (inet_aton(rts->target, &rts->gdst) != 1) {
+		const struct addrinfo hints = {
+			.ai_family   = AF_INET,
+			.ai_socktype = SOCK_RAW,
+			.ai_flags    = AI_FLAGS,
+		};
+		struct addrinfo *res = NULL;
+		int rc = GAI_WRAPPER(rts->target, NULL, &hints, &res);
+		if (rc) {
+			if (rc == EAI_SYSTEM)
+				err(errno, "%s", "getaddrinfo()");
+			errx(rc, "%s", gai_strerror(rc));
+		}
+		if (!res)
+			errx(EXIT_FAILURE, "%s", "getaddrinfo()");
+		memcpy(&rts->gdst, &((struct sockaddr_in *)res->ai_addr)->sin_addr, sizeof(rts->gdst));
+		rts->gdst_family = res->ai_family;
+		freeaddrinfo(res);
+	} else
+		rts->gdst_family = AF_INET;
+
+	if (!rts->device.name)
+		guess_device(rts);
+	if (check_device(rts) < 0)
+		exit(EINVAL);
+
+	if (!rts->device.ifindex) {
+		if (rts->device.name)
+			errx(EINVAL, "%s: %s", _("Device is not available"),
+				rts->device.name);
+		warnx("%s", _("No suitable device found, please use -I option"));
+	}
+
+	if (rts->source && inet_aton(rts->source, &rts->gsrc) != 1)
+		errx(EINVAL, "invalid source %s", rts->source);
+
+	if (!rts->opt.dad && rts->opt.unsolicited && !rts->source)
+		rts->gsrc = rts->gdst;
+
+	if (!rts->opt.dad || rts->source) {
+		int probe_fd = socket(AF_INET, SOCK_DGRAM, 0);
+		if (probe_fd < 0)
+			err(errno, "socket(%s, %s)", "AF_INET", "SOCK_DGRAM");
+		if (rts->device.name) {
+			int ifndx = if_nametoindex(rts->device.name);
+			if (ifndx) {
+				struct in_pktinfo ipi = { .ipi_ifindex = ifndx };
+				if (setsockopt(probe_fd, IPPROTO_IP, IP_PKTINFO,
+						&ipi, sizeof(ipi)) < 0)
+					ifndx = 0;
+			}
+			if (!ifndx)
+				warn("%s: %s: %s", _WARN, rts->device.name,
+					_("Interface is ignored"));
+//		  	NET_ADMIN_ON;
+//			int rc = setsockopt(probe_fd, SOL_SOCKET,
+//				SO_BINDTODEVICE, rts->device.name,
+//				strlen(rts->device.name) + 1);
+//			int keep = errno;
+//		  	NET_ADMIN_OFF;
+//			if (rc < 0) {
+//				errno = keep;
+//				warn("%s: %s: %s", _WARN, rts->device.name,
+//					_("Interface is ignored"));
+//			}
+		}
+		struct sockaddr_in saddr = { .sin_family = AF_INET };
+		if (rts->source || rts->gsrc.s_addr) {
+			saddr.sin_addr = rts->gsrc;
+			if (bind(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
+				err(errno, "%s", "bind()");
+		} else if (!rts->opt.dad) {
+			saddr.sin_port = htons(1025);
+			saddr.sin_addr = rts->gdst;
+			if (!rts->opt.unsolicited) {
+				int on = 1;
+				if (setsockopt(probe_fd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof(on)) < 0)
+					warn("%s: setsockopt(%s)", _WARN, "SO_DONTROUTE");
+				if (connect(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
+					err(errno, "%s", "connect()");
+				socklen_t alen = sizeof(saddr);
+				if (getsockname(probe_fd, (struct sockaddr *)&saddr, &alen) < 0)
+					err(errno, "%s", "getsockname()");
+			}
+			rts->gsrc = saddr.sin_addr;
+		}
+		close(probe_fd);
 	};
+}
 
-	arping_limit_capabilities(&ctl);
 
-	setmyname(argv[0]);
-	SET_NLS;
-	atexit(close_stdout);
+static inline void print_header(struct in_addr src, struct in_addr dst,
+	const char *device)
+{
+	printf("%s %s%s %s",
+		_("ARPING"), inet_ntoa(dst), _(" from"), inet_ntoa(src));
+	if (device)
+		printf("%%%s", device);
+	putchar('\n');
+}
 
+static inline void parse_options(state_t *rts, int argc, char **argv) {
 	int ch;
 	while ((ch = getopt(argc, argv, "h?bfDUAqc:w:i:s:I:V")) != EOF) {
 		switch (ch) {
 		case 'b':
-			ctl.broadcast_only = 1;
+			rts->opt.broadcast = true;
 			break;
 		case 'D':
-			ctl.dad = 1;
-			ctl.quit_on_reply = 1;
+			rts->opt.dad  = true;
+			rts->opt.quit = true;
 			break;
 		case 'U':
-			ctl.unsolicited = 1;
+			rts->opt.unsolicited = true;
 			break;
 		case 'A':
-			ctl.advert = 1;
-			ctl.unsolicited = 1;
+			rts->opt.advert      = true;
+			rts->opt.unsolicited = true;
 			break;
 		case 'q':
-			ctl.quiet = 1;
+			rts->opt.quiet = true;
 			break;
 		case 'c':
-			ctl.count = strtoll_or_err(optarg, _("Invalid argument"), 1, INT_MAX);
+			rts->count = VALID_INTSTR(1, INT_MAX);
 			break;
 		case 'w':
-			ctl.timeout = strtoll_or_err(optarg, _("Invalid argument"), 0, INT_MAX);
+			rts->timeout = VALID_INTSTR(0, INT_MAX);
 			break;
 		case 'i':
-			ctl.interval = strtoll_or_err(optarg, _("Invalid argument"), 0, INT_MAX);
+			rts->interval = VALID_INTSTR(0, INT_MAX);
 			break;
 		case 'I':
-			ctl.device.name = optarg;
+			rts->device.name = optarg;
 			break;
 		case 'f':
-			ctl.quit_on_reply = 1;
+			rts->opt.quit = true;
 			break;
 		case 's':
-			ctl.source = optarg;
+			rts->source = optarg;
 			break;
 		case 'V':
 			version_n_exit(EXIT_SUCCESS, FEAT_CAP | FEAT_IDN | FEAT_NLS);
@@ -891,9 +917,31 @@ int main(int argc, char **argv) {
 			usage(EXIT_FAILURE);
 		}
 	}
+}
+
+int main(int argc, char **argv) {
+#ifdef HAVE_LIBCAP
+	// limit caps to net_raw
+	{ cap_value_t caps[] = {CAP_NET_RAW};
+	  limit_cap(caps, ARRAY_SIZE(caps)); }
+	NET_RAW_OFF;
+#else
+	keep_euid();
+#endif
+
+	setmyname(argv[0]);
+	SET_NLS;
+	atexit(close_stdout);
+
+	struct run_state rts = {
+		.device   = {.name = DEFAULT_DEVICE},
+		.count    = -1,
+		.interval =  1,
+	};
+
+	parse_options(&rts, argc, argv);
 	argc -= optind;
 	argv += optind;
-
 	if (argc <= 0) {
 		errno = EDESTADDRREQ;
 		warn("%s", _("No goal"));
@@ -901,126 +949,19 @@ int main(int argc, char **argv) {
 	} else if (argc != 1)
 		usage(EINVAL);
 
-	arping_enable_capability_raw(&ctl);
-	ctl.socketfd = socket(PF_PACKET, SOCK_DGRAM, 0);
-	if (ctl.socketfd < 0)
-		err(errno, "socket(%s, %s)", "PF_PACKET", "SOCK_DGRAM");
-	arping_disable_capability_raw(&ctl);
+	rts.target = *argv;
+	rts.sock   = arping_sock();
+	arping_setup(&rts);
+	drop_priv();
+	//
 
-	ctl.target = *argv;
-
-	if (ctl.device.name && !*ctl.device.name)
-		ctl.device.name = NULL;
-
-	if (inet_aton(ctl.target, &ctl.gdst) != 1) {
-		const struct addrinfo hints = {
-			.ai_family   = AF_INET,
-			.ai_socktype = SOCK_RAW,
-			.ai_flags    = AI_FLAGS,
-		};
-		struct addrinfo *res = NULL;
-		int rc = GAI_WRAPPER(ctl.target, NULL, &hints, &res);
-		if (rc) {
-			if (rc == EAI_SYSTEM)
-				err(errno, "%s", "getaddrinfo()");
-			errx(rc, "%s", gai_strerror(rc));
-		}
-		if (!res)
-			errx(EXIT_FAILURE, "%s", "getaddrinfo()");
-		memcpy(&ctl.gdst, &((struct sockaddr_in *)res->ai_addr)->sin_addr, sizeof(ctl.gdst));
-		ctl.gdst_family = res->ai_family;
-		freeaddrinfo(res);
-	} else
-		ctl.gdst_family = AF_INET;
-
-	if (!ctl.device.name)
-		guess_device(&ctl);
-
-	if (check_device(&ctl) < 0)
-		exit(EINVAL);
-
-	if (!ctl.device.ifindex) {
-		if (ctl.device.name)
-			errx(EINVAL, "%s: %s", _("Device is not available"), ctl.device.name);
-		warnx("%s", _("No suitable device found, please use -I option"));
-	}
-
-	if (ctl.source && inet_aton(ctl.source, &ctl.gsrc) != 1)
-		errx(EINVAL, "invalid source %s", ctl.source);
-
-	if (!ctl.dad && ctl.unsolicited && !ctl.source)
-		ctl.gsrc = ctl.gdst;
-
-	if (!ctl.dad || ctl.source) {
-		int probe_fd = socket(AF_INET, SOCK_DGRAM, 0);
-		if (probe_fd < 0)
-			err(errno, "socket(%s, %s)", "AF_INET", "SOCK_DGRAM");
-		if (ctl.device.name) {
-			arping_enable_capability_raw(&ctl);
-			if (setsockopt(probe_fd, SOL_SOCKET, SO_BINDTODEVICE, ctl.device.name,
-				       strlen(ctl.device.name) + 1) < 0)
-				warn("%s: %s: %s", _WARN, ctl.device.name,
-					_("Interface is ignored"));
-			arping_disable_capability_raw(&ctl);
-		}
-		struct sockaddr_in saddr = { .sin_family = AF_INET };
-		if (ctl.source || ctl.gsrc.s_addr) {
-			saddr.sin_addr = ctl.gsrc;
-			if (bind(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
-				err(errno, "%s", "bind()");
-		} else if (!ctl.dad) {
-			saddr.sin_port = htons(1025);
-			saddr.sin_addr = ctl.gdst;
-			if (!ctl.unsolicited) {
-				int on = 1;
-				if (setsockopt(probe_fd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof(on)) < 0)
-					warn("%s: setsockopt(%s)", _WARN, "SO_DONTROUTE");
-				if (connect(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
-					err(errno, "%s", "connect()");
-				socklen_t alen = sizeof(saddr);
-				if (getsockname(probe_fd, (struct sockaddr *)&saddr, &alen) < 0)
-					err(errno, "%s", "getsockname()");
-			}
-			ctl.gsrc = saddr.sin_addr;
-		}
-		close(probe_fd);
-	};
-
-	((struct sockaddr_ll *)&ctl.me)->sll_family = AF_PACKET;
-	((struct sockaddr_ll *)&ctl.me)->sll_ifindex = ctl.device.ifindex;
-	((struct sockaddr_ll *)&ctl.me)->sll_protocol = htons(ETH_P_ARP);
-	if (bind(ctl.socketfd, (struct sockaddr *)&ctl.me, sizeof(ctl.me)) < 0)
-		err(errno, "bind()");
-	{
-		socklen_t alen = sizeof(ctl.me);
-		if (getsockname(ctl.socketfd, (struct sockaddr *)&ctl.me, &alen) < 0)
-			err(errno, "%s", "getsockname()");
-	}
-	if (((struct sockaddr_ll *)&ctl.me)->sll_halen == 0) {
-		if (!ctl.quiet)
-			warnx("%s: %s (%s)", ctl.device.name,
-				_("Interface is not ARPable"),
-				_("no ll address"));
-		exit(ctl.dad ? 0 : 2);
-	}
-
-	ctl.he = ctl.me;
-
-	find_broadcast_address(&ctl);
-
-	if (!ctl.quiet) {
-		printf("%s %s%s %s",
-			_("ARPING"), inet_ntoa(ctl.gdst),
-			_(" from"),   inet_ntoa(ctl.gsrc));
-		if (ctl.device.name)
-			printf("%%%s", ctl.device.name);
-		putchar('\n');
-	}
-
-	if (!ctl.source && !ctl.gsrc.s_addr && !ctl.dad)
+	bind_sock(&rts);
+	find_brd_addr(&rts);
+	if (!rts.opt.quiet)
+		print_header(rts.gsrc, rts.gdst, rts.device.name);
+	if (!rts.source && !rts.gsrc.s_addr && !rts.opt.dad)
 		errx(EINVAL, "%s", _("No source address in not-DAD mode"));
 
-	arping_drop_capabilities();
-	return event_loop(&ctl);
+	return event_loop(&rts);
 }
 

@@ -505,12 +505,8 @@ msgstr "パケットが短すぎます"
 msgid "WARNING"
 msgstr "警告"
 
-#
-msgid "=> missing cap_net_raw+p capability"
-msgstr ""
-
-#
-msgid "=> missing cap_net_admin+p capability"
+# missing capability: %s
+msgid "=> missing capability"
 msgstr ""
 
 #
@@ -770,7 +766,7 @@ msgid "No answer yet"
 msgstr "まだ回答なし"
 
 #
-msgid "probably, rcvbuf is not enough to hold preload"
+msgid "Probably, rcvbuf is not enough to hold preload"
 msgstr "おそらく preload のために充分な受信バッファがありません"
 
 #, fuzzy

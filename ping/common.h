@@ -6,10 +6,8 @@
 #include <unistd.h>
 #include <limits.h>
 #include <netdb.h>
-#include <setjmp.h>
-#ifdef HAVE_LIBCAP
-# include <sys/capability.h>
-#endif
+#include <time.h>
+#include <sys/time.h>
 
 #ifdef ENABLE_RFC4620
 #include "node_info.h"
@@ -46,10 +44,6 @@ typedef uint32_t	bitmap_t;
 #if ((MAX_DUP_CHK >> (BITMAP_SHIFT + 3)) << (BITMAP_SHIFT + 3)) != MAX_DUP_CHK
 # error Please MAX_DUP_CHK and/or BITMAP_SHIFT
 #endif
-
-struct rcvd_table {
-	bitmap_t bitmap[MAX_DUP_CHK / (sizeof(bitmap_t) * 8)];
-};
 
 typedef struct ping_sock {
 	int fd;
@@ -103,7 +97,7 @@ typedef struct ping_state {
 	int custom_ident;		/* -e option */
 	bool ip6;			/* true for IPv6 pings */
 	//
-	struct rcvd_table rcvd_tbl;
+	bitmap_t bitmap[MAX_DUP_CHK / (sizeof(bitmap_t) * 8)];
 	unsigned char *outpack;
 	int sndbuf;
 	//
@@ -143,10 +137,6 @@ typedef struct ping_state {
 	struct sockaddr_storage firsthop;
 	uint8_t qos;				/* TOS/TCLASS */
 	bool multicast;
-#ifdef HAVE_LIBCAP
-	cap_value_t cap_raw;
-	cap_value_t cap_admin;
-#endif
 	// ping4 only
 	uint8_t ipt_flg;	/* ip option: timestamp flags */
 	route_t *route;		/* allocated in ping4 */
@@ -170,46 +160,21 @@ typedef struct fnset_t {
 		size_t received, void *addr, const struct timeval *at);
 } fnset_t;
 
-void acknowledge(state_t *rts, uint16_t seq);
-
-uid_t limit_capabilities(const state_t *rts);
-#ifdef HAVE_LIBCAP
-# include <sys/capability.h>
-int modify_capability(cap_value_t, cap_flag_value_t);
-#define  ENABLE_CAPABILITY_RAW   modify_capability(CAP_NET_RAW,   CAP_SET)
-#define DISABLE_CAPABILITY_RAW   modify_capability(CAP_NET_RAW,   CAP_CLEAR)
-#define  ENABLE_CAPABILITY_ADMIN modify_capability(CAP_NET_ADMIN, CAP_SET)
-#define DISABLE_CAPABILITY_ADMIN modify_capability(CAP_NET_ADMIN, CAP_CLEAR)
-#else
-int modify_capability(int);
-#define  ENABLE_SUID modify_capability(1)
-#define DISABLE_SUID modify_capability(0)
-#define  ENABLE_CAPABILITY_RAW    ENABLE_SUID
-#define DISABLE_CAPABILITY_RAW   DISABLE_SUID
-#define  ENABLE_CAPABILITY_ADMIN  ENABLE_SUID
-#define DISABLE_CAPABILITY_ADMIN DISABLE_SUID
-#endif
-void drop_capabilities(void);
-
-double strtod_or_err(const char *str, const char *errmesg,
-	double min, double max);
 const char *sprint_addr(const void *sa, socklen_t salen, bool resolve);
-
-void print_timestamp(void);
-#define PRINT_TIMESTAMP do { if (rts->opt.ptimeofday) print_timestamp(); } while(0)
+void acknowledge(state_t *rts, uint16_t seq);
 
 #define IS_OURS(rts, rawsock, rcvd_id) (!(rawsock) || ((rcvd_id) == (rts)->ident16))
 
 void sock_setmark(state_t *rts, int fd);
 void sock_settos(int fd, int qos, bool ip6);
-void print_headline(const state_t *rts, size_t nodatalen);
 int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
 	 const fnset_t* fnset);
-bool gather_stats(state_t *rts, const void *icmp, int icmplen,
-	size_t received, uint16_t seq, int away, const struct timeval *at,
-	void (*print)(bool ip6, const uint8_t *hdr, size_t len),
-	const char *from, bool ack, bool wrong);
+int get_interval(const state_t *rts);
 void fill_payload(int quiet, const char *str, unsigned char *payload, size_t len);
+
+bitmap_t rcvd_test (uint16_t seq, const bitmap_t *map);
+void     rcvd_set  (uint16_t seq, bitmap_t *map);
+void     rcvd_clear(uint16_t seq, bitmap_t *map);
 
 // wrapper: __has_attribute
 #ifndef __has_attribute

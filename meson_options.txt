@@ -3,15 +3,15 @@
 # local edition: yvs, 2024
 
 # features
-option('CAP',             type: 'boolean', value: true,
+option('CAP',          type: 'boolean', value: true,
 	description: 'Capability support (with libcap)')
-option('IDN',             type: 'boolean', value: true,
+option('IDN',          type: 'boolean', value: true,
 	description: 'IDN support (via libc)')
-option('NLS',             type: 'boolean', value: true,
+option('NLS',          type: 'boolean', value: true,
 	description: 'NLS support (via gettext)')
-option('RFC4620',         type: 'boolean', value: false,
+option('RFC4620',      type: 'boolean', value: false,
 	description: 'PING6 NodeInfo client (RFC4620)')
-option('NI_NONCE_MEMORY', type: 'boolean', value: false,
+option('NONCE_MEMORY', type: 'boolean', value: false,
 	description: 'PING6 NodeInfo nonce memory')
 
 # executables

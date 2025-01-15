@@ -9,8 +9,6 @@
  * Authors:	Alexey Kuznetsov, <kuznet@ms2.inr.ac.ru>
  */
 
-#include "iputils_common.h"
-
 #include <arpa/inet.h>
 #include <errno.h>
 #include <limits.h>
@@ -40,6 +38,9 @@
 #ifdef USE_NLS
 #include <locale.h>
 #endif
+
+#include "iputils.h"
+#include "str2num.h"
 
 #if defined(USE_IDN) && defined(NI_IDN)
 # define NI_FLAGS	NI_IDN
@@ -443,13 +444,13 @@ int main(int argc, char **argv) {
 			rts.opt.show_both = true;
 			break;
 		case 'l':
-			rts.mtu = strtoll_or_err(optarg, _("Invalid argument"), rts.overhead, INT_MAX);
+			rts.mtu = VALID_INTSTR(rts.overhead, INT_MAX);
 			break;
 		case 'm':
-			rts.max_hops = strtoll_or_err(optarg, _("Invalid argument"), 0, MAX_HOPS_LIMIT);
+			rts.max_hops = VALID_INTSTR(0, MAX_HOPS_LIMIT);
 			break;
 		case 'p':
-			rts.base_port = strtoll_or_err(optarg, _("Invalid argument"), 0, UINT16_MAX);
+			rts.base_port = VALID_INTSTR(0, UINT16_MAX);
 			break;
 		case 'V':
 			version_n_exit(EXIT_SUCCESS, FEAT_IDN | FEAT_NLS);
@@ -475,7 +476,8 @@ int main(int argc, char **argv) {
 		char *p = strchr(argv[0], '/');
 		if (p) {
 			*p = 0;
-			rts.base_port = strtoll_or_err(p + 1, _("Invalid argument"), 0, UINT16_MAX);
+			rts.base_port = str2ll(p + 1, 0, UINT16_MAX,
+				_("Invalid argument"));
 		} else
 			rts.base_port = DEFAULT_BASEPORT;
 	}
