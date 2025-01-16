@@ -213,7 +213,7 @@ msgid "Invalid argument"
 msgstr ""
 
 #
-msgid "Device not available"
+msgid "Device is not available"
 msgstr ""
 
 #
@@ -338,10 +338,6 @@ msgstr ""
 
 #
 msgid "does not fragment"
-msgstr ""
-
-#
-msgid "Cannot disable multicast loopback"
 msgstr ""
 
 #
@@ -490,10 +486,6 @@ msgstr ""
 
 #
 msgid "Packet too short"
-msgstr ""
-
-#
-msgid "bytes"
 msgstr ""
 
 #
@@ -972,10 +964,6 @@ msgstr ""
 
 #
 msgid "Too many hops"
-msgstr ""
-
-#
-msgid "pmtu"
 msgstr ""
 
 #

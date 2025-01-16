@@ -272,7 +272,7 @@ msgid "Invalid argument"
 msgstr "부적절한 인자"
 
 #
-msgid "Device not available"
+msgid "Device is not available"
 msgstr "장치를 사용 할 수 없습니다"
 
 #, fuzzy
@@ -603,10 +603,6 @@ msgstr "나쁜 체류시간"
 #
 msgid "ident 0 => forcing raw socket"
 msgstr "ident 0 => 원시 소켓으로 강제합니다"
-
-#
-msgid "warning: QOS sockopts"
-msgstr "경고: QOS sockopts"
 
 #
 msgid ""

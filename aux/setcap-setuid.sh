@@ -25,7 +25,7 @@ case "$perm_type" in
 		"$setcap" $params "$exec_path"
 	;;
 
-	setuid)
+	suid)
 		_log "changing '$exec_path' to be setuid root executable"
 		chown -v root "$exec_path"
 		chmod -v u+s "$exec_path"

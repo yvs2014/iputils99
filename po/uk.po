@@ -40,6 +40,10 @@ msgstr "ВУЗОЛ"
 msgid "For more details see"
 msgstr "Докладніший опис можна знайти в"
 
+#
+msgid "No goal"
+msgstr "Нема мети"
+
 # arping options
 msgid ""
 "  -f            quit on first reply\n"
@@ -429,10 +433,6 @@ msgid "does not fragment"
 msgstr "не фрагментується"
 
 #
-msgid "Cannot disable multicast loopback"
-msgstr "Неможливо вимкнути петльовий інтерфейс групової розсилки"
-
-#
 msgid "PING"
 msgstr "ПІНГ"
 
@@ -665,10 +665,6 @@ msgid "NodeInfo packet can only have a header"
 msgstr "Пакет NodeInfo може мати лише заголовок"
 
 #
-msgid "No goal"
-msgstr "Нема мети"
-
-#
 msgid ""
 "Do you want to ping broadcast? Then -b. If not, check your local firewall "
 "rules"
@@ -683,6 +679,10 @@ msgstr "Пінгування всієї підмережі"
 #
 msgid "Cannot set broadcasting"
 msgstr "Не вдалося встановити пінгування всієї підмережі"
+
+#
+msgid "Cannot disable multicast loopback"
+msgstr "Неможливо вимкнути петльовий інтерфейс групової розсилки"
 
 # %ld data bytes
 msgid "data bytes"
@@ -937,7 +937,7 @@ msgid "wrong byte #"
 msgstr "помилковий байт #"
 
 #
-msgid "extected 0x"
+msgid "expected 0x"
 msgstr "очікувалось 0x"
 
 #

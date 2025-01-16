@@ -1,93 +1,59 @@
 # Copyright (c) Iputils Project, 2017-2019
 
-manpages = []
-custom_man_xsl = files('custom-man.xsl')
-custom_html_xsl = files('custom-html.xsl')
+# local edition: yvs, 2025
 
-if build_arping == true
-	manpages += ['arping']
-endif
+gen_proc = 'xsltproc'
+gen_html = files('custom-html.xsl')
+gen_man  = files('custom-man.xsl')
 
-if build_clockdiff == true
-	manpages += ['clockdiff']
-endif
-
-if build_ping == true
-	manpages += ['ping']
-endif
-
-if build_tracepath == true
-	manpages += ['tracepath']
-endif
-
-xsltproc = find_program('xsltproc', required: build_man or build_html)
-xsltproc_args = [
+cmd_proc = find_program(gen_proc)
+cmd_args = [
 	'--nonet',
-	'--stringparam', 'man.output.quietly', '1',
-	'--stringparam', 'funcsynopsis.style', 'ansi',
+	'--stringparam', 'man.output.quietly',     '1',
+	'--stringparam', 'funcsynopsis.style',     'ansi',
 	'--stringparam', 'man.th.extra1.suppress', '1',
-	'--stringparam', base + '.version', version,
+	'--stringparam', base + '.version',        version,
 ]
 
-valid = xsltproc.found()
+valid = cmd_proc.found()
 if valid
-	docs = []
-	if build_man
-		docs += ['manpages']
-	endif
-	if build_html
-		docs += ['html']
-	endif
-	foreach doc: docs
-		xsl = 'http://docbook.sourceforge.net/release/xsl-ns/current/' + doc + '/docbook.xsl'
-		cmd = [xsltproc, '--nonet', xsl]
+	foreach book: ['manpages', 'html']
+		fmt = 'http://docbook.sourceforge.net/release/xsl-ns/current/' + book + '/docbook.xsl'
+		cmd = [cmd_proc, '--nonet', fmt]
 		valid = (run_command(cmd, check: false).returncode() == 0)
 		if not valid
-			warning('xsltproc: cannot process ' + xsl)
+			docgen_okay = false
+			warning(gen_proc + ': cannot process ' + fmt)
 			break
 		endif
 	endforeach
 endif
 
-if not valid
-	warning('Docs will not be built')
-	build_man  = false
-	build_html = false
-endif
-
-if build_man
-	foreach man: manpages
-		custom_target(man + '.8',
-			output: man + '.8',
-			input:  man + '.xml',
-			command: [
-				xsltproc,
-				'-o', '@OUTPUT@',
-				xsltproc_args,
-				custom_man_xsl,
-				'@INPUT@',
-			],
+if valid
+	cmd = [cmd_proc, '-o', '@OUTPUT@', cmd_args]
+	foreach man: manpage
+		if docgen_excl.contains(man)
+			continue         # not yet
+		endif
+		template = man + '.xml'
+		pageout  = man + '.8'    # manual pages
+		custom_target(pageout,
+			input:       template,
+			output:      pageout,
+			command:     cmd + [gen_man, '@INPUT@'],
 			install:     true,
 			install_dir: join_paths(get_option('mandir'), 'man8'),
 		)
-	endforeach
-endif
-
-if build_html
-	foreach man: manpages
-		custom_target(man + '.html',
-			output: man + '.html',
-			input:  man + '.xml',
-			command: [
-				xsltproc,
-				'-o', '@OUTPUT@',
-				xsltproc_args,
-				custom_html_xsl,
-				'@INPUT@',
-			],
+		pageout  = man + '.html' # html pages
+		custom_target(pageout,
+			input:       template,
+			output:      pageout,
+			command:     cmd + [gen_html, '@INPUT@'],
 			install:     true,
 			install_dir: join_paths(get_option('datadir'), base),
 		)
 	endforeach
+else
+	warning('Documentation is not generated')
 endif
 

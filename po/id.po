@@ -199,8 +199,8 @@ msgid "request"
 msgstr "permintaan"
 
 # for %s
-msgid "for "
-msgstr "untuk "
+msgid "for"
+msgstr "untuk"
 
 #
 msgid "UNSOLICITED"
@@ -331,7 +331,7 @@ msgid "Minimal user interval for multicast ping must be >="
 msgstr "Interval pengguna minimum bagi ping multicast harus >="
 
 #
-msgid "Minimal interval for broadcast ping must be >="
+msgid "Minimal user interval for broadcast ping must be >="
 msgstr "Interval pengguna minimum bagi ping broadcast harus >="
 
 #

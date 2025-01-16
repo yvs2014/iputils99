@@ -608,8 +608,8 @@ msgstr ""
 "güvenlik duvarı kurallarınızı gözden geçirin"
 
 #
-msgid "pinging broadcast address"
-msgstr "genel yayın adresine ping atılıyor"
+msgid "Pinging broadcast address"
+msgstr "Genel yayın adresine ping atılıyor"
 
 #
 msgid "Cannot set broadcasting"

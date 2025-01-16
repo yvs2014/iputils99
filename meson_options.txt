@@ -27,18 +27,20 @@ option('BUILD_GAI',       type: 'boolean', value: true,
         description: 'Build gai tool')
 
 # caps
-option('NO_CAPS',        type: 'boolean', value: true,
+option('NO_CAPS',        type: 'boolean', value: false,
 	description: 'Do not set linux capabilities, nor suid bits')
 option('PING_CAPS',      type: 'boolean', value: true,
 	description: 'Set linux caps or suid bits on ping')
-option('ARPING_CAPS',    type: 'boolean', value: false,
+option('ARPING_CAPS',    type: 'boolean', value: true,
 	description: 'Set linux caps or suid bits on arping')
 option('CLOCKDIFF_CAPS', type: 'boolean', value: true,
 	description: 'Set linux caps or suid bits on clockdiff')
 
 # misc
-option('ARPING_DEFAULT_DEVICE', type: 'string', value: '',
+option('TESTS',                 type: 'boolean', value: true,
+	description: 'Include tests')
+option('DOCGEN',                type: 'boolean', value: false,
+	description: 'Generate man/html from xml templates')
+option('ARPING_DEFAULT_DEVICE', type: 'string',  value: '',
 	description: 'Default device for arping')
-option('SKIP_TESTS', type: 'boolean', value: false,
-	description: 'Skip tests during build')
 

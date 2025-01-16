@@ -446,6 +446,10 @@ msgid "Packet too big"
 msgstr "Paket je příliš velký"
 
 #
+msgid "Time exceeded"
+msgstr "Překročen čas"
+
+#
 msgid "Hop limit"
 msgstr "Příliš mnoho skoků"
 
@@ -498,7 +502,7 @@ msgid "MLD Reduction"
 msgstr "Zkrácení MLD"
 
 #
-msgid "Nnknown icmp type"
+msgid "Unknown icmp type"
 msgstr "Neznámý typ ICMP"
 
 #
@@ -760,10 +764,6 @@ msgstr "Překročena doba životnosti"
 #
 msgid "Frag reassembly time exceeded"
 msgstr "Překročena doba pro provedení opětovného složení fragmentů"
-
-#
-msgid "Time exceeded"
-msgstr "Překročen čas"
 
 #
 msgid "Timestamp"

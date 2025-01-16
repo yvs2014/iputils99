@@ -8,10 +8,10 @@ project('iputils99', 'c',
 		'warning_level=3',
 #		'b_sanitize=address,undefined', # use for testing
 	],
-	meson_version: '>=0.47',
+	meson_version: '>=0.53',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
-			check: false).stdout().strip() : '20250115',
+			check: false).stdout().strip() : '20250116',
 )
 
 add_project_arguments('-D_GNU_SOURCE', language: 'c')
@@ -29,25 +29,35 @@ conf.set_quoted('PACKAGE_NAME',    name)
 conf.set_quoted('PACKAGE_VERSION', version)
 config_h = 'config.h'
 
-build_ping      = get_option('BUILD_PING')
-build_arping    = get_option('BUILD_ARPING')
-build_clockdiff = get_option('BUILD_CLOCKDIFF')
-build_tracepath = get_option('BUILD_TRACEPATH')
-build_gai       = get_option('BUILD_GAI')
+iputils = ['ping', 'arping', 'clockdiff', 'tracepath', 'gai']
 
 prefix    = get_option('prefix')
 bindir    = join_paths(prefix, get_option('bindir'))
 localedir = join_paths(prefix, get_option('localedir'))
 sbindir   = join_paths(prefix, get_option('sbindir'))
 
-setcap_ping      = false
-setcap_arping    = false
-setcap_clockdiff = false
+build = {
+	'ping':      get_option('BUILD_PING'),
+	'arping':    get_option('BUILD_ARPING'),
+	'clockdiff': get_option('BUILD_CLOCKDIFF'),
+	'tracepath': get_option('BUILD_TRACEPATH'),
+	'gai':       get_option('BUILD_GAI'),
+}
 if not get_option('NO_CAPS')
-	setcap_ping      = get_option('PING_CAPS')
-	setcap_arping    = get_option('ARPING_CAPS')
-	setcap_clockdiff = get_option('CLOCKDIFF_CAPS')
+	caps = {
+		'ping':      get_option('PING_CAPS'),
+		'arping':    get_option('ARPING_CAPS'),
+		'clockdiff': get_option('CLOCKDIFF_CAPS'),
+	}
+	libcap = get_option('CAP')
+	deps  += cc.find_library('cap')
+	conf.set('HAVE_LIBCAP', 1, description: 'Defined if libcap exists')
+else
+	caps = {}
+	libcap = false
 endif
+
+rfc4620 = get_option('RFC4620')
 
 extra_funcs = {}
 extra_funcs += {'getprogname':   {'hdr': ['stdlib.h']}}
@@ -58,20 +68,13 @@ if host_machine.endian() == 'big'
 	conf.set('WORDS_BIGENDIAN', '1')
 endif
 
-cap = get_option('CAP')
-if cap
-	deps += cc.find_library('cap')
-	conf.set('HAVE_LIBCAP', 1, description: 'Defined if libcap exists')
-endif
-
 arping_device = get_option('ARPING_DEFAULT_DEVICE')
 if arping_device != ''
 	conf.set_quoted('DEFAULT_DEVICE', arping_device, description: 'arping default device')
 endif
 
-if build_ping
+if build['ping']
 	extra_funcs += {'arc4random_uniform': {'hdr': ['stdlib.h']}}
-	rfc4620 = get_option('RFC4620')
 	if rfc4620	# RFC4620 builtin client
 		conf.set('ENABLE_RFC4620', 1, description: 'build with RFC4620 NodeInfo client')
 		if get_option('NONCE_MEMORY')
@@ -122,8 +125,7 @@ foreach f, ext: extra_funcs
 	incl = ''
 	hdrs = 'hdr' in ext ? ext['hdr'] : []
 	foreach h: hdrs
-#		incl += cc.has_header(h) ? '#include <' + h + '>\n' : ''
-		incl += '#include <' + h + '>\n'
+		incl += cc.has_header(h) ? '#include <' + h + '>\n' : ''
 	endforeach
         found = cc.has_function(f, args: '-D_GNU_SOURCE', prefix: incl)
 	if not found
@@ -155,7 +157,7 @@ configure_file(output: config_h, configuration: conf)
 add_project_arguments('-include', config_h, language: 'c')
 
 setcap = find_program('setcap', '/usr/sbin/setcap', '/sbin/setcap', required: false)
-if cap and setcap.found()
+if libcap and setcap.found()
 	perm_type = 'caps'
 	if meson.version().version_compare('>=0.55')
 		setcap_path = setcap.full_path()
@@ -163,7 +165,7 @@ if cap and setcap.found()
 		setcap_path = setcap.path()
 	endif
 else
-	perm_type = 'setuid'
+	perm_type = 'suid'
 	setcap_path = '/dev/null'
 endif
 
@@ -172,129 +174,89 @@ endif
 #
 aux = 'aux'
 aux_src = []
-ext_src = []
+cap_src = []
 subdir(aux)
-src = aux_src + ext_src
-
-aux_inc = aux
+subfoldered = ['ping']
 cap_sh = join_paths(aux, 'setcap-setuid.sh')
 
-if build_ping
-	subdir('ping')
-	if setcap_ping # TODO: combine ping/arping/clockdif
-		meson.add_install_script(cap_sh, bindir,
-			'ping', perm_type, setcap_path)
+app = {}
+foreach tool: iputils
+	if build[tool]
+		manpage += tool
+		src = aux_src
+		if tool in caps
+			src += cap_src
+			if caps[tool]
+meson.add_install_script(cap_sh, bindir, tool, perm_type, setcap_path)
+			endif
+		endif
+                if tool in subfoldered
+			subdir(tool)
+                else
+			app += { tool:
+executable(tool, src + [tool + '.c'],
+	include_directories: include_directories(aux),
+	dependencies: deps, install: true)
+			}
+		endif
 	endif
-	manpage += 'ping'
-endif
-
-if build_arping
-	arping = executable('arping', src + ['arping.c'],
-		include_directories: include_directories(aux_inc),
-		dependencies: deps, install: true)
-	if setcap_arping
-		meson.add_install_script(cap_sh, bindir,
-			'arping', perm_type, setcap_path)
-	endif
-	manpage += 'arping'
-endif
-
-if build_clockdiff
-	clockdiff = executable('clockdiff', src + ['clockdiff.c'],
-		include_directories: include_directories(aux_inc),
-		dependencies: deps, install: true)
-	if setcap_clockdiff
-		meson.add_install_script(cap_sh, bindir,
-			'clockdiff', perm_type, setcap_path)
-	endif
-	manpage += 'clockdiff'
-endif
-
-if build_tracepath
-	tracepath = executable('tracepath', aux_src + ['tracepath.c'],
-		include_directories: include_directories(aux_inc),
-		dependencies: deps, install: true)
-	manpage += 'tracepath'
-endif
-
-if build_gai
-	gai = executable('gai', aux_src + ['gai.c'],
-		include_directories: include_directories(aux_inc),
-		dependencies: deps, install: true)
-	manpage += 'gai'
-endif
+endforeach
 
 if manpage.length() > 0
 	subdir('man')
 endif
 
-tst = not get_option('SKIP_TESTS')
-if tst
+tests = get_option('TESTS')
+if tests
 	subdir('test')
+endif
+
+docgen = get_option('DOCGEN')
+docgen_okay = true
+if docgen
+	docgen_excl = ['gai']
+	subdir('doc')
 endif
 
 # summary at the end
 #
-if meson.version().version_compare('>=0.53')
-	sections = {}
-	sections += {'APPLICATIONS': {
-		'ping @0@'     .format(setcap_ping      ? '(with caps/suid)' : ''):
-			build_ping,
-		'arping @0@'   .format(setcap_arping    ? '(with caps/suid)' : ''):
-			build_arping,
-		'clockdiff @0@'.format(setcap_clockdiff ? '(with caps/suid)' : ''):
-			build_clockdiff,
-		'tracepath':
-			build_tracepath,
-		'gai':
-			build_gai,
-	}}
-	sections += {'CONFIGURATION': {
-		'Caps'    : cap,
-		'IDN @0@ '.format(idn_via): idn,
-		'NLS'     : nls,
-		'RFC4620' : rfc4620,
-		'Tests'   : tst,
-	}}
-	sections += {'DIRECTORIES': {
-		'prefix'   : prefix,
-		'bindir'   : bindir,
-		'sbindir'  : sbindir,
-		'localedir': localedir,
-        }}
-	foreach section, elements: sections
-		foreach key, value: elements
-			if '@0@'.format(value) != ''
-				summary(key, value, bool_yn: true, section: section)
-			endif
-		endforeach
-	endforeach
-else # legacy
 
-output = name + '-' + version + '\n'
+sect_app = {}
+foreach tool: iputils
+	tool_sfx  = (tool in caps) and caps[tool] ? ' (' + perm_type + ')' : ''
+	sect_key  = '@0@@1@'.format(tool, tool_sfx)
+	sect_app += {sect_key: build[tool]}
+endforeach
 
-output += '\nAPPLICATIONS (build)\n'
-output += 'ping:\t\t'     + build_ping.to_string()
-output += '  (caps/suid ' + setcap_ping.to_string()      + ')\n'
-output += 'arping:\t\t'   + build_arping.to_string()
-output += '  (caps/suid ' + setcap_arping.to_string()    + ')\n'
-output += 'clockdiff:\t'  + build_clockdiff.to_string()
-output += '  (caps/suid ' + setcap_clockdiff.to_string() + ')\n'
-output += 'tracepath:\t'  + build_tracepath.to_string()  +  '\n'
-
-output += '\nCONFIGURATION\n'
-output += 'Caps:\t\t'  + cap.to_string()     + '\n'
-output += 'IDN@0@\t'.format(idn_via != '' ? (' ' + idn_via + ':') : ':\t') + idn.to_string() + '\n'
-output += 'NLS:\t\t'   + nls.to_string()     + '\n'
-output += 'RFC4620:\t' + rfc4620.to_string() + '\n'
-output += 'Tests:\t\t' + tst.to_string()     + '\n'
-
-output += '\nDIRECTORIES\n'
-output += 'prefix:\t\t'  + prefix    + '\n'
-output += 'bindir:\t\t'  + bindir    + '\n'
-output += 'sbindir:\t'   + sbindir   + '\n'
-output += 'localedir:\t' + localedir + '\n'
-
-message(output)
-
+sect_cnf = {
+	'Caps'    : libcap,
+	'IDN @0@ '.format(idn_via): idn,
+	'NLS'     : nls,
+	'RFC4620' : rfc4620,
+	'Tests'   : tests,
+}
+if docgen or not docgen_okay
+	sect_cnf += {'Generate docs': docgen and docgen_okay}
 endif
+
+sect_dir = {
+	'prefix'   : prefix,
+	'bindir'   : bindir,
+	'sbindir'  : sbindir,
+	'localedir': localedir,
+}
+
+sections = {
+	'APPLICATIONS' : sect_app,
+	'CONFIGURATION': sect_cnf,
+	'DIRECTORIES'  : sect_dir,
+}
+
+foreach section, elems: sections
+	foreach key, value: elems
+		if '@0@'.format(value) != ''
+			summary(key, value, bool_yn: true, section: section)
+		endif
+	endforeach
+endforeach
+
