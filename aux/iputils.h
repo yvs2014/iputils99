@@ -60,6 +60,7 @@
 #define WARN	"WARNING"	// warning prefix
 #define _INFO	_(INFO)
 #define _WARN	_(WARN)
+#define V4IN6_WARN	"Embedded IPv4 Address"
 
 #define OPTEXCL(optA, optB) do { errx(EINVAL, "%s: -%c -%c", \
 	_("Mutually exclusive options"), (optA), (optB)); } \

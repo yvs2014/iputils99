@@ -2,7 +2,7 @@
 
 # local edition: yvs, 2024-2025
 
-ping_src  = aux_src + cap_src
+ping_src  = aux_src + perm_src
 ping_src += 'ping.c'
 ping_src += 'ping_aux.c'
 ping_src += 'ping4.c'
@@ -28,7 +28,7 @@ ping_extra_deps += cc.find_library('resolv', required: false)
 
 tool = 'ping'
 app += { tool: executable(tool, ping_src,
-	include_directories: include_directories(ping_inc),
 	dependencies: deps + ping_extra_deps,
-	install: true) }
+	include_directories: include_directories(ping_inc),
+	install: true, install_mode: install_mode) }
 

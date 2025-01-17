@@ -359,7 +359,7 @@ prints network round trip time, which can be different f\&.e\&. due to DNS failu
 .PP
 \fB\-v\fR
 .RS 4
-Verbose output\&. Do not suppress DUP replies when pinging multicast address\&.
+Verbose output
 .RE
 .PP
 \fB\-V\fR

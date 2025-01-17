@@ -8,7 +8,7 @@ project('iputils99', 'c',
 		'warning_level=3',
 #		'b_sanitize=address,undefined', # use for testing
 	],
-	meson_version: '>=0.53',
+	meson_version: '>=0.55',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
 			check: false).stdout().strip() : '20250116',
@@ -43,18 +43,11 @@ build = {
 	'tracepath': get_option('BUILD_TRACEPATH'),
 	'gai':       get_option('BUILD_GAI'),
 }
-if not get_option('NO_CAPS')
-	caps = {
-		'ping':      get_option('PING_CAPS'),
-		'arping':    get_option('ARPING_CAPS'),
-		'clockdiff': get_option('CLOCKDIFF_CAPS'),
-	}
-	libcap = get_option('CAP')
-	deps  += cc.find_library('cap')
+
+libcap = get_option('CAP')
+if libcap
+	deps += cc.find_library('cap')
 	conf.set('HAVE_LIBCAP', 1, description: 'Defined if libcap exists')
-else
-	caps = {}
-	libcap = false
 endif
 
 rfc4620 = get_option('RFC4620')
@@ -156,47 +149,57 @@ endforeach
 configure_file(output: config_h, configuration: conf)
 add_project_arguments('-include', config_h, language: 'c')
 
-setcap = find_program('setcap', '/usr/sbin/setcap', '/sbin/setcap', required: false)
-if libcap and setcap.found()
-	perm_type = 'caps'
-	if meson.version().version_compare('>=0.55')
-		setcap_path = setcap.full_path()
-	else
-		setcap_path = setcap.path()
-	endif
+set_caps = get_option('SET_CAPS')
+set_suid = get_option('SET_SUID')
+
+if set_caps and libcap
+	setcap = find_program('setcap', '/usr/sbin/setcap', '/sbin/setcap')
+endif
+if get_option('NEED_NET_RAW')
+	linuxcaps = {
+		'ping':      'cap_net_raw+p',
+		'arping':    'cap_net_raw+p',
+		'clockdiff': 'cap_net_raw,cap_sys_nice+p',
+	}
 else
-	perm_type = 'suid'
-	setcap_path = '/dev/null'
+	linuxcaps = {
+		'clockdiff': 'cap_sys_nice+p',
+	}
 endif
 
 
 # build stage
 #
 aux = 'aux'
-aux_src = []
-cap_src = []
+aux_src     = []
+perm_src    = []
 subdir(aux)
 subfoldered = ['ping']
-cap_sh = join_paths(aux, 'setcap-setuid.sh')
 
 app = {}
 foreach tool: iputils
 	if build[tool]
 		manpage += tool
 		src = aux_src
-		if tool in caps
-			src += cap_src
-			if caps[tool]
-meson.add_install_script(cap_sh, bindir, tool, perm_type, setcap_path)
+		install_mode = []
+		if tool in linuxcaps
+			src += perm_src
+			if set_caps and libcap
+				message(tool + ' with ' + linuxcaps[tool] + ' caps')
+meson.add_install_script(setcap, linuxcaps[tool], join_paths(bindir, tool))
+			elif set_suid
+				suid_perm = 'r-sr-xr-x'
+				warning(tool + ' suid mode: ' + suid_perm)
+				install_mode += suid_perm
 			endif
 		endif
                 if tool in subfoldered
 			subdir(tool)
                 else
 			app += { tool:
-executable(tool, src + [tool + '.c'],
+executable(tool, src + [tool + '.c'], dependencies: deps,
 	include_directories: include_directories(aux),
-	dependencies: deps, install: true)
+        install: true, install_mode: install_mode)
 			}
 		endif
 	endif
@@ -218,12 +221,14 @@ if docgen
 	subdir('doc')
 endif
 
+
 # summary at the end
 #
 
 sect_app = {}
+perm_sfx = libcap ? ' (caps) ' : ' '
 foreach tool: iputils
-	tool_sfx  = (tool in caps) and caps[tool] ? ' (' + perm_type + ')' : ''
+	tool_sfx  = (tool in linuxcaps) ? perm_sfx : ' '
 	sect_key  = '@0@@1@'.format(tool, tool_sfx)
 	sect_app += {sect_key: build[tool]}
 endforeach

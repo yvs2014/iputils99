@@ -4,15 +4,13 @@
 
 # features
 option('CAP',          type: 'boolean', value: true,
-	description: 'Capability support (with libcap)')
+	description: 'Build with linux capabilities (libcap)')
 option('IDN',          type: 'boolean', value: true,
-	description: 'IDN support (via libc)')
+	description: 'IDN support (transparently via libc, or directly with libidn2)')
 option('NLS',          type: 'boolean', value: true,
-	description: 'NLS support (via gettext)')
+	description: 'NLS support (gettext)')
 option('RFC4620',      type: 'boolean', value: false,
 	description: 'PING6 NodeInfo client (RFC4620)')
-option('NONCE_MEMORY', type: 'boolean', value: false,
-	description: 'PING6 NodeInfo nonce memory')
 
 # executables
 option('BUILD_PING',      type: 'boolean', value: true,
@@ -26,21 +24,19 @@ option('BUILD_TRACEPATH', type: 'boolean', value: true,
 option('BUILD_GAI',       type: 'boolean', value: true,
         description: 'Build gai tool')
 
-# caps
-option('NO_CAPS',        type: 'boolean', value: false,
-	description: 'Do not set linux capabilities, nor suid bits')
-option('PING_CAPS',      type: 'boolean', value: true,
-	description: 'Set linux caps or suid bits on ping')
-option('ARPING_CAPS',    type: 'boolean', value: true,
-	description: 'Set linux caps or suid bits on arping')
-option('CLOCKDIFF_CAPS', type: 'boolean', value: true,
-	description: 'Set linux caps or suid bits on clockdiff')
-
-# misc
+# extra
 option('TESTS',                 type: 'boolean', value: true,
 	description: 'Include tests')
 option('DOCGEN',                type: 'boolean', value: false,
 	description: 'Generate man/html from xml templates')
+option('SET_CAPS',              type: 'boolean', value: false,
+	description: 'Set linux capabilities at installation')
+option('NEED_NET_RAW',          type: 'boolean', value: true,
+	description: 'cap_net_raw+p is needed to ping')
+option('SET_SUID',              type: 'boolean', value: false,
+	description: 'Set suid bit at installation')
+option('NONCE_MEMORY',          type: 'boolean', value: false,
+	description: 'PING6 NodeInfo nonce memory')
 option('ARPING_DEFAULT_DEVICE', type: 'string',  value: '',
 	description: 'Default device for arping')
 

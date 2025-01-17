@@ -540,11 +540,11 @@ int main(int argc, char **argv) {
 		    IN6_IS_ADDR_V4MAPPED(&((struct sockaddr_in6 *)ai->ai_addr)->sin6_addr))
 			switch (hints.ai_family) {
 			case AF_INET6:
-				err(ENETUNREACH, _(V4IN6_WARNING));
+				err(ENETUNREACH, _(V4IN6_WARN));
 				break;
 			case AF_UNSPEC:
 				unmap_ai_sa4(ai);
-				warnx("%s: %s", WARN, _(V4IN6_WARNING));
+				warnx("%s: %s", WARN, _(V4IN6_WARN));
 				break;
 			default: break;
 			}

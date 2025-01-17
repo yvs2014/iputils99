@@ -22,7 +22,7 @@
 .SH "NAME"
 tracepath \- traces path to a network host discovering MTU along this path
 .SH "SYNOPSIS"
-\fBtracepath\fR [\fB\-4\fR] [\fB\-6\fR] [\fB\-n\fR] [\fB\-b\fR] [\fB\-l\ \fR\fB\fIpktlen\fR\fR] [\fB\-m\ \fR\fB\fImax_hops\fR\fR] [\fB\-p\ \fR\fB\fIport\fR\fR] [\fB\-V\fR] TARGET
+\fBtracepath\fR [\fB\-bhlmnpvV46\fR] TARGET
 .SH "DESCRIPTION"
 .PP
 It traces the network path to
@@ -40,49 +40,47 @@ and classic example of application of Linux error queues\&. The situation with I
 .PP
 \fB\-4\fR
 .RS 4
-Use IPv4 only
+Use IPv4
 .RE
 .PP
 \fB\-6\fR
 .RS 4
-Use IPv6 only
+Use IPv6
 .RE
 .PP
 \fB\-n\fR
 .RS 4
-Print primarily IP addresses numerically
+No reverse DNS resolution
 .RE
 .PP
 \fB\-b\fR
 .RS 4
-Print both: Host names and IP addresses
+Print host names and IP addresses
 .RE
 .PP
-\fB\-l\fR
+\fB\-l\fR \fIpktlen\fR
 .RS 4
-Sets the initial packet length to
-\fIpktlen\fR
-instead of 65535 for
-\fBIPv4\fR
-or 128000 for
-\fBIPv6\fR
+Set initial packet length to \fIpktlen\fR (default 65535)
 .RE
 .PP
-\fB\-m\fR
+\fB\-m\fR \fImax_hops\fR
 .RS 4
-Set maximum hops (or maximum TTLs) to
-\fImax_hops\fR
-instead of 30
+Set TTL maximum to \fImax_hops\fR (default 30)
 .RE
 .PP
-\fB\-p\fR
+\fB\-p\fR \fIport\fR
 .RS 4
-Sets the initial destination port to use
+Set initial destination \fIport\fR (default 33433)
+.RE
+.PP
+\fB\-v\fR
+.RS 4
+Verbose output
 .RE
 .PP
 \fB\-V\fR
 .RS 4
-Print version and exit
+Print program version
 .RE
 .SH "HANDLING ERRORS"
 .PP

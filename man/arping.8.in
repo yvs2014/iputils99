@@ -22,7 +22,7 @@
 .SH "NAME"
 arping \- send ARP REQUEST to a neighbour host
 .SH "SYNOPSIS"
-\fBarping\fR [\fB\-AbDfhqUV\fR] [\fB\-c\ \fR\fB\fIcount\fR\fR] [\fB\-w\ \fR\fB\fIdeadline\fR\fR] [\fB\-i\ \fR\fB\fIinterval\fR\fR] [\fB\-s\ \fR\fB\fIsource\fR\fR] [\fB\-I\ \fR\fB\fIinterface\fR\fR] TARGET
+\fBarping\fR [\fB\-AbcDfhiIqsUVw\fR] TARGET
 .SH "DESCRIPTION"
 .PP
 Ping
@@ -70,14 +70,19 @@ Duplicate address detection mode (DAD)\&. See RFC2131, 4\&.4\&.1\&. Returns 0, i
 Finish after the first reply confirming that target is alive
 .RE
 .PP
+\fB\-h\fR
+.RS 4
+Print help page
+.RE
+.PP
+\fB\-i \fR\fB\fIinterval\fR\fR
+.RS 4
+Specify an \fIinterval\fR\ between packets, in seconds
+.RE
+.PP
 \fB\-I \fR\fB\fIinterface\fR\fR
 .RS 4
 Name of network device where to send ARP REQUEST packets
-.RE
-.PP
-\fB\-h\fR
-.RS 4
-Print help page and exit
 .RE
 .PP
 \fB\-q\fR
@@ -114,7 +119,7 @@ Unsolicited ARP mode to update neighbours\*(Aq ARP caches\&. No replies are expe
 .PP
 \fB\-V\fR
 .RS 4
-Print version of the program and exit
+Print program version
 .RE
 .PP
 \fB\-w \fR\fB\fIdeadline\fR\fR
@@ -128,10 +133,6 @@ option, exit with status 0 if
 replies are received before the deadline expiration, otherwise status 1\&.
 .RE
 .PP
-\fB\-i \fR\fB\fIinterval\fR\fR
-.RS 4
-Specify an \fIinterval\fR\ between packets, in seconds
-.RE
 .SH "SEE ALSO"
 .PP
 \fBndisc6\fR(8),

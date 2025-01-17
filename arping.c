@@ -871,7 +871,7 @@ static inline void print_header(struct in_addr src, struct in_addr dst,
 
 static inline void parse_options(state_t *rts, int argc, char **argv) {
 	int ch;
-	while ((ch = getopt(argc, argv, "h?bfDUAqc:w:i:s:I:V")) != EOF) {
+	while ((ch = getopt(argc, argv, "Abc:Dfhi:I:qs:UVw:?")) != EOF) {
 		switch (ch) {
 		case 'b':
 			rts->opt.broadcast = true;

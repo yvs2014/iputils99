@@ -17,7 +17,7 @@ _log() {
 case "$perm_type" in
 	caps)
 		params="cap_net_raw+p"
-		[ "$2" = "clockdiff" ] && params="cap_net_raw,cap_sys_nice+ep"
+		[ "$2" = "clockdiff" ] && params="cap_net_raw,cap_sys_nice+p"
 		# cap_net_admin is needed for ping -m even on ICMP datagram socket
 		# (or cap_net_raw since Linux kernel 5.17)
 		# [ "$2" = "ping" ] && params="cap_net_admin,cap_net_raw+p"
