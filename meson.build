@@ -11,7 +11,7 @@ project('iputils99', 'c',
 	meson_version: '>=0.55',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
-			check: false).stdout().strip() : '20250116',
+			check: false).stdout().strip() : '20250118',
 )
 
 add_project_arguments('-D_GNU_SOURCE', language: 'c')
@@ -149,8 +149,8 @@ endforeach
 configure_file(output: config_h, configuration: conf)
 add_project_arguments('-include', config_h, language: 'c')
 
-set_caps = get_option('SET_CAPS')
-set_suid = get_option('SET_SUID')
+set_caps = get_option('INSTALL_WITH_CAPS')
+set_suid = get_option('INSTALL_WITH_SUID')
 
 if set_caps and libcap
 	setcap = find_program('setcap', '/usr/sbin/setcap', '/sbin/setcap')

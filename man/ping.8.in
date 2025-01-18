@@ -364,7 +364,7 @@ Verbose output
 .PP
 \fB\-V\fR
 .RS 4
-Show version and exit
+Print program version
 .RE
 .PP
 \fB\-w\fR \fIdeadline\fR

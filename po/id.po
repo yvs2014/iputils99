@@ -897,8 +897,8 @@ msgid "LOCALHOST"
 msgstr ""
 
 #
-msgid "(This broken router returned corrupted payload)"
-msgstr "(Router rusak ini mengembalikan payload korup)"
+msgid "(corrupted payload)"
+msgstr "(data korup)"
 
 #
 msgid "pmtu"

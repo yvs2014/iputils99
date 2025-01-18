@@ -22,7 +22,7 @@
 .SH "NAME"
 clockdiff \- measure clock difference between hosts
 .SH "SYNOPSIS"
-\fBclockdiff\fR [\fB\-o\fR] [\fB\-o1\fR] [\fB\-\-time\-format\fR \fB\fIctime|iso\fR\fR] [\fB\-V\fR] HOST
+\fBclockdiff\fR [\fB\-hIoV1\fR] HOST
 .SH "DESCRIPTION"
 .PP
 \fBclockdiff\fR
@@ -33,37 +33,27 @@ with 1 msec resolution using ICMP TIMESTAMP [2] packets or, optionally, IP TIMES
 .PP
 \fB\-o\fR
 .RS 4
-Use IP TIMESTAMP with ICMP ECHO instead of ICMP TIMESTAMP messages\&. It is useful with some destinations, which do not support ICMP TIMESTAMP (f\&.e\&. Solaris <2\&.4)\&.
+Use IP TIMESTAMP with ICMP ECHO instead of ICMP TIMESTAMP messages\&. It is useful with some destinations, which do not support ICMP TIMESTAMP (for example Solaris <2\&.4)\&.
 .RE
 .PP
-\fB\-o1\fR
+\fB\-1\fR
 .RS 4
-Slightly different form of
-\fB\-o\fR, namely it uses three\-term IP TIMESTAMP with prespecified hop addresses instead of four term one\&. What flavor works better depends on target host\&. Particularly,
-\fB\-o\fR
-is better for Linux\&.
-.RE
-.PP
-\fB\-T\fR, \fB\-\-time\-format \fR\fB\fIctime iso\fR\fR
-.RS 4
-Print time stamp in output either ISO\-8601 format or classical ctime format\&. The ctime format is default\&. The ISO time stamp includes timezone, and is easier to parse\&.
+Slightly different form of \fB\-o\fR, namely it uses three\-term IP TIMESTAMP with prespecified hop addresses instead of four term one\&. What flavor works better depends on target host\&. Particularly, \fB\-o\fR is better for Linux\&.
 .RE
 .PP
 \fB\-I\fR
 .RS 4
-Alias of
-\fB\-\-time\-format \fR\fB\fIiso\fR\fR\fB \fR
-option and argument\&.
+Print timestamp in ISO\-8601 format instead of default ctime\&. The ISO timestamp includes timezone, and it is easier to parse\&.
 .RE
 .PP
-\fB\-h\fR, \fB\-\-help\fR
+\fB\-h\fR
 .RS 4
-Print help and exit\&.
+Print help
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
 .RS 4
-Print version and exit\&.
+Print program version
 .RE
 .SH "WARNINGS"
 .PP

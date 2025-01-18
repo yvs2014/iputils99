@@ -964,8 +964,8 @@ msgid "LOCALHOST"
 msgstr ""
 
 #
-msgid "(This broken router returned corrupted payload)"
-msgstr "(Ce routeur défectueux renvoie des charges utiles corrompues)"
+msgid "(corrupted payload)"
+msgstr "(charge utile corrompue)"
 
 #
 msgid "pmtu"

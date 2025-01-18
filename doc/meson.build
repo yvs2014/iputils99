@@ -53,6 +53,7 @@ if valid
 			install_dir: join_paths(get_option('datadir'), base),
 		)
 	endforeach
+	warning('Not all iputils99 changes are reflected in the generated docs')
 else
 	warning('Documentation is not generated')
 endif

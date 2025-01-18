@@ -940,8 +940,8 @@ msgid "LOCALHOST"
 msgstr "Paikallinen isäntä"
 
 #
-msgid "(This broken router returned corrupted payload)"
-msgstr "(Tämä rikkinäinen reititin palautti vioittuneen hyötykuorman)"
+msgid "(corrupted payload)"
+msgstr "(vioittuneen hyötykuorman)"
 
 #
 msgid "pmtu"

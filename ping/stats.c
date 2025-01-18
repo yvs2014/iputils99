@@ -46,6 +46,11 @@
 
 #define MAXWAIT_USEC (MAXWAIT * 1000000)
 
+// min/avg/max/mdev ms
+#define TIMING_MS   "%s = " FMS "/" FMS "/" FMS "/" FMS_MS
+// "ipg/ewma ms"
+#define ADAPTIVE_MS "%s = " FMS "/" FMS_MS
+
 static inline void stat_hops(uint8_t min, uint8_t max) {
 	static uint8_t peer_maxttl;
 	if (!peer_maxttl) { 			// Estimation:
@@ -90,13 +95,9 @@ static inline void stat_timing(const state_t *rts) {
 			 * integer rounding errors for small ping times */
 			(rts->tsum2 - ((rts->tsum * rts->tsum) / total)) / total :
 			(rts->tsum2 / total) - tmavg * tmavg;
-		double tmdev = sqrt((tmvar < 0) ? -tmvar : tmvar);
-		printf("%s = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld %s",
-			_("rtt min/avg/max/mdev"),
-			rts->tmin             / 1000,   rts->tmin % 1000,
-			(unsigned long)(tmavg / 1000),      tmavg % 1000,
-			rts->tmax             / 1000,   rts->tmax % 1000,
-			(long)tmdev           / 1000, (long)tmdev % 1000,
+		printf(TIMING_MS, _("rtt min/avg/max/mdev"),
+			rts->tmin / 1000., tmavg / 1000., rts->tmax / 1000.,
+			sqrt((tmvar < 0) ? -tmvar : tmvar) / 1000.,
 			_("ms"));
 		comma = ',';
 	}
@@ -114,11 +115,9 @@ static inline void stat_timing(const state_t *rts) {
 			printf("%c ", comma);
 		struct timespec tv = {0};
 		timespecsub(&rts->cur_time, &rts->start_time, &tv);
-		int ipg = (1000000 * (long long)tv.tv_sec + tv.tv_nsec / 1000) / (rts->ntransmitted - 1);
-		printf("%s = %d.%03d/%d.%03d %s", _("ipg/ewma"),
-		       ipg      / 1000,            ipg % 1000,
-		       rts->rtt / 8000, (rts->rtt / 8) % 1000,
-		       _("ms"));
+		double ipg = (tv.tv_sec * 1000 + tv.tv_nsec / 1000000.)
+			/ (rts->ntransmitted - 1);
+		printf(ADAPTIVE_MS, _("ipg/ewma"), ipg, rts->rtt / 8000., _("ms"));
 	}
 	//
 	putchar('\n');
@@ -145,12 +144,9 @@ void print_status(const state_t *rts) {
 	fprintf(stderr, ", %d%% %s", lost, _("lost"));
 	if (rts->nreceived && rts->timing) {
 		long tavg = rts->tsum / (rts->nreceived + rts->nrepeats);
-		fprintf(stderr, ", %s = %ld.%03ld/%lu.%03ld/%d.%03d/%ld.%03ld %s",
-			_("min/avg/ewma/max"),
-			rts->tmin / 1000, rts->tmin      % 1000,
-			tavg      / 1000, tavg           % 1000,
-			rts->rtt  / 8000, (rts->rtt / 8) % 1000,
-			rts->tmax / 1000, rts->tmax      % 1000,
+		fprintf(stderr, ", " TIMING_MS, _("min/avg/ewma/max"),
+			rts->tmin / 1000., tavg / 1000.,
+			rts->rtt / 8000., rts->tmax / 1000.,
 			_("ms"));
 	}
 	putc('\n', stderr);
@@ -205,7 +201,7 @@ static inline bool print_stats(const state_t *rts, const stat_aux_t *stat) {
 	}
 	//
 	if (rts->timing)
-		printf(" %s=%.3f %s", _("time"), stat->triptime / 1000., _("ms"));
+		printf(" %s=" FMS_MS, _("time"), stat->triptime / 1000., _("ms"));
 	char* exclame[3] = {
 		(stat->dup && (!rts->multicast || rts->opt.verbose)) ? "DUP" : NULL,
 		stat->ack  ? NULL : "BAD CHECKSUM",

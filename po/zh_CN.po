@@ -938,8 +938,8 @@ msgid "LOCALHOST"
 msgstr "本地主机"
 
 #
-msgid "(This broken router returned corrupted payload)"
-msgstr "(这条损坏的路由返回了错误的数据)"
+msgid "(corrupted payload)"
+msgstr "(错误的数据)"
 
 #
 msgid "pmtu"

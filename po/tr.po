@@ -942,8 +942,8 @@ msgid "LOCALHOST"
 msgstr ""
 
 #
-msgid "(This broken router returned corrupted payload)"
-msgstr "(Bu bozuk yönlendirici bozuk yük döndürdü)"
+msgid "(corrupted payload)"
+msgstr "(bozuk yük)"
 
 #
 msgid "pmtu"

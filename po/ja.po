@@ -893,8 +893,8 @@ msgid "LOCALHOST"
 msgstr ""
 
 #
-msgid "(This broken router returned corrupted payload)"
-msgstr "(不完全なルーターが破損したデータを返しました)"
+msgid "(corrupted payload)"
+msgstr "(破損したデータ)"
 
 #
 msgid "pmtu"

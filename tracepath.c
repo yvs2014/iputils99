@@ -45,12 +45,6 @@
 #include "iputils.h"
 #include "str2num.h"
 
-#if defined(USE_IDN) && defined(NI_IDN)
-#define NI_FLAGS	NI_IDN
-#else
-#define NI_FLAGS	0
-#endif
-
 #ifndef UNKN
 #define UNKN	"???"
 #endif
@@ -266,12 +260,9 @@ do { // was 'restart:'
 	if (retts) {
 		struct timespec res;
 		timespecsub(&ts, retts, &res);
-		printf("%3ld.%03ld %s",
-			res.tv_sec * 1000 + res.tv_nsec / 1000000,
-			(res.tv_nsec % 1000000) / 1000,
-			_("ms"));
+		printf(FMS_MS, res.tv_sec * 1000 + res.tv_nsec / 1000000., _("ms"));
 		if (broken_router)
-			fputs(_("(This broken router returned corrupted payload)"), stdout);
+			fputs(_("(corrupted payload)"), stdout);
 		putchar(' ');
 	}
 
@@ -545,10 +536,14 @@ static inline void parse_opts(int argc, char **argv, struct addrinfo *hints, sta
 		}
 			break;
 		case 'n':
+			if (rts->show_both)
+				OPTEXCL('b', 'n');
 			rts->dns      = false;
 			rts->ni_flags = NI_NUMERICHOST;
 			break;
 		case 'b':
+			if (!rts->dns)
+				OPTEXCL('n', 'b');
 			rts->show_both = true;
 			break;
 		case 'l':

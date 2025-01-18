@@ -98,15 +98,16 @@ enum {
 	BIASN  = -43200000,
 	MODULO =  86400000,
 	PROCESSING_TIME	= 0,	/* ms. to reduce error in measurement */
+	//
+	OPTLEN_O = 4 + 4 * 8,
+	OPTLEN_1 = 4 + 3 * 8,
 };
-
-static const char* ts_format[] = {"%FT%T%z" /*iso*/, "%c" /*local*/};
 
 typedef struct run_state {
 	uint16_t id16;
 	int sock;
 	struct sockaddr_in server;
-	int ip_opt_len;
+	uint8_t optlen;
 	int delta1;
 	int delta2;
 	uint16_t seqno;
@@ -116,7 +117,7 @@ typedef struct run_state {
 	long min_rtt;
 	long sigma;
 	char *host;
-	const char *time_format;
+	const char *ts_format;
 	bool interactive;
 } state_t;
 
@@ -210,7 +211,7 @@ static int measure_inner_loop(state_t *rts, struct measure_vars *mv) {
 	long peer_time1 = 0;
 	long peer_time2 = 0;
 	bool reply_with_ts = (mv->icmp->type == ICMP_TIMESTAMPREPLY) ||
-		(rts->ip_opt_len                    &&
+		(rts->optlen                        &&
 		 (mv->icmp->type == ICMP_ECHOREPLY) &&
 		 (mv->packet[20] == IPOPT_TIMESTAMP));
 
@@ -221,37 +222,45 @@ static int measure_inner_loop(state_t *rts, struct measure_vars *mv) {
 	{
 		if (rts->acked < mv->icmp->un.echo.sequence)
 			rts->acked = mv->icmp->un.echo.sequence;
-		if (rts->ip_opt_len) {
+		if (rts->optlen) {
 			uint8_t *opt = mv->packet + sizeof(struct iphdr);
-			if ((opt[3] & 0xF) != IPOPT_TS_PRESPEC) {
-				warnx("%s: %d", _("Wrong timestamp"), opt[3] & 0xF);
+			{ // low 4bits
+			  uint8_t low = opt[3] & 0xf;
+			  if (low != IPOPT_TS_PRESPEC) {
+				warnx("%s: %u", _("Wrong timestamp"), low);
 				return NONSTDTIME;
+			  }
 			}
-			if (opt[3] >> 4) {
-				if (((opt[3] >> 4)   != 1) ||
-				    (rts->ip_opt_len != (4 + 3 * 8)))
-					 warnx("%s: %d", _("Overflow hops"), opt[3] >> 4);
+			{ // high 4bits
+			  uint8_t high = opt[3] >> 4;
+			  if (high && ((high != 1) || (rts->optlen != OPTLEN_1)))
+				 warnx("%s: %u", _("Overflow hops"), high);
 			}
 			sendtime = recvtime = peer_time1 = peer_time2 = 0;
 			for (int i = 0; i < (opt[2] - 5) / 8; i++) {
 				uint32_t *timep = (uint32_t *)(opt + 4 + i * 8 + 4);
 				uint32_t t = ntohl(*timep);
-
 				if (t & 0x80000000)
 					return NONSTDTIME;
-
-				if (i == 0)
+				switch (i) {
+				case 0:
 					sendtime = t;
-				if (i == 1)
+					break;
+				case 1:
 					peer_time1 = peer_time2 = t;
-				if (i == 2) {
-					if (rts->ip_opt_len == (4 + 4 * 8))
+					break;
+				case 2:
+					if (rts->optlen == OPTLEN_O)
 						peer_time2 = t;
 					else
 						recvtime = t;
-				}
-				if (i == 3)
+					break;
+				case 3:
 					recvtime = t;
+					break;
+				default:
+					break;
+				}
 			}
 
 			if (!(sendtime && recvtime && peer_time1 && peer_time2)) {
@@ -270,7 +279,7 @@ static int measure_inner_loop(state_t *rts, struct measure_vars *mv) {
 		rts->rtt   = (rts->rtt   * 3 + diff)                  / 4;
 		rts->sigma = (rts->sigma * 3 + labs(diff - rts->rtt)) / 4;
 		mv->msgcount++;
-		if (!rts->ip_opt_len) {
+		if (!rts->optlen) {
 			peer_time1 = ntohl(((uint32_t *)(mv->icmp + 1))[1]);
 			/*
 			 * a hosts using a time format different from ms.  since midnight
@@ -297,7 +306,7 @@ static int measure_inner_loop(state_t *rts, struct measure_vars *mv) {
 			delta1 -= MODULO;
 
 		long delta2 = recvtime;
-		delta2 -= rts->ip_opt_len ? peer_time2 : peer_time1;
+		delta2 -= rts->optlen ? peer_time2 : peer_time1;
 		if      (delta2 < BIASN)
 			delta2 += MODULO;
 		else if (delta2 > BIASP)
@@ -355,7 +364,7 @@ static int measure(state_t *rts) {
 	unsigned char opacket[64] = {0};
 	struct icmphdr *oicp = (struct icmphdr *)opacket;
 
-	oicp->type       = rts->ip_opt_len ? ICMP_ECHO : ICMP_TIMESTAMP;
+	oicp->type       = rts->optlen ? ICMP_ECHO : ICMP_TIMESTAMP;
 	oicp->code       = 0;
 	oicp->checksum   = 0;
 	oicp->un.echo.id = rts->id16;
@@ -426,33 +435,21 @@ NORETURN static void usage(int rc) {
 }
 
 static void parse_opts(state_t *rts, int argc, char **argv) {
-	const struct option longopts[] = {
-		{ "time-format", required_argument, NULL, 'T' },
-		{ "version",     no_argument,       NULL, 'V' },
-		{ "help",        no_argument,       NULL, 'h' },
-		{ NULL,          0,                 NULL, 0   },
-	};
 	int ch;
-	while ((ch = getopt_long(argc, argv, "o1T:IVh", longopts, NULL)) != -1)
+	while ((ch = getopt(argc, argv, "hIoV1")) != EOF)
 		switch (ch) {
-		case 'o':
-			rts->ip_opt_len = 4 + 4 * 8;
-			break;
 		case '1':
-			rts->ip_opt_len = 4 + 3 * 8;
+			if (rts->optlen == OPTLEN_O)
+				OPTEXCL('o', '1');
+			rts->optlen = OPTLEN_1;
 			break;
-		case 'T':
-			if      (!strcmp(optarg, "iso"))
-				rts->time_format = ts_format[0];
-			else if (!strcmp(optarg, "ctime"))
-				rts->time_format = ts_format[1];
-			else
-				errx(EXIT_FAILURE,
-					"Invalid time-format argument: %s",
-					optarg);
+		case 'o':
+			if (rts->optlen == OPTLEN_1)
+				OPTEXCL('1', 'o');
+			rts->optlen = OPTLEN_O;
 			break;
 		case 'I':
-			rts->time_format = ts_format[0];
+			rts->ts_format = "%FT%T%z"; /*iso*/
 			break;
 		case 'V':
 			version_n_exit(EXIT_SUCCESS, FEAT_CAP | FEAT_IDN | FEAT_NLS);
@@ -478,7 +475,7 @@ int main(int argc, char **argv) {
 	SET_NLS;
 	atexit(close_stdout);
 
-	state_t rts = {.rtt = 1000, .time_format = ts_format[1]};
+	state_t rts = {.rtt = 1000, .ts_format = "%c" /*local*/};
 	parse_opts(&rts, argc, argv);
 	argc -= optind;
 	argv += optind;
@@ -542,14 +539,14 @@ int main(int argc, char **argv) {
 	}
 	if (connect(rts.sock, (struct sockaddr *)&rts.server, sizeof(rts.server)) < 0)
 		err(errno, "%s", "connect()");
-	if (rts.ip_opt_len) {
+	if (rts.optlen) {
 		struct sockaddr_in myaddr = { 0 };
 		socklen_t addrlen = sizeof(myaddr);
-		uint8_t *rspace = calloc(1, rts.ip_opt_len);
+		uint8_t *rspace = calloc(1, rts.optlen);
 		if (!rspace)
-			err(errno, "calloc(%d)", rts.ip_opt_len);
+			err(errno, "calloc(%d)", rts.optlen);
 		rspace[0] = IPOPT_TIMESTAMP;
-		rspace[1] = rts.ip_opt_len;
+		rspace[1] = rts.optlen;
 		rspace[2] = 5;
 		rspace[3] = IPOPT_TS_PRESPEC;
 		if (getsockname(rts.sock, (struct sockaddr *)&myaddr, &addrlen) < 0)
@@ -557,14 +554,14 @@ int main(int argc, char **argv) {
 		((uint32_t *) (rspace + 4))[0 * 2] = myaddr.sin_addr.s_addr;
 		((uint32_t *) (rspace + 4))[1 * 2] = rts.server.sin_addr.s_addr;
 		((uint32_t *) (rspace + 4))[2 * 2] = myaddr.sin_addr.s_addr;
-		if (rts.ip_opt_len == (4 + 4 * 8)) {
+		if (rts.optlen == OPTLEN_O) {
 			((uint32_t *) (rspace + 4))[2 * 2] = rts.server.sin_addr.s_addr;
 			((uint32_t *) (rspace + 4))[3 * 2] = myaddr.sin_addr.s_addr;
 		}
 
-		if (setsockopt(rts.sock, IPPROTO_IP, IP_OPTIONS, rspace, rts.ip_opt_len) < 0) {
-			warn("IP_OPTIONS (fallback to icmp tstamps)");
-			rts.ip_opt_len = 0;
+		if (setsockopt(rts.sock, IPPROTO_IP, IP_OPTIONS, rspace, rts.optlen) < 0) {
+			warn("IP_OPTIONS: fallback to ICMP timestamp");
+			rts.optlen = 0;
 		}
 		free(rspace);
 	}
@@ -588,7 +585,7 @@ int main(int argc, char **argv) {
 		struct tm tm = {0};
 		localtime_r(&now, &tm);
 		char ts[64];
-		if (!strftime(ts, sizeof(ts), rts.time_format, &tm))
+		if (!strftime(ts, sizeof(ts), rts.ts_format, &tm))
 			ts[0] = 0;
 		const char *ms = _("ms");
 		putchar('\n');

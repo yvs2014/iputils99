@@ -924,7 +924,7 @@ msgid "LOCALHOST"
 msgstr ""
 
 #
-msgid "(This broken router returned corrupted payload)"
+msgid "(corrupted payload)"
 msgstr ""
 
 #

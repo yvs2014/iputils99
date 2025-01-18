@@ -956,8 +956,8 @@ msgid "LOCALHOST"
 msgstr ""
 
 #
-msgid "(This broken router returned corrupted payload)"
-msgstr "(Tento rozbitý směrovač vrátil poškozená data)"
+msgid "(corrupted payload)"
+msgstr "(poškozená data)"
 
 #
 msgid "pmtu"

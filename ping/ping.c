@@ -294,7 +294,7 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			break;
 		case 'T':
 			if (rts->opt.rroute)
-				OPTEXCL('T', 'R');
+				OPTEXCL('R', 'T');
 			rts->opt.timestamp = true;
 			if      (strcmp(optarg, "tsonly")    == 0)
 				rts->ipt_flg = IPOPT_TS_TSONLY;

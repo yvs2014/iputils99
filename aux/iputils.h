@@ -14,19 +14,6 @@
 #define _(Text) Text
 #endif
 
-#ifndef IP_PMTUDISC_DO
-# define IP_PMTUDISC_DO		2
-#endif
-#ifndef IPV6_PMTUDISC_DO
-# define IPV6_PMTUDISC_DO	2
-#endif
-#ifndef IP_PMTUDISC_PROBE
-# define IP_PMTUDISC_PROBE	3
-#endif
-#ifndef IPV6_PMTUDISC_PROBE
-# define IPV6_PMTUDISC_PROBE	3
-#endif
-
 #if defined(USE_IDN) && defined(AI_IDN)
 # define AI_FLAGS (AI_CANONNAME | AI_IDN | AI_CANONIDN)
 #else
@@ -65,6 +52,9 @@
 #define OPTEXCL(optA, optB) do { errx(EINVAL, "%s: -%c -%c", \
 	_("Mutually exclusive options"), (optA), (optB)); } \
 	while (0)
+
+#define FMS "%.3f"		// common timing format in milliseconds
+#define FMS_MS FMS " %s"	// ".3f ms"
 
 // wrapper: __has_attribute
 #ifndef __has_attribute
