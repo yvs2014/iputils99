@@ -14,6 +14,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 # iputils99 edition
 
@@ -179,12 +180,14 @@ msgid "Received responses"
 msgstr "応答を受信"
 
 # %d requests
-msgid "requests"
-msgstr "要求"
+msgid "request"
+msgid_plural "requests"
+msgstr[0] "要求"
 
 # %d broadcasts
-msgid "broadcasts"
-msgstr "ブロードキャスト"
+msgid "broadcast"
+msgid_plural "broadcasts"
+msgstr[0] "ブロードキャスト"
 
 #
 msgid "Unicast"
@@ -197,10 +200,6 @@ msgstr "ブロードキャスト"
 #
 msgid "reply"
 msgstr "応答"
-
-#
-msgid "request"
-msgstr "要求"
 
 # for %s
 msgid "for"
@@ -504,6 +503,10 @@ msgid "Packet too short"
 msgstr "パケットが短すぎます"
 
 #
+msgid "minimal"
+msgstr "最小"
+
+#
 msgid "WARNING"
 msgstr "警告"
 
@@ -793,8 +796,9 @@ msgid "Time of day goes back, taking countermeasures"
 msgstr "時刻が巻き戻りました。対策を行います"
 
 # %ld bytes
-msgid "bytes"
-msgstr "バイト"
+msgid "byte"
+msgid_plural "bytes"
+msgstr[0] "バイト"
 
 #
 msgid "icmp_seq"
@@ -837,8 +841,9 @@ msgid " ping statistics"
 msgstr " ping 統計"
 
 # %ld packets transmitted
-msgid "packets transmitted"
-msgstr "送信パケット数"
+msgid "packet transmitted"
+msgid_plural "packets transmitted"
+msgstr[0] "送信パケット数"
 
 # %ld received
 msgid "received"

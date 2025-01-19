@@ -24,4 +24,14 @@ void print_addr_seq(const state_t *rts, uint16_t seq,
 	const struct sock_extended_err *ee, socklen_t salen);
 void print_local_ee(const state_t *rts, const struct sock_extended_err *ee);
 
+#define RETURN_IF_TOO_SHORT(received, minimum) do {		\
+	if ((received) < (minimum)) {				\
+		if (rts->opt.verbose)				\
+			warnx("%s: %zd %s (%s: %zd)",		\
+_("Packet too short"), (size_t)(received), BYTES(received),	\
+_("minimal"), (size_t)(minimum));				\
+		return true;					\
+	}							\
+} while (0)
+
 #endif

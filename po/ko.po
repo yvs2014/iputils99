@@ -13,7 +13,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Weblate 5.3\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 # iputils99 edition
 
@@ -226,12 +226,14 @@ msgid "Received responses"
 msgstr "응답 수신함"
 
 # %d requests
-msgid "requests"
-msgstr "요청"
+msgid "request"
+msgid_plural "requests"
+msgstr[0] "요청"
 
 # %d broadcasts
-msgid "broadcasts"
-msgstr "광역 전송"
+msgid "broadcast"
+msgid_plural "broadcasts"
+msgstr[0] "광역 전송"
 
 #
 msgid "Unicast"
@@ -244,10 +246,6 @@ msgstr "광역 전송"
 #
 msgid "reply"
 msgstr "응답"
-
-#
-msgid "request"
-msgstr "요청"
 
 # for %s
 msgid "for"
@@ -551,6 +549,10 @@ msgid "Packet too short"
 msgstr "패킷이 너무 짧음"
 
 #
+msgid "minimal"
+msgstr "최소"
+
+#
 msgid "WARNING"
 msgstr "경고"
 
@@ -847,8 +849,9 @@ msgid "Time of day goes back, taking countermeasures"
 msgstr "시간을 되돌리고, 대책을 강구합니다"
 
 # %ld bytes
-msgid "bytes"
-msgstr "바이트"
+msgid "byte"
+msgid_plural "bytes"
+msgstr[0] "바이트"
 
 #
 msgid "icmp_seq"
@@ -891,8 +894,9 @@ msgid " ping statistics"
 msgstr " ping 통계"
 
 # %ld packets transmitted
-msgid "packets transmitted"
-msgstr "패킷이 전송됨"
+msgid "packet transmitted"
+msgid_plural "packets transmitted"
+msgstr[0] "패킷이 전송됨"
 
 # %ld received
 msgid "received"

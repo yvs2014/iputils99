@@ -252,11 +252,7 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 			}
 	}
 
-	if (received < 8) {
-		if (rts->opt.verbose)
-			warnx("%s: %zd %s", _("Packet too short"), received, _("bytes"));
-		return true;
-	}
+	RETURN_IF_TOO_SHORT(received, sizeof(struct icmp6_hdr));
 
 	/* Now the ICMP part */
 	struct icmp6_hdr *icmp = (struct icmp6_hdr *)base;

@@ -249,7 +249,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 			if (rts->opt.verbose)
 				warnx("%s: %s (%zd %s)",
 					sprint_addr(from, sizeof(*from), rts->opt.resolve),
-					_("Packet too short"), received, _("bytes"));
+					_("Packet too short"), received, BYTES(received));
 			return true;
 		}
 		away = ip->ttl;
@@ -272,11 +272,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 			}
 	}
 
-	if (received < (hlen + 8)) {
-		if (rts->opt.verbose)
-			warnx("%s: %zd %s", _("Packet too short"), received, _("bytes"));
-		return true;
-	}
+	RETURN_IF_TOO_SHORT(received, hlen + sizeof(struct icmphdr));
 	received -= hlen;
 
 	/* Now the ICMP part */

@@ -12,6 +12,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 # iputils99 edition
 
@@ -220,12 +221,16 @@ msgid "Received responses"
 msgstr "Vastaanotettu vastausta"
 
 # %d requests
-msgid "requests"
-msgstr "pyyntöä"
+msgid "request"
+msgid_plural "requests"
+msgstr[0] "pyyntö"
+msgstr[1] "pyyntöä"
 
 # %d broadcasts
-msgid "broadcasts"
-msgstr "kaikkilähetystä"
+msgid "broadcast"
+msgid_plural "broadcasts"
+msgstr[0] "kaikkilähetys"
+msgstr[1] "kaikkilähetystä"
 
 #
 msgid "Unicast"
@@ -238,10 +243,6 @@ msgstr "Kaikkilähetys"
 #
 msgid "reply"
 msgstr "vastaus"
-
-#
-msgid "request"
-msgstr "pyyntö"
 
 # for %s
 msgid "for"
@@ -544,6 +545,10 @@ msgid "Packet too short"
 msgstr "Paketti liian lyhyt"
 
 #
+msgid "minimal"
+msgstr "minimi"
+
+#
 msgid "WARNING"
 msgstr "VAROITUS"
 
@@ -840,8 +845,10 @@ msgid "Time of day goes back, taking countermeasures"
 msgstr "Vuorokaudenaika palautuu; ryhdytään vastatoimiin"
 
 # %ld bytes
-msgid "bytes"
-msgstr "tavua"
+msgid "byte"
+msgid_plural "bytes"
+msgstr[0] "tavu"
+msgstr[1] "tavua"
 
 #
 msgid "icmp_seq"
@@ -884,8 +891,10 @@ msgid " ping statistics"
 msgstr " ping-tilastot"
 
 # %ld packets transmitted
-msgid "packets transmitted"
-msgstr "paketteja lähetetty"
+msgid "packet transmitted"
+msgid_plural "packets transmitted"
+msgstr[0] "paketti lähetetty"
+msgstr[1] "paketteja lähetetty"
 
 # %ld received
 msgid "received"

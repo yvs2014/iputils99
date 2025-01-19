@@ -428,7 +428,7 @@ static int probe_ttl(state_t *rts) {
 		ssize_t got = recv(rts->sock, rts->pktbuf, rts->pktsize, MSG_DONTWAIT);
 		if (got > 0) { // was print("reply received 8")
 			printf("%2d?: %s: %zd %s\n", rts->ttl,
-				_("reply received"), got, _("bytes"));
+				_("reply received"), got, BYTES(got));
 			return 0;
 		}
 		return recverr(rts);

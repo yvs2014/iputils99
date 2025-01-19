@@ -180,29 +180,24 @@ static int send_pack(state_t *ctl) {
 	return err;
 }
 
-static bool finish(const state_t *rts) {
-	if (!rts->opt.quiet) {
-		printf("%s: %d", _("Sent probes"), rts->sent);
-		printf(" (%d %s)\n", rts->brd_sent, _("broadcasts"));
-		printf("%s: %d", _("Received responses"), rts->received);
-		if (rts->brd_recv || rts->req_recv) {
-			printf(" (");
-			if (rts->req_recv)
-				printf("%d %s", rts->req_recv, _("requests"));
-			if (rts->brd_recv)
-				printf("%s%d %s", rts->req_recv ? ", " : "",
-					rts->brd_recv, _("broadcasts"));
-			printf(")");
-		}
-		printf("\n");
-		fflush(stdout);
+static void resume(const state_t *rts) {
+	printf("%s: %d", _("Sent probes"), rts->sent);
+	printf(" (%d %s)\n", rts->brd_sent,
+		_n("broadcast", "broadcasts", rts->brd_sent));
+	printf("%s: %d", _("Received responses"), rts->received);
+	if (rts->brd_recv || rts->req_recv) {
+		printf(" (");
+		if (rts->req_recv)
+			printf("%d %s", rts->req_recv,
+				_n("request", "requests", rts->req_recv));
+		if (rts->brd_recv)
+			printf("%s%d %s",
+				rts->req_recv ? ", " : "", rts->brd_recv,
+				_n("broadcast", "broadcasts", rts->brd_recv));
+		printf(")");
 	}
-	bool got = rts->received ? true : false;
-	if (rts->opt.dad)
-		return got;
-	if (rts->opt.unsolicited)
-		return false;
-	return !got;
+	printf("\n");
+	fflush(stdout);
 }
 
 static void print_hex(unsigned char *p, int len) {
@@ -720,16 +715,21 @@ static int event_loop(state_t *ctl) {
 	close(sfd);
 	close(tfd);
 	freeifaddrs(ctl->ifa0);
-	rc |= finish(ctl);
-	if (ctl->opt.unsolicited)
-		/* nothing */;
-	else if (ctl->opt.dad && ctl->opt.quit)
-		/* Duplicate address detection mode return value */
-		rc |= (ctl->brd_sent == ctl->received);
-	else if (ctl->timeout && (ctl->count <= 0))
-		rc |= (ctl->received <= 0);
-	else
-		rc |= (ctl->sent != ctl->received);
+	if (!ctl->opt.quiet)
+		resume(ctl);
+	bool got = (ctl->received > 0) ? true : false;
+	rc |= ctl->opt.dad         ? got   :
+	      ctl->opt.unsolicited ? false :
+	      !got;
+	if (!ctl->opt.unsolicited) {
+		bool all_uni = (ctl->received == ctl->sent);
+		bool all_brd = (ctl->received == ctl->brd_sent);
+		rc |=
+			/* dad: Duplicate Address Detection mode */
+			(ctl->opt.dad && ctl->opt.quit)     ? all_brd :
+			(ctl->timeout && (ctl->count <= 0)) ? !got    :
+			!all_uni;
+	}
 	return rc;
 }
 

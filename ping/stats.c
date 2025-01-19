@@ -46,30 +46,33 @@
 
 #define MAXWAIT_USEC (MAXWAIT * 1000000)
 
-// min/avg/max/mdev ms
+// "min/avg/max/mdev ms"
 #define TIMING_MS   "%s = " FMS "/" FMS "/" FMS "/" FMS_MS
 // "ipg/ewma ms"
 #define ADAPTIVE_MS "%s = " FMS "/" FMS_MS
 
+// Called once at resume
 static inline void stat_hops(uint8_t min, uint8_t max) {
-	static uint8_t peer_maxttl;
-	if (!peer_maxttl) { 			// Estimation:
-		if      (max <= 64)
-			peer_maxttl = 64;	// - Linux like
-		else if (max <= 128)
-			peer_maxttl = 128;	// - Windows like
+	if (min > max)
+		return;
+	int peer_maxttl = 		// Estimation:
+		(max <=  64) ?  64 :	// - Linux like
+		(max <= 128) ? 128 :	// - Windows like
+		UINT8_MAX;		// - Cisco like
+	int away = peer_maxttl - max;
+	if (away) { // skip ttl=0(1)
+		printf(", %s ", _("probably"));
+		if (min == max)
+			printf("%d %s", away, _n("hop away", "hops away", away));
 		else
-			peer_maxttl = 255;	// - Cisco like
+			printf("%d-%d %s", away, peer_maxttl - min, _("hops away"));
 	}
-	printf(", %s %u", _("probably"), peer_maxttl - max);
-	if (min != max)
-		printf("-%u", peer_maxttl - min);
-	printf(" %s", _("hops away"));
 }
 
 static inline void stat_header(const state_t *rts) {
 	printf("--- %s%s ---\n", rts->hostname, _(" ping statistics"));
-	printf("%ld %s", rts->ntransmitted, _("packets transmitted"));
+	printf("%ld %s", rts->ntransmitted,
+_n("packet transmitted", "packets transmitted", rts->ntransmitted));
 	printf(", %ld %s",  rts->nreceived, _("received"));
 	if (rts->nrepeats)
 		printf(", +%ld %s", rts->nrepeats,  _("duplicates"));
@@ -172,7 +175,8 @@ void headline(const state_t *rts, size_t nodatalen) {
 		const char *from = sprint_addr(&rts->source, len, false);
 		printf("%s %s %s:", _(" from"), from, rts->device ? rts->device : "");
 	}
-	printf(" %zu(%zu) %s\n", rts->datalen, rts->datalen + nodatalen, _("data bytes"));
+	printf(" %zu(%zu) %s\n",
+		rts->datalen, rts->datalen + nodatalen, _("data bytes"));
 }
 
 static inline bool print_stats(const state_t *rts, const stat_aux_t *stat) {
@@ -186,7 +190,8 @@ static inline bool print_stats(const state_t *rts, const stat_aux_t *stat) {
 	}
 	//
 	PRINT_TIMESTAMP;
-	printf("%zd %s%s %s: ", stat->rcvd, _("bytes"), _(" from"), stat->from);
+	printf("%zd %s%s %s: ",
+		stat->rcvd, BYTES(stat->rcvd), _(" from"), stat->from);
 	if (stat->print) /* seq */
 		stat->print(rts->ip6, stat->icmp, stat->rcvd);
 	else

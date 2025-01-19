@@ -13,6 +13,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 # iputils99 edition
 
@@ -232,13 +233,17 @@ msgstr "Sonden gesendet"
 msgid "Received responses"
 msgstr "Antworten erhalten"
 
-# %d requests"
-msgid "requests"
-msgstr "Anfragen"
+# %d requests
+msgid "request"
+msgid_plural "requests"
+msgstr[0] "Anfrage"
+msgstr[1] "Anfragen"
 
 # %d broadcasts
-msgid "broadcasts"
-msgstr "Broadcasts"
+msgid "broadcast"
+msgid_plural "broadcasts"
+msgstr[0] "Broadcast"
+msgstr[1] "Broadcasts"
 
 #
 msgid "Unicast"
@@ -251,10 +256,6 @@ msgstr "Broadcast"
 #
 msgid "reply"
 msgstr "antworten"
-
-#
-msgid "request"
-msgstr "Anfrage"
 
 # for %s
 msgid "for"
@@ -557,6 +558,10 @@ msgid "Packet too short"
 msgstr "Paket zu klein"
 
 #
+msgid "minimal"
+msgstr "Minimum"
+
+#
 msgid "WARNING"
 msgstr "WARNUNG"
 
@@ -853,8 +858,10 @@ msgid "Time of day goes back, taking countermeasures"
 msgstr "Tageszeit liegt vor, leite Gegenmaßnahmen ein"
 
 # %ld bytes
-msgid "bytes"
-msgstr "Bytes"
+msgid "byte"
+msgid_plural "bytes"
+msgstr[0] "Byte"
+msgstr[1] "Bytes"
 
 #
 msgid "icmp_seq"
@@ -897,8 +904,10 @@ msgid " ping statistics"
 msgstr " ping-Statistik"
 
 # %ld packets transmitted
-msgid "packets transmitted"
-msgstr "Pakete übertragen"
+msgid "packet transmitted"
+msgid_plural "packets transmitted"
+msgstr[0] "Paket übertragen"
+msgstr[1] "Pakete übertragen"
 
 # %ld received
 msgid "received"
@@ -929,8 +938,10 @@ msgid "probably"
 msgstr "wahrscheinlich"
 
 # %d hops away
-msgid "hops away"
-msgstr "Hops"
+msgid "hop away"
+msgid_plural "hops away"
+msgstr[0] "Hop"
+msgstr[1] "Hops"
 
 # rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
 msgid "rtt min/avg/max/mdev"

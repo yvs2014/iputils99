@@ -9,10 +9,14 @@
 
 #ifdef USE_NLS
 #include <libintl.h>
-#define _(Text) gettext (Text)
+#define _(text) gettext(text)
+#define _n(singular, plural, number) ngettext((singular), (plural), (number))
 #else
-#define _(Text) Text
+#define _(text) text
+#define _n(singular, plural, number) plural
 #endif
+
+#define BYTES(nbytes) _n("byte", "bytes", (nbytes))
 
 #if defined(USE_IDN) && defined(AI_IDN)
 # define AI_FLAGS (AI_CANONNAME | AI_IDN | AI_CANONIDN)

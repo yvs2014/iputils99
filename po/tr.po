@@ -13,6 +13,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 # iputils99 edition
 
@@ -222,12 +223,14 @@ msgid "Received responses"
 msgstr "Cevap alındı"
 
 # %d requests
-msgid "requests"
-msgstr "istek"
+msgid "request"
+msgid_plural "requests"
+msgstr[0] "istek"
 
 # %d broadcasts
-msgid "broadcasts"
-msgstr "genel yayın"
+msgid "broadcast"
+msgid_plural "broadcasts"
+msgstr[0] "genel yayın"
 
 #
 msgid "Unicast"
@@ -240,10 +243,6 @@ msgstr "Genel yayın"
 #
 msgid "reply"
 msgstr "yanıt"
-
-#
-msgid "request"
-msgstr "istek"
 
 # for %s
 msgid "for"
@@ -546,6 +545,10 @@ msgid "Packet too short"
 msgstr "Paket çok kısa"
 
 #
+msgid "minimal"
+msgstr "en düşük"
+
+#
 msgid "WARNING"
 msgstr "UYARI"
 
@@ -842,8 +845,9 @@ msgid "Time of day goes back, taking countermeasures"
 msgstr "Günün zamanı geriye gidiyor, karşı önlemler alınıyor"
 
 # %ld bytes
-msgid "bytes"
-msgstr "bayt"
+msgid "byte"
+msgid_plural "bytes"
+msgstr[0] "bayt"
 
 #
 msgid "icmp_seq"
@@ -886,8 +890,9 @@ msgid " ping statistics"
 msgstr " ping istatistikleri"
 
 # %ld packets transmitted
-msgid "packets transmitted"
-msgstr "paket iletildi"
+msgid "packet transmitted"
+msgid_plural "packets transmitted"
+msgstr[0] "paket iletildi"
 
 # %ld received
 msgid "received"

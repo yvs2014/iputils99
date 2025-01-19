@@ -13,6 +13,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 # iputils99 edition
 
@@ -220,12 +221,14 @@ msgid "Received responses"
 msgstr "已接受到 个响应"
 
 # %d requests
-msgid "requests"
-msgstr "请求"
+msgid "request"
+msgid_plural "requests"
+msgstr[0] "请求"
 
 # %d broadcasts
-msgid "broadcasts"
-msgstr "广播"
+msgid "broadcast"
+msgid_plural "broadcasts"
+msgstr[0] "广播"
 
 #
 msgid "Unicast"
@@ -238,10 +241,6 @@ msgstr "广播"
 #
 msgid "reply"
 msgstr "回复"
-
-#
-msgid "request"
-msgstr "请求"
 
 # for %s
 msgid "for"
@@ -544,6 +543,10 @@ msgid "Packet too short"
 msgstr "过短的包"
 
 #
+msgid "minimal"
+msgstr "最小"
+
+#
 msgid "WARNING"
 msgstr "警告"
 
@@ -838,8 +841,9 @@ msgid "Time of day goes back, taking countermeasures"
 msgstr "一天中的时间返回，采取对策"
 
 # %ld bytes
-msgid "bytes"
-msgstr "字节"
+msgid "byte"
+msgid_plural "bytes"
+msgstr[0] "字节"
 
 #
 msgid "icmp_seq"
@@ -882,8 +886,9 @@ msgid " ping statistics"
 msgstr " ping 统计"
 
 # %ld packets transmitted
-msgid "packets transmitted"
-msgstr "个包已发送"
+msgid "packet transmitted"
+msgid_plural "packets transmitted"
+msgstr[0] "个包已发送"
 
 # %ld received
 msgid "received"
