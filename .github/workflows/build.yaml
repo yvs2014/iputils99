@@ -23,13 +23,32 @@ jobs:
       - name: Deps
         run: |
           sudo apt update
-          sudo apt install -y meson git pkg-config sed gettext libcap2-bin libcap-dev libidn2-dev
-      - name: Build
+          sudo apt install -y build-essential
+          sudo apt install -y devscripts debhelper
+          sudo apt install -y meson git pkgconf sed gettext
+          sudo apt install -y libcap2-bin libcap-dev libidn2-dev
+      - name: Std build
         run: |
           meson setup _build
           meson compile -C _build
-      - name: Tests
+      - name: Meson tests
         run: |
           sudo /sbin/setcap cap_net_raw+p ./_build/ping/ping
           meson test -C _build
+      - name: Build .deb packages
+        run: dpkg-buildpackage -us -uc
+      - name: Install .deb packages
+        run: |
+          sudo apt install -y ../iputils99-ping_*.deb
+          sudo apt install -y ../iputils99-arping_*.deb
+          sudo apt install -y ../iputils99-clockdiff_*.deb
+          sudo apt install -y ../iputils99-tracepath_*.deb
+          sudo apt install -y ../iputils99-gai_*.deb
+      - name: Test tools
+        run: |
+          ping -c10 localhost
+          arping -V
+          clockdiff 127.1
+          tracepath localhost
+          gai one.one.one.one
 

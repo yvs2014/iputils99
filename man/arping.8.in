@@ -25,22 +25,14 @@ arping \- send ARP REQUEST to a neighbour host
 \fBarping\fR [\fB\-AbcDfhiIqsUVw\fR] TARGET
 .SH "DESCRIPTION"
 .PP
-Ping
-\fIdestination\fR
-on device
-\fIinterface\fR
-by ARP packets, using source address
-\fIsource\fR\&.
+ARPing \fIdestination\fR on device \fIinterface\fR by ARP packets\&.
 .br
-\fBarping\fR
-supports IPv4 addresses only\&. For IPv6, see
-\fBndisc6\fR(8)\&.
+\fBarping\fR supports IPv4 addresses only, see \fBndisc6\fR(8) for IPv6\&.
 .SH "OPTIONS"
 .PP
 \fB\-A\fR
 .RS 4
-The same as
-\fB\-U\fR, but ARP REPLY packets used instead of ARP REQUEST
+The same as \fB\-U\fR, but ARP REPLY packets used instead of ARP REQUEST
 .RE
 .PP
 \fB\-b\fR
@@ -51,13 +43,9 @@ starts from sending broadcast, and switch to unicast after reply received\&.
 .PP
 \fB\-c \fR\fB\fIcount\fR\fR
 .RS 4
-Stop after sending
-\fIcount\fR
-ARP REQUEST packets\&. With
-\fIdeadline\fR
-option, instead wait for
-\fIcount\fR
-ARP REPLY packets, or until the timeout expires\&.
+Stop after sending \fIcount\fR ARP REQUEST packets\&.
+.br
+With \fIdeadline\fR option, instead wait for \fIcount\fR ARP REPLY packets, or until the timeout expires\&.
 .RE
 .PP
 \fB\-D\fR

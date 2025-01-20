@@ -11,15 +11,22 @@ Included
 - tracepath
 - gai
 
-Build
------
+Build and Install
+-----------------
+- raw
 ```
 meson setup _build --buildtype=release
 meson compile -C _build
+meson install -C _build
+```
+- .deb package
+```
+dpkg-buildpackage -us -uc
+dpkg -i ../iputils99-TOOLNAME_*.deb
 ```
 
-Test
-----
+Tests
+-----
 - raw socket
 ```
 sudo setcap cap_net_raw+ep ./_build/ping/ping
@@ -30,12 +37,6 @@ meson test -C _build
 ```
 sudo sysctl -w net.ipv4.ping_group_range='0 2147483647'
 meson test -C _build
-```
-
-Install
--------
-```
-meson install -C _build
 ```
 
 Mainstream, History

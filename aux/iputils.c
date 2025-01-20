@@ -4,6 +4,7 @@
 #include <time.h>
 #include <err.h>
 #include <errno.h>
+#include <locale.h>
 #ifdef USE_LIBIDN2
 #include <idn2.h>
 #endif

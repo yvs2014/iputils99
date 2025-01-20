@@ -57,8 +57,9 @@
 	_("Mutually exclusive options"), (optA), (optB)); } \
 	while (0)
 
-#define FMS "%.3f"		// common timing format in milliseconds
-#define FMS_MS FMS " %s"	// ".3f ms"
+#define MSFMT "%.3f"		// common timing format in milliseconds
+#define TMMS  MSFMT "%s"	// ".3fms"
+#define TM_MS MSFMT " %s"	// ".3f ms"
 
 // wrapper: __has_attribute
 #ifndef __has_attribute

@@ -27,28 +27,18 @@ ping \- send ICMP ECHO_REQUEST to network hosts
 .SH "DESCRIPTION"
 .PP
 \fBping\fR
-uses the ICMP protocol\*(Aqs mandatory ECHO_REQUEST datagram to elicit an ICMP ECHO_RESPONSE from a host or gateway\&. ECHO_REQUEST datagrams (\(lqpings\(rq) have an IP and ICMP header, followed by a struct timeval and then an arbitrary number of \(lqpad\(rq bytes used to fill out the packet\&.
+sends ICMP ECHO_REQUEST packets to a target host\&.
 .PP
-\fBping\fR
-works with both IPv4 and IPv6\&. Using only one of them explicitly can be enforced by specifying
-\fB\-4\fR
-or
-\fB\-6\fR\&.
+ECHO_REQUEST datagrams (or \(lqpings\(rq) contain IP/ICMP header followed by a struct timeval,
+and then an arbitrary number of padding bytes\&.
+.PP
+.ie "N"\*[oN]" \{\
 .PP
 \fBping\fR
 can also send IPv6 Node Information Queries (RFC4620)\&. Intermediate
 \fIhop\fRs may not be allowed, because IPv6 source routing was deprecated (RFC5095)\&.
+.\}
 .SH "OPTIONS"
-.PP
-\fB\-4\fR
-.RS 4
-Use IPv4 only
-.RE
-.PP
-\fB\-6\fR
-.RS 4
-Use IPv6 only
-.RE
 .PP
 \fB\-a\fR
 .RS 4
@@ -387,6 +377,16 @@ probes are answered or for some error notification from network\&.
 Time to wait for a response, in seconds\&. The option affects only timeout in absence of any responses, otherwise
 \fBping\fR
 waits for two RTTs\&. Real number allowed with dot as a decimal separator (regardless locale setup)\&. 0 means infinite timeout\&.
+.RE
+.PP
+\fB\-4\fR
+.RS 4
+Use IPv4
+.RE
+.PP
+\fB\-6\fR
+.RS 4
+Use IPv6
 .RE
 .PP
 When using

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = configure ]; then
+	command -v setcap >/dev/null && setcap cap_net_raw,cap_sys_nice+p /usr/bin/clockdiff
+fi
+
+exit 0

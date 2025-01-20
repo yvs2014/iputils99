@@ -260,10 +260,9 @@ do { // was 'restart:'
 	if (retts) {
 		struct timespec res;
 		timespecsub(&ts, retts, &res);
-		printf(FMS_MS, res.tv_sec * 1000 + res.tv_nsec / 1000000., _("ms"));
+		printf(TMMS " ", res.tv_sec * 1000 + res.tv_nsec / 1000000., _("ms"));
 		if (broken_router)
-			fputs(_("(corrupted payload)"), stdout);
-		putchar(' ');
+			printf("%s ", _("(corrupted payload)"));
 	}
 
 	if      (rethops <= 64)

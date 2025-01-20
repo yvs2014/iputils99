@@ -306,7 +306,7 @@ static inline int print_pack(state_t *rts,
 			struct timespec sub = {0};
 			timespecsub(&ts, &rts->last, &sub);
 			double ms = sub.tv_sec * 1000 + sub.tv_nsec / 1000000.;
-			printf(" " FMS_MS, ms, _("ms"));
+			printf(" " TMMS, ms, _("ms"));
 		} else
 			printf(" %s?", _("UNSOLICITED"));
 		putchar('\n');

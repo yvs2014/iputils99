@@ -47,9 +47,9 @@
 #define MAXWAIT_USEC (MAXWAIT * 1000000)
 
 // "min/avg/max/mdev ms"
-#define TIMING_MS   "%s = " FMS "/" FMS "/" FMS "/" FMS_MS
+#define TIMING_MS   "%s = " MSFMT "/" MSFMT "/" MSFMT "/" TM_MS
 // "ipg/ewma ms"
-#define ADAPTIVE_MS "%s = " FMS "/" FMS_MS
+#define ADAPTIVE_MS "%s = " MSFMT "/" TM_MS
 
 // Called once at resume
 static inline void stat_hops(uint8_t min, uint8_t max) {
@@ -206,7 +206,7 @@ static inline bool print_stats(const state_t *rts, const stat_aux_t *stat) {
 	}
 	//
 	if (rts->timing)
-		printf(" %s=" FMS_MS, _("time"), stat->triptime / 1000., _("ms"));
+		printf(" %s=" TM_MS, _("time"), stat->triptime / 1000., _("ms"));
 	char* exclame[3] = {
 		(stat->dup && (!rts->multicast || rts->opt.verbose)) ? "DUP" : NULL,
 		stat->ack  ? NULL : "BAD CHECKSUM",

@@ -38,24 +38,14 @@ is a good replacement for
 and classic example of application of Linux error queues\&. The situation with IPv4 is worse, because commercial IP routers do not return enough information in ICMP error messages\&. Probably, it will change, when they are updated\&. For now it uses Van Jacobson\*(Aqs trick, sweeping a range of UDP ports to maintain trace history\&.
 .SH "OPTIONS"
 .PP
-\fB\-4\fR
-.RS 4
-Use IPv4
-.RE
-.PP
-\fB\-6\fR
-.RS 4
-Use IPv6
-.RE
-.PP
-\fB\-n\fR
-.RS 4
-No reverse DNS resolution
-.RE
-.PP
 \fB\-b\fR
 .RS 4
 Print host names and IP addresses
+.RE
+.PP
+\fB\-h\fR
+.RS 4
+Print help
 .RE
 .PP
 \fB\-l\fR \fIpktlen\fR
@@ -68,6 +58,11 @@ Set initial packet length to \fIpktlen\fR (default 65535)
 Set TTL maximum to \fImax_hops\fR (default 30)
 .RE
 .PP
+.PP
+\fB\-n\fR
+.RS 4
+No reverse DNS resolution
+.RE
 \fB\-p\fR \fIport\fR
 .RS 4
 Set initial destination \fIport\fR (default 33433)
@@ -81,6 +76,16 @@ Verbose output
 \fB\-V\fR
 .RS 4
 Print program version
+.RE
+.PP
+\fB\-4\fR
+.RS 4
+Use IPv4
+.RE
+.PP
+\fB\-6\fR
+.RS 4
+Use IPv6
 .RE
 .SH "HANDLING ERRORS"
 .PP

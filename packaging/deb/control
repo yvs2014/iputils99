@@ -1,0 +1,56 @@
+Source: iputils99
+Section: net
+Priority: optional
+Maintainer: yvs <VSYakovetsky@gmail.com>
+Standards-Version: 4.6.2
+Build-Depends: debhelper, meson, pkgconf | pkg-config, git, sed, libcap2-bin, libcap-dev
+Homepage: https://github.com/yvs2014/iputils99/
+
+Package: iputils99-ping
+Provides: ping
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: iputils-ping
+Architecture: any
+Description: Tools to test the reachability of network hosts
+ The ping command sends ICMP echo packets to a target host
+ in order to test its reachability, and then measures round-trip time.
+ Statistics plus a short resume are printed at exit.
+
+Package: iputils99-arping
+Provides: arping
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: iputils-ping, arping
+Architecture: any
+Description: Tool to send ICMP echo requests to an ARP address
+  ARPing destination on device interface by ARP packets.
+  arping supports IPv4 addresses only, see ndisc6(8) for IPv6.
+
+Package: iputils99-clockdiff
+Provides: clockdiff
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: iputils-clockdiff
+Architecture: any
+Description: Measure the time difference between networked computers
+ Clockdiff measures clock difference with 1 msec resolution
+ using ICMP TIMESTAMP packets or,
+ optionally, IP TIMESTAMP option added to ICMP ECHO
+
+Package: iputils99-tracepath
+Provides: tracepath
+Suggests: traceroute
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: iputils-tracepath
+Architecture: any
+Description: Tools to trace the network path to a remote host
+ Tracepath traces the network path to destination discovering MTU
+ along this path and using UDP for outgoing packets
+
+Package: iputils99-gai
+Provides: gai
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Architecture: any
+Description: Resolve names using getaddrinfo()
+ Gai resolves names as if with the getaddrinfo(3) routine and
+ prints them to standard output in ping-like way.
+ It's handy to test ai_flags on different libc versions.
+

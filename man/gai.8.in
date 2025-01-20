@@ -29,14 +29,9 @@ gai \- resolve names using getaddrinfo()
 resolves names as if with the getaddrinfo(3) routine and prints them to standard output
 .SH "OPTIONS"
 .PP
-\fB\-4\fR
+\fB\-h\fR
 .RS 4
-Limit resolver to IPv4 only
-.RE
-.PP
-\fB\-6\fR
-.RS 4
-Limit resolver to IPv6 only
+Print help
 .RE
 .PP
 \fB\-f\fR \fIvalue\fR
@@ -77,11 +72,6 @@ AI_NUMERICSERV	0x0400
 Convert IDN names using libidn2 (if IDN is not transparently supported)
 .RE
 .PP
-\fB\-h\fR
-.RS 4
-Print help
-.RE
-.PP
 \fB\-v\fR
 .RS 4
 Verbose output
@@ -92,6 +82,15 @@ Verbose output
 Print version
 .RE
 .PP
+\fB\-4\fR
+.RS 4
+Limit resolver to IPv4 only
+.RE
+.PP
+\fB\-6\fR
+.RS 4
+Limit resolver to IPv6 only
+.RE
 .SH "USE"
 The \fBgai\fR command is handy to test \fBai_flags\fR on different libc versions
 .PP

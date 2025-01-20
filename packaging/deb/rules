@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+
+export CPPFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS)
+export CFLAGS:=$(shell dpkg-buildflags --get CFLAGS)
+export DEBIAN_LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
+export BUILD_DIR=obj-$(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+export DH_QUIET=1
+
+TARGETS=ping arping clockdiff tracepath gai
+MAN_TARGETS=man/ping.8 man/arping.8 man/clockdiff.8 man/tracepath.8 man/gai.8
+
+%:
+	dh $@ --buildsystem=meson+ninja --builddirectory=$(BUILD_DIR)
+
+override_dh_auto_configure:
+	dh_auto_configure -- -DNLS=false
+
+override_dh_auto_test:
+
