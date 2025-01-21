@@ -1,0 +1,43 @@
+# Maintainer: yvs <VSYakovetsky@gmail.com>
+
+# sample (replace '_tag' commit' and '_ver' number with their values)
+#
+_ver="20250121"
+_tag="cae1f45" # build tested on
+_build="_build"
+
+pkgname=iputils99
+pkgver="$_ver"
+pkgrel=1
+pkgdesc="iputils fork refactored in C99 way"
+arch=('x86_64' 'aarch64')
+# licence: see https://github.com/iputils/iputils/LICENSE
+license=('BSD-3-Clause' AND 'GPL-2.0-or-later')
+depends=('libcap')
+makedepends=('git' 'gcc' 'meson' 'pkgconf' 'sed')
+options=(strip !debug)
+url="https://github.com/yvs2014/$pkgname"
+conflicts=('iputils' 'netkit-base' 'arping')
+
+source=("$pkgname::git+$url")
+provides=('ping' 'arping' 'tracepath' 'clockdiff' 'gai')
+
+build() {
+  arch-meson "$pkgname" "$_build"
+  meson compile -C "$_build"
+}
+
+post_install() {
+  setcap 'cap_net_raw+p' "usr/bin/arping" || :
+  setcap 'cap_net_raw,cap_sys_nice+p' "usr/bin/clockdiff" || :
+}
+
+post_upgrade() {
+  post_install
+}
+
+package() {
+  DESTDIR="$pkgdir" meson install -C "$_build"
+}
+
+sha256sums=('SKIP')

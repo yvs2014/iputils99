@@ -1,17 +1,20 @@
 
 # rpmbuild -ba iputils99.spec
 
-Name:       iputils99
+# sample (replace 'gtag' commit' and 'Version' number with their values)
+
+# build tested on
+%define gtag cae1f45
 Version:    20250121
+
+Name:       iputils99
 Release:    1
-# some parts are under the original BSD
-# some are under GPLv2+
-License:    BSD-4-Clause-UC AND GPL-2.0-or-later
+# see https://github.com/iputils/iputils/LICENSE
+License:    BSD-3-Clause AND GPL-2.0-or-later
 Summary:    iputils fork refactored in C99 way
 Group:      Productivity/Networking/Other
 URL:        https://github.com/yvs2014/%{name}
 
-%define gtag 45d421b
 %define namever %{name}-%{version}
 
 #Source0:    {url}/tarball/{gtag}
@@ -40,9 +43,12 @@ iputils fork refactored in C99 way
 %prep
 rm -rf %{namever}
 git clone %{url} %{namever}
+cd %{namever}
+git checkout -q %{gtag}
+cd -
 rm -rf ${RPM_SOURCE_DIR}/%{namever}
 mkdir -p ${RPM_SOURCE_DIR}
-cp -rv %{namever} ${RPM_SOURCE_DIR}
+cp -r %{namever} ${RPM_SOURCE_DIR}
 cd %{namever}
 
 %build
