@@ -11,18 +11,23 @@ Included
 - tracepath
 - gai
 
-Build and Install
------------------
-- raw
+Build/Install
+-------------
+- raw (usually with /usr/local prefix)
 ```
 meson setup _build --buildtype=release
 meson compile -C _build
 meson install -C _build
 ```
-- .deb package
+- .deb (Debian/Ubuntu)
 ```
 dpkg-buildpackage -us -uc
-dpkg -i ../iputils99-TOOLNAME_*.deb
+ls -l ../iputils99-*_*.deb
+```
+- .rpm (Fedora/OpenSUSE)
+```
+rpmbuild -ba packaging/rpm/iputils99.spec
+ls -l ~/rpmbuild/RPMS/*/iputils99-*.rpm
 ```
 
 Tests

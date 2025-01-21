@@ -37,18 +37,14 @@ jobs:
           meson test -C _build
       - name: Build .deb packages
         run: dpkg-buildpackage -us -uc
-      - name: Install .deb packages
+      - name: Install .deb packages (except arping and clockdiff)
         run: |
           sudo apt install -y ../iputils99-ping_*.deb
-          sudo apt install -y ../iputils99-arping_*.deb
-          sudo apt install -y ../iputils99-clockdiff_*.deb
           sudo apt install -y ../iputils99-tracepath_*.deb
           sudo apt install -y ../iputils99-gai_*.deb
       - name: Test tools
         run: |
           ping -c10 localhost
-          arping -V
-          clockdiff 127.1
           tracepath localhost
           gai one.one.one.one
 

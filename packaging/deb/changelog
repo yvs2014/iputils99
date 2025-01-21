@@ -1,5 +1,5 @@
-iputils99 (20250120-1build1) noble; urgency=low
+iputils99 (20250121-1build1) noble; urgency=low
 
   * iputils fork refactored in C99 way
 
- -- yvs <VSYakovetsky@gmail.com>  Mon, 20 Jan 2025 23:22:41 +0200
+ -- yvs <VSYakovetsky@gmail.com>  Tue, 21 Jan 2025 02:27:46 +0200
