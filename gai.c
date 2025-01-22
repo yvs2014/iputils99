@@ -191,7 +191,8 @@ int main(int argc, char **argv) {
 			socklen_t len =	(af == AF_INET)  ? sizeof(struct sockaddr_in)  :
 					(af == AF_INET6) ? sizeof(struct sockaddr_in6) : 0;
 			if (!len) {
-				warnx("%s: unsupported af: %d", name, af);
+				errno = EAFNOSUPPORT;
+				warn("%s: ai_family=%d", name, af);
 				re = EXIT_FAILURE;
 				continue;
 			}
@@ -200,6 +201,6 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	exit(re);
+	return re;
 }
 

@@ -10,3 +10,4 @@ ping/ping6.c
 ping/ping_aux.c
 ping/ping.c
 tracepath.c
+gai.c

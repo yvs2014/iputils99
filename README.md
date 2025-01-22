@@ -22,7 +22,7 @@ Tests
 -----
 - raw socket
 ```
-sudo setcap cap_net_raw+ep ./_build/ping/ping
+sudo setcap cap_net_raw+p ./_build/ping/ping
 meson test -C _build
 ```
 
