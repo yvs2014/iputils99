@@ -609,10 +609,8 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
 				if (((errno == EAGAIN) && !recv_error)
 				    || (errno == EINTR))
 					break;
-				int keep = errno;
 				recv_error = 0;
 				if (!fnset->receive_error(rts, sock)) {
-					errno = keep;
 					if (errno) {
 						warn("recvmsg");
 						break;
@@ -638,12 +636,12 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
 				not_ours = fnset->parse_reply(rts, sock->raw, &msg, received, addrbuf, recv_tv);
 			}
 
-			{ /* Lack of packet filtration: report once */
+			/* Lack of packet filtration: report once */
 			static bool reported_about_bpf;
 			if (not_ours && sock->raw && !reported_about_bpf) {
 				warnx("%s: %s", _WARN, _("Lack of packet filtration"));
 				reported_about_bpf = true;
-			}}
+			}
 
 			/* If nothing is in flight, "break" returns us to pinger */
 			if (!in_flight(rts))

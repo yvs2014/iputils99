@@ -1,11 +1,11 @@
+# Testing only
+# sample ('gtag' = commit')
 
 # rpmbuild -ba iputils99.spec
 
-# sample (replace 'gtag' commit' and 'Version' number with their values)
-
-# build tested on
-%define gtag cae1f45
-Version:    20250121
+# previous commit tag
+%define gtag 1a948fd
+Version:    20250122
 
 Name:       iputils99
 Release:    1

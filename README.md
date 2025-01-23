@@ -1,15 +1,13 @@
-iputils99
----------
 
-Ping and other small IP utilities
+Iputils project is located at https://github.com/iputils/iputils/
+-----------------------------------------------------------------
 
-Included
---------
-- ping
-- arping
-- clockdiff
-- tracepath
-- gai
+
+iputils + C99 style (iputils99)
+-------------------------------
+Updating and testing iputils in C99 way
+(iputils and getaddrinfo wrapper)
+
 
 Build
 -----
@@ -31,14 +29,4 @@ meson test -C _build
 sudo sysctl -w net.ipv4.ping_group_range='0 2147483647'
 meson test -C _build
 ```
-
-Install
--------
-```
-meson install -C _build
-```
-
-Mainstream, History
--------------------
-See mainstream iputils (https://github.com/iputils/iputils/)
 

@@ -158,10 +158,10 @@ static int ping6_receive_error(state_t *rts, const sock_t *sock) {
 			if (!rts->opt.quiet)
 				print_local_ee(rts, ee);
 		} else if (ee->ee_origin == SO_EE_ORIGIN_ICMP6) {
-			struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&rts->whereto;
-			if ((res < (ssize_t)sizeof(icmp))                   ||
-			    memcmp(&target.sin6_addr, &sin6->sin6_addr, 16) ||
-			    (icmp.icmp6_type != ICMP6_ECHO_REQUEST)         ||
+			struct sockaddr_in6 *to = (struct sockaddr_in6 *)&rts->whereto;
+			if ((res < (ssize_t)sizeof(icmp))                 ||
+			    memcmp(&target.sin6_addr, &to->sin6_addr, 16) ||
+			    (icmp.icmp6_type != ICMP6_ECHO_REQUEST)       ||
 			    !IS_OURS(rts, sock->raw, icmp.icmp6_id))
 				/* Not our error, not an error at all, clear */
 				saved_errno = 0;

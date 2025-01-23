@@ -1,9 +1,8 @@
-# Maintainer: yvs <VSYakovetsky@gmail.com>
+# Testing only
+# sample ('_git' = commit', '_rev' = version)
 
-# sample (replace '_git' commit' and '_rev' number with their values)
-
-_git='cae1f458' # build tested on
-_rev='20250121'
+_git='1a948fd' # previous commit tag
+_rev='20250122'
 _build='_build'
 
 pkgname='iputils99'

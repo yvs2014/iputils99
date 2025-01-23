@@ -1,5 +1,6 @@
-iputils99 (20250121-1build1) noble; urgency=low
+iputils99 (20250123-1build1) noble; urgency=low
 
-  * iputils fork refactored in C99 way
+  * iputils in C99 style for testing,
+    upstream: https://github.com/iputils/iputils/
 
- -- yvs <VSYakovetsky@gmail.com>  Tue, 21 Jan 2025 02:27:46 +0200
+ -- yvs <VSYakovetsky@gmail.com>  Thu, 23 Jan 2025 14:27:32 +0200

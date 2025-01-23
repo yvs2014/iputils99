@@ -171,10 +171,10 @@ static int ping4_receive_error(state_t *rts, const sock_t *sock) {
 			if (!rts->opt.quiet)
 				print_local_ee(rts, ee);
 		} else if (ee->ee_origin == SO_EE_ORIGIN_ICMP) {
-			struct sockaddr_in *sin = (struct sockaddr_in *)&rts->whereto;
-			if ((res < (ssize_t)sizeof(icmp))                    ||
-			    (target.sin_addr.s_addr != sin->sin_addr.s_addr) ||
-			    (icmp.type != ICMP_ECHO)                         ||
+			struct sockaddr_in *to = (struct sockaddr_in *)&rts->whereto;
+			if ((res < (ssize_t)sizeof(icmp))                   ||
+			    (target.sin_addr.s_addr != to->sin_addr.s_addr) ||
+			    (icmp.type != ICMP_ECHO)                        ||
 			    !IS_OURS(rts, sock->raw, icmp.un.echo.id))
 				/* Not our error, not an error at all, clear */
 				saved_errno = 0;
