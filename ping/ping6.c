@@ -162,10 +162,10 @@ static int ping6_receive_error(state_t *rts, const sock_t *sock) {
 			if ((res < (ssize_t)sizeof(icmp))                 ||
 			    memcmp(&target.sin6_addr, &to->sin6_addr, 16) ||
 			    (icmp.icmp6_type != ICMP6_ECHO_REQUEST)       ||
-			    !IS_OURS(rts, sock->raw, icmp.icmp6_id))
+			    !IS_OURS(rts, sock->raw, icmp.icmp6_id)) {
 				/* Not our error, not an error at all, clear */
 				saved_errno = 0;
-			else {
+			} else {
 				net_errors++;
 				rts->nerrors++;
 				print_addr_seq(rts, ntohs(icmp.icmp6_seq), ee,
@@ -323,7 +323,7 @@ static inline bool get_subnet_anycast(const struct sockaddr_in6 *whereto) {
 	return true;
 }
 
-static inline void setsock6_filter(const state_t *rts, const sock_t *sock) {
+static void ping6_bpf_filter(const state_t *rts, const sock_t *sock) {
 	struct sock_filter filter[] = { // no need to be static?
 		BPF_STMT(BPF_LD	 | BPF_H   | BPF_ABS, 4),	/* Load ident */
 		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K,
@@ -341,7 +341,7 @@ static inline void setsock6_filter(const state_t *rts, const sock_t *sock) {
 		.len    = ARRAY_SIZE(filter),
 		.filter = filter,
 	};
-	setsock_filter(rts, sock, &fprog);
+	setsock_bpf(rts, sock, &fprog);
 }
 
 /* Return >= 0: exit with this code, < 0: go on to next addrinfo result */
@@ -359,7 +359,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 	rts->cmsg = &cmsg6;
 
 	if (sock->raw)
-		setsock6_filter(rts, sock);
+		ping6_bpf_filter(rts, sock);
 
 	struct sockaddr_in6 *source   = (struct sockaddr_in6 *)&rts->source;
 	struct sockaddr_in6 *firsthop = (struct sockaddr_in6 *)&rts->firsthop;

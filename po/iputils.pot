@@ -923,7 +923,7 @@ msgid "min/avg/ewma/max"
 msgstr ""
 
 #
-msgid "Lack of packet filtration"
+msgid "non-filtered out"
 msgstr ""
 
 #

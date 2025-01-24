@@ -11,6 +11,9 @@
 
 #include "iputils.h"
 
+// gai_wrapper2():
+// IDN resolve using directly libidn2 for non-glibc libcs
+
 void close_stdout(void) {
 	if (fclose(stdout))
 		if ((errno != EBADF) && (errno != EPIPE))

@@ -3,8 +3,8 @@ Iputils project is located at https://github.com/iputils/iputils/
 -----------------------------------------------------------------
 
 
-iputils + C99 style (iputils99)
--------------------------------
+iputils + C99 (iputils99)
+-------------------------
 Updating and testing iputils in C99 way
 (iputils and getaddrinfo wrapper)
 

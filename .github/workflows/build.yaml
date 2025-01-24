@@ -44,7 +44,14 @@ jobs:
           sudo apt install -y ../iputils99-gai_*.deb
       - name: Test tools
         run: |
+          echo "ping/tracepath/gai"
+          echo ""
+          echo ">>> ping"
           ping -c10 localhost
+          echo ""
+          echo ">>> tracepath"
           tracepath localhost
+          echo ""
+          echo ">>> getaddrinfo wrapper"
           gai one.one.one.one
 

@@ -1,4 +1,7 @@
 
+// Written to test getaddrinfo() flags with non-glibc libcs
+// (mostly for IDN)
+
 // yvs, 2025
 
 #include <stdio.h>
@@ -146,7 +149,7 @@ static void println_gni(const void *sa, socklen_t salen) {
 
 int main(int argc, char **argv) {
 	setmyname(argv[0]);
-	SET_NLS;
+	BIND_NLS;
 
 	gai_opt_s gai_opt = {.af = -1, .flags = -1};
 	parse_opt(argc, argv, &gai_opt);

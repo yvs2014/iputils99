@@ -930,7 +930,7 @@ int main(int argc, char **argv) {
 #endif
 
 	setmyname(argv[0]);
-	SET_NLS;
+	BIND_NLS;
 	atexit(close_stdout);
 
 	struct run_state rts = {

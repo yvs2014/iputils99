@@ -1,8 +1,8 @@
 # Testing only
 # sample ('_git' = commit', '_rev' = version)
 
-_git='1a948fd' # previous commit tag
-_rev='20250122'
+_git='d51f74a' # previous commit tag
+_rev='20250123'
 _build='_build'
 
 pkgname='iputils99'

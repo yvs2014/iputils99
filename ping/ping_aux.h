@@ -10,7 +10,7 @@
 unsigned parse_flow(const char *str);
 unsigned char parse_tos(const char *str);
 unsigned if_name2index(const char *ifname);
-void setsock_filter(const state_t *rts,
+void setsock_bpf(const state_t *rts,
 	const sock_t *sock, const struct sock_fprog *prog);
 void mtudisc_n_bind(state_t *rts, const sock_t *sock);
 void cmp_srcdev(const state_t *rts);

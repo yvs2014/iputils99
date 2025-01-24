@@ -166,6 +166,7 @@ static void open_socket(sock_t *sock, int af, int proto, bool verbose) {
 		default: break;
 		}
 	}
+	errno = 0; // cleanup errno
 	if (sock->raw) {
 		NET_RAW_ON;
 		sock->fd = socket(af, SOCK_RAW, proto);
@@ -173,7 +174,8 @@ static void open_socket(sock_t *sock, int af, int proto, bool verbose) {
 		NET_RAW_OFF;
 	}
 	if (verbose)
-		warnx("%s: %s %s socket", _INFO, PINGTYPE(sock->raw), AFTYPE(af));
+		warnx("%s %s socket", PINGTYPE(sock->raw), AFTYPE(af));
+	errno = 0; // cleanup errno
 	if (sock->fd >= 0)
 		return;
 	// failed
@@ -467,7 +469,7 @@ int main(int argc, char **argv) {
 
 #ifdef HAVE_LIBCAP
 	// limit caps to net_raw
-	{ cap_value_t caps[] = {CAP_NET_RAW/*, CAP_NET_ADMIN*/};
+	{ cap_value_t caps[] = {CAP_NET_RAW};
 	  limit_cap(caps, ARRAY_SIZE(caps)); }
 	NET_RAW_OFF;
 #else
@@ -476,7 +478,7 @@ int main(int argc, char **argv) {
 	rts.uid = getuid();
 
 	setmyname(argv[0]);
-	SET_NLS;
+	BIND_NLS;
 	atexit(close_stdout);
 
 	rts.outpack = calloc(1, PACKHDRLEN + rts.datalen);
@@ -514,7 +516,7 @@ int main(int argc, char **argv) {
 	} else if (rts.custom_ident == 0) {
 		/* Current Linux kernel 6.0 doesn't support on SOCK_DGRAM setting ident == 0 */
 		if (rts.opt.verbose)
-			warnx("%s: %s", _INFO, _("ident 0 => forcing raw socket"));
+			warnx("%s", _("ident 0 => forcing raw socket"));
 		hints.ai_socktype = SOCK_RAW;
 	}
 
@@ -529,10 +531,10 @@ int main(int argc, char **argv) {
 	for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
 		if (rts.opt.verbose) {
 			if (ai->ai_canonname)
-				warnx("%s: %s canonname '%s'", _INFO,
+				warnx("ai_family %s, ai_canonname %s",
 					AFTYPE(ai->ai_family), ai->ai_canonname);
 			else
-				warnx("%s: %s gai", _INFO, AFTYPE(ai->ai_family));
+				warnx("ai_family %s", AFTYPE(ai->ai_family));
 		}
 
 		// ip4-in-ip6-space workaround

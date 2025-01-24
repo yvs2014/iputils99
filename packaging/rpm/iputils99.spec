@@ -4,8 +4,8 @@
 # rpmbuild -ba iputils99.spec
 
 # previous commit tag
-%define gtag 1a948fd
-Version:    20250122
+%define gtag d51f74a
+Version:    20250123
 
 Name:       iputils99
 Release:    1

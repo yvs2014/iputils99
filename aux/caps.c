@@ -1,4 +1,8 @@
 
+// Iputils Project
+//
+// Linux capabilities related part
+
 #include <unistd.h>
 #include <err.h>
 #include <errno.h>

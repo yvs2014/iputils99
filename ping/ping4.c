@@ -75,6 +75,7 @@
 #include "ping_aux.h"
 #include "ping4_aux.h"
 
+// ICMP_FILTER is defined in <linux/icmp.h>
 #ifndef ICMP_FILTER
 #define ICMP_FILTER	1
 struct icmp_filter {
@@ -124,8 +125,8 @@ static ssize_t ping4_send_probe(state_t *rts, int fd, uint8_t *packet) {
 }
 
 
-// func_set:receive_error:set_filter
-static inline void ping4_raw_ack(int fd) {
+// func_set:receive_error:...
+static inline void setsock4_icmp_filter(int fd) {
 	struct icmp_filter filt = { .data = ~(
 		(1 << ICMP_SOURCE_QUENCH) |
 		(1 << ICMP_REDIRECT)      |
@@ -175,16 +176,20 @@ static int ping4_receive_error(state_t *rts, const sock_t *sock) {
 			if ((res < (ssize_t)sizeof(icmp))                   ||
 			    (target.sin_addr.s_addr != to->sin_addr.s_addr) ||
 			    (icmp.type != ICMP_ECHO)                        ||
-			    !IS_OURS(rts, sock->raw, icmp.un.echo.id))
+			    !IS_OURS(rts, sock->raw, icmp.un.echo.id)) {
 				/* Not our error, not an error at all, clear */
 				saved_errno = 0;
-			else {
+			} else {
 				net_errors++;
 				rts->nerrors++;
 				uint16_t seq = ntohs(icmp.un.echo.sequence);
 				acknowledge(rts, seq);
-				if (sock->raw)
-					ping4_raw_ack(sock->fd);
+				static bool icmp4_filter_applied;
+				if (sock->raw && !icmp4_filter_applied) {
+					/* Set additional filter */
+					setsock4_icmp_filter(sock->fd);
+					icmp4_filter_applied = true;
+				}
 				print_addr_seq(rts, seq, ee, sizeof(struct sockaddr_in));
 			}
 		}
@@ -391,7 +396,7 @@ static inline void set_src_space(int fd, const route_t *route, bool dontroute) {
 		err(errno, "record route");
 }
 
-static inline void setsock4_filter(const state_t *rts, const sock_t *sock) {
+static void ping4_bpf_filter(const state_t *rts, const sock_t *sock) {
 	struct sock_filter filter[] = { // no need to be static?
 		BPF_STMT(BPF_LDX | BPF_B   | BPF_MSH, 0),	/* Skip IP header due BSD */
 		BPF_STMT(BPF_LD  | BPF_H   | BPF_IND, 4),	/* Load ident */
@@ -404,13 +409,13 @@ static inline void setsock4_filter(const state_t *rts, const sock_t *sock) {
 			ICMP_ECHOREPLY,				/* Compare type */
 			1, 0),
 		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Okay, pass it down */
-		BPF_STMT(BPF_RET | BPF_K, 0),			/* Reject wrong ident */
+		BPF_STMT(BPF_RET | BPF_K, 0),			/* Reject other types with wrong ident */
 	};
 	const struct sock_fprog fprog = {
 		.len    = ARRAY_SIZE(filter),
 		.filter = filter,
 	};
-	setsock_filter(rts, sock, &fprog);
+	setsock_bpf(rts, sock, &fprog);
 }
 
 /* Return >= 0: exit with this code, < 0: go on to next addrinfo result */
@@ -428,7 +433,7 @@ int ping4_run(state_t *rts, int argc, char **argv,
 	rts->route = &route4;
 
 	if (sock->raw)
-		setsock4_filter(rts, sock);
+		ping4_bpf_filter(rts, sock);
 
 	struct sockaddr_in *source  = (struct sockaddr_in *)&rts->source;
 	struct sockaddr_in *whereto = (struct sockaddr_in *)&rts->whereto;

@@ -14,8 +14,10 @@ void modify_cap(cap_value_t cap, cap_flag_value_t on);
 #define NET_RAW_OFF  CAP_OFF(CAP_NET_RAW)
 #define SYS_NICE_ON  CAP_ON (CAP_SYS_NICE)
 #define SYS_NICE_OFF CAP_OFF(CAP_SYS_NICE)
-// legacy:
+// not used in code:
 //#define NET_ADMIN_ON  CAP_ON (CAP_NET_ADMIN)
 //#define NET_ADMIN_OFF CAP_OFF(CAP_NET_ADMIN)
+//#define NET_BPF_ON    CAP_ON (CAP_BPF)
+//#define NET_BPF_OFF   CAP_OFF(CAP_BPF)
 
 #endif

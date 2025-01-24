@@ -14,8 +14,10 @@ void modify_euid(bool on);
 #define NET_RAW_OFF  SUID_OFF
 #define SYS_NICE_ON  SUID_ON
 #define SYS_NICE_OFF SUID_OFF
-// legacy:
+// not used in code:
 //#define NET_ADMIN_ON  SUID_ON
 //#define NET_ADMIN_OFF SUID_OFF
+//#define NET_BPF_ON    SUID_ON
+//#define NET_BPF_OFF   SUID_OFF
 
 #endif

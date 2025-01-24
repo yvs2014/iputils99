@@ -1,14 +1,14 @@
 # Testing only
 # sample ('_tag' = commit', '_ver' = version)
 
-_tag="1a948fd" # previous commit tag
-_ver="20250122"
-_build="_build"
+_tag='d51f74a' # previous commit tag
+_ver='20250123'
+_build='_build'
 
 pkgname=iputils99
 pkgver="$_ver"
 pkgrel=1
-pkgdesc="iputils fork refactored in C99 way"
+pkgdesc='iputils fork refactored in C99 way'
 arch=('x86_64' 'aarch64')
 # licence: see https://github.com/iputils/iputils/LICENSE
 license=('BSD-3-Clause' AND 'GPL-2.0-or-later')
@@ -27,8 +27,8 @@ build() {
 }
 
 post_install() {
-  setcap 'cap_net_raw+p' "usr/bin/arping" || :
-  setcap 'cap_net_raw,cap_sys_nice+p' "usr/bin/clockdiff" || :
+  setcap 'cap_net_raw+p' 'usr/bin/arping' || :
+  setcap 'cap_net_raw,cap_sys_nice+p' 'usr/bin/clockdiff' || :
 }
 
 post_upgrade() {

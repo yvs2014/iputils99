@@ -472,7 +472,7 @@ int main(int argc, char **argv) {
 #endif
 
 	setmyname(argv[0]);
-	SET_NLS;
+	BIND_NLS;
 	atexit(close_stdout);
 
 	state_t rts = {.rtt = 1000, .ts_format = "%c" /*local*/};

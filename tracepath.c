@@ -580,7 +580,7 @@ static void resume(const state_t *rts) {
 
 int main(int argc, char **argv) {
 	setmyname(argv[0]);
-	SET_NLS;
+	BIND_NLS;
 	atexit(close_stdout);
 
 	state_t rts = {

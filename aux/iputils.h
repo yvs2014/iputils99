@@ -38,18 +38,16 @@
 #endif
 
 #ifdef USE_NLS
-#define SET_NLS do { \
+#define BIND_NLS do { \
 	setlocale(LC_ALL, ""); \
 	bindtextdomain(PACKAGE_NAME, LOCALEDIR); \
 	textdomain(PACKAGE_NAME); \
 } while (0)
 #else
-#define SET_NLS NOOP
+#define BIND_NLS NOOP
 #endif
 
-#define INFO	"INFO"		// verbose output prefix
 #define WARN	"WARNING"	// warning prefix
-#define _INFO	_(INFO)
 #define _WARN	_(WARN)
 #define V4IN6_WARN	"Embedded IPv4 Address"
 

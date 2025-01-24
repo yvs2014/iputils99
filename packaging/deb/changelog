@@ -1,6 +1,6 @@
-iputils99 (20250123-1build1) noble; urgency=low
+iputils99 (20250124-1build1) noble; urgency=low
 
-  * iputils in C99 style for testing,
+  * iputils in C99 style for _testing_
     upstream: https://github.com/iputils/iputils/
 
- -- yvs <VSYakovetsky@gmail.com>  Thu, 23 Jan 2025 14:27:32 +0200
+ -- yvs <VSYakovetsky@gmail.com>  Fri, 24 Jan 2025 18:03:19 +0200

@@ -113,12 +113,12 @@ inline unsigned if_name2index(const char *ifname) {
 	return rc;
 }
 
-void setsock_filter(const state_t *rts,
+void setsock_bpf(const state_t *rts,
 	const sock_t *sock, const struct sock_fprog *prog)
 {
 	if (rts->opt.verbose)
-		warnx("%s: ip%c sock=%d raw=%d ident=0x%04x", _INFO,
-			rts->ip6 ? '6' : '4', sock->fd, sock->raw, rts->ident16);
+		warnx("ip%c sock=%d raw=%d ident=0x%04x", rts->ip6 ? '6' : '4',
+			sock->fd, sock->raw, rts->ident16);
 	if (setsockopt(sock->fd, SOL_SOCKET, SO_ATTACH_FILTER, prog, sizeof(*prog)) < 0)
 		err(errno, "setsockopt(%s)", "SO_ATTACH_FILTER");
 #ifdef SO_LOCK_FILTER

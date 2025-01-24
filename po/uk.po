@@ -1024,8 +1024,8 @@ msgid "min/avg/ewma/max"
 msgstr "мін/сер/EWMA/макс"
 
 #
-msgid "Lack of packet filtration"
-msgstr "Фільтрація пакетів відсутня"
+msgid "non-filtered out"
+msgstr "не відфільтровано"
 
 #
 msgid "No info"

@@ -386,12 +386,10 @@ void sock_setmark(state_t *rts, int fd) {
 #ifdef SO_MARK
 	if (!rts->opt.mark)
 		return;
-//	NET_ADMIN_ON;  /* legacy? */
-	NET_RAW_ON;
+	NET_RAW_ON;  /* linux4.x: NET_ADMIN */
 	int rc = setsockopt(fd, SOL_SOCKET, SO_MARK, &rts->mark, sizeof(rts->mark));
 	int keep = errno;
-	NET_RAW_OFF;
-//	NET_ADMIN_OFF; /* legacy? */
+	NET_RAW_OFF; /* linux4.x: NET_ADMIN */
 	if (rc < 0) {
 		errno = keep;
 		warn("%s: %s: %u", _WARN, _("failed to set mark"), rts->mark);
@@ -636,11 +634,10 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
 				not_ours = fnset->parse_reply(rts, sock->raw, &msg, received, addrbuf, recv_tv);
 			}
 
-			/* Lack of packet filtration: report once */
-			static bool reported_about_bpf;
-			if (not_ours && sock->raw && !reported_about_bpf) {
-				warnx("%s: %s", _WARN, _("Lack of packet filtration"));
-				reported_about_bpf = true;
+			if (not_ours && sock->raw && rts->opt.verbose) {
+				// print counter in verbose mode
+				static unsigned non_filtered_out;
+				warnx("%s: %u", _("non-filtered out"), ++non_filtered_out);
 			}
 
 			/* If nothing is in flight, "break" returns us to pinger */
@@ -671,6 +668,7 @@ int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
 	uint8_t *packet = malloc(packlen);
 	if (packet) {
 		ping_setup(rts, sock);
+		errno = 0; // postsetup cleanup
 		drop_priv();
 		int rc = main_loop(rts, fnset, sock, packet, packlen);
 		free(packet);
