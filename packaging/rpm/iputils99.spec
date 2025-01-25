@@ -1,13 +1,11 @@
 # Testing only
-# sample ('gtag' = commit')
 
 # rpmbuild -ba iputils99.spec
 
-# previous commit tag
-%define gtag d51f74a
-Version:    20250123
+%define gitver %(git log -1 --format='%cd' --date='format:%Y%m%d')
 
 Name:       iputils99
+Version:    %{gitver}
 Release:    1
 # see https://github.com/iputils/iputils/LICENSE
 License:    BSD-3-Clause AND GPL-2.0-or-later
@@ -17,7 +15,7 @@ URL:        https://github.com/yvs2014/%{name}
 
 %define namever %{name}-%{version}
 
-#Source0:    {url}/tarball/{gtag}
+#Source0:    {url}/tarball/{commit}
 Source0:    ${RPM_SOURCE_DIR}/%{namever}
 
 BuildRequires: meson, pkgconf, git, sed, gettext, libcap-devel, libidn2-devel
@@ -43,9 +41,6 @@ iputils fork refactored in C99 way
 %prep
 rm -rf %{namever}
 git clone %{url} %{namever}
-cd %{namever}
-git checkout -q %{gtag}
-cd -
 rm -rf ${RPM_SOURCE_DIR}/%{namever}
 mkdir -p ${RPM_SOURCE_DIR}
 cp -r %{namever} ${RPM_SOURCE_DIR}

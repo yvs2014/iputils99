@@ -918,6 +918,10 @@ msgstr "오류"
 msgid "lost"
 msgstr "손실"
 
+# %u unidentified
+msgid "unidentified"
+msgstr "불확실한"
+
 # time %ld ms
 msgid "time"
 msgstr "시간"

@@ -928,9 +928,9 @@ msgstr "chyb"
 msgid "lost"
 msgstr "ztráta"
 
-# time %ld ms
-msgid "time"
-msgstr "čas"
+# %u unidentified
+msgid "unidentified"
+msgstr "neznámý"
 
 # probably ...
 msgid "probably"
@@ -942,6 +942,10 @@ msgid_plural "hops away"
 msgstr[0] "skok"
 msgstr[1] "skoky"
 msgstr[2] "skoků"
+
+# time %ld ms
+msgid "time"
+msgstr "čas"
 
 # rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
 msgid "rtt min/avg/max/mdev"

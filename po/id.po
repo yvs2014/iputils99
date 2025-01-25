@@ -869,6 +869,10 @@ msgstr "error"
 msgid "lost"
 msgstr "hilang"
 
+# %u unidentified
+msgid "unidentified"
+msgstr "tidak teridentifikasi"
+
 # time %ld ms
 msgid "time"
 msgstr "waktu"

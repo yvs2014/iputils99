@@ -293,7 +293,7 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 	if (rts->opt.outstanding && (rts->ntransmitted > 0)) {
 		if(!rcvd_test(rts->ntransmitted, rts->bitmap)) {
 			PRINT_TIMESTAMP;
-			printf("%s (%s=%lu)\n", _("No answer yet"), _("icmp_seq"), rts->ntransmitted % MAX_DUP_CHK);
+			printf("%s: %s=%lu\n", _("No answer yet"), _("icmp_seq"), rts->ntransmitted % MAX_DUP_CHK);
 			fflush(stdout);
 		}
 	}
@@ -634,10 +634,15 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
 				not_ours = fnset->parse_reply(rts, sock->raw, &msg, received, addrbuf, recv_tv);
 			}
 
-			if (not_ours && sock->raw && rts->opt.verbose) {
-				// print counter in verbose mode
-				static unsigned non_filtered_out;
-				warnx("%s: %u", _("non-filtered out"), ++non_filtered_out);
+			if (not_ours && sock->raw) {
+				if (rts->unidentified) {
+					if (rts->opt.verbose)
+warnx("id=0x%04x: %s: %u", rts->ident16, _("non-filtered out"), rts->unidentified);
+				} else if (fnset->bpf_filter)
+					fnset->bpf_filter(rts, sock);
+				rts->unidentified++;
+				if (!rts->unidentified)
+					rts->unidentified++;
 			}
 
 			/* If nothing is in flight, "break" returns us to pinger */

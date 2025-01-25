@@ -52,7 +52,7 @@
 #define ADAPTIVE_MS "%s = " MSFMT "/" TM_MS
 
 // Called once at resume
-static inline void stat_hops(uint8_t min, uint8_t max) {
+static inline void print_hops_away(uint8_t min, uint8_t max) {
 	if (min > max)
 		return;
 	int peer_maxttl = 		// Estimation:
@@ -69,6 +69,7 @@ static inline void stat_hops(uint8_t min, uint8_t max) {
 	}
 }
 
+// Called once at resume
 static inline void stat_header(const state_t *rts) {
 	printf("--- %s%s ---\n", rts->hostname, _(" ping statistics"));
 	printf("%ld %s", rts->ntransmitted,
@@ -83,11 +84,14 @@ _n("packet transmitted", "packets transmitted", rts->ntransmitted));
 	if (rts->ntransmitted)
 		printf(", %g%% %s", (rts->ntransmitted - rts->nreceived) * 100.
 			/ rts->ntransmitted, _("lost"));
+	if (rts->opt.verbose && rts->unidentified)
+		printf(", %u %s", rts->unidentified, _("unidentified"));
 	if (!rts->opt.broadcast && (rts->min_away >= 0))
-		stat_hops(rts->min_away, rts->max_away);
+		print_hops_away(rts->min_away, rts->max_away);
 	putchar('\n');
 }
 
+// Called once at resume
 static inline void stat_timing(const state_t *rts) {
 	char comma = 0;
 	if (rts->nreceived && rts->timing) {

@@ -932,9 +932,9 @@ msgstr "erreurs"
 msgid "lost"
 msgstr "perdus"
 
-# time %ld ms
-msgid "time"
-msgstr "temps"
+# %u unidentified
+msgid "unidentified"
+msgstr "non identifié"
 
 # probably ...
 msgid "probably"
@@ -945,6 +945,10 @@ msgid "hop away"
 msgid_plural "hops away"
 msgstr[0] "saut"
 msgstr[1] "sauts"
+
+# time %ld ms
+msgid "time"
+msgstr "temps"
 
 # rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
 msgid "rtt min/avg/max/mdev"

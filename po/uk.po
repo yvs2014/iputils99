@@ -988,9 +988,9 @@ msgstr "помилок"
 msgid "lost"
 msgstr "втрачено"
 
-# time %ld ms
-msgid "time"
-msgstr "час"
+# %u unidentified
+msgid "unidentified"
+msgstr "не розпізнано"
 
 # probably ...
 msgid "probably"
@@ -1002,6 +1002,10 @@ msgid_plural "hops away"
 msgstr[0] "перехід"
 msgstr[1] "переходи"
 msgstr[2] "переходів"
+
+# time %ld ms
+msgid "time"
+msgstr "час"
 
 # rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
 msgid "rtt min/avg/max/mdev"

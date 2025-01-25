@@ -914,6 +914,10 @@ msgstr "hata"
 msgid "lost"
 msgstr "kayıp"
 
+# %u unidentified
+msgid "unidentified"
+msgstr "bilinmeyen"
+
 # time %ld ms
 msgid "time"
 msgstr "zaman"

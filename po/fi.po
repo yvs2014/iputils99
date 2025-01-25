@@ -916,6 +916,10 @@ msgstr "virhettä"
 msgid "lost"
 msgstr "menetystä"
 
+# %u unidentified
+msgid "unidentified"
+msgstr "tuntematon"
+
 # time %ld ms
 msgid "time"
 msgstr "aika"

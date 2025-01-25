@@ -107,6 +107,7 @@ typedef struct ping_state {
 	long ntransmitted;		/* sequence # for outbound packets = #sent */
 	long nchecksum;			/* replies with bad checksum */
 	long nerrors;			/* icmp errors */
+	unsigned unidentified;		/* counter of unidentified packets */
 	int interval;			/* interval between packets (msec) */
 	int preload;
 	int deadline;			/* time to die */
@@ -154,6 +155,7 @@ typedef struct ping_state {
 } state_t;
 
 typedef struct fnset_t {
+	void (*bpf_filter)(const state_t *rts, const sock_t *sock);
 	ssize_t (*send_probe)(state_t *rts, int fd, uint8_t *packet);
 	int (*receive_error)(state_t *rts, const sock_t *sock);
 	bool (*parse_reply)(state_t *rts, bool rawsock, struct msghdr *msg,

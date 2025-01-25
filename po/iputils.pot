@@ -888,8 +888,8 @@ msgstr ""
 msgid "lost"
 msgstr ""
 
-# time %ld ms
-msgid "time"
+# %u unidentified
+msgid "unidentified"
 msgstr ""
 
 # probably ...
@@ -901,6 +901,10 @@ msgid "hop away"
 msgid_plural "hops away"
 msgstr[0] ""
 msgstr[1] ""
+
+# time %ld ms
+msgid "time"
+msgstr ""
 
 # rtt min/avg/max/mdev = %ld.%03ld/%lu.%03ld/%ld.%03ld/%ld.%03ld ms
 msgid "rtt min/avg/max/mdev"

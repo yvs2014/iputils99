@@ -117,8 +117,8 @@ void setsock_bpf(const state_t *rts,
 	const sock_t *sock, const struct sock_fprog *prog)
 {
 	if (rts->opt.verbose)
-		warnx("ip%c sock=%d raw=%d ident=0x%04x", rts->ip6 ? '6' : '4',
-			sock->fd, sock->raw, rts->ident16);
+		warnx("bpf%c socket=%d ident=0x%04x",
+			rts->ip6 ? '6' : '4', sock->fd, rts->ident16);
 	if (setsockopt(sock->fd, SOL_SOCKET, SO_ATTACH_FILTER, prog, sizeof(*prog)) < 0)
 		err(errno, "setsockopt(%s)", "SO_ATTACH_FILTER");
 #ifdef SO_LOCK_FILTER

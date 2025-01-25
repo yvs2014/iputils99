@@ -335,7 +335,7 @@ static void ping6_bpf_filter(const state_t *rts, const sock_t *sock) {
 			ICMP6_ECHO_REPLY, 			/* Compare type */
 			1, 0),
 		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Okay, pass it down */
-		BPF_STMT(BPF_RET | BPF_K, 0), 			/* Reject wrong ident */
+		BPF_STMT(BPF_RET | BPF_K, 0), 			/* Reject not our echo replies */
 	};
 	const struct sock_fprog fprog = {
 		.len    = ARRAY_SIZE(filter),
@@ -349,6 +349,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		struct addrinfo *ai, const sock_t *sock)
 {
 	fnset_t ping6_func_set = {
+		.bpf_filter	= ping6_bpf_filter,
 		.send_probe     = ping6_send_probe,
 		.receive_error  = ping6_receive_error,
 		.parse_reply    = ping6_parse_reply,
@@ -357,9 +358,6 @@ int ping6_run(state_t *rts, int argc, char **argv,
 	rts->ip6 = true;
 	cmsg_t cmsg6 = {0};
 	rts->cmsg = &cmsg6;
-
-	if (sock->raw)
-		ping6_bpf_filter(rts, sock);
 
 	struct sockaddr_in6 *source   = (struct sockaddr_in6 *)&rts->source;
 	struct sockaddr_in6 *firsthop = (struct sockaddr_in6 *)&rts->firsthop;

@@ -910,6 +910,10 @@ msgstr "错误"
 msgid "lost"
 msgstr "丢失"
 
+# %u unidentified
+msgid "unidentified"
+msgstr "未知"
+
 # time %ld ms
 msgid "time"
 msgstr "时间"

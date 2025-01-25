@@ -920,6 +920,10 @@ msgstr "შეცდომა"
 msgid "lost"
 msgstr "დაკარგულია"
 
+# %u unidentified
+msgid "unidentified"
+msgstr "უცნობი"
+
 # time %ld ms
 msgid "time"
 msgstr "დრო"

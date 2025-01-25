@@ -409,7 +409,7 @@ static void ping4_bpf_filter(const state_t *rts, const sock_t *sock) {
 			ICMP_ECHOREPLY,				/* Compare type */
 			1, 0),
 		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Okay, pass it down */
-		BPF_STMT(BPF_RET | BPF_K, 0),			/* Reject other types with wrong ident */
+		BPF_STMT(BPF_RET | BPF_K, 0),			/* Reject not our echo replies */
 	};
 	const struct sock_fprog fprog = {
 		.len    = ARRAY_SIZE(filter),
@@ -423,6 +423,7 @@ int ping4_run(state_t *rts, int argc, char **argv,
 		struct addrinfo *ai, const sock_t *sock)
 {
 	fnset_t ping4_func_set = {
+		.bpf_filter     = ping4_bpf_filter,
 		.send_probe     = ping4_send_probe,
 		.receive_error  = ping4_receive_error,
 		.parse_reply    = ping4_parse_reply,
@@ -431,9 +432,6 @@ int ping4_run(state_t *rts, int argc, char **argv,
 	rts->ip6 = false;
 	route_t route4 = {0};
 	rts->route = &route4;
-
-	if (sock->raw)
-		ping4_bpf_filter(rts, sock);
 
 	struct sockaddr_in *source  = (struct sockaddr_in *)&rts->source;
 	struct sockaddr_in *whereto = (struct sockaddr_in *)&rts->whereto;

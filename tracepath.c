@@ -325,7 +325,7 @@ do { // was 'restart:'
 
 static inline void setsock4_opts(int sock, bool verbose) {
 	if (verbose)
-		warnx("set sock%c options: %s", '4',
+		warnx("set socket%c options: %s", '4',
 			"MTU_DISCOVER, RECVERR, RECVTTL");
 	// PMTU
 	int opt = IP_PMTUDISC_PROBE;
@@ -652,7 +652,7 @@ int main(int argc, char **argv) {
 		warnx("run upto %u hops", rts.max_hops);
 	for (int ttl = 1; ttl <= rts.max_hops; ttl++) {
 		rts.ttl = ttl;
-		// set sock TTL
+		// set socket TTL
 		switch (rts.af) {
 		case AF_INET6:
 			setsock_ttl(rts.sock, IPPROTO_IPV6, IPV6_UNICAST_HOPS, ttl);

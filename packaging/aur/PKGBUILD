@@ -1,12 +1,7 @@
 # Testing only
-# sample ('_tag' = commit', '_ver' = version)
-
-_tag='d51f74a' # previous commit tag
-_ver='20250123'
-_build='_build'
 
 pkgname=iputils99
-pkgver="$_ver"
+pkgver=autofill
 pkgrel=1
 pkgdesc='iputils fork refactored in C99 way'
 arch=('x86_64' 'aarch64')
@@ -20,6 +15,8 @@ conflicts=('iputils' 'netkit-base' 'arping')
 
 source=("$pkgname::git+$url")
 provides=('ping' 'arping' 'tracepath' 'clockdiff' 'gai')
+
+_build='_build'
 
 build() {
   arch-meson "$pkgname" "$_build"
@@ -37,6 +34,11 @@ post_upgrade() {
 
 package() {
   DESTDIR="$pkgdir" meson install -C "$_build"
+}
+
+pkgver() {
+  cd "$pkgname"
+  git log -1 --format='%cd' --date='format:%Y%m%d'
 }
 
 sha256sums=('SKIP')

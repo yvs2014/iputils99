@@ -865,6 +865,10 @@ msgstr "エラー"
 msgid "lost"
 msgstr "損失"
 
+# %u unidentified
+msgid "unidentified"
+msgstr "不明"
+
 # time %ld ms
 msgid "time"
 msgstr "時間"

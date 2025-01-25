@@ -1,12 +1,13 @@
 # Testing only
-# sample ('_git' = commit', '_rev' = version)
-
-_git='d51f74a' # previous commit tag
-_rev='20250123'
-_build='_build'
 
 pkgname='iputils99'
-pkgver="$_rev"
+
+gitver() {
+  cd "$srcdir/$pkgname"
+  git log -1 --format='%cd' --date='format:%Y%m%d'
+}
+
+pkgver="$(gitver)"
 pkgrel=1
 pkgdesc='iputils fork refactored in C99 way'
 url="https://github.com/yvs2014/$pkgname"
@@ -22,17 +23,20 @@ subpackages="$pkgname-doc"
 provides="ping arping clockdiff tracepath gai"
 install="$pkgname.post-install $pkgname.post-upgrade"
 
+_build='_build'
+
 snapshot() {
   mkdir -p "$srcdir"
   cd "$srcdir"
   if [ -d "$pkgname" ]; then
-    cd $pkgname
+    cd "$pkgname"
     git fetch
   else
     git clone "$giturl" "$pkgname"
-    cd $pkgname
-    git checkout -q "$_git"
+    cd "$pkgname"
   fi
+  _git="$(git rev-parse --short HEAD)"
+  cd -
   git archive --prefix="$pkgname/" -o "$srcdir/$pkgname-$pkgver.tar.gz" "$_git"
 }
 
