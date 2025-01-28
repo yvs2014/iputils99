@@ -42,7 +42,7 @@ if valid
 			output:      pageout,
 			command:     cmd + [gen_man, '@INPUT@'],
 			install:     true,
-			install_dir: join_paths(get_option('mandir'), 'man8'),
+			install_dir: get_option('mandir') / 'man8',
 		)
 		pageout  = man + '.html' # html pages
 		custom_target(pageout,
@@ -50,7 +50,7 @@ if valid
 			output:      pageout,
 			command:     cmd + [gen_html, '@INPUT@'],
 			install:     true,
-			install_dir: join_paths(get_option('datadir'), base),
+			install_dir: get_option('datadir') / base,
 		)
 	endforeach
 	warning('Not all iputils99 changes are reflected in the generated docs')

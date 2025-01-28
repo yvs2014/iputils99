@@ -13,7 +13,7 @@ ping_src += 'common.c'
 ping_src += 'stats.c'
 ping_src += 'extra.c'
 
-ping_inc = [join_paths('..', aux)]
+ping_inc = ['..' / aux]
 
 if rfc4620
 	ping_extra = []

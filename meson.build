@@ -11,7 +11,7 @@ project('iputils99', 'c',
 	meson_version: '>=0.55',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
-			check: false).stdout().strip() : '20250125',
+			check: false).stdout().strip() : '20250128',
 )
 
 add_project_arguments('-D_GNU_SOURCE', language: 'c')
@@ -32,9 +32,8 @@ config_h = 'config.h'
 iputils = ['ping', 'arping', 'clockdiff', 'tracepath', 'gai']
 
 prefix    = get_option('prefix')
-bindir    = join_paths(prefix, get_option('bindir'))
-localedir = join_paths(prefix, get_option('localedir'))
-sbindir   = join_paths(prefix, get_option('sbindir'))
+bindir    = prefix / get_option('bindir')
+localedir = prefix / get_option('localedir')
 
 build = {
 	'ping':      get_option('BUILD_PING'),
@@ -156,13 +155,13 @@ if set_caps and libcap
 	setcap = find_program('setcap', '/usr/sbin/setcap', '/sbin/setcap')
 endif
 if get_option('NEED_NET_RAW')
-	linuxcaps = {
+	linux_caps = {
 		'ping':      'cap_net_raw+p',
 		'arping':    'cap_net_raw+p',
 		'clockdiff': 'cap_net_raw,cap_sys_nice+p',
 	}
 else
-	linuxcaps = {
+	linux_caps = {
 		'clockdiff': 'cap_sys_nice+p',
 	}
 endif
@@ -182,11 +181,12 @@ foreach tool: iputils
 		manpage += tool
 		src = aux_src
 		install_mode = []
-		if tool in linuxcaps
+		if tool in linux_caps
 			src += perm_src
 			if set_caps and libcap
-				message(tool + ' with ' + linuxcaps[tool] + ' caps')
-meson.add_install_script(setcap, linuxcaps[tool], join_paths(bindir, tool))
+				cap = linux_caps[tool]
+				message(tool + ' with ' + cap + ' caps')
+				meson.add_install_script(setcap, cap, bindir / tool)
 			elif set_suid
 				suid_perm = 'r-sr-xr-x'
 				warning(tool + ' suid mode: ' + suid_perm)
@@ -228,7 +228,7 @@ endif
 sect_app = {}
 perm_sfx = libcap ? ' (caps) ' : ' '
 foreach tool: iputils
-	tool_sfx  = (tool in linuxcaps) ? perm_sfx : ' '
+	tool_sfx  = (tool in linux_caps) ? perm_sfx : ' '
 	sect_key  = '@0@@1@'.format(tool, tool_sfx)
 	sect_app += {sect_key: build[tool]}
 endforeach
@@ -247,7 +247,6 @@ endif
 sect_dir = {
 	'prefix'   : prefix,
 	'bindir'   : bindir,
-	'sbindir'  : sbindir,
 	'localedir': localedir,
 }
 
