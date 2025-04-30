@@ -936,6 +936,10 @@ msgstr "rtt მინ/საშ/მაქს/mdev"
 msgid "pipe"
 msgstr "არხი"
 
+# in-flight %d
+msgid "in-flight"
+msgstr "პროცესშია"
+
 # ipg/ewma = %d.%03d/%d.%03d ms
 msgid "ipg/ewma"
 msgstr ""

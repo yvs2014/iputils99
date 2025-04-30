@@ -39,7 +39,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <netinet/ip_icmp.h>
-#include <locale.h>
 
 #include "stats.h"
 #include "iputils.h"
@@ -81,9 +80,14 @@ _n("packet transmitted", "packets transmitted", rts->ntransmitted));
 		printf(", +%ld %s", rts->nchecksum, _("corrupted"));
 	if (rts->nerrors)
 		printf(", +%ld %s", rts->nerrors,   _("errors"));
-	if (rts->ntransmitted)
-		printf(", %g%% %s", (rts->ntransmitted - rts->nreceived) * 100.
-			/ rts->ntransmitted, _("lost"));
+	{ long gone = rts->ntransmitted;
+	  if (gone) {
+		int inflight = in_flight(rts);
+		if (inflight > 0)
+			gone -= inflight;
+		if (gone > 0)
+			printf(", %g%% %s", (gone - rts->nreceived) * 100. / gone, _("lost"));
+	}}
 	if (rts->opt.verbose && rts->unidentified)
 		printf(", %u %s", rts->unidentified, _("unidentified"));
 	if (!rts->opt.broadcast && (rts->min_away >= 0))
@@ -115,6 +119,14 @@ static inline void stat_timing(const state_t *rts) {
 		printf("%s %d", _("pipe"), rts->pipesize);
 		comma = ',';
 	}
+	//
+	{ int inflight = in_flight(rts);
+	  if (inflight > 0) {
+		if (comma)
+			printf("%c ", comma);
+		printf("%s %d", _("in-flight"), inflight);
+		comma = ',';
+	}}
 	//
 	if ((!rts->interval || rts->opt.flood || rts->opt.adaptive)
 			&& rts->nreceived && (rts->ntransmitted > 1)) {

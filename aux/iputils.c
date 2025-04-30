@@ -4,7 +4,9 @@
 #include <time.h>
 #include <err.h>
 #include <errno.h>
+#if defined(USE_IDN) && !defined(USE_NLS)
 #include <locale.h>
+#endif
 #ifdef USE_LIBIDN2
 #include <idn2.h>
 #endif

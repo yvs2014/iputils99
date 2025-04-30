@@ -172,6 +172,7 @@ void sock_settos(int fd, int qos, bool ip6);
 int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
 	 const fnset_t* fnset);
 int get_interval(const state_t *rts);
+int in_flight(const state_t *rts);
 void fill_payload(int quiet, const char *str, unsigned char *payload, size_t len);
 
 bitmap_t rcvd_test (uint16_t seq, const bitmap_t *map);

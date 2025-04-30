@@ -59,7 +59,6 @@
 #include <string.h>
 #include <errno.h>
 #include <err.h>
-#include <locale.h>
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <sys/types.h>

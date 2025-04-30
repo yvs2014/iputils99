@@ -7,11 +7,22 @@
 #include <sys/types.h>
 #include <netdb.h>
 
+#ifndef NOOP
+#define NOOP ((void)0)
+#endif
+
 #ifdef USE_NLS
+#include <locale.h>
 #include <libintl.h>
+#define BIND_NLS do { \
+	setlocale(LC_ALL, ""); \
+	bindtextdomain(PACKAGE_NAME, LOCALEDIR); \
+	textdomain(PACKAGE_NAME); \
+} while (0)
 #define _(text) gettext(text)
 #define _n(singular, plural, number) ngettext((singular), (plural), (number))
 #else
+#define BIND_NLS NOOP
 #define _(text) text
 #define _n(singular, plural, number) plural
 #endif
@@ -31,20 +42,6 @@
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-#endif
-
-#ifndef NOOP
-#define NOOP ((void)0)
-#endif
-
-#ifdef USE_NLS
-#define BIND_NLS do { \
-	setlocale(LC_ALL, ""); \
-	bindtextdomain(PACKAGE_NAME, LOCALEDIR); \
-	textdomain(PACKAGE_NAME); \
-} while (0)
-#else
-#define BIND_NLS NOOP
 #endif
 
 #define WARN	"WARNING"	// warning prefix

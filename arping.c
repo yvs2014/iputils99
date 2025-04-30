@@ -31,9 +31,6 @@
 #include <sys/timerfd.h>
 #include <err.h>
 #include <errno.h>
-#ifdef USE_NLS
-#include <locale.h>
-#endif
 
 #include "iputils.h"
 #include "str2num.h"

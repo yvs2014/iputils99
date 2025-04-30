@@ -955,6 +955,10 @@ msgstr "RTT min/prům/max/std.odch"
 msgid "pipe"
 msgstr "roura"
 
+# in-flight %d
+msgid "in-flight"
+msgstr "v procesu"
+
 # ipg/ewma = %d.%03d/%d.%03d ms
 msgid "ipg/ewma"
 msgstr "IPG/klouz.prům"

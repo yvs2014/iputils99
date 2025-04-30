@@ -881,6 +881,10 @@ msgstr "rtt 最小/平均/最大/mdev"
 msgid "pipe"
 msgstr ""
 
+# in-flight %d
+msgid "in-flight"
+msgstr ""
+
 # ipg/ewma = %d.%03d/%d.%03d ms
 msgid "ipg/ewma"
 msgstr ""

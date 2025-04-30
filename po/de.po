@@ -955,6 +955,10 @@ msgstr ""
 msgid "pipe"
 msgstr ""
 
+# in-flight %d
+msgid "in-flight"
+msgstr "im Flug"
+
 # ipg/ewma = %d.%03d/%d.%03d ms
 msgid "ipg/ewma"
 msgstr ""

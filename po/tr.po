@@ -930,6 +930,10 @@ msgstr "rtt en düşük/ortalama/en yüksek/mdev"
 msgid "pipe"
 msgstr "boru"
 
+# in-flight %d
+msgid "in-flight"
+msgstr ""
+
 # ipg/ewma = %d.%03d/%d.%03d ms
 msgid "ipg/ewma"
 msgstr ""

@@ -932,6 +932,10 @@ msgstr "rtt min/keskiarvo/maks/mdev"
 msgid "pipe"
 msgstr ""
 
+# in-flight %d
+msgid "in-flight"
+msgstr "prosessissa"
+
 # ipg/ewma = %d.%03d/%d.%03d ms
 msgid "ipg/ewma"
 msgstr ""

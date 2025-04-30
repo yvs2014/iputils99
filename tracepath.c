@@ -38,10 +38,6 @@
 #include <linux/icmpv6.h>
 #include <linux/types.h>
 
-#ifdef USE_NLS
-#include <locale.h>
-#endif
-
 #include "iputils.h"
 #include "str2num.h"
 

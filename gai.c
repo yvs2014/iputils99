@@ -15,7 +15,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include <locale.h>
 
 #include "iputils.h"
 #include "str2num.h"

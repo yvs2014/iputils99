@@ -934,6 +934,10 @@ msgstr "rtt 최소/평균/최대/표준편차"
 msgid "pipe"
 msgstr "파이프"
 
+# in-flight %d
+msgid "in-flight"
+msgstr "진행 중"
+
 # ipg/ewma = %d.%03d/%d.%03d ms
 msgid "ipg/ewma"
 msgstr "ipg/지수가중평균"

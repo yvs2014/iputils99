@@ -954,6 +954,10 @@ msgstr "rtt mín/méd/máx/mdev"
 msgid "pipe"
 msgstr "pipe"
 
+# in-flight %d
+msgid "in-flight"
+msgstr "em voo"
+
 # ipg/ewma = %d.%03d/%d.%03d ms
 msgid "ipg/ewma"
 msgstr ""

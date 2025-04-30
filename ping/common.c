@@ -235,7 +235,7 @@ int get_interval(const state_t *rts) {
 	return interval;
 }
 
-static inline int in_flight(const state_t *rts) {
+inline int in_flight(const state_t *rts) {
 	uint16_t diff = rts->ntransmitted - rts->acked;
 	return (diff <= 0x7FFF) ? diff : (rts->ntransmitted - rts->nreceived - rts->nerrors);
 }
@@ -514,7 +514,6 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
 	char ans_data[4096];
 
 	for (;;) {
-		/* Check exit conditions. */
 		if (exiting) // SIGINT, SIGALRM
 			break;
 		if (rts->npackets && rts->nreceived + rts->nerrors >= rts->npackets)
@@ -550,20 +549,16 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
 		if (rts->opt.adaptive || rts->opt.flood_poll || (next <= SCHINT(rts->interval))) {
 			int recv_expected = in_flight(rts);
 
-			/* If we are here, recvmsg() is unable to wait for
-			 * required timeout. */
+			/* If we are here, recvmsg() is unable to wait for required timeout */
 			if (1000 % HZ == 0 ? next <= 1000 / HZ : (next < INT_MAX / HZ && next * HZ <= 1000)) {
-				/* Very short timeout... So, if we wait for
-				 * something, we sleep for MIN_INTERVAL_MS.
-				 * Otherwise, spin! */
-				if (recv_expected) {
+							// Very short timeout ...
+				if (recv_expected) {	// If we wait for something, sleep for MIN_GAP_MS
 					next = MIN_GAP_MS;
-				} else {
+				} else {		// otherwise spin
 					next = 0;
-					/* When spinning, no reasons to poll.
-					 * Use nonblocking recvmsg() instead. */
+					// No reason to poll at spinning, instead use nonblocking recvmsg()
 					polling = MSG_DONTWAIT;
-					/* But yield yet. */
+					// but yield yet
 					sched_yield();
 				}
 			}

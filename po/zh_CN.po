@@ -926,6 +926,10 @@ msgstr "rtt 最小/平均/移动平均/最大"
 msgid "pipe"
 msgstr "管道"
 
+# in-flight %d
+msgid "in-flight"
+msgstr "空中"
+
 # ipg/ewma = %d.%03d/%d.%03d ms
 msgid "ipg/ewma"
 msgstr ""

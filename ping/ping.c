@@ -64,9 +64,6 @@
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <ifaddrs.h>
-#ifdef USE_NLS
-#include <locale.h>
-#endif
 
 #include "iputils.h"
 #include "str2num.h"

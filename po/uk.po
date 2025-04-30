@@ -1015,6 +1015,10 @@ msgstr "затримка мін/сер/макс/відх"
 msgid "pipe"
 msgstr "конвеєр"
 
+# in-flight %d
+msgid "in-flight"
+msgstr "в процесі"
+
 # ipg/ewma = %d.%03d/%d.%03d ms
 msgid "ipg/ewma"
 msgstr "IPG/EWMA"
