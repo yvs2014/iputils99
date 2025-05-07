@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <err.h>
+#include <errno.h>
 #include <math.h>
 #include <sys/time.h>
 #include <netinet/ip_icmp.h>
@@ -43,7 +44,8 @@
 #include "stats.h"
 #include "iputils.h"
 
-#define MAXWAIT_USEC (MAXWAIT * 1000000)
+#define RTT_MAX (UINT8_MAX * 2)
+#define MAXWAIT_USEC (MAXWAIT * MLN)
 
 // "min/avg/max/mdev ms"
 #define TIMING_MS   "%s = " MSFMT "/" MSFMT "/" MSFMT "/" TM_MS
@@ -261,16 +263,30 @@ static inline void calculator(state_t *rts, stat_aux_t *stat) {
 	(stat->rcvd >= (sizeof(struct icmphdr) + sizeof(struct timeval)))) {
 		struct timeval peer;
 		memcpy(&peer, stat->data, sizeof(peer));
-		struct timeval tv;
-		memcpy(&tv, stat->tv, sizeof(tv));
+		struct timeval tv = *stat->tv;
 		do {
 			timersub(&tv, &peer, &tv);
-			stat->triptime = tv.tv_sec * 1000000 + tv.tv_usec;
-			if (stat->triptime >= 0)
+			struct timeval diff = tv;
+			bool wrong_usec = labs(tv.tv_usec) >= MLN;
+			if (wrong_usec) {
+				diff.tv_usec = MLN - 1;
+				if (tv.tv_usec < 0) diff.tv_usec = -diff.tv_usec;
+				warnx("%s: %s: .%06ld: %s",
+					_WARN, _("rtt"), tv.tv_usec, strerror(EDOM));
+			}
+			bool wrong_sec = labs(tv.tv_sec) >= RTT_MAX;
+			if (wrong_sec) {
+				diff.tv_sec = RTT_MAX; diff.tv_usec = 0;
+				if (tv.tv_sec < 0) diff.tv_sec = -diff.tv_sec;
+				warnx("%s: %s: %ld: %s",
+					_WARN, _("rtt"), tv.tv_sec, strerror(EDOM));
+			}
+			stat->triptime = diff.tv_sec * MLN + diff.tv_usec;
+			if (!(wrong_sec || wrong_usec || (stat->triptime < 0)))
 				break;
-			warnx("%s: %s: %ldus", _WARN,
-				_("Time of day goes back, taking countermeasures"),
-				stat->triptime);
+			if (stat->triptime < 0)
+				warnx("%s: %s: %ld.%06ld",
+					_WARN, _("Time runs backwards"), tv.tv_sec, tv.tv_usec);
 			if (rts->opt.latency) {
 				stat->triptime = 0;
 				break;

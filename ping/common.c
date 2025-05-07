@@ -219,8 +219,8 @@ static int schedule_exit(const state_t *rts, int next) {
 	if ((next < 0) || (next < msec))
 		next = msec;
 	struct itimerval it = { .it_value = {
-		.tv_sec  = waittime / 1000000,
-		.tv_usec = waittime % 1000000,
+		.tv_sec  = waittime / MLN,
+		.tv_usec = waittime % MLN,
 	}};
 	setitimer(ITIMER_REAL, &it, NULL);
 	return next;
@@ -271,7 +271,7 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 		struct timespec tv = {0};
 		clock_gettime(CLOCK_MONOTONIC_RAW, &tv);
 		long ntokens = (tv.tv_sec - rts->cur_time.tv_sec) * 1000 +
-			  (tv.tv_nsec - rts->cur_time.tv_nsec) / 1000000;
+			  (tv.tv_nsec - rts->cur_time.tv_nsec) / MLN;
 		if (!rts->interval) {
 			/* Case of unlimited flood is special;
 			 * if we see no reply, they are limited to 100pps */

@@ -797,7 +797,7 @@ msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
 msgstr "tidak ada dukungan untuk SO_TIMESTAMP, kembali menggunakan SIOCGSTAMP"
 
 #
-msgid "Time of day goes back, taking countermeasures"
+msgid "Time runs backwards"
 msgstr ""
 
 # %ld bytes

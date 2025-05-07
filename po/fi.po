@@ -841,8 +841,8 @@ msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
 msgstr "ei SO_TIMESTAMP-tukea, palataan SIOCGSTAMP:een"
 
 #
-msgid "Time of day goes back, taking countermeasures"
-msgstr "Vuorokaudenaika palautuu; ryhdytään vastatoimiin"
+msgid "Time runs backwards"
+msgstr "Aika kulkee taaksepäin"
 
 # %ld bytes
 msgid "byte"

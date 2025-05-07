@@ -845,8 +845,8 @@ msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
 msgstr "SO_TIMESTAMP를 지원하지 않아서, SIOCGSTAMP로 되바꿉니다"
 
 #
-msgid "Time of day goes back, taking countermeasures"
-msgstr "시간을 되돌리고, 대책을 강구합니다"
+msgid "Time runs backwards"
+msgstr "시간을 되돌리고"
 
 # %ld bytes
 msgid "byte"

@@ -18,6 +18,7 @@
 # define SCOPE_DELIMITER '%'
 #endif
 
+#define MLN 1000000
 #define DEFIPPAYLOAD	64
 #define MAXWAIT		10	/* Max seconds to wait for response */
 #define MIN_MCAST_MS	1000	/* Min milliseconds to broadcast/multicast by non-root users */

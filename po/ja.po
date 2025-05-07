@@ -792,8 +792,8 @@ msgstr ""
 "SO_TIMESTAMPはサポートされていないため、SIOCGSTAMPにフォールバックします"
 
 #
-msgid "Time of day goes back, taking countermeasures"
-msgstr "時刻が巻き戻りました。対策を行います"
+msgid "Time runs backwards"
+msgstr "時刻が巻き戻りました"
 
 # %ld bytes
 msgid "byte"

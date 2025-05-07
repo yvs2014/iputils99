@@ -156,7 +156,9 @@ void print4_ip_options(const state_t *rts, const uint8_t *cp, int hlen) {
 			printf("\nRR: ");
 			cp++;
 			for (; i > 0; i -= 4, cp += 4) {
-				puts_addr(*(in_addr_t *)cp, rts->opt.resolve);
+				in_addr_t addr;
+				memcpy(&addr, cp, sizeof(in_addr_t));
+				puts_addr(addr, rts->opt.resolve);
 				putchar('\n');
 			}
 		}

@@ -911,8 +911,8 @@ msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
 msgstr "немає підтримки SO_TIMESTAMP, використовуємо SIOCGSTAMP"
 
 #
-msgid "Time of day goes back, taking countermeasures"
-msgstr "Відставання часу, вживаємо контрзаходів"
+msgid "Time runs backwards"
+msgstr "Відставання часу"
 
 # %ld bytes
 msgid "byte"

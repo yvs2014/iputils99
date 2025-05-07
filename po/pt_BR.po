@@ -853,8 +853,8 @@ msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
 msgstr "sem suporte a SO_TIMESTAMP, recorrendo a SIOCGSTAMP"
 
 #
-msgid "Time of day goes back, taking countermeasures"
-msgstr "a hora do dia está voltando, tomando contramedidas"
+msgid "Time runs backwards"
+msgstr "Tempo para trás"
 
 # %ld bytes
 msgid "byte"

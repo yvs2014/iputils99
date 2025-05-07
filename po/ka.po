@@ -847,8 +847,8 @@ msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"
 msgstr "SO_TIMESTAMP-ის მხარდაჭერის გარეშე. SIOCGSTAMP-ზე გადართვა"
 
 #
-msgid "Time of day goes back, taking countermeasures"
-msgstr "დრო უკან დაბრუნდა, მიიღება საწინააღმდეგო ზომები"
+msgid "Time runs backwards"
+msgstr "დრო უკან დაბრუნდა"
 
 # %ld bytes
 msgid "byte"
