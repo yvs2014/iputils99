@@ -100,7 +100,9 @@ ssize_t build_echo_hdr(const state_t *rts, uint8_t *hdr) {
 	return sizeof(struct icmp6_hdr);
 }
 
-void print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
+void print6_icmp(uint8_t type, uint8_t code, uint32_t info, uint8_t color) {
+	if (color)
+		printf(ESC_STRING "%um", color);
 	switch (type) {
 	case ICMP6_DST_UNREACH:
 		printf("%s: ", _("Destination unreachable"));
@@ -186,6 +188,8 @@ void print6_icmp(uint8_t type, uint8_t code, uint32_t info) {
 	default:
 		printf("%s: %u", _("Unknown icmp type"), type);
 	}
+	if (color)
+		fputs(ESC_STRING "0m", stdout);
 	// note: no \n, no stdout flush
 }
 

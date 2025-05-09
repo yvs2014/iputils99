@@ -19,6 +19,11 @@
 #endif
 
 #define MLN 1000000
+
+#define ESC_STRING   "\033["
+#define YELLOW_COLOR 33
+#define RED_COLOR    31
+
 #define DEFIPPAYLOAD	64
 #define MAXWAIT		10	/* Max seconds to wait for response */
 #define MIN_MCAST_MS	1000	/* Min milliseconds to broadcast/multicast by non-root users */
@@ -151,6 +156,8 @@ typedef struct ping_state {
 #endif
 	// termios.h: ws_col type
 	unsigned short screen_width;
+	// colored option -aa+
+	uint8_t red, yellow;
 	// boolean options
 	struct ping_bool_opts opt;
 } state_t;

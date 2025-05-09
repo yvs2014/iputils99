@@ -148,7 +148,11 @@ xml:id="man.ping">
           <option>-a</option>
         </term>
         <listitem>
-          <para>Audible ping.</para>
+          <para>Audible and/or colored ping:
+            <option>-a</option> is audible,
+            <option>-aa</option> is colored,
+            <option>-aaa</option> is audible and colored.
+          </para>
         </listitem>
       </varlistentry>
       <varlistentry>

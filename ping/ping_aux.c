@@ -263,11 +263,12 @@ void print_addr_seq(const state_t *rts, uint16_t seq,
 		printf("%s %s: %s=%u ",
 			_("From"), sprint_addr(sa, salen, rts->opt.resolve),
 			_("icmp_seq"), seq);
-		if (rts->ip6) {
-			print6_icmp(ee->ee_type, ee->ee_code, ee->ee_info);
-			putchar('\n');
-		} else
-			print4_icmph(rts, ee->ee_type, ee->ee_code, ee->ee_info, NULL);
+		if (rts->ip6)
+			print6_icmp(ee->ee_type, ee->ee_code, ee->ee_info, rts->red);
+		else
+			print4_icmph(ee->ee_type, ee->ee_code, ee->ee_info,
+				NULL, rts->opt.resolve, rts->red);
+		putchar('\n');
 		fflush(stdout);
 	}
 }

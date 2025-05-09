@@ -42,7 +42,7 @@ can also send IPv6 Node Information Queries (RFC4620)\&. Intermediate
 .PP
 \fB\-a\fR
 .RS 4
-Audible ping
+Audible and/or colored ping: \fB\-a\fR is audible, \fB\-aa\fR is colored, \fB\-aaa\fR is audible and colored\&.
 .RE
 .PP
 \fB\-A\fR

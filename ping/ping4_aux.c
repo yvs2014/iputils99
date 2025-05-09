@@ -60,6 +60,7 @@
 
 #include "ping4_aux.h"
 #include "iputils.h"
+#include "common.h"
 
 #if BYTE_ORDER == LITTLE_ENDIAN
 # define ODDBYTE(v)	(v)
@@ -103,7 +104,7 @@ static inline void puts_addr(in_addr_t addr, bool resolve) {
 		fputs("0.0.0.0", stdout);
 }
 
-void print4_ip_options(const state_t *rts, const uint8_t *cp, int hlen) {
+void print4_ip_opts(const uint8_t *cp, int hlen, bool resolve, bool flood) {
 	static int old_rrlen;
 	static char old_rr[MAX_IPOPTLEN];
 
@@ -131,7 +132,9 @@ void print4_ip_options(const state_t *rts, const uint8_t *cp, int hlen) {
 			int j = *++cp;
 			cp++;
 			for (; j > IPOPT_MINOFF; j -= 4, cp += 4) {
-				puts_addr(*(in_addr_t *)cp, rts->opt.resolve);
+				in_addr_t addr;
+				memcpy(&addr, cp, sizeof(in_addr_t));
+				puts_addr(addr, resolve);
 				putchar('\n');
 			}
 		}
@@ -144,9 +147,7 @@ void print4_ip_options(const state_t *rts, const uint8_t *cp, int hlen) {
 			i -= IPOPT_MINOFF;
 			if (i <= 0)
 				break;
-			if (i == old_rrlen
-			    && !memcmp(cp, old_rr, i)
-			    && !rts->opt.flood) {
+			if (i == old_rrlen && !memcmp(cp, old_rr, i) && !flood) {
 				putchar('\t');
 				fputs(_("(same route)"), stdout);
 				break;
@@ -158,7 +159,7 @@ void print4_ip_options(const state_t *rts, const uint8_t *cp, int hlen) {
 			for (; i > 0; i -= 4, cp += 4) {
 				in_addr_t addr;
 				memcpy(&addr, cp, sizeof(in_addr_t));
-				puts_addr(addr, rts->opt.resolve);
+				puts_addr(addr, resolve);
 				putchar('\n');
 			}
 		}
@@ -177,7 +178,9 @@ void print4_ip_options(const state_t *rts, const uint8_t *cp, int hlen) {
 			int stdtime = 0, nonstdtime = 0;
 			for (; i > 0; i -= 4) {
 				if ((flags & 0xF) != IPOPT_TS_TSONLY) {
-					puts_addr(*(in_addr_t *)cp, rts->opt.resolve);
+					in_addr_t addr;
+					memcpy(&addr, cp, sizeof(in_addr_t));
+					puts_addr(addr, resolve);
 					cp += 4;
 					i  -= 4;
 					if (i <= 0)
@@ -216,7 +219,7 @@ void print4_ip_options(const state_t *rts, const uint8_t *cp, int hlen) {
 
 
 /* Print an IP header with options */
-static void print4_iph(const state_t *rts, const struct iphdr *ip) {
+void print4_iph(const struct iphdr *ip, bool resolve, bool flood) {
 	printf("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n");
 	printf(" %1x  %1x  %02x %04x %04x", ip->version, ip->ihl, ip->tos, ip->tot_len, ip->id);
 	printf("   %1x %04x", ((ip->frag_off) & 0xe000) >> 13, (ip->frag_off) & 0x1fff);
@@ -226,14 +229,17 @@ static void print4_iph(const state_t *rts, const struct iphdr *ip) {
 	printf("\n");
 	int hlen = ip->ihl << 2;
 	const uint8_t *cp = (uint8_t *)ip + 20;	/* point to options */
-	print4_ip_options(rts, cp, hlen);
+	print4_ip_opts(cp, hlen, resolve, flood);
 }
 
 
 /* Print a descriptive string about an ICMP header */
-void print4_icmph(const state_t *rts, uint8_t type, uint8_t code, uint32_t info,
-		const struct icmphdr *icmp)
+bool print4_icmph(uint8_t type, uint8_t code, uint32_t info,
+	const struct icmphdr *icmp, bool resolve, uint8_t color)
 {
+	bool re = false;
+	if (color)
+		printf(ESC_STRING "%um", color);
 	switch (type) {
 	case ICMP_ECHOREPLY:
 		fputs(_("Echo Reply"), stdout);
@@ -293,13 +299,11 @@ void print4_icmph(const state_t *rts, uint8_t type, uint8_t code, uint32_t info,
 			printf("%s, %s: %d", _("Dest Unreachable"), _("Bad Code"), code);
 			break;
 		}
-		if (icmp && rts->opt.verbose)
-			print4_iph(rts, (struct iphdr *)(icmp + 1));
+		re = true;
 		break;
 	case ICMP_SOURCE_QUENCH:
 		fputs(_("Source Quench"), stdout);
-		if (icmp && rts->opt.verbose)
-			print4_iph(rts, (struct iphdr *)(icmp + 1));
+		re = true;
 		break;
 	case ICMP_REDIRECT:
 		switch (code) {
@@ -324,10 +328,9 @@ void print4_icmph(const state_t *rts, uint8_t type, uint8_t code, uint32_t info,
 			.sin_addr.s_addr = icmp ? htonl(icmp->un.gateway) : htonl(info),
 		  };
 		  printf("(%s: %s)", _("New nexthop"),
-			sprint_addr(&sin, sizeof(sin), rts->opt.resolve));
+			sprint_addr(&sin, sizeof(sin), resolve));
 		}
-		if (icmp && rts->opt.verbose)
-			print4_iph(rts, (struct iphdr *)(icmp + 1));
+		re = true;
 		break;
 	case ICMP_ECHO:
 		fputs(_("Echo Request"), stdout);
@@ -345,14 +348,12 @@ void print4_icmph(const state_t *rts, uint8_t type, uint8_t code, uint32_t info,
 			printf("%s, %s: %d", _("Time exceeded"), _("Bad Code"), code);
 			break;
 		}
-		if (icmp && rts->opt.verbose)
-			print4_iph(rts, (struct iphdr *)(icmp + 1));
+		re = true;
 		break;
 	case ICMP_PARAMETERPROB:
 		printf("%s: %u", _("Parameter problem"),
 			icmp ? (ntohl(icmp->un.gateway) >> 24) : info);
-		if (icmp && rts->opt.verbose)
-			print4_iph(rts, (struct iphdr *)(icmp + 1));
+		re = true;
 		break;
 	case ICMP_TIMESTAMP:
 		fputs(_("Timestamp"), stdout);
@@ -383,6 +384,9 @@ void print4_icmph(const state_t *rts, uint8_t type, uint8_t code, uint32_t info,
 	default:
 		printf("%s: %d", _("Bad ICMP type"), type);
 	}
-	putchar('\n');
+	if (color)
+		fputs(ESC_STRING "0m", stdout);
+	return re;
+	// note: no \n, no stdout flush
 }
 

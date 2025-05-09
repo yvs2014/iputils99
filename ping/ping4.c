@@ -199,8 +199,8 @@ static int ping4_receive_error(state_t *rts, const sock_t *sock) {
 }
 
 static inline bool ping4_icmp_extra_type(state_t *rts,
-		const struct icmphdr *icmp, size_t received,
-		const struct sockaddr_in *from, bool raw, bool bad)
+	const struct icmphdr *icmp, size_t received,
+	const struct sockaddr_in *from, bool raw, bool bad, uint8_t color)
 {
 	const struct iphdr *iph = (struct iphdr *)(icmp + 1);
 	uint8_t ihl = iph->ihl * 4;
@@ -225,7 +225,11 @@ static inline bool ping4_icmp_extra_type(state_t *rts,
 		_("icmp_seq"), ntohs(orig->un.echo.sequence));
 	if (bad)
 		printf("(%s!)", _("BAD CHECKSUM"));
-	print4_icmph(rts, icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp);
+	if (print4_icmph(icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp,
+			rts->opt.resolve, color))
+		if (rts->opt.verbose)
+			print4_iph(iph, rts->opt.resolve, rts->opt.flood);
+	putchar('\n');
 	return true;
 }
 
@@ -313,7 +317,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 		case ICMP_DEST_UNREACH:
 		case ICMP_TIME_EXCEEDED:
 		case ICMP_PARAMETERPROB:
-			return ping4_icmp_extra_type(rts, icmp, received, from, raw, bad);
+			return ping4_icmp_extra_type(rts, icmp, received, from, raw, bad, rts->yellow);
 		default: /* MUST NOT */
 			break;
 		}
@@ -335,7 +339,11 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 			printf("(%s!)\n", _("BAD CHECKSUM"));
 			return false;
 		}
-		print4_icmph(rts, icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp);
+		bool add_iph = print4_icmph(icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp,
+			rts->opt.resolve, rts->red);
+		if (add_iph && rts->opt.verbose)
+			print4_iph((struct iphdr *)(icmp + 1), rts->opt.resolve, rts->opt.flood);
+		putchar('\n');
 		fflush(stdout);
 		return false;
 	}
@@ -345,7 +353,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 			fflush(stdout);
 	}
 	if (!rts->opt.flood) {
-		print4_ip_options(rts, opts, olen + sizeof(struct iphdr));
+		print4_ip_opts(opts, olen + sizeof(struct iphdr), rts->opt.resolve, rts->opt.flood);
 		putchar('\n');
 		fflush(stdout);
 	}

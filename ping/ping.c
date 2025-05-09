@@ -314,9 +314,16 @@ void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 			opt_N(rts, optarg, hints);
 			break;
 #endif
-		/* Common options */
 		case 'a':
-			rts->opt.audible = true;
+		// 'a' -> audible, 'aa' -> colored, 'aaa' -> audible and colored
+			if (rts->opt.audible) {
+				if (!rts->red) {
+					rts->red    = RED_COLOR;
+					rts->yellow = YELLOW_COLOR;
+					rts->opt.audible = false;
+				}
+			} else
+				rts->opt.audible = true;
 			break;
 		case 'A':
 			rts->opt.adaptive = true;
