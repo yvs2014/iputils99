@@ -76,6 +76,7 @@ typedef struct run_state {
 	uint8_t   ttl;
 	uint8_t   max_hops;
 	void     *pktbuf;
+	uint16_t  pkthold;
 	uint16_t  pktsize;
 	uint16_t  hdrsize;
 	//
@@ -273,6 +274,7 @@ do { // was 'restart:'
 		putchar('\n');
 		break;
 	case EMSGSIZE:
+		assert((rts->pkthold >= e->ee_info) && (e->ee_info > rts->hdrsize));
 		rts->pktsize = e->ee_info;
 		progress     = rts->pktsize;
 		printf("%s %u\n", _("pmtu"), rts->pktsize);
@@ -640,9 +642,10 @@ int main(int argc, char **argv) {
 		err(errno, "%s: %u-%u", _("Packet length"), rts.hdrsize, UINT16_MAX);
 	}
 
-	rts.pktbuf = malloc(rts.pktsize);
+	rts.pkthold = rts.pktsize;
+	rts.pktbuf  = calloc(1, rts.pkthold);
 	if (!rts.pktbuf)
-		err(errno, "malloc(%d)", rts.pktsize);
+		err(errno, "calloc(%d)", rts.pkthold);
 
 	if (rts.verbose)
 		warnx("run upto %u hops", rts.max_hops);
@@ -685,6 +688,7 @@ int main(int argc, char **argv) {
 	printf("     %s: %s=%d\n", _("Too many hops"), _("pmtu"), rts.pktsize);
 
 	resume(&rts);
+	free(rts.pktbuf); // in favor of analysis tools
 	return 0;
 }
 
