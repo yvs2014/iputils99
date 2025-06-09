@@ -380,9 +380,10 @@ _("Cannot set preload to value greater than 3"), rts->preload);
 				rts->pmtudisc = IP_PMTUDISC_WANT;
 			else if (strcmp(optarg, "probe") == 0)
 				rts->pmtudisc = IP_PMTUDISC_PROBE;
-			else
-				errx(EINVAL, "%s: %c %s",
-					_("Invalid argument"), ch, optarg);
+			else {
+				errno = EINVAL;
+				err(errno, "-%c %s", ch, optarg);
+			}
 			break;
 		case 'n':
 			rts->opt.resolve = false;
@@ -546,7 +547,8 @@ int main(int argc, char **argv) {
 		    IN6_IS_ADDR_V4MAPPED(&((struct sockaddr_in6 *)ai->ai_addr)->sin6_addr))
 			switch (hints.ai_family) {
 			case AF_INET6:
-				err(ENETUNREACH, _(V4IN6_WARN));
+				errno = ENETUNREACH;
+				err(errno, _(V4IN6_WARN));
 				break;
 			case AF_UNSPEC:
 				unmap_ai_sa4(ai);

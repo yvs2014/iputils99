@@ -265,18 +265,6 @@ msgid "Using default broadcast address"
 msgstr "Öntanımlı genel yayın adresi kullanılıyor"
 
 #
-msgid "Invalid argument"
-msgstr "Geçersiz argüman"
-
-#
-msgid "Device is not available"
-msgstr "Aygıtı kullanılabilir değil"
-
-#, fuzzy
-msgid "No suitable device found, please use -I option"
-msgstr "Uygun aygıt belirlenemedi, lütfen -I seçeneğini kullanın"
-
-#
 msgid "Interface is ignored"
 msgstr "Arayüz yok sayıldı"
 
@@ -293,8 +281,8 @@ msgid "From"
 msgstr "Kaynak"
 
 # from %s
-msgid " from"
-msgstr ", kaynak"
+msgid "from"
+msgstr "kaynak"
 
 #
 msgid "No source address in not-DAD mode"

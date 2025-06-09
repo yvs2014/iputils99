@@ -222,19 +222,6 @@ msgid "Using default broadcast address"
 msgstr "既定のブロードキャストアドレスを使用しています"
 
 #
-msgid "Invalid argument"
-msgstr "無効な引数です"
-
-#
-msgid "Device is not available"
-msgstr "デバイス は使用不能です"
-
-#
-msgid "No suitable device found, please use -I option"
-msgstr ""
-"適切なデバイスを検出できませんでした, -I オプションを使用してください"
-
-#
 msgid "Interface is ignored"
 msgstr "インタフェースは無視されます"
 
@@ -251,8 +238,8 @@ msgid "From"
 msgstr "送信元"
 
 # from %s
-msgid " from"
-msgstr ", 送信元"
+msgid "from"
+msgstr "送信元"
 
 #
 msgid "No source address in not-DAD mode"

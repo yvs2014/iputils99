@@ -275,18 +275,6 @@ msgid "Using default broadcast address"
 msgstr "Používá se výchozí všesměrová adresa"
 
 #
-msgid "Invalid argument"
-msgstr "Neplatný argument"
-
-#
-msgid "Device is not available"
-msgstr "Zařízení není dostupné"
-
-#
-msgid "No suitable device found, please use -I option"
-msgstr "Nebylo nalezeno vhodné zařízení, prosím použijte přepínač -I"
-
-#
 msgid "Interface is ignored"
 msgstr "Rozhraní je ignorováno"
 
@@ -303,8 +291,8 @@ msgid "From"
 msgstr "Od"
 
 # from %s
-msgid " from"
-msgstr " od"
+msgid "from"
+msgstr "od"
 
 #
 msgid "No source address in not-DAD mode"

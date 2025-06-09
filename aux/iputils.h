@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <netdb.h>
 
+#include "cc_attr.h"
+
 #ifndef NOOP
 #define NOOP ((void)0)
 #endif
@@ -55,17 +57,6 @@
 #define MSFMT "%.3f"		// common timing format in milliseconds
 #define TMMS  MSFMT "%s"	// ".3fms"
 #define TM_MS MSFMT " %s"	// ".3f ms"
-
-// wrapper: __has_attribute
-#ifndef __has_attribute
-#define __has_attribute(attr) 0
-#endif
-// attribute: noreturn
-#if __has_attribute(__noreturn__)
-#define NORETURN __attribute__((__noreturn__))
-#else
-#define NORETURN
-#endif
 
 void close_stdout(void);
 void setmyname(const char *argv0);

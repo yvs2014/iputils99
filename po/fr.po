@@ -278,19 +278,6 @@ msgid "Using default broadcast address"
 msgstr "Utilisation de l’adresse de diffusion par défaut"
 
 #
-msgid "Invalid argument"
-msgstr "Paramètre invalide"
-
-#
-msgid "Device is not available"
-msgstr "Périphérique n'est disponible"
-
-#
-msgid "No suitable device found, please use -I option"
-msgstr ""
-"Le périphérique approprié n'a été trouvé, veuillez utiliser l'option -I"
-
-#
 msgid "Interface is ignored"
 msgstr "L’interface est ignorée"
 
@@ -307,8 +294,8 @@ msgid "From"
 msgstr "De"
 
 # from %s
-msgid " from"
-msgstr " de"
+msgid "from"
+msgstr "de"
 
 #
 msgid "No source address in not-DAD mode"

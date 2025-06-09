@@ -191,7 +191,7 @@ void headline(const state_t *rts, size_t nodatalen) {
 		printf(", %s 0x%05x", _("flow"), ntohl(rts->flowlabel));
 	if (rts->device || rts->opt.strictsource) {
 		const char *from = sprint_addr(&rts->source, len, false);
-		printf("%s %s %s:", _(" from"), from, rts->device ? rts->device : "");
+		printf(" %s %s %s:", _("from"), from, rts->device ? rts->device : "");
 	}
 	printf(" %zu(%zu) %s\n",
 		rts->datalen, rts->datalen + nodatalen, _("data bytes"));
@@ -208,8 +208,8 @@ static inline bool print_stats(const state_t *rts, const stat_aux_t *stat) {
 	}
 	//
 	PRINT_TIMESTAMP;
-	printf("%zd %s%s %s: ",
-		stat->rcvd, BYTES(stat->rcvd), _(" from"), stat->from);
+	printf("%zd %s %s %s: ",
+		stat->rcvd, BYTES(stat->rcvd), _("from"), stat->from);
 	if (stat->print) /* seq */
 		stat->print(rts->ip6, stat->icmp, stat->rcvd);
 	else

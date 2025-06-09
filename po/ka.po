@@ -271,18 +271,6 @@ msgid "Using default broadcast address"
 msgstr "გამოიყენება გადაცემის ნაგულისხმევი მისამართი"
 
 #
-msgid "Invalid argument"
-msgstr "არასწორი არგუმენტი"
-
-#
-msgid "Device is not available"
-msgstr "მოწყობილობა ხელმიუწვდომელია"
-
-#
-msgid "No suitable device found, please use -I option"
-msgstr "შესაფერისი მოწყობილობა ვერ მოიძებნა, გამოიყენეთ პარამეტრი -I"
-
-#
 msgid "Interface is ignored"
 msgstr "ინტერფეისი ინგნორირებულია"
 
@@ -299,8 +287,8 @@ msgid "From"
 msgstr "წყარო"
 
 # from %s
-msgid " from"
-msgstr ", წყარო"
+msgid "from"
+msgstr "წყარო"
 
 #
 msgid "No source address in not-DAD mode"

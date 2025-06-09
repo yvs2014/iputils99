@@ -470,17 +470,18 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 	for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
 		// ip4-in-ip6-space workaround
 		if ((ai->ai_family == AF_INET6) &&
-                    IN6_IS_ADDR_V4MAPPED(&((struct sockaddr_in6 *)ai->ai_addr)->sin6_addr))
-                        switch (hints->ai_family) {
-                        case AF_INET6:
-                                err(ENETUNREACH, _(V4IN6_WARN));
-                                break;
-                        case AF_UNSPEC: {
-                                // like ping:unmap_ai_sa4(ai);
+		    IN6_IS_ADDR_V4MAPPED(&((struct sockaddr_in6 *)ai->ai_addr)->sin6_addr))
+			switch (hints->ai_family) {
+			case AF_INET6:
+				errno = ENETUNREACH;
+				err(errno, _(V4IN6_WARN));
+				break;
+			case AF_UNSPEC: {
+				// like ping:unmap_ai_sa4(ai);
 				if (!ai->ai_addr)
 					break;
-			        struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *)ai->ai_addr;
-			        struct sockaddr_in sa4 = {
+				struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *)ai->ai_addr;
+				struct sockaddr_in sa4 = {
 					.sin_family = AF_INET,
 					.sin_addr.s_addr = ((uint32_t*)&sa6->sin6_addr)[3],
 				};
@@ -489,9 +490,9 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 				ai->ai_family  = AF_INET;
 				warnx("%s: %s", WARN, _(V4IN6_WARN));
 			}	break;
-                        default:
+			default:
 				break;
-                        }
+			}
 		// open socket
 		switch (ai->ai_family) {
 		case AF_INET:
@@ -617,7 +618,7 @@ int main(int argc, char **argv) {
 	//
 	rts.sock = resolve(argv[0], &rts, &hints);
 	if ((rts.sock < 0) || !rts.af)
-		err(EXIT_FAILURE, "resolve(%s)", argv[0]);
+		errx(EXIT_FAILURE, "resolve(%s)", argv[0]);
 
 	switch (rts.af) {
 	case AF_INET6:

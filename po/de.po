@@ -278,18 +278,6 @@ msgid "Using default broadcast address"
 msgstr "Nutze Standard-Broadcastadresse"
 
 #
-msgid "Invalid argument"
-msgstr "Ungültiges Argument"
-
-#
-msgid "Device is not available"
-msgstr "Gerät ist nicht verfügbar"
-
-#
-msgid "No suitable device found, please use -I option"
-msgstr "Kein passendes Gerät gefunden, bitte verwenden Sie die Option -I"
-
-#
 msgid "Interface is ignored"
 msgstr "Schnittstelle wird ignoriert"
 
@@ -306,8 +294,8 @@ msgid "From"
 msgstr "Von"
 
 # from %s
-msgid " from"
-msgstr " von"
+msgid "from"
+msgstr "von"
 
 #
 msgid "No source address in not-DAD mode"

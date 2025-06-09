@@ -265,18 +265,6 @@ msgid "Using default broadcast address"
 msgstr "Käytetään oletuskaikkilähetysosoitetta"
 
 #
-msgid "Invalid argument"
-msgstr "Virheellinen argumentti"
-
-#
-msgid "Device is not available"
-msgstr "Laite ei ole käytettävissä"
-
-#
-msgid "No suitable device found, please use -I option"
-msgstr "Sopivaa laitetta ei löytynyt, käytä vaihtoehtoa -I"
-
-#
 msgid "Interface is ignored"
 msgstr "Liitäntää ei huomioida"
 
@@ -293,8 +281,8 @@ msgid "From"
 msgstr "Lähde"
 
 # from %s
-msgid " from"
-msgstr ", lähde"
+msgid "from"
+msgstr "lähde"
 
 #
 msgid "No source address in not-DAD mode"

@@ -220,18 +220,6 @@ msgid "Using default broadcast address"
 msgstr "Menggunakan alamat broadcast bawaan"
 
 #
-msgid "Invalid argument"
-msgstr "Argumen tidak valid"
-
-#
-msgid "Device is not available"
-msgstr "Perangkat tidak tersedia"
-
-#
-msgid "No suitable device found, please use -I option"
-msgstr "Tidak ditemukan perangkat yang cocok, tolong gunakan opsi -I"
-
-#
 msgid "Interface is ignored"
 msgstr "Interface diabaikan"
 
@@ -248,8 +236,8 @@ msgid "From"
 msgstr "Dari"
 
 # from %s
-msgid " from"
-msgstr " dari"
+msgid "from"
+msgstr "dari"
 
 #
 msgid "No source address in not-DAD mode"

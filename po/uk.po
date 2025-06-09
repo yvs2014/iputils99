@@ -306,18 +306,6 @@ msgid "Using default broadcast address"
 msgstr "Використовуємо типову адресу всієї підмережі"
 
 #
-msgid "Invalid argument"
-msgstr "Некоректний аргумент"
-
-#
-msgid "Device is not available"
-msgstr "Пристрій недоступний"
-
-#
-msgid "No suitable device found, please use -I option"
-msgstr "Відповідний пристрій не знайдено, будь ласка скористайтеся опцією -I"
-
-#
 msgid "Interface is ignored"
 msgstr "Iнтерфейс проігноровано"
 
@@ -334,8 +322,8 @@ msgid "From"
 msgstr "З"
 
 # from %s
-msgid " from"
-msgstr " з"
+msgid "from"
+msgstr "з"
 
 #
 msgid "No source address in not-DAD mode"

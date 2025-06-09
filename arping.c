@@ -77,9 +77,8 @@ typedef struct run_state {
 	struct device device;
 	char *source;
 	struct ifaddrs *ifa0;
-	struct in_addr gsrc;
-	struct in_addr gdst;
-	int gdst_family;
+	struct in_addr src, dst;
+	int af; // ai_family
 	char *target;
 	int count;
 	int timeout;
@@ -156,13 +155,13 @@ static int send_pack(state_t *ctl) {
 	memcpy(p, &ME->sll_addr, ah->ar_hln);
 	p += ME->sll_halen;
 
-	memcpy(p, &ctl->gsrc, 4);
+	memcpy(p, &ctl->src, 4);
 	p += 4;
 
 	memcpy(p, ctl->opt.advert ? &ME->sll_addr : &HE->sll_addr, ah->ar_hln);
 	p += ah->ar_hln;
 
-	memcpy(p, &ctl->gdst, 4);
+	memcpy(p, &ctl->dst, 4);
 	p += 4;
 
 	struct timespec now = {0};
@@ -247,9 +246,9 @@ static inline int print_pack(state_t *rts,
 	memcpy(&dst_ip, p + ah->ar_hln + 4 + ah->ar_hln, 4);
 
 	if (!rts->opt.dad) {
-		if (src_ip.s_addr != rts->gdst.s_addr)
+		if (src_ip.s_addr != rts->dst.s_addr)
 			return 0;
-		if (rts->gsrc.s_addr != dst_ip.s_addr)
+		if (rts->src.s_addr != dst_ip.s_addr)
 			return 0;
 		if (memcmp(p + ah->ar_hln + 4,
 				((struct sockaddr_ll *)&rts->me)->sll_addr,
@@ -270,22 +269,22 @@ static inline int print_pack(state_t *rts,
 		 * also that it matches to dst_ip, otherwise
 		 * dst_ip/dst_hw do not matter.
 		 */
-		if (src_ip.s_addr != rts->gdst.s_addr)
+		if (src_ip.s_addr != rts->dst.s_addr)
 			return 0;
 		struct sockaddr_ll *sll = (struct sockaddr_ll *)&rts->me;
 		if (!memcmp(p, sll->sll_addr, sll->sll_halen))
 			return 0;
-		if (rts->gsrc.s_addr && (rts->gsrc.s_addr != dst_ip.s_addr))
+		if (rts->src.s_addr && (rts->src.s_addr != dst_ip.s_addr))
 			return 0;
 	}
 	if (!rts->opt.quiet) {
 		bool printed = false;
-		printf("%s%s %s", broadcast ? _("Broadcast") : _("Unicast"),
-			_(" from"), inet_ntoa(src_ip));
+		printf("%s %s %s", broadcast ? _("Broadcast") : _("Unicast"),
+			_("from"), inet_ntoa(src_ip));
 		printf(" [");
 		print_hex(p, ah->ar_hln);
 		printf("]");
-		if (dst_ip.s_addr != rts->gsrc.s_addr) {
+		if (dst_ip.s_addr != rts->src.s_addr) {
 			printf(" %s %s", _("for"), inet_ntoa(dst_ip));
 			printed = true;
 		}
@@ -326,12 +325,11 @@ static inline int print_pack(state_t *rts,
 	return 1;
 }
 
-static int outgoing_device(state_t *ctl, struct nlmsghdr *nh) {
+static int outgoing_device(struct nlmsghdr *nh, struct device *dev) {
 	if (nh->nlmsg_type != RTM_NEWROUTE) {
 		warnx("NETLINK: %s", "new route message type");
 		return 1;
 	}
-
 	struct rtmsg *rm = NLMSG_DATA(nh);
 	size_t len = RTM_PAYLOAD(nh);
 	for (struct rtattr *ra = RTM_RTA(rm);
@@ -342,19 +340,19 @@ static int outgoing_device(state_t *ctl, struct nlmsghdr *nh) {
 			int *oif = RTA_DATA(ra);
 			static char dev_name[IF_NAMESIZE];
 
-			ctl->device.ifindex = *oif;
-			if (!if_indextoname(ctl->device.ifindex, dev_name)) {
-				warn("if_indextoname(%u)", ctl->device.ifindex);
+			dev->ifindex = *oif;
+			if (!if_indextoname(dev->ifindex, dev_name)) {
+				warn("if_indextoname(%u)", dev->ifindex);
 				return 1;
 			}
-			ctl->device.name = dev_name;
+			dev->name = dev_name;
 		}
 	}
 	return 0;
 }
 
-static void netlink_query(state_t *ctl,
-		int flags, int type, const void *arg, size_t len)
+static void netlink_query(struct device *dev, int flags, int type,
+		const void *arg, size_t len)
 {
 	static uint32_t seq;
 
@@ -411,7 +409,7 @@ static void netlink_query(state_t *ctl,
 			ret = 0;
 			break;
 		default:
-			ret = outgoing_device(ctl, nh);
+			ret = outgoing_device(nh, dev);
 			break;
 		}
 	}
@@ -423,33 +421,21 @@ static void netlink_query(state_t *ctl,
 		exit(EXIT_FAILURE);
 }
 
-static void guess_device(state_t *ctl) {
-	size_t addr_len;
-	switch (ctl->gdst_family) {
-	case AF_INET:
-		addr_len = 4;
-		break;
-	case AF_INET6:
-		addr_len = 16;
-		break;
-	default:
-		errx(EXIT_FAILURE, "%s", _("No suitable device found, please use -I option"));
-	}
-
+static void guess_device(int af, struct in_addr dst, struct device *dev) {
 	struct {
 		struct rtmsg  rm;
 		struct rtattr ra;
-		char addr[16];
+		struct in_addr addr;
 	} query = {
-		.rm.rtm_family = ctl->gdst_family,
+		.rm.rtm_family = af,
 		.ra = {
-			.rta_len  = RTA_LENGTH(addr_len),
+			.rta_len  = RTA_LENGTH(sizeof(query.addr)),
 			.rta_type = RTA_DST,
 		},
+		.addr = dst,
 	};
-	memcpy(RTA_DATA(&query.ra), &ctl->gdst, addr_len);
-	size_t len = NLMSG_ALIGN(sizeof(struct rtmsg)) + RTA_LENGTH(addr_len);
-	netlink_query(ctl, NLM_F_REQUEST, RTM_GETROUTE, &query, len);
+	size_t len = NLMSG_ALIGN(sizeof(struct rtmsg)) + RTA_LENGTH(sizeof(query.addr));
+	netlink_query(dev, NLM_F_REQUEST, RTM_GETROUTE, &query, len);
 }
 
 /* Common check for ifa->ifa_flags */
@@ -765,7 +751,9 @@ static inline void arping_setup(state_t *rts) {
 	if (rts->device.name && !rts->device.name[0])
 		rts->device.name = NULL;
 
-	if (inet_aton(rts->target, &rts->gdst) != 1) {
+	if (inet_aton(rts->target, &rts->dst))
+		rts->af = AF_INET;
+	else {
 		const struct addrinfo hints = {
 			.ai_family   = AF_INET,
 			.ai_socktype = SOCK_RAW,
@@ -776,33 +764,38 @@ static inline void arping_setup(state_t *rts) {
 		if (rc) {
 			if (rc == EAI_SYSTEM)
 				err(errno, "%s", "getaddrinfo()");
-			errx(rc, "%s", gai_strerror(rc));
+			errx(rc, "%s af=%d: %s", rts->target, hints.ai_family, gai_strerror(rc));
 		}
 		if (!res)
 			errx(EXIT_FAILURE, "%s", "getaddrinfo()");
-		memcpy(&rts->gdst, &((struct sockaddr_in *)res->ai_addr)->sin_addr, sizeof(rts->gdst));
-		rts->gdst_family = res->ai_family;
+		memcpy(&rts->dst, &((struct sockaddr_in *)res->ai_addr)->sin_addr, sizeof(rts->dst));
+		rts->af = res->ai_family;
 		freeaddrinfo(res);
-	} else
-		rts->gdst_family = AF_INET;
+	}
+
+	// AF_INET only to be sure
+	if (rts->af != AF_INET)
+		errx(EAFNOSUPPORT, "%s: %s", rts->target, strerror(ENODEV));
 
 	if (!rts->device.name)
-		guess_device(rts);
+		guess_device(rts->af, rts->dst, &rts->device);
 	if (check_device(rts) < 0)
 		exit(EINVAL);
 
 	if (!rts->device.ifindex) {
+		errno = ENODEV;
 		if (rts->device.name)
-			errx(EINVAL, "%s: %s", _("Device is not available"),
-				rts->device.name);
-		warnx("%s", _("No suitable device found, please use -I option"));
+			err(errno, "%s", rts->device.name);
+		warn("%s", rts->target);
 	}
 
-	if (rts->source && inet_aton(rts->source, &rts->gsrc) != 1)
-		errx(EINVAL, "invalid source %s", rts->source);
+	if (rts->source && inet_aton(rts->source, &rts->src) != 1) {
+		errno = EADDRNOTAVAIL;
+		err(errno, "%s", rts->source);
+	}
 
 	if (!rts->opt.dad && rts->opt.unsolicited && !rts->source)
-		rts->gsrc = rts->gdst;
+		rts->src = rts->dst;
 
 	if (!rts->opt.dad || rts->source) {
 		int probe_fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -832,13 +825,13 @@ static inline void arping_setup(state_t *rts) {
 //			}
 		}
 		struct sockaddr_in saddr = { .sin_family = AF_INET };
-		if (rts->source || rts->gsrc.s_addr) {
-			saddr.sin_addr = rts->gsrc;
+		if (rts->source || rts->src.s_addr) {
+			saddr.sin_addr = rts->src;
 			if (bind(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
 				err(errno, "%s", "bind()");
 		} else if (!rts->opt.dad) {
 			saddr.sin_port = htons(1025);
-			saddr.sin_addr = rts->gdst;
+			saddr.sin_addr = rts->dst;
 			if (!rts->opt.unsolicited) {
 				int on = 1;
 				if (setsockopt(probe_fd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof(on)) < 0)
@@ -849,7 +842,7 @@ static inline void arping_setup(state_t *rts) {
 				if (getsockname(probe_fd, (struct sockaddr *)&saddr, &alen) < 0)
 					err(errno, "%s", "getsockname()");
 			}
-			rts->gsrc = saddr.sin_addr;
+			rts->src = saddr.sin_addr;
 		}
 		close(probe_fd);
 	};
@@ -859,8 +852,8 @@ static inline void arping_setup(state_t *rts) {
 static inline void print_header(struct in_addr src, struct in_addr dst,
 	const char *device)
 {
-	printf("%s %s%s %s",
-		_("ARPING"), inet_ntoa(dst), _(" from"), inet_ntoa(src));
+	printf("%s %s", _("ARPING"), inet_ntoa(dst));
+	printf(" %s %s", _("from"), inet_ntoa(src));
 	if (device)
 		printf("%%%s", device);
 	putchar('\n');
@@ -955,8 +948,8 @@ int main(int argc, char **argv) {
 	bind_sock(&rts);
 	find_brd_addr(&rts);
 	if (!rts.opt.quiet)
-		print_header(rts.gsrc, rts.gdst, rts.device.name);
-	if (!rts.source && !rts.gsrc.s_addr && !rts.opt.dad)
+		print_header(rts.src, rts.dst, rts.device.name);
+	if (!rts.source && !rts.src.s_addr && !rts.opt.dad)
 		errx(EINVAL, "%s", _("No source address in not-DAD mode"));
 
 	return event_loop(&rts);

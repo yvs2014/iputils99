@@ -263,18 +263,6 @@ msgid "Using default broadcast address"
 msgstr "使用默认广播地址"
 
 #
-msgid "Invalid argument"
-msgstr "无效参数"
-
-#
-msgid "Device is not available"
-msgstr "设备不可用"
-
-#, fuzzy
-msgid "No suitable device found, please use -I option"
-msgstr "无法确定合适的设备，请使用选项 -I"
-
-#
 msgid "Interface is ignored"
 msgstr "接口被忽略"
 
@@ -291,8 +279,8 @@ msgid "From"
 msgstr "来自"
 
 # from %s
-msgid " from"
-msgstr "，来自"
+msgid "from"
+msgstr "来自"
 
 #
 msgid "No source address in not-DAD mode"

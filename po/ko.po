@@ -268,18 +268,6 @@ msgid "Using default broadcast address"
 msgstr "기본 광역 전송 주소를 사용합니다"
 
 #
-msgid "Invalid argument"
-msgstr "부적절한 인자"
-
-#
-msgid "Device is not available"
-msgstr "장치를 사용 할 수 없습니다"
-
-#, fuzzy
-msgid "No suitable device found, please use -I option"
-msgstr "알맞은 장치를 결정 할 수 없습니다, 옵션 -I을 사용하세요"
-
-#
 msgid "Interface is ignored"
 msgstr "연결장치를 무시합니다"
 
@@ -296,8 +284,8 @@ msgid "From"
 msgstr "소스"
 
 # from %s
-msgid " from"
-msgstr ", 소스"
+msgid "from"
+msgstr "소스"
 
 #
 msgid "No source address in not-DAD mode"

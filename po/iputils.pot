@@ -211,18 +211,6 @@ msgid "Using default broadcast address"
 msgstr ""
 
 #
-msgid "Invalid argument"
-msgstr ""
-
-#
-msgid "Device is not available"
-msgstr ""
-
-#
-msgid "No suitable device found, please use -I option"
-msgstr ""
-
-#
 msgid "Interface is ignored"
 msgstr ""
 
@@ -239,7 +227,7 @@ msgid "From"
 msgstr ""
 
 # from %s
-msgid " from"
+msgid "from"
 msgstr ""
 
 #
