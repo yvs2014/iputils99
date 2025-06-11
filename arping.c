@@ -31,6 +31,7 @@
 #include <sys/timerfd.h>
 #include <err.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "iputils.h"
 #include "str2num.h"
@@ -45,23 +46,22 @@
  * userspace headers.
  */
 #ifndef AX25_P_IP
-# define AX25_P_IP		0xcc	/* ARPA Internet Protocol     */
+# define AX25_P_IP	0xcc	/* ARPA Internet Protocol     */
 #endif
 
-#ifdef DEFAULT_DEVICE
-# define DEFAULT_DEVICE_STR	DEFAULT_DEVICE
-#else
-# define DEFAULT_DEVICE		NULL
-#endif
+#define FINAL_PACKS	2
 
-#define FINAL_PACKS		2
+#define NETLINK		"NETLINK"
+#define NL_WRONG_TYPE	"%s: got type=%u, expected=%u"
+
+#define STREQ(a, b) (!strncmp((a), (b), IF_NAMESIZE))
 
 
-struct device {
-	char *name;
-	int ifindex;
-	struct ifaddrs *ifa;
-};
+typedef struct arpdev {
+	int ndx; // valid: >0
+	char name[IF_NAMESIZE];
+	struct ifaddrs *ifa, *ifa_list;
+} arpdev_t;
 
 typedef struct arping_opt_s {
 	bool dad;
@@ -71,12 +71,11 @@ typedef struct arping_opt_s {
 	bool unicast;
 	bool broadcast;
 	bool unsolicited;
-} arping_opt_t;
+} arpopt_t;
 
 typedef struct run_state {
-	struct device device;
+	arpdev_t dev;
 	char *source;
-	struct ifaddrs *ifa0;
 	struct in_addr src, dst;
 	int af; // ai_family
 	char *target;
@@ -93,7 +92,7 @@ typedef struct run_state {
 	int received;
 	int brd_recv;
 	int req_recv;
-	arping_opt_t opt;
+	arpopt_t opt;
 } state_t;
 
 
@@ -325,34 +324,28 @@ static inline int print_pack(state_t *rts,
 	return 1;
 }
 
-static int outgoing_device(struct nlmsghdr *nh, struct device *dev) {
+static int outgoing_device(struct nlmsghdr *nh, arpdev_t *dev) {
 	if (nh->nlmsg_type != RTM_NEWROUTE) {
-		warnx("NETLINK: %s", "new route message type");
+		warnx(NL_WRONG_TYPE, NETLINK, nh->nlmsg_type, RTM_NEWROUTE);
 		return 1;
 	}
 	struct rtmsg *rm = NLMSG_DATA(nh);
 	size_t len = RTM_PAYLOAD(nh);
-	for (struct rtattr *ra = RTM_RTA(rm);
-			RTA_OK(ra, (unsigned short)len);
-			ra = RTA_NEXT(ra, len))
-	{
+	for (struct rtattr *ra = RTM_RTA(rm); RTA_OK(ra, (unsigned short)len);
+	     ra = RTA_NEXT(ra, len))
 		if (ra->rta_type == RTA_OIF) {
 			int *oif = RTA_DATA(ra);
-			static char dev_name[IF_NAMESIZE];
-
-			dev->ifindex = *oif;
-			if (!if_indextoname(dev->ifindex, dev_name)) {
-				warn("if_indextoname(%u)", dev->ifindex);
+			dev->ndx = *oif;
+			if (!if_indextoname(dev->ndx, dev->name)) {
+				warn("if_indextoname(%u)", dev->ndx);
 				return 1;
 			}
-			dev->name = dev_name;
 		}
-	}
 	return 0;
 }
 
-static void netlink_query(struct device *dev, int flags, int type,
-		const void *arg, size_t len)
+static void netlink_query(arpdev_t *dev, int flags, int type,
+	const void *arg, size_t len)
 {
 	static uint32_t seq;
 
@@ -383,11 +376,11 @@ static void netlink_query(struct device *dev, int flags, int type,
 	int ret = 1;
 	int fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
 	if (fd < 0) {
-		warn("socket(%s, %s)", "PF_NETLINK", "SOCK_RAW");
+		warn("socket(%s)", NETLINK);
 		goto fail;
 	}
 	if (sendmsg(fd, &mh, 0) < 0) {
-		warn("sendmsg(%s)", "NETLINK_ROUTE");
+		warn("sendmsg(%s)", NETLINK);
 		goto fail;
 	}
 
@@ -397,13 +390,15 @@ static void netlink_query(struct device *dev, int flags, int type,
 	} while ((msg_len < 0) && (errno == EINTR));
 
 	for (nh = iov.iov_base; NLMSG_OK(nh, msg_len); nh = NLMSG_NEXT(nh, msg_len)) {
-		if (nh->nlmsg_seq != seq)
-			continue;
-		switch (nh->nlmsg_type) {
+		if (nh->nlmsg_seq == seq) switch (nh->nlmsg_type) {
 		case NLMSG_ERROR:
+			errno = abs(((struct nlmsgerr *)NLMSG_DATA(nh))->error);
+			if (!errno) errno = EIO;
+			warn("%s", NETLINK);
+			break;
 		case NLMSG_OVERRUN:
-			errno = EIO;
-			warnx("NETLINK_ROUTE: %s", "unexpected iov element");
+			errno = EOVERFLOW;
+			warn("%s: iov", NETLINK);
 			goto fail;
 		case NLMSG_DONE:
 			ret = 0;
@@ -421,7 +416,7 @@ static void netlink_query(struct device *dev, int flags, int type,
 		exit(EXIT_FAILURE);
 }
 
-static void guess_device(int af, struct in_addr dst, struct device *dev) {
+static void guess_device(int af, struct in_addr dst, arpdev_t *dev) {
 	struct {
 		struct rtmsg  rm;
 		struct rtattr ra;
@@ -439,24 +434,33 @@ static void guess_device(int af, struct in_addr dst, struct device *dev) {
 }
 
 /* Common check for ifa->ifa_flags */
-static int check_ifflags(const state_t *ctl, unsigned ifflags) {
-	if (!(ifflags & IFF_UP)) {
-		if (ctl->device.name) {
-			if (!ctl->opt.quiet)
-				warnx("%s: %s", ctl->device.name, _("Interface is down"));
+static bool valid_flags(unsigned flags, const char *name, bool quiet, bool dad) {
+	if (!(flags & IFF_UP)) {
+		if (name && name[0]) {
+			if (!quiet)
+				warnx("%s: %s", name, _("Interface is down"));
 			exit(EINVAL);
 		}
-		return -1;
+		return false;
 	}
-	if (ifflags & (IFF_NOARP | IFF_LOOPBACK)) {
-		if (ctl->device.name) {
-			if (!ctl->opt.quiet)
-				warnx("%s: %s", ctl->device.name, _("Interface is not ARPable"));
-			exit(ctl->opt.dad ? EXIT_SUCCESS : EINVAL);
+	if (flags & (IFF_NOARP | IFF_LOOPBACK)) {
+		if (name && name[0]) {
+			if (!quiet)
+				warnx("%s: %s", name, _("Interface is not ARPable"));
+			exit(dad ? EXIT_SUCCESS : EINVAL);
 		}
-		return -1;
+		return false;
 	}
-	return 0;
+	return true;
+}
+
+static bool valid_ifa(const struct ifaddrs *ifa,
+		const arpdev_t *dev, const arpopt_t *opt) {
+	return
+	ifa->ifa_name && ifa->ifa_broadaddr && ifa->ifa_addr &&
+	(ifa->ifa_addr->sa_family == AF_PACKET) &&
+	valid_flags(ifa->ifa_flags, dev->name, opt->quiet, opt->dad) &&
+	((struct sockaddr_ll *)ifa->ifa_addr)->sll_halen;
 }
 
 /*
@@ -467,9 +471,9 @@ static int check_ifflags(const state_t *ctl, unsigned ifflags) {
  *
  * Return value:
  *	>0	: Succeeded, and appropriate device not found.
- *		  device.ifindex remains 0.
+ *		  dev.ndx remains 0.
  *	0	: Succeeded, and appropriate device found.
- *		  device.ifindex is set.
+ *		  dev.ndx is set.
  *	<0	: Failed.  Support not found, or other
  *		: system error.
  *
@@ -477,68 +481,61 @@ static int check_ifflags(const state_t *ctl, unsigned ifflags) {
  * "device" variable for later reference.
  *
  */
-static int check_device(state_t *ctl) {
-	int rc = getifaddrs(&ctl->ifa0);
-	if (rc) {
+static int check_device(state_t *rts) {
+	assert(rts->dev.name[0]);
+	//
+	if (getifaddrs(&rts->dev.ifa_list)) {
 		warn("%s", "getifaddrs()");
 		return -1;
 	}
-
-	int n = 0;
-	for (struct ifaddrs *ifa = ctl->ifa0; ifa; ifa = ifa->ifa_next) {
-		if (!ifa->ifa_addr)
-			continue;
-		if (ifa->ifa_addr->sa_family != AF_PACKET)
-			continue;
-		if (ctl->device.name && ifa->ifa_name && strcmp(ifa->ifa_name, ctl->device.name))
-			continue;
-
-		if (check_ifflags(ctl, ifa->ifa_flags) < 0)
-			continue;
-
-		if (!((struct sockaddr_ll *)ifa->ifa_addr)->sll_halen)
-			continue;
-		if (!ifa->ifa_broadaddr)
-			continue;
-
-		ctl->device.ifa = ifa;
-
-		if (n++)
-			break;
+	if (!rts->dev.ifa_list) {
+		warnx("%s", strerror(ENODATA));
+		return 1;
 	}
 
-	if ((n == 1) && ctl->device.ifa) {
-		ctl->device.ifindex = if_nametoindex(ctl->device.ifa->ifa_name);
-		if (!ctl->device.ifindex) {
-			warn("if_nametoindex(%s)", ctl->device.ifa->ifa_name);
-			freeifaddrs(ctl->ifa0);
-			return -1;
+	for (struct ifaddrs *ifa = rts->dev.ifa_list; ifa; ifa = ifa->ifa_next) {
+		if (STREQ(ifa->ifa_name, rts->dev.name))
+			if (valid_ifa(ifa, &rts->dev, &rts->opt)) {
+				rts->dev.ifa = ifa;
+				break;
+			}
+	}
+
+	int rc = 0;
+	if (rts->dev.ifa) { // interface found
+		rts->dev.ndx = if_nametoindex(rts->dev.ifa->ifa_name);
+		if (!rts->dev.ndx) {
+			warn("if_nametoindex(%s)", rts->dev.ifa->ifa_name);
+			rc = -1;
 		}
-		ctl->device.name = ctl->device.ifa->ifa_name;
-		return 0;
 	}
-	return 1;
+
+	if (((rc < 0) || !rts->dev.ifa) && rts->dev.ifa_list) {
+		freeifaddrs(rts->dev.ifa_list);
+		rts->dev.ifa_list = NULL;
+	}
+	return (rc < 0) ? rc : !rts->dev.ndx;
 }
 
 /*
  * This fills the device "broadcast address"
  * based on information found by check_device() function.
  */
-static void find_brd_addr(const state_t *ctl) {
-	struct sockaddr_ll *he = (struct sockaddr_ll *)&ctl->he;
-
-	if (ctl->device.ifa) {
-		struct sockaddr_ll *sll =
-			(struct sockaddr_ll *)ctl->device.ifa->ifa_broadaddr;
-
-		if (sll->sll_halen == he->sll_halen) {
-			memcpy(he->sll_addr, sll->sll_addr, he->sll_halen);
-			return;
-		}
+static void find_brd_addr(arpdev_t *dev, struct sockaddr_ll *he, bool quiet) {
+	struct sockaddr_ll *ll = dev->ifa ?
+		(struct sockaddr_ll *)dev->ifa->ifa_broadaddr :
+		NULL;
+	if (ll && (ll->sll_halen == he->sll_halen))
+		memcpy(he->sll_addr, ll->sll_addr, he->sll_halen);
+	else {
+		if (!quiet)
+			warnx("%s: %s", _WARN, _("Using default broadcast address"));
+		memset(he->sll_addr, -1, he->sll_halen);
 	}
-	if (!ctl->opt.quiet)
-		warnx("%s: %s", _WARN, _("Using default broadcast address"));
-	memset(he->sll_addr, -1, he->sll_halen);
+	if (dev->ifa_list) { // no need more
+		freeifaddrs(dev->ifa_list);
+		dev->ifa = dev->ifa_list = NULL;
+	}
 }
 
 static int event_loop(state_t *ctl) {
@@ -697,7 +694,6 @@ static int event_loop(state_t *ctl) {
 	}
 	close(sfd);
 	close(tfd);
-	freeifaddrs(ctl->ifa0);
 	if (!ctl->opt.quiet)
 		resume(ctl);
 	bool got = (ctl->received > 0) ? true : false;
@@ -717,9 +713,10 @@ static int event_loop(state_t *ctl) {
 }
 
 static inline void bind_sock(state_t *rts) {
-	((struct sockaddr_ll *)&rts->me)->sll_family = AF_PACKET;
-	((struct sockaddr_ll *)&rts->me)->sll_ifindex = rts->device.ifindex;
-	((struct sockaddr_ll *)&rts->me)->sll_protocol = htons(ETH_P_ARP);
+	struct sockaddr_ll *sll = (struct sockaddr_ll *)&rts->me;
+	sll->sll_family   = AF_PACKET;
+	sll->sll_ifindex  = rts->dev.ndx;
+	sll->sll_protocol = htons(ETH_P_ARP);
 	if (bind(rts->sock, (struct sockaddr *)&rts->me, sizeof(rts->me)) < 0)
 		err(errno, "bind()");
 	socklen_t alen = sizeof(rts->me);
@@ -727,7 +724,7 @@ static inline void bind_sock(state_t *rts) {
 		err(errno, "%s", "getsockname()");
 	if (((struct sockaddr_ll *)&rts->me)->sll_halen == 0) {
 		if (!rts->opt.quiet)
-			warnx("%s: %s (%s)", rts->device.name,
+			warnx("%s: %s (%s)", rts->dev.name,
 _("Interface is not ARPable"), _("no ll address"));
 		exit(rts->opt.dad ? EXIT_SUCCESS : EXIT_FAILURE);
 	}
@@ -736,21 +733,27 @@ _("Interface is not ARPable"), _("no ll address"));
 
 static inline int arping_sock(void) {
 	NET_RAW_ON;
-	int sock = socket(PF_PACKET, SOCK_DGRAM, 0);
+	int sock = socket(AF_PACKET, SOCK_DGRAM, 0);
 	int keep = errno;
 	NET_RAW_OFF;
 	if (sock < 0) {
 		errno = keep;
-		err(errno, "socket(%s, %s)", "PF_PACKET", "SOCK_DGRAM");
+		err(errno, "socket(%s, %s)", "PACKET", "DGRAM");
 	}
 	return sock;
 }
 
+static inline int bindtodev(int fd, const char *name) {
+	NET_RAW_ON;
+	int rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, name, strlen(name) + 1);
+	int keep = errno;
+	NET_RAW_OFF;
+	if (rc < 0)
+		errno = keep;
+	return rc;
+}
 
 static inline void arping_setup(state_t *rts) {
-	if (rts->device.name && !rts->device.name[0])
-		rts->device.name = NULL;
-
 	if (inet_aton(rts->target, &rts->dst))
 		rts->af = AF_INET;
 	else {
@@ -773,19 +776,22 @@ static inline void arping_setup(state_t *rts) {
 		freeaddrinfo(res);
 	}
 
-	// AF_INET only to be sure
+	// address family: to be sure
 	if (rts->af != AF_INET)
 		errx(EAFNOSUPPORT, "%s: %s", rts->target, strerror(ENODEV));
 
-	if (!rts->device.name)
-		guess_device(rts->af, rts->dst, &rts->device);
-	if (check_device(rts) < 0)
-		exit(EINVAL);
+	// only target: guess device
+	if (!rts->dev.name[0])
+		guess_device(rts->af, rts->dst, &rts->dev);
 
-	if (!rts->device.ifindex) {
+	// known at this point: either dev.name or dev.name+dev.ndx
+	if (check_device(rts) < 0)
+		exit(errno ? errno : EINVAL); // sys error
+
+	if (!rts->dev.ndx) { // no suitable device?
 		errno = ENODEV;
-		if (rts->device.name)
-			err(errno, "%s", rts->device.name);
+		if (rts->dev.name[0])
+			err(errno, "%s", rts->dev.name);
 		warn("%s", rts->target);
 	}
 
@@ -800,30 +806,10 @@ static inline void arping_setup(state_t *rts) {
 	if (!rts->opt.dad || rts->source) {
 		int probe_fd = socket(AF_INET, SOCK_DGRAM, 0);
 		if (probe_fd < 0)
-			err(errno, "socket(%s, %s)", "AF_INET", "SOCK_DGRAM");
-		if (rts->device.name) {
-			int ifndx = if_nametoindex(rts->device.name);
-			if (ifndx) {
-				struct in_pktinfo ipi = { .ipi_ifindex = ifndx };
-				if (setsockopt(probe_fd, IPPROTO_IP, IP_PKTINFO,
-						&ipi, sizeof(ipi)) < 0)
-					ifndx = 0;
-			}
-			if (!ifndx)
-				warn("%s: %s: %s", _WARN, rts->device.name,
-					_("Interface is ignored"));
-//		  	NET_ADMIN_ON;
-//			int rc = setsockopt(probe_fd, SOL_SOCKET,
-//				SO_BINDTODEVICE, rts->device.name,
-//				strlen(rts->device.name) + 1);
-//			int keep = errno;
-//		  	NET_ADMIN_OFF;
-//			if (rc < 0) {
-//				errno = keep;
-//				warn("%s: %s: %s", _WARN, rts->device.name,
-//					_("Interface is ignored"));
-//			}
-		}
+			err(errno, "socket(%s, %s)", "INET", "DGRAM");
+		if (rts->dev.name[0] && (bindtodev(probe_fd, rts->dev.name) < 0))
+			warn("%s: %s: %s", _WARN, rts->dev.name,
+				_("Interface is ignored"));
 		struct sockaddr_in saddr = { .sin_family = AF_INET };
 		if (rts->source || rts->src.s_addr) {
 			saddr.sin_addr = rts->src;
@@ -890,7 +876,7 @@ static inline void parse_options(state_t *rts, int argc, char **argv) {
 			rts->interval = VALID_INTSTR(0, INT_MAX);
 			break;
 		case 'I':
-			rts->device.name = optarg;
+			strncpy(rts->dev.name, optarg, sizeof(rts->dev.name) - 1);
 			break;
 		case 'f':
 			rts->opt.quit = true;
@@ -923,11 +909,10 @@ int main(int argc, char **argv) {
 	BIND_NLS;
 	atexit(close_stdout);
 
-	struct run_state rts = {
-		.device   = {.name = DEFAULT_DEVICE},
-		.count    = -1,
-		.interval =  1,
-	};
+	struct run_state rts = { .count = -1, .interval = 1 };
+#ifdef DEFAULT_DEVICE
+	strncpy(rts.dev.name, DEFAULT_DEVICE, sizeof(rts.dev.name) - 1);
+#endif
 
 	parse_options(&rts, argc, argv);
 	argc -= optind;
@@ -946,9 +931,9 @@ int main(int argc, char **argv) {
 	//
 
 	bind_sock(&rts);
-	find_brd_addr(&rts);
+	find_brd_addr(&rts.dev, (struct sockaddr_ll *)&rts.he, rts.opt.quiet);
 	if (!rts.opt.quiet)
-		print_header(rts.src, rts.dst, rts.device.name);
+		print_header(rts.src, rts.dst, rts.dev.name);
 	if (!rts.source && !rts.src.s_addr && !rts.opt.dad)
 		errx(EINVAL, "%s", _("No source address in not-DAD mode"));
 
