@@ -53,7 +53,6 @@
 // ping.c auxiliary functions
 
 #include <stdint.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -197,23 +196,26 @@ void mtudisc_n_bind(state_t *rts, const sock_t *sock) {
 	}
 }
 
+#define GET_IN_ADRR(ipv6, sa_in) (ipv6) ? \
+	(const uint8_t *)&(((struct sockaddr_in6 *)(sa_in))->sin6_addr) : \
+	(const uint8_t *)&(((struct sockaddr_in  *)(sa_in))->sin_addr );
+
 void cmp_srcdev(const state_t *rts) {
 	// called once before loop
 	struct ifaddrs *list = NULL;
 	if (getifaddrs(&list))
 		err(errno, "%s", "getifaddrs()");
 	uint16_t af = rts->ip6 ? AF_INET6 : AF_INET;
-	size_t len  = rts->ip6 ? 16 : 4;
-	size_t off  = rts->ip6 ?
-		offsetof(struct sockaddr_in6, sin6_addr) :
-		offsetof(struct sockaddr_in,  sin_addr);
-	const uint8_t *addr = (uint8_t *)&rts->source + off;
+	size_t len  = rts->ip6 ? sizeof(struct in6_addr) : sizeof(struct in_addr);
+	const uint8_t *in_addr = GET_IN_ADRR(rts->ip6, &rts->source);
 	struct ifaddrs *ifa = list;
 	for (; ifa; ifa = ifa->ifa_next) {
-		if (ifa->ifa_name && ifa->ifa_addr && (ifa->ifa_addr->sa_family == af))
+		if (ifa->ifa_name && ifa->ifa_addr && (ifa->ifa_addr->sa_family == af)) {
+			const uint8_t *ifa_in_addr = GET_IN_ADRR(rts->ip6, ifa->ifa_addr);
 			if (!strcmp(ifa->ifa_name, rts->device) &&
-			    !memcmp((uint8_t *)ifa->ifa_addr + off, addr, len))
+			    !memcmp(ifa_in_addr, in_addr, len))
 			break;
+		}
 	}
 	if (!ifa)
 		warnx("%s: %s %s", _WARN,

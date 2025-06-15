@@ -26,7 +26,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
-#include <sys/param.h>
+#include <limits.h>
 #include <sys/signalfd.h>
 #include <sys/timerfd.h>
 #include <err.h>
@@ -35,6 +35,7 @@
 
 #include "iputils.h"
 #include "str2num.h"
+#include "nbind.h"
 #ifdef HAVE_LIBCAP
 #include "caps.h"
 #else
@@ -54,7 +55,7 @@
 #define NETLINK		"NETLINK"
 #define NL_WRONG_TYPE	"%s: got type=%u, expected=%u"
 
-#define STREQ(a, b) (!strncmp((a), (b), IF_NAMESIZE))
+#define NLSTREQ(a, b) (!strncmp((a), (b), IF_NAMESIZE))
 
 
 typedef struct arpdev {
@@ -494,7 +495,7 @@ static int check_device(state_t *rts) {
 	}
 
 	for (struct ifaddrs *ifa = rts->dev.ifa_list; ifa; ifa = ifa->ifa_next) {
-		if (STREQ(ifa->ifa_name, rts->dev.name))
+		if (NLSTREQ(ifa->ifa_name, rts->dev.name))
 			if (valid_ifa(ifa, &rts->dev, &rts->opt)) {
 				rts->dev.ifa = ifa;
 				break;
@@ -741,16 +742,6 @@ static inline int arping_sock(void) {
 		err(errno, "socket(%s, %s)", "PACKET", "DGRAM");
 	}
 	return sock;
-}
-
-static inline int bindtodev(int fd, const char *name) {
-	NET_RAW_ON;
-	int rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, name, strlen(name) + 1);
-	int keep = errno;
-	NET_RAW_OFF;
-	if (rc < 0)
-		errno = keep;
-	return rc;
 }
 
 static inline void arping_setup(state_t *rts) {

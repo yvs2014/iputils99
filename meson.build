@@ -11,7 +11,7 @@ project('iputils99', 'c',
 	meson_version: '>=0.55',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
-			check: false).stdout().strip() : '20250611',
+			check: false).stdout().strip() : '20250615',
 )
 
 add_project_arguments('-D_GNU_SOURCE', language: 'c')
@@ -97,11 +97,11 @@ if idn	# If available: use AI_IDN for getaddrinfo() queries
 		deps += dependency('libidn2', required: true)
 		conf.set('USE_LIBIDN2', 1, description: 'Use libidn2 conversion')
 		idn_via = '(libidn2)'
-        endif
+	endif
 	conf.set('USE_IDN', 1, description: 'libc IDN support')
-        if rfc4620	# idna_to_dns_encoding() for nodeinfo IDN
+	if rfc4620	# idna_to_dns_encoding() for nodeinfo IDN
 		extra_funcs += {'__idna_to_dns_encoding': {}}
-        endif
+	endif
 endif
 
 nls = get_option('NLS')
@@ -119,7 +119,7 @@ foreach f, ext: extra_funcs
 	foreach h: hdrs
 		incl += cc.has_header(h) ? '#include <' + h + '>\n' : ''
 	endforeach
-        found = cc.has_function(f, args: '-D_GNU_SOURCE', prefix: incl)
+	found = cc.has_function(f, args: '-D_GNU_SOURCE', prefix: incl)
 	if not found
 		libs = 'lib' in ext ? ext['lib'] : []
 		foreach l: libs
@@ -131,13 +131,13 @@ foreach f, ext: extra_funcs
 			args: '-D_GNU_SOURCE', prefix: incl, dependencies: lib)
 				found = true
 				deps += lib
-                                break
+				break
 			endif
 		endforeach
 	endif
 	if found
 		conf.set('HAVE_' + f.to_upper(), 1, description: 'Define if you have ' + f + ' function')
-        else
+	else
 		req = 'req' in ext ? ext['req'] : false
 		if req
 			error('Required function ' + f + '() is not found')
@@ -172,8 +172,10 @@ endif
 aux = 'aux'
 aux_src     = []
 perm_src    = []
+iface_src   = []
 subdir(aux)
 subfoldered = ['ping']
+iface_tools = ['ping', 'arping']
 
 app = {}
 foreach tool: iputils
@@ -193,13 +195,18 @@ foreach tool: iputils
 				install_mode += suid_perm
 			endif
 		endif
-                if tool in subfoldered
+		sub_src = []
+		if tool in iface_tools
+			src     += iface_src
+			sub_src += iface_src
+		endif
+		if tool in subfoldered
 			subdir(tool)
-                else
+		else
 			app += { tool:
 executable(tool, src + [tool + '.c'], dependencies: deps,
 	include_directories: include_directories(aux),
-        install: true, install_mode: install_mode)
+	install: true, install_mode: install_mode)
 			}
 		endif
 	endif

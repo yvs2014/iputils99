@@ -74,6 +74,7 @@
 #include "stats.h"
 #include "ping_aux.h"
 #include "ping4_aux.h"
+#include "nbind.h"
 
 // ICMP_FILTER is defined in <linux/icmp.h>
 #ifndef ICMP_FILTER
@@ -512,10 +513,13 @@ int ping4_run(state_t *rts, int argc, char **argv,
 		if (probe_fd < 0)
 			err(errno, "socket");
 		if (rts->device) {
-			struct in_pktinfo ipi = { .ipi_ifindex = if_name2index(rts->device) };
-			if ((setsockopt(probe_fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
-			    (setsockopt(sock->fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0))
-				err(errno, "setsockopt(%s, %s)", "IP_PKTINFO", rts->device);
+//			struct in_pktinfo ipi = { .ipi_ifindex = if_name2index(rts->device) };
+//			if ((setsockopt(probe_fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
+//			    (setsockopt(sock->fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0))
+//				err(errno, "setsockopt(%s, %s)", "IP_PKTINFO", rts->device);
+			if ((bindtodev(probe_fd, rts->device) < 0) ||
+			    (bindtodev(sock->fd, rts->device) < 0))
+				err(errno, "setsockopt(%s, %s)", "SO_BINDTODEVICE", rts->device);
 		}
 		sock_settos(probe_fd, rts->qos, rts->ip6);
 		sock_setmark(rts, probe_fd);

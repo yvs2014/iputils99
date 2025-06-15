@@ -79,6 +79,7 @@
 #include "stats.h"
 #include "ping_aux.h"
 #include "ping6_aux.h"
+#include "nbind.h"
 #ifdef ENABLE_RFC4620
 #include "node_info.h"
 #include "ni_defs.h"
@@ -463,19 +464,12 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		ipi->ipi6_ifindex = if_name2index(rts->device);
 
 		if (rts->opt.strictsource) {
-			unsigned iface = if_name2index(rts->device);
-			struct in6_pktinfo ipi = { .ipi6_ifindex = iface };
-			if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0)
-				err(errno, "setsockopt(%s, %s)", "IPV6_PKTINFO", rts->device);
-//			NET_RAW_ON;
-//			int rc = setsockopt(sock->fd, SOL_SOCKET, SO_BINDTODEVICE,
-//					rts->device, strlen(rts->device) + 1);
-//			int keep = errno;
-//			NET_RAW_OFF;
-//			if (rc < 0) {
-//				errno = keep;
-//				err(errno, "setsockopt(%s): %s", "SO_BINDTODEVICE", rts->device);
-//			}
+//			unsigned iface = if_name2index(rts->device);
+//			struct in6_pktinfo ipi = { .ipi6_ifindex = iface };
+//			if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0)
+//				err(errno, "setsockopt(%s, %s)", "IPV6_PKTINFO", rts->device);
+			if (bindtodev(sock->fd, rts->device) < 0)
+				err(errno, "setsockopt(%s, %s)", "SO_BINDTODEVICE", rts->device);
 		}
 	}
 
