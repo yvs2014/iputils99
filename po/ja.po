@@ -306,16 +306,12 @@ msgid "dn_comp() returned too long result"
 msgstr "dn_comp()の結果が長すぎます"
 
 #
-msgid "Unknown network interface"
-msgstr "不明なインタフェースです"
-
-#
 msgid "Scope discrepancy among the nodes"
 msgstr "ノード間のスコープが一致していません"
 
-#, fuzzy
-msgid "Source address might be selected on device other than:"
-msgstr "ソースアドレスは 以外のデバイスから選択される可能性があります:"
+#
+msgid "Source address might be selected on other device"
+msgstr "送信元アドレスが他のデバイスで選択されている可能性があります"
 
 #
 msgid "Minimal user interval for multicast ping must be >="

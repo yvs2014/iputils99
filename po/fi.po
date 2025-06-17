@@ -348,17 +348,13 @@ msgstr "Ei kelpavaa aihenimi"
 msgid "dn_comp() returned too long result"
 msgstr "dn_comp() palautti liian pitkän tuloksen"
 
-#, fuzzy
-msgid "Unknown network interface"
-msgstr "Tuntematon iface"
-
 #
 msgid "Scope discrepancy among the nodes"
 msgstr "Laajuuden ero solmujen joukossa"
 
 #
-msgid "Source address might be selected on device other than:"
-msgstr "Lähdeosoite on saatettu valita muusta laitteesta kuin:"
+msgid "Source address might be selected on other device"
+msgstr "Lähdeosoite on saatettu valita muusta toisella laitteella"
 
 #
 msgid "Minimal user interval for multicast ping must be >="

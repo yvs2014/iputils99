@@ -11,11 +11,8 @@
  */
 
 #include <arpa/inet.h>
-#include <ifaddrs.h>
 #include <linux/if_ether.h>
 #include <linux/if_packet.h>
-#include <linux/rtnetlink.h>
-#include <netdb.h>
 #include <net/if_arp.h>
 #include <net/if.h>
 #include <poll.h>
@@ -36,6 +33,7 @@
 #include "iputils.h"
 #include "str2num.h"
 #include "nbind.h"
+#include "nlink.h"
 #ifdef HAVE_LIBCAP
 #include "caps.h"
 #else
@@ -52,16 +50,12 @@
 
 #define FINAL_PACKS	2
 
-#define NETLINK		"NETLINK"
-#define NL_WRONG_TYPE	"%s: got type=%u, expected=%u"
-
-#define NLSTREQ(a, b) (!strncmp((a), (b), IF_NAMESIZE))
-
-
 typedef struct arpdev {
-	int ndx; // valid: >0
 	char name[IF_NAMESIZE];
-	struct ifaddrs *ifa, *ifa_list;
+	const char *req; // requested with -I
+	int ndx;         // valid: >0
+	struct ifaddrs *ifa_list;
+	const struct ifaddrs *ifa;
 } arpdev_t;
 
 typedef struct arping_opt_s {
@@ -325,96 +319,16 @@ static inline int print_pack(state_t *rts,
 	return 1;
 }
 
-static int outgoing_device(struct nlmsghdr *nh, arpdev_t *dev) {
-	if (nh->nlmsg_type != RTM_NEWROUTE) {
-		warnx(NL_WRONG_TYPE, NETLINK, nh->nlmsg_type, RTM_NEWROUTE);
-		return 1;
-	}
-	struct rtmsg *rm = NLMSG_DATA(nh);
+static int oif2ndx(const struct nlmsghdr *nh, const char *data UNUSED) {
+	const struct rtmsg *rm = NLMSG_DATA(nh);
 	size_t len = RTM_PAYLOAD(nh);
-	for (struct rtattr *ra = RTM_RTA(rm); RTA_OK(ra, (unsigned short)len);
+	for (const struct rtattr *ra = RTM_RTA(rm); RTA_OK(ra, (ushort)len);
 	     ra = RTA_NEXT(ra, len))
 		if (ra->rta_type == RTA_OIF) {
 			int *oif = RTA_DATA(ra);
-			dev->ndx = *oif;
-			if (!if_indextoname(dev->ndx, dev->name)) {
-				warn("if_indextoname(%u)", dev->ndx);
-				return 1;
-			}
+			return oif ? *oif : 0;
 		}
 	return 0;
-}
-
-static void netlink_query(arpdev_t *dev, int flags, int type,
-	const void *arg, size_t len)
-{
-	static uint32_t seq;
-
-	struct sockaddr_nl sa = {.nl_family = AF_NETLINK};
-	struct iovec iov = {0};
-	struct msghdr mh = {
-		.msg_name = (void *)&sa,
-		.msg_namelen = sizeof(sa),
-		.msg_iov = &iov,
-		.msg_iovlen = 1,
-	};
-
-	const size_t buffer_size = 4096;
-	struct nlmsghdr *unmodified_nh = calloc(1, buffer_size);
-	struct nlmsghdr *nh = unmodified_nh;
-	if (!nh)
-		err(errno, "calloc(%zu)", buffer_size);
-
-	nh->nlmsg_len = NLMSG_LENGTH(len);
-	nh->nlmsg_flags = flags;
-	nh->nlmsg_type = type;
-	nh->nlmsg_seq = ++seq;
-	memcpy(NLMSG_DATA(nh), arg, len);
-
-	iov.iov_base = nh;
-	iov.iov_len = buffer_size;
-
-	int ret = 1;
-	int fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
-	if (fd < 0) {
-		warn("socket(%s)", NETLINK);
-		goto fail;
-	}
-	if (sendmsg(fd, &mh, 0) < 0) {
-		warn("sendmsg(%s)", NETLINK);
-		goto fail;
-	}
-
-	ssize_t msg_len = 0;
-	do {
-		msg_len = recvmsg(fd, &mh, 0);
-	} while ((msg_len < 0) && (errno == EINTR));
-
-	for (nh = iov.iov_base; NLMSG_OK(nh, msg_len); nh = NLMSG_NEXT(nh, msg_len)) {
-		if (nh->nlmsg_seq == seq) switch (nh->nlmsg_type) {
-		case NLMSG_ERROR:
-			errno = abs(((struct nlmsgerr *)NLMSG_DATA(nh))->error);
-			if (!errno) errno = EIO;
-			warn("%s", NETLINK);
-			break;
-		case NLMSG_OVERRUN:
-			errno = EOVERFLOW;
-			warn("%s: iov", NETLINK);
-			goto fail;
-		case NLMSG_DONE:
-			ret = 0;
-			break;
-		default:
-			ret = outgoing_device(nh, dev);
-			break;
-		}
-	}
- fail:
-	free(unmodified_nh);
-	if (0 <= fd)
-		close(fd);
-	if (ret)
-		exit(EXIT_FAILURE);
 }
 
 static void guess_device(int af, struct in_addr dst, arpdev_t *dev) {
@@ -422,16 +336,22 @@ static void guess_device(int af, struct in_addr dst, arpdev_t *dev) {
 		struct rtmsg  rm;
 		struct rtattr ra;
 		struct in_addr addr;
-	} query = {
+	} q = {
 		.rm.rtm_family = af,
 		.ra = {
-			.rta_len  = RTA_LENGTH(sizeof(query.addr)),
+			.rta_len  = RTA_LENGTH(sizeof(q.addr)),
 			.rta_type = RTA_DST,
 		},
 		.addr = dst,
 	};
-	size_t len = NLMSG_ALIGN(sizeof(struct rtmsg)) + RTA_LENGTH(sizeof(query.addr));
-	netlink_query(dev, NLM_F_REQUEST, RTM_GETROUTE, &query, len);
+	int ndx = nl_query(dev->name, NLM_F_REQUEST, RTM_GETROUTE, &q, sizeof(q),
+		RTM_NEWROUTE, NLMSG_HDRLEN + sizeof(struct rtmsg), oif2ndx);
+	if (ndx < 0)
+		errx(EXIT_FAILURE, "%s() failed", __func__);
+	if (if_indextoname(ndx, dev->name))
+		dev->ndx = ndx;
+	else
+		err(errno ? errno : EXIT_FAILURE, "if_indextoname(%d)", ndx);
 }
 
 /* Common check for ifa->ifa_flags */
@@ -456,13 +376,27 @@ static bool valid_flags(unsigned flags, const char *name, bool quiet, bool dad) 
 }
 
 static bool valid_ifa(const struct ifaddrs *ifa,
-		const arpdev_t *dev, const arpopt_t *opt) {
+	const arpdev_t *dev, const arpopt_t *opt)
+{
 	return
 	ifa->ifa_name && ifa->ifa_broadaddr && ifa->ifa_addr &&
 	(ifa->ifa_addr->sa_family == AF_PACKET) &&
 	valid_flags(ifa->ifa_flags, dev->name, opt->quiet, opt->dad) &&
 	((struct sockaddr_ll *)ifa->ifa_addr)->sll_halen;
 }
+
+static const struct ifaddrs* ifa_by_name(const struct ifaddrs* list,
+	const arpdev_t *dev, const arpopt_t *opt)
+{
+	const struct ifaddrs *ifa = list;
+	for (; ifa; ifa = ifa->ifa_next) {
+		if (NLSTREQ(ifa->ifa_name, dev->name))
+			if (valid_ifa(ifa, dev, opt))
+				break;
+	}
+	return ifa;
+}
+
 
 /*
  * check_device()
@@ -493,15 +427,15 @@ static int check_device(state_t *rts) {
 		warnx("%s", strerror(ENODATA));
 		return 1;
 	}
-
-	for (struct ifaddrs *ifa = rts->dev.ifa_list; ifa; ifa = ifa->ifa_next) {
-		if (NLSTREQ(ifa->ifa_name, rts->dev.name))
-			if (valid_ifa(ifa, &rts->dev, &rts->opt)) {
-				rts->dev.ifa = ifa;
-				break;
-			}
+	//
+	rts->dev.ifa = ifa_by_name(rts->dev.ifa_list, &rts->dev, &rts->opt);
+	// could be 'altname' too
+	if (!rts->dev.ifa) {
+		unsigned ndx = nl_nametoindex(rts->dev.name, rts->dev.ifa_list);
+		if ((ndx > 0) && if_indextoname(ndx, rts->dev.name))
+			rts->dev.ifa = ifa_by_name(rts->dev.ifa_list, &rts->dev, &rts->opt);
 	}
-
+	//
 	int rc = 0;
 	if (rts->dev.ifa) { // interface found
 		rts->dev.ndx = if_nametoindex(rts->dev.ifa->ifa_name);
@@ -510,7 +444,7 @@ static int check_device(state_t *rts) {
 			rc = -1;
 		}
 	}
-
+	//
 	if (((rc < 0) || !rts->dev.ifa) && rts->dev.ifa_list) {
 		freeifaddrs(rts->dev.ifa_list);
 		rts->dev.ifa_list = NULL;
@@ -782,7 +716,7 @@ static inline void arping_setup(state_t *rts) {
 	if (!rts->dev.ndx) { // no suitable device?
 		errno = ENODEV;
 		if (rts->dev.name[0])
-			err(errno, "%s", rts->dev.name);
+			err(errno, "%s", rts->dev.req ? rts->dev.req : rts->dev.name);
 		warn("%s", rts->target);
 	}
 
@@ -826,13 +760,13 @@ static inline void arping_setup(state_t *rts) {
 }
 
 
-static inline void print_header(struct in_addr src, struct in_addr dst,
-	const char *device)
+static inline void print_header(const char *name,
+	const struct in_addr src, const struct in_addr dst)
 {
 	printf("%s %s", _("ARPING"), inet_ntoa(dst));
 	printf(" %s %s", _("from"), inet_ntoa(src));
-	if (device)
-		printf("%%%s", device);
+	if (name && name[0])
+		printf("%%%s", name);
 	putchar('\n');
 }
 
@@ -868,6 +802,7 @@ static inline void parse_options(state_t *rts, int argc, char **argv) {
 			break;
 		case 'I':
 			strncpy(rts->dev.name, optarg, sizeof(rts->dev.name) - 1);
+			rts->dev.req = optarg;
 			break;
 		case 'f':
 			rts->opt.quit = true;
@@ -923,8 +858,12 @@ int main(int argc, char **argv) {
 
 	bind_sock(&rts);
 	find_brd_addr(&rts.dev, (struct sockaddr_ll *)&rts.he, rts.opt.quiet);
-	if (!rts.opt.quiet)
-		print_header(rts.src, rts.dst, rts.dev.name);
+	if (!rts.opt.quiet) {
+		const char *dev =
+			rts.dev.req && (strlen(rts.dev.req) < IF_NAMESIZE) ?
+			rts.dev.req : rts.dev.name;
+		print_header(dev, rts.src, rts.dst);
+	}
 	if (!rts.source && !rts.src.s_addr && !rts.opt.dad)
 		errx(EINVAL, "%s", _("No source address in not-DAD mode"));
 

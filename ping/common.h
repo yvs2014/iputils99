@@ -122,6 +122,7 @@ typedef struct ping_state {
 	int confirm;
 	int confirm_flag;
 	const char *device;
+	bool unreldev;			/* true if netdevice is not found */
 	int pmtudisc;
 	unsigned mark;
 	// ttl related

@@ -390,16 +390,12 @@ msgid "dn_comp() returned too long result"
 msgstr "dn_comp() повернуто надто довгий результат"
 
 #
-msgid "Unknown network interface"
-msgstr "Невідомий мережевий інтерфейс"
-
-#
 msgid "Scope discrepancy among the nodes"
 msgstr "Невідповідність зон між вузлами"
 
 #
-msgid "Source address might be selected on device other than:"
-msgstr "Вихідну адресу можливо вибрано на пристрої відмінному від:"
+msgid "Source address might be selected on other device"
+msgstr "Вихідну адресу можливо вибрано на іншому пристрої"
 
 #
 msgid "Minimal user interval for multicast ping must be >="

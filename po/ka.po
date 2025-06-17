@@ -354,17 +354,13 @@ msgstr "თემის არასწორი დასახელება"
 msgid "dn_comp() returned too long result"
 msgstr "dn_comp()-მა ძალიან გრძელი პასუხი დააბრუნა"
 
-#, fuzzy
-msgid "Unknown network interface"
-msgstr "უცნობი ინტერფეისი"
-
 #
 msgid "Scope discrepancy among the nodes"
 msgstr "ფარგლების შეუსაბამობა კვანძებს შორის"
 
-#, fuzzy
-msgid "Source address might be selected on device other than:"
-msgstr "საწყისი მისამართი სეიძლება აირჩიოთ მოწყობილობებზე გარდა:"
+#
+msgid "Source address might be selected on other device"
+msgstr "წყაროს მისამართი შესაძლოა სხვა მოწყობილობაზე იყოს არჩეული"
 
 #
 msgid "Minimal user interval for multicast ping must be >="

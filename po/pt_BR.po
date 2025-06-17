@@ -361,16 +361,12 @@ msgid "dn_comp() returned too long result"
 msgstr "dn_comp() retornou um resultado longo demais"
 
 #
-msgid "Unknown network interface"
-msgstr "Interface de rede desconhecida"
-
-#
 msgid "Scope discrepancy among the nodes"
 msgstr "Discrepância de escopo entre os nós"
 
 #
-msgid "Source address might be selected on device other than:"
-msgstr "Endereço fonte pode estar selecionado em um dispositivo que não:"
+msgid "Source address might be selected on other device"
+msgstr "Endereço fonte pode estar selecionado em outro dispositivo"
 
 #
 msgid "Minimal user interval for multicast ping must be >="

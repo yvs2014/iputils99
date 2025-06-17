@@ -346,17 +346,13 @@ msgstr "不恰当的主题名称"
 msgid "dn_comp() returned too long result"
 msgstr "dn_comp() 的返回太长"
 
-#, fuzzy
-msgid "Unknown network interface"
-msgstr "未知界面"
-
 #
 msgid "Scope discrepancy among the nodes"
 msgstr "节点之间的范围差异"
 
 #
-msgid "Source address might be selected on device other than:"
-msgstr "可能在除以下设备之外的设备上选择了源地址："
+msgid "Source address might be selected on other device"
+msgstr "源地址可能在其他设备上选择"
 
 #, fuzzy
 msgid "Minimal user interval for multicast ping must be >="

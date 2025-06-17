@@ -191,7 +191,10 @@ void headline(const state_t *rts, size_t nodatalen) {
 		printf(", %s 0x%05x", _("flow"), ntohl(rts->flowlabel));
 	if (rts->device || rts->opt.strictsource) {
 		const char *from = sprint_addr(&rts->source, len, false);
-		printf(" %s %s %s:", _("from"), from, rts->device ? rts->device : "");
+		printf(" %s %s", _("from"), from);
+		if (rts->device && rts->device[0] && !rts->unreldev)
+			printf("%%%s", rts->device);
+		putchar(':');
 	}
 	printf(" %zu(%zu) %s\n",
 		rts->datalen, rts->datalen + nodatalen, _("data bytes"));

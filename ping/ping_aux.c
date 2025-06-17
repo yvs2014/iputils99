@@ -61,8 +61,6 @@
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <sys/types.h>
-#include <ifaddrs.h>
-#include <net/if.h>
 #include <linux/in6.h>
 
 #include "ping_aux.h"
@@ -103,13 +101,6 @@ unsigned char parse_tos(const char *str) {
 	return tos;
 }
 #undef DX_SHIFT
-
-inline unsigned if_name2index(const char *ifname) {
-	unsigned rc = if_nametoindex(ifname);
-	if (!rc)
-		errx(EINVAL, "%s: %s", _("Unknown network interface"), ifname);
-	return rc;
-}
 
 void setsock_bpf(const state_t *rts,
 	const sock_t *sock, const struct sock_fprog *prog)
@@ -194,35 +185,6 @@ void mtudisc_n_bind(state_t *rts, const sock_t *sock) {
 		if (bind(sock->fd, (struct sockaddr *)&rts->source, socklen) < 0)
 			err(errno, "bind(%s)", "icmp-socket");
 	}
-}
-
-#define GET_IN_ADRR(ipv6, sa_in) (ipv6) ? \
-	(const uint8_t *)&(((struct sockaddr_in6 *)(sa_in))->sin6_addr) : \
-	(const uint8_t *)&(((struct sockaddr_in  *)(sa_in))->sin_addr );
-
-void cmp_srcdev(const state_t *rts) {
-	// called once before loop
-	struct ifaddrs *list = NULL;
-	if (getifaddrs(&list))
-		err(errno, "%s", "getifaddrs()");
-	uint16_t af = rts->ip6 ? AF_INET6 : AF_INET;
-	size_t len  = rts->ip6 ? sizeof(struct in6_addr) : sizeof(struct in_addr);
-	const uint8_t *in_addr = GET_IN_ADRR(rts->ip6, &rts->source);
-	struct ifaddrs *ifa = list;
-	for (; ifa; ifa = ifa->ifa_next) {
-		if (ifa->ifa_name && ifa->ifa_addr && (ifa->ifa_addr->sa_family == af)) {
-			const uint8_t *ifa_in_addr = GET_IN_ADRR(rts->ip6, ifa->ifa_addr);
-			if (!strcmp(ifa->ifa_name, rts->device) &&
-			    !memcmp(ifa_in_addr, in_addr, len))
-			break;
-		}
-	}
-	if (!ifa)
-		warnx("%s: %s %s", _WARN,
-			_("Source address might be selected on device other than:"),
-			rts->device);
-	if (list)
-		freeifaddrs(list);
 }
 
 /* Estimate memory eaten by single packet. It is rough estimate.

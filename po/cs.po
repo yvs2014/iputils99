@@ -358,17 +358,13 @@ msgstr "Nevhodný název předmětu"
 msgid "dn_comp() returned too long result"
 msgstr "funkce dn_comp() vrátila příliš dlouhý výsledek"
 
-#, fuzzy
-msgid "Unknown network interface"
-msgstr "Neznámé rozhraní"
-
 #
 msgid "Scope discrepancy among the nodes"
 msgstr "Nejednotnost síťové oblasti mezi uzly"
 
 #
-msgid "Source address might be selected on device other than:"
-msgstr "Zdrojová adresa může být vybrána na zařízením jiném než:"
+msgid "Source address might be selected on other device"
+msgstr "Zdrojová adresa může být vybrána na jiném zařízení"
 
 #
 msgid "Minimal user interval for multicast ping must be >="

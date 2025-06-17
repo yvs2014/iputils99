@@ -303,17 +303,13 @@ msgstr "Nama subjek tidak tepat"
 msgid "dn_comp() returned too long result"
 msgstr "dn_comp() mengembalikan hasil yang terlalu panjang"
 
-#, fuzzy
-msgid "Unknown network interface"
-msgstr "iface tidak diketahui"
-
 #
 msgid "Scope discrepancy among the nodes"
 msgstr "Perbedaan scope antar node"
 
 #
-msgid "Source address might be selected on device other than:"
-msgstr "Alamat asal mungkin dipilih pada perangkat selain:"
+msgid "Source address might be selected on other device"
+msgstr "Alamat asal mungkin dipilih pada perangkat lain"
 
 #
 msgid "Minimal user interval for multicast ping must be >="

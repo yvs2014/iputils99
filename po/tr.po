@@ -348,17 +348,13 @@ msgstr "Uygun olmayan hedef adı"
 msgid "dn_comp() returned too long result"
 msgstr "dn_comp() çok uzun bir sonuç döndürdü"
 
-#, fuzzy
-msgid "Unknown network interface"
-msgstr "Bilinmeyen arayüz"
-
 #
 msgid "Scope discrepancy among the nodes"
 msgstr "Düğümler arasındaki kapsam uyuşmazlığı"
 
 #
-msgid "Source address might be selected on device other than:"
-msgstr "Kaynak adresi dışında bir aygıtta seçilebilir:"
+msgid "Source address might be selected on other device"
+msgstr "Kaynak adresi dışında bir aygıtta seçilebilir"
 
 #
 msgid "Minimal user interval for multicast ping must be >="

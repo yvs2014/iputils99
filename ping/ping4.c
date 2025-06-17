@@ -75,6 +75,7 @@
 #include "ping_aux.h"
 #include "ping4_aux.h"
 #include "nbind.h"
+#include "nlink.h"
 
 // ICMP_FILTER is defined in <linux/icmp.h>
 #ifndef ICMP_FILTER
@@ -305,7 +306,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 			.away = away,
 		};
 		if (statistics(rts, &stat))
-				return false;
+			return false;
 	} else {
 		/* We fall here when a redirect or source quench arrived */
 		bool bad = (in_cksum((uint16_t *)icmp, received, 0) != 0);
@@ -559,14 +560,13 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 		source->sin_port = 0;
 		close(probe_fd);
 
-		if (rts->device)
-			cmp_srcdev(rts);
+		if (rts->device && !nl_name2ndx(rts->device)) {
+			warnx("%s: %s: %s", _WARN, rts->device, WARN_NOSRCDEV);
+			rts->unreldev = true;
+		}
 
-	} else if (rts->device) {
-		struct in_pktinfo ipi = { .ipi_ifindex = if_name2index(rts->device) };
-		if (setsockopt(sock->fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0)
-			err(errno, "setsockopt(%s, %s)", "IP_PKTINFO", rts->device);
-	}
+	} else if (rts->device && (bindtodev(sock->fd, rts->device) < 0))
+		err(errno ? errno : ENODEV, "%s", rts->device);
 
 	if (!whereto->sin_addr.s_addr)
 		whereto->sin_addr.s_addr = source->sin_addr.s_addr;
