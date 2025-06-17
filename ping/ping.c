@@ -530,7 +530,7 @@ int main(int argc, char **argv) {
 	if (rcode) {
 		if (rcode == EAI_SYSTEM)
 			err(errno, "%s", "getaddrinfo()");
-		errx(rcode, "%s", gai_strerror(rcode));
+		errx(rcode, TARGET_FMT ": %s", target, gai_strerror(rcode));
 	}
 
 	for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {

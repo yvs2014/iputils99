@@ -183,7 +183,7 @@ int main(int argc, char **argv) {
 			if (rc == EAI_SYSTEM)
 				warn("%s", name);
 			else
-				warnx("%s: %s", name, gai_strerror(rc));
+				warnx(TARGET_FMT ": %s", name, gai_strerror(rc));
 			re = EXIT_FAILURE;
 			continue;
 		}

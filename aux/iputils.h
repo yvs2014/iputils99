@@ -57,6 +57,9 @@
 #define MSFMT "%.3f"		// common timing format in milliseconds
 #define TMMS  MSFMT "%s"	// ".3fms"
 #define TM_MS MSFMT " %s"	// ".3f ms"
+#ifndef TARGET_FMT
+#define TARGET_FMT "%.64s"	// limit to 64 characters
+#endif
 
 void close_stdout(void);
 void setmyname(const char *argv0);

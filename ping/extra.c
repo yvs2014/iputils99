@@ -30,7 +30,7 @@ void ping6_unspec(const char *target, const struct in6_addr *addr,
 	if (rc) {
 		if (rc == EAI_SYSTEM)
 			err(errno, "%s", "getaddrinfo()");
-		errx(rc, "%s", gai_strerror(rc));
+		errx(rc, TARGET_FMT ": %s", target, gai_strerror(rc));
 	}
 	for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
 		if (ai->ai_family != AF_INET6)

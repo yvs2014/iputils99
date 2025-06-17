@@ -526,7 +526,7 @@ int main(int argc, char **argv) {
 	  if (rc) {
 		if (rc == EAI_SYSTEM)
 			err(errno, "%s", "getaddrinfo()");
-		errx(rc, "%s", gai_strerror(rc));
+		errx(rc, TARGET_FMT ": %s", argv[0], gai_strerror(rc));
 	  }
 	  if (!res)
 		errx(EXIT_FAILURE, "%s", "getaddrinfo()");

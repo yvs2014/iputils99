@@ -481,7 +481,7 @@ int ping4_run(state_t *rts, int argc, char **argv,
 				if (rc) {
 					if (rc == EAI_SYSTEM)
 						err(errno, "%s", "getaddrinfo()");
-					errx(rc, "%s", gai_strerror(rc));
+					errx(rc, TARGET_FMT ": %s", target, gai_strerror(rc));
 				}
 			}
 			if (!res)

@@ -461,7 +461,7 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 	if (rc) {
 		if (rc == EAI_SYSTEM)
 			err(errno, "%s", "getaddrinfo()");
-		errx(rc, "%s", gai_strerror(rc));
+		errx(rc, TARGET_FMT ": %s", target, gai_strerror(rc));
 	}
 	if (!res)
 		errx(EXIT_FAILURE, "%s", "getaddrinfo()");

@@ -279,7 +279,7 @@ static int niquery_option_subject_addr_handler(struct ping_ni *ni, int index, co
 		if (rc == EAI_SYSTEM)
 			warn("%s", "getaddrinfo()");
 		else
-			warnx("%s", gai_strerror(rc));
+			warnx(TARGET_FMT ": %s", arg, gai_strerror(rc));
 		return -1;
 	}
 

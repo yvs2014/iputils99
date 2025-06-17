@@ -692,7 +692,7 @@ static inline void arping_setup(state_t *rts) {
 		if (rc) {
 			if (rc == EAI_SYSTEM)
 				err(errno, "%s", "getaddrinfo()");
-			errx(rc, "%s af=%d: %s", rts->target, hints.ai_family, gai_strerror(rc));
+			errx(rc, "af=%d: " TARGET_FMT ": %s", hints.ai_family, rts->target, gai_strerror(rc));
 		}
 		if (!res)
 			errx(EXIT_FAILURE, "%s", "getaddrinfo()");
