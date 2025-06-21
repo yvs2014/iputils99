@@ -3,7 +3,7 @@ alias test := test-raw
 
 icmp_prop  := "net.ipv4.ping_group_range"
 gr_min     := "0"
-gr_max     := "21474836472"
+gr_max     := "2147483647"
 icmp_req   := ">>> ICMP ping needs '" + gr_min + " " + gr_max + "' in 'sysctl " + icmp_prop + "'"
 
 build:
