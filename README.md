@@ -6,27 +6,39 @@ Iputils project is located at https://github.com/iputils/iputils/
 iputils + C99 (iputils99)
 -------------------------
 Updating and testing iputils in C99 way
-(iputils and getaddrinfo wrapper)
+(plus getaddrinfo wrapper and netdev altnames)
 
 
 Build
 -----
 ```
-meson setup _build --buildtype=release
+meson setup _build
 meson compile -C _build
 ```
+or just type
+```
+just
+```
 
-Tests
------
-- raw socket
+Run tests with raw socket
+-------------------------
 ```
 sudo setcap cap_net_raw+p ./_build/ping/ping
 meson test -C _build
 ```
-
-- icmp socket
+or just type
 ```
-sudo sysctl -w net.ipv4.ping_group_range='0 2147483647'
+just test
+```
+
+Run tests with icmp socket
+--------------------------
+it needs smth like '0 2147483647' in `sysctl net.ipv4.ping_group_range`
+```
 meson test -C _build
+```
+or type
+```
+just test-icmp
 ```
 

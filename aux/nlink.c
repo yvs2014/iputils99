@@ -62,8 +62,8 @@ static bool nl_altname(unsigned ndx, const char *name) {
 		uint32_t mask;
 	} q = {
 		.ifi = {
-			.ifi_type = ARPHRD_NETROM,
-			.ifi_index = ndx,
+			.ifi_type   = ARPHRD_NETROM,
+			.ifi_index  = ndx,
 			.ifi_change = UINT_MAX,
 		},
 		.attr_mask = { .rta_len = RTA_LENGTH(sizeof(uint32_t)), .rta_type = IFLA_EXT_MASK },

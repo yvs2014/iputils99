@@ -1,5 +1,5 @@
-#ifndef CC_ATTRIB_H
-#define CC_ATTRIB_H
+#ifndef CC_ATTR_H
+#define CC_ATTR_H
 
 // wrapper: __has_attribute
 #ifndef __has_attribute
