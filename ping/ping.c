@@ -95,6 +95,7 @@
 #define AFTYPE(af)	(af == AF_UNSPEC ? "unspec" : \
 			 af == AF_INET   ? "ip4"    : \
 			 af == AF_INET6  ? "ip6"    : "")
+#define PING_FEATURES (FEAT_CAP | FEAT_IDN | FEAT_NLS | FEAT_ALTNAME | FEAT_RFC4620)
 
 /* This may not be needed if both protocol versions always had the same value,
  * but since I don't know that, it's better to be safe than sorry */
@@ -441,8 +442,7 @@ _("Cannot set preload to value greater than 3"), rts->preload);
 		}
 			break;
 		case 'V':
-			version_n_exit(EXIT_SUCCESS,
-				FEAT_CAP | FEAT_IDN | FEAT_NLS | FEAT_RFC4620);
+			version_n_exit(EXIT_SUCCESS, PING_FEATURES);
 		case 'h':
 			usage(EXIT_SUCCESS);
 		default:

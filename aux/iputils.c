@@ -79,6 +79,11 @@ void setmyname(const char *argv0) {
 #else
 #define NLS_FEATURE	'-'
 #endif
+#ifdef USE_ALTNAMES
+#define ALTNAME_FEATURE	'+'
+#else
+#define ALTNAME_FEATURE	'-'
+#endif
 #ifdef ENABLE_RFC4620
 #define RFC4620_FEATURE	'+'
 #else
@@ -109,6 +114,8 @@ void version_n_exit(int rc, int features) {
 			printf(" %cIDN",     IDN_FEATURE);
 		if (features & FEAT_NLS)
 			printf(" %cNLS",     NLS_FEATURE);
+		if (features & FEAT_ALTNAME)
+			printf(" %cALTNAME", ALTNAME_FEATURE);
 		if (features & FEAT_RFC4620)
 			printf(" %cRFC4620", RFC4620_FEATURE);
 	}

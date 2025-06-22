@@ -50,6 +50,8 @@
 
 #define FINAL_PACKS	2
 
+#define ARPING_FEATURES	(FEAT_CAP | FEAT_IDN | FEAT_NLS | FEAT_ALTNAME)
+
 typedef struct arpdev {
 	char name[IF_NAMESIZE];
 	const char *req; // requested with -I
@@ -813,7 +815,7 @@ static inline void parse_options(state_t *rts, int argc, char **argv) {
 			rts->source = optarg;
 			break;
 		case 'V':
-			version_n_exit(EXIT_SUCCESS, FEAT_CAP | FEAT_IDN | FEAT_NLS);
+			version_n_exit(EXIT_SUCCESS, ARPING_FEATURES);
 		case 'h':
 		case '?':
 			usage(EXIT_SUCCESS);
