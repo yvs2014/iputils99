@@ -15,20 +15,12 @@ Build
 meson setup _build
 meson compile -C _build
 ```
-or just type
-```
-just
-```
 
 Run tests with raw socket
 -------------------------
 ```
 sudo setcap cap_net_raw+p ./_build/ping/ping
 meson test -C _build
-```
-or just type
-```
-just test
 ```
 
 Run tests with icmp socket
@@ -37,8 +29,3 @@ it needs smth like '0 2147483647' in `sysctl net.ipv4.ping_group_range`
 ```
 meson test -C _build
 ```
-or type
-```
-just test-icmp
-```
-

@@ -139,9 +139,11 @@ static inline void stat_timing(const state_t *rts) {
 		double ipg = (tv.tv_sec * 1000 + tv.tv_nsec / 1000000.)
 			/ (rts->ntransmitted - 1);
 		printf(ADAPTIVE_MS, _("ipg/ewma"), ipg, rts->rtt / 8000., _("ms"));
+		comma = ',';
 	}
 	//
-	putchar('\n');
+	if (comma)
+		putchar('\n');
 }
 
 bool resume(const state_t *rts) {

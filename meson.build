@@ -88,6 +88,23 @@ if cc.get_define('IPV6_PKTINFO', prefix: pkti_prfx) == ''
 	warning('IPV6_PKTINFO: not found')
 endif
 
+altnames = get_option('ALTNAMES')
+if altnames
+	altname_c = '''
+#define _GNU_SOURCE
+#include <linux/rtnetlink.h>
+int main(int argc, char **argv) { return IFLA_ALT_IFNAME; }
+'''
+	alt_ifname = cc.compiles(altname_c, name: 'netdev-altnames support')
+	if alt_ifname
+		conf.set('USE_ALTNAMES', 1, description: 'Use netdev-altnames')
+	else
+		warning('netdev-altnames are not supported')
+	endif
+else
+	alt_ifname = false
+endif
+
 idn = get_option('IDN')
 idn_via = '' # libc
 if idn	# If available: use AI_IDN for getaddrinfo() queries
@@ -241,11 +258,12 @@ foreach tool: iputils
 endforeach
 
 sect_cnf = {
-	'Caps'    : libcap,
+	'Caps'     : libcap,
 	'IDN @0@ '.format(idn_via): idn,
-	'NLS'     : nls,
-	'RFC4620' : rfc4620,
-	'Tests'   : tests,
+	'NLS'      : nls,
+	'RFC4620'  : rfc4620,
+	'Altnames' : alt_ifname,
+	'Tests'    : tests,
 }
 if docgen or not docgen_okay
 	sect_cnf += {'Generate docs': docgen and docgen_okay}

@@ -420,15 +420,17 @@ int ping6_run(state_t *rts, int argc, char **argv,
 			      IN6_IS_ADDR_MC_LINKLOCAL(&firsthop->sin6_addr);
 		if (rts->device) {
 			unsigned iface = nl_name2ndx(rts->device);
-			if (!iface)
-				err(errno ? errno : ENODEV, "%s", rts->device);
+			if (!iface) {
+				if (!errno) errno = ENODEV;
+				err(errno, NETDEV_FMT, rts->device);
+			}
 //			struct in6_pktinfo ipi = { .ipi6_ifindex = iface };
 //			if ((setsockopt(probe_fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
 //			    (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0))
 //				err(errno, "setsockopt(%s, %s)", "IPV6_PKTINFO", rts->device);
 			if ((bindtodev(probe_fd, rts->device) < 0) ||
 			    (bindtodev(sock->fd, rts->device) < 0))
-				err(errno, "setsockopt(%s, %s)", "SO_BINDTODEVICE", rts->device);
+				err(errno, "%s", rts->device);
 			if (scoped)
 				firsthop->sin6_scope_id = iface;
 		}
@@ -459,8 +461,10 @@ int ping6_run(state_t *rts, int argc, char **argv,
 	} else if (rts->device && (IN6_IS_ADDR_LINKLOCAL(&source->sin6_addr) ||
 			      IN6_IS_ADDR_MC_LINKLOCAL(&source->sin6_addr))) {
 		source->sin6_scope_id = nl_name2ndx(rts->device);
-		if (!source->sin6_scope_id)
-			err(errno ? errno : ENODEV, "%s", rts->device);
+		if (!source->sin6_scope_id) {
+			if (!errno) errno = ENODEV;
+			err(errno, NETDEV_FMT, rts->device);
+		}
 	}
 
 	if (rts->device && rts->cmsg) {
@@ -473,8 +477,10 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		struct in6_pktinfo *ipi = (struct in6_pktinfo *)CMSG_DATA(cmsg);
 		memset(ipi, 0, sizeof(*ipi));
 		ipi->ipi6_ifindex = nl_name2ndx(rts->device);
-		if (!ipi->ipi6_ifindex)
-			err(errno ? errno : ENODEV, "%s", rts->device);
+		if (!ipi->ipi6_ifindex) {
+			if (!errno) errno = ENODEV;
+			err(errno, NETDEV_FMT, rts->device);
+		}
 
 		if (rts->opt.strictsource) {
 //			unsigned iface = if_name2index(rts->device);
@@ -482,7 +488,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 //			if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0)
 //				err(errno, "setsockopt(%s, %s)", "IPV6_PKTINFO", rts->device);
 			if (bindtodev(sock->fd, rts->device) < 0)
-				err(errno, "setsockopt(%s, %s)", "SO_BINDTODEVICE", rts->device);
+				err(errno, "%s", rts->device);
 		}
 	}
 

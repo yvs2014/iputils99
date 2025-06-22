@@ -60,6 +60,10 @@
 #ifndef TARGET_FMT
 #define TARGET_FMT "%.64s"	// limit to 64 characters
 #endif
+#ifndef NETDEV_FMT
+#define NETDEV_FMT "%.128s"	// limit to 128 characters
+#endif
+
 
 void close_stdout(void);
 void setmyname(const char *argv0);

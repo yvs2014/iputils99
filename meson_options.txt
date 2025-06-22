@@ -9,6 +9,8 @@ option('IDN',          type: 'boolean', value: true,
 	description: 'IDN support (transparently via libc, or directly with libidn2)')
 option('NLS',          type: 'boolean', value: true,
 	description: 'NLS support (gettext)')
+option('ALTNAMES',     type: 'boolean', value: true,
+	description: 'Netdev-altnames support')
 option('RFC4620',      type: 'boolean', value: false,
 	description: 'PING6 NodeInfo client (RFC4620)')
 

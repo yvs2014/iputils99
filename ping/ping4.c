@@ -520,7 +520,7 @@ int ping4_run(state_t *rts, int argc, char **argv,
 //				err(errno, "setsockopt(%s, %s)", "IP_PKTINFO", rts->device);
 			if ((bindtodev(probe_fd, rts->device) < 0) ||
 			    (bindtodev(sock->fd, rts->device) < 0))
-				err(errno, "setsockopt(%s, %s)", "SO_BINDTODEVICE", rts->device);
+				err(errno, "%s", rts->device);
 		}
 		sock_settos(probe_fd, rts->qos, rts->ip6);
 		sock_setmark(rts, probe_fd);
@@ -565,8 +565,10 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 			rts->unreldev = true;
 		}
 
-	} else if (rts->device && (bindtodev(sock->fd, rts->device) < 0))
-		err(errno ? errno : ENODEV, "%s", rts->device);
+	} else if (rts->device && (bindtodev(sock->fd, rts->device) < 0)) {
+		if (!errno) errno = ENODEV;
+		err(errno, NETDEV_FMT, rts->device);
+	}
 
 	if (!whereto->sin_addr.s_addr)
 		whereto->sin_addr.s_addr = source->sin_addr.s_addr;

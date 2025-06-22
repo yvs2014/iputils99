@@ -390,7 +390,7 @@ static const struct ifaddrs* ifa_by_name(const struct ifaddrs* list,
 {
 	const struct ifaddrs *ifa = list;
 	for (; ifa; ifa = ifa->ifa_next) {
-		if (NLSTREQ(ifa->ifa_name, dev->name))
+		if (NL_STREQ(ifa->ifa_name, dev->name))
 			if (valid_ifa(ifa, dev, opt))
 				break;
 	}
@@ -429,13 +429,14 @@ static int check_device(state_t *rts) {
 	}
 	//
 	rts->dev.ifa = ifa_by_name(rts->dev.ifa_list, &rts->dev, &rts->opt);
+#ifdef USE_ALTNAMES
 	// could be 'altname' too
 	if (!rts->dev.ifa) {
 		unsigned ndx = nl_nametoindex(rts->dev.name, rts->dev.ifa_list);
 		if ((ndx > 0) && if_indextoname(ndx, rts->dev.name))
 			rts->dev.ifa = ifa_by_name(rts->dev.ifa_list, &rts->dev, &rts->opt);
 	}
-	//
+#endif
 	int rc = 0;
 	if (rts->dev.ifa) { // interface found
 		rts->dev.ndx = if_nametoindex(rts->dev.ifa->ifa_name);
@@ -703,7 +704,8 @@ static inline void arping_setup(state_t *rts) {
 
 	// address family: to be sure
 	if (rts->af != AF_INET)
-		errx(EAFNOSUPPORT, "%s: %s", rts->target, strerror(ENODEV));
+		errx(EAFNOSUPPORT, NETDEV_FMT ": %s", rts->target,
+			strerror(rts->af ? ENODEV : ENXIO));
 
 	// only target: guess device
 	if (!rts->dev.name[0])
@@ -716,7 +718,7 @@ static inline void arping_setup(state_t *rts) {
 	if (!rts->dev.ndx) { // no suitable device?
 		errno = ENODEV;
 		if (rts->dev.name[0])
-			err(errno, "%s", rts->dev.req ? rts->dev.req : rts->dev.name);
+			err(errno, NETDEV_FMT, rts->dev.req ? rts->dev.req : rts->dev.name);
 		warn("%s", rts->target);
 	}
 

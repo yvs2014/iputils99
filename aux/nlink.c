@@ -20,12 +20,12 @@
 #define NETLINK		"NETLINK"
 #define NL_WRONG_TYPE	"%s: got type=%u, expected=%u"
 #define NL_TOO_SHORT	"%s: message too short (len=%u, expected=%lu)"
-#define NL_ALTNAMESIZE	128
 
+#ifdef USE_ALTNAMES
 static int cmp_raname(const struct rtattr *ra, const char *name) {
 	int len = RTA_PAYLOAD(ra);
 	char *data = ra ? (char*)RTA_DATA(ra) : NULL;
-	return (data && (len > 0) && (len <= IF_NAMESIZE)) ? NLSTREQ(name, data) : 0;
+	return (data && (len > 0) && (len <= NL_ALTSIZE)) ? NL_STREQ(name, data) : 0;
 }
 
 static int is_altname(const struct nlmsghdr *nh, const char *name) {
@@ -73,10 +73,12 @@ static bool nl_altname(unsigned ndx, const char *name) {
 		RTM_NEWLINK, NLMSG_HDRLEN + sizeof(struct ifinfomsg), is_altname);
 	return (rc < 0) ? false : rc;
 }
+#endif
 
 //
 // pub
 
+#ifdef USE_ALTNAMES
 unsigned nl_nametoindex(const char *name, struct ifaddrs *ifas) {
 	if (!(name || name[0]))
 		return 0;
@@ -103,13 +105,16 @@ unsigned nl_nametoindex(const char *name, struct ifaddrs *ifas) {
 		freeifaddrs(list);
 	return ndx;
 }
+#endif
 
 unsigned nl_name2ndx(const char *name) {
 	unsigned ndx = 0;
-	if (name) {
+	if (name && name[0]) {
 		ndx = if_nametoindex(name);
+#ifdef USE_ALTNAMES
 		if (!ndx)
 			ndx = nl_nametoindex(name, NULL);
+#endif
 	}
 	return ndx;
 }

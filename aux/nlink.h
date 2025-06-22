@@ -10,10 +10,15 @@ int nl_query(const char *name, int flags, int type,
 
 // with if_nametoindex()
 unsigned nl_name2ndx(const char *name);
+
+#ifdef USE_ALTNAMES
 // without if_nametoindex()
 unsigned nl_nametoindex(const char *name, struct ifaddrs *ifas);
+#define NL_ALTSIZE 128
+#else
+#define NL_ALTSIZE IF_NAMESIZE
+#endif
 
-#define NLALTSIZE     128
-#define NLSTREQ(a, b) (!strncmp((a), (b), NLALTSIZE/*IF_NAMESIZE*/))
+#define NL_STREQ(a, b) (!strncmp((a), (b), NL_ALTSIZE))
 
 #endif
