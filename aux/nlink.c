@@ -19,7 +19,7 @@
 
 #define NETLINK		"NETLINK"
 #define NL_WRONG_TYPE	"%s: got type=%u, expected=%u"
-#define NL_TOO_SHORT	"%s: message too short (len=%u, expected=%lu)"
+#define NL_TOO_SHORT	"%s: message too short (len=%u, expected=%zu)"
 
 #ifdef USE_ALTNAMES
 static int cmp_raname(const struct rtattr *ra, const char *name) {
