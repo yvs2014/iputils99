@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <err.h>
 #include <errno.h>
@@ -188,4 +189,26 @@ int gai_wrapper2(const char *restrict node, const char *restrict service,
 	return rc;
 }
 #endif
+
+#ifdef NI_MAXHOST
+#define HOSTNAME_MAXLEN NI_MAXHOST
+#else
+#define HOSTNAME_MAXLEN 1025
+#endif
+
+// err() if 'fail' is true, otherwise warn()
+// return 'errno' unless 'fail'
+int validate_hostlen(const char *host, bool fail) {
+	if (!host || !host[0]) {
+		errno = EDESTADDRREQ;
+		if (fail) err(errno, NULL);
+		else { warn(NULL); return errno; }
+	}
+	if (strnlen(host, HOSTNAME_MAXLEN) >= HOSTNAME_MAXLEN) {
+		errno = EOVERFLOW;
+		if (fail) err(errno, "%.*s", HOSTNAME_MAXLEN, host);
+		else { warn("%.*s", HOSTNAME_MAXLEN, host); return errno; }
+	}
+	return 0;
+}
 

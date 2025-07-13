@@ -864,6 +864,10 @@ msgid "DIFFERENT ADDRESS"
 msgstr "განსხვავებული მისამართი"
 
 #
+msgid "record route"
+msgstr "რაუტის ჩაწერა"
+
+#
 msgid "wrong byte #"
 msgstr "არასწორი ბაიტი #"
 

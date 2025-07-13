@@ -930,6 +930,10 @@ msgid "DIFFERENT ADDRESS"
 msgstr "ІНША АДРЕСА"
 
 #
+msgid "record route"
+msgstr "запис маршруту"
+
+#
 msgid "wrong byte #"
 msgstr "помилковий байт #"
 

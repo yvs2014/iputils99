@@ -858,6 +858,10 @@ msgid "DIFFERENT ADDRESS"
 msgstr "FARKLI ADRES"
 
 #
+msgid "record route"
+msgstr "rotayı kaydet"
+
+#
 msgid "wrong byte #"
 msgstr "yanlış bayt #"
 

@@ -97,7 +97,7 @@ typedef struct ping_bool_opts {
 /* ping runtime state */
 typedef struct ping_state {
 	size_t datalen;
-	char *hostname;
+	const char *hostname;
 	uid_t uid;
 	uint16_t ident16;		/* id to identify our packets */
 	int custom_ident;		/* -e option */

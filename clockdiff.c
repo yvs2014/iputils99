@@ -508,6 +508,7 @@ int main(int argc, char **argv) {
 
 	if (isatty(fileno(stdin)) && isatty(fileno(stdout)))
 		rts.interactive = true;
+	validate_hostlen(argv[0], true);
 
 #ifdef HAVE_ARC4RANDOM_UNIFORM
 	rts.id16 = arc4random_uniform(USHRT_MAX) + 1;

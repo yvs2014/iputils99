@@ -170,8 +170,12 @@ int main(int argc, char **argv) {
 	int re = EXIT_SUCCESS;
 
 	for (int i = 0; i < argc; i++) {
-		errno = 0;
 		const char *name = argv[i];
+		errno = validate_hostlen(name, false);
+		if (errno) {
+			re = EXIT_FAILURE;
+			continue;
+		}
 		struct addrinfo *res = NULL;
 
 		int rc =

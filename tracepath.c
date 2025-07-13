@@ -614,6 +614,7 @@ int main(int argc, char **argv) {
 		usage(EDESTADDRREQ);
 	} else if (argc != 1)
 		usage(EINVAL);
+	validate_hostlen(argv[0], true);
 
 	//
 	rts.sock = resolve(argv[0], &rts, &hints);

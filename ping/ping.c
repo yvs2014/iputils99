@@ -511,6 +511,7 @@ int main(int argc, char **argv) {
 		usage(EDESTADDRREQ);
 	}
 	const char *target = argv[argc - 1];
+	validate_hostlen(target, true);
 
 	if (rts.custom_ident < 0) {
 #ifdef HAVE_ARC4RANDOM_UNIFORM

@@ -145,10 +145,10 @@ static int ping4_receive_error(state_t *rts, const sock_t *sock) {
 	char cbuf[512];
 	struct icmphdr icmp = {0};
 	struct iovec iov = { .iov_base = &icmp, .iov_len = sizeof(icmp) };
-	struct sockaddr_in target = {0};
+	struct sockaddr_in sa = {0};
 	struct msghdr msg = {
-		.msg_name       = &target,
-		.msg_namelen    = sizeof(target),
+		.msg_name       = &sa,
+		.msg_namelen    = sizeof(sa),
 		.msg_iov        = &iov,
 		.msg_iovlen     = 1,
 		.msg_control    = cbuf,
@@ -175,9 +175,9 @@ static int ping4_receive_error(state_t *rts, const sock_t *sock) {
 				print_local_ee(rts, ee);
 		} else if (ee->ee_origin == SO_EE_ORIGIN_ICMP) {
 			struct sockaddr_in *to = (struct sockaddr_in *)&rts->whereto;
-			if ((res < (ssize_t)sizeof(icmp))                   ||
-			    (target.sin_addr.s_addr != to->sin_addr.s_addr) ||
-			    (icmp.type != ICMP_ECHO)                        ||
+			if ((res < (ssize_t)sizeof(icmp))               ||
+			    (sa.sin_addr.s_addr != to->sin_addr.s_addr) ||
+			    (icmp.type != ICMP_ECHO)                    ||
 			    !IS_OURS(rts, sock->raw, icmp.un.echo.id)) {
 				/* Not our error, not an error at all, clear */
 				saved_errno = 0;
@@ -369,7 +369,7 @@ static inline void set_route_space(int fd) {
 	space[1 + IPOPT_OLEN]   = sizeof(space) - 1;
 	space[1 + IPOPT_OFFSET] = IPOPT_MINOFF;
 	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, space, sizeof(space)) < 0)
-		err(errno, "record route");
+		err(errno, _("record route"));
 }
 
 static inline void set_ts_space(int fd, const route_t *route, uint8_t ipt_flg) {
@@ -403,7 +403,7 @@ static inline void set_src_space(int fd, const route_t *route, bool dontroute) {
 		*data = route->data[i];
 	}
 	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, space, 4 + route->n * 4) < 0)
-		err(errno, "record route");
+		err(errno, _("record route"));
 }
 
 static void ping4_bpf_filter(const state_t *rts, const sock_t *sock) {
@@ -428,6 +428,51 @@ static void ping4_bpf_filter(const state_t *rts, const sock_t *sock) {
 	setsock_bpf(rts, sock, &fprog);
 }
 
+static inline void ping4_run_args(state_t *rts, struct sockaddr_in *whereto,
+	const char *target, int argc, struct addrinfo *ai, char *hname, size_t hlen)
+{
+	memset(whereto, 0, sizeof(*whereto));
+	whereto->sin_family = AF_INET;
+	if (inet_aton(target, &whereto->sin_addr) == 1) {
+		rts->hostname = target;
+		if (argc == 1)
+			rts->opt.resolve = false;
+	} else {
+		struct addrinfo *res = ai;
+		if (argc > 1) {
+			const struct addrinfo hints = {
+				.ai_family = AF_INET,
+				.ai_flags  = AI_FLAGS,
+			};
+			int rc = GAI_WRAPPER(target, NULL, &hints, &res);
+			if (rc) {
+				if (rc == EAI_SYSTEM)
+					err(errno, "%s", "getaddrinfo()");
+				errx(rc, TARGET_FMT ": %s", target, gai_strerror(rc));
+			}
+		}
+		if (!res)
+			errx(EXIT_FAILURE, "%s", "getaddrinfo()");
+		memcpy(whereto, res->ai_addr, sizeof(*whereto));
+		/*
+		 * On certain network setup getaddrinfo() can return empty
+		 * ai_canonname. Instead of printing nothing in "PING"
+		 * line use the target.
+		 */
+		strncpy(hname, res->ai_canonname ? res->ai_canonname : target, hlen - 1);
+		rts->hostname = hname;
+		if (argc > 1)
+			freeaddrinfo(res);
+	}
+	if (argc > 1) {
+		if (rts->route->n < MAX_ROUTES)
+			rts->route->data[rts->route->n++] = whereto->sin_addr.s_addr;
+		else
+			errx(EINVAL, "%s, %s=%d", _("Too many intermediate hops"),
+				_("max"), MAX_ROUTES);
+	}
+}
+
 /* Return >= 0: exit with this code, < 0: go on to next addrinfo result */
 int ping4_run(state_t *rts, int argc, char **argv,
 		struct addrinfo *ai, const sock_t *sock)
@@ -447,7 +492,19 @@ int ping4_run(state_t *rts, int argc, char **argv,
 	struct sockaddr_in *whereto = (struct sockaddr_in *)&rts->whereto;
 	source->sin_family = AF_INET;
 
-	if (argc > 1) {
+	char hnamebuf[NI_MAXHOST] = "";
+	int arg_cnt = 0;
+	while (argc > 0) {
+		char *target = *argv;
+		if (!validate_hostlen(target, false)) {
+			ping4_run_args(rts, whereto, target, argc, ai, hnamebuf, sizeof(hnamebuf));
+			arg_cnt++;
+		}
+		argc--;
+		argv++;
+	}
+
+	if (arg_cnt > 1) {
 		if (rts->opt.rroute)
 			usage(EINVAL);
 		else if (rts->opt.timestamp) {
@@ -459,54 +516,6 @@ int ping4_run(state_t *rts, int argc, char **argv,
 					_("max"), MAX_TS_ROUTES - 1);
 		} else
 			rts->opt.sourceroute = true;
-	}
-
-	char hnamebuf[NI_MAXHOST] = "";
-	while (argc > 0) {
-		char *target = *argv;
-		memset(whereto, 0, sizeof(*whereto));
-		whereto->sin_family = AF_INET;
-		if (inet_aton(target, &whereto->sin_addr) == 1) {
-			rts->hostname = target;
-			if (argc == 1)
-				rts->opt.resolve = false;
-		} else {
-			struct addrinfo *res = ai;
-			if (argc > 1) {
-				const struct addrinfo hints = {
-					.ai_family = AF_INET,
-					.ai_flags  = AI_FLAGS,
-				};
-				int rc = GAI_WRAPPER(target, NULL, &hints, &res);
-				if (rc) {
-					if (rc == EAI_SYSTEM)
-						err(errno, "%s", "getaddrinfo()");
-					errx(rc, TARGET_FMT ": %s", target, gai_strerror(rc));
-				}
-			}
-			if (!res)
-				errx(EXIT_FAILURE, "%s", "getaddrinfo()");
-			memcpy(whereto, res->ai_addr, sizeof(*whereto));
-			/*
-			 * On certain network setup getaddrinfo() can return empty
-			 * ai_canonname. Instead of printing nothing in "PING"
-			 * line use the target.
-			 */
-			strncpy(hnamebuf, res->ai_canonname ? res->ai_canonname : target,
-				sizeof(hnamebuf) - 1);
-			rts->hostname = hnamebuf;
-			if (argc > 1)
-				freeaddrinfo(res);
-		}
-		if (argc > 1) {
-			if (rts->route->n < MAX_ROUTES)
-				rts->route->data[rts->route->n++] = whereto->sin_addr.s_addr;
-			else
-				errx(EINVAL, "%s, %s=%d", _("Too many intermediate hops"),
-					_("max"), MAX_ROUTES);
-		}
-		argc--;
-		argv++;
 	}
 
 	if (!source->sin_addr.s_addr) {

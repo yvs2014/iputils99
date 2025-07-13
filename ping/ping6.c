@@ -131,10 +131,10 @@ static int ping6_receive_error(state_t *rts, const sock_t *sock) {
 	char cbuf[512];
 	struct icmp6_hdr icmp = {0};
 	struct iovec iov = { .iov_base = &icmp, .iov_len = sizeof(icmp) };
-	struct sockaddr_in6 target = {0};
+	struct sockaddr_in6 sa = {0};
 	struct msghdr msg = {
-		.msg_name       = &target,
-		.msg_namelen    = sizeof(target),
+		.msg_name       = &sa,
+		.msg_namelen    = sizeof(sa),
 		.msg_iov        = &iov,
 		.msg_iovlen     = 1,
 		.msg_control    = cbuf,
@@ -162,7 +162,7 @@ static int ping6_receive_error(state_t *rts, const sock_t *sock) {
 		} else if (ee->ee_origin == SO_EE_ORIGIN_ICMP6) {
 			struct sockaddr_in6 *to = (struct sockaddr_in6 *)&rts->whereto;
 			if ((res < (ssize_t)sizeof(icmp))                 ||
-			    memcmp(&target.sin6_addr, &to->sin6_addr, 16) ||
+			    memcmp(&sa.sin6_addr, &to->sin6_addr, 16) ||
 			    (icmp.icmp6_type != ICMP6_ECHO_REQUEST)       ||
 			    !IS_OURS(rts, sock->raw, icmp.icmp6_id)) {
 				/* Not our error, not an error at all, clear */
@@ -379,11 +379,10 @@ int ping6_run(state_t *rts, int argc, char **argv,
 #endif
 
 	char *target = NULL;
-	if (argc > 1) {
+	if (argc > 1)
 		usage(EINVAL);
-	} else if (argc == 1) {
+	else if (argc == 1)
 		target = *argv;
-	}
 #ifdef ENABLE_RFC4620
 	else if (rts->ni) {
 		if ((rts->ni->query < 0) && (rts->ni->subject_type != IPUTILS_NI_ICMP6_SUBJ_FQDN))
@@ -391,6 +390,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		target = rts->ni->group;
 	}
 #endif
+	validate_hostlen(target, true);
 
 	memcpy(whereto, ai->ai_addr, sizeof(*whereto));
 	whereto->sin6_port = htons(IPPROTO_ICMPV6);

@@ -859,6 +859,9 @@ msgid "DIFFERENT ADDRESS"
 msgstr "Eri osoite"
 
 #
+msgid "record route"
+msgstr "tallenna reitti"
+
 msgid "wrong byte #"
 msgstr "väärän datatavun #"
 

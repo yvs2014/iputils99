@@ -855,6 +855,7 @@ int main(int argc, char **argv) {
 		usage(EINVAL);
 
 	rts.target = *argv;
+	validate_hostlen(rts.target, true);
 	rts.sock   = arping_sock();
 	arping_setup(&rts);
 	drop_priv();

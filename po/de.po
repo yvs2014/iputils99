@@ -872,6 +872,9 @@ msgid "DIFFERENT ADDRESS"
 msgstr "ANDERE ADRESSE"
 
 #
+msgid "record route"
+msgstr "Zeichne Route auf"
+
 msgid "wrong byte #"
 msgstr "falsches Byte #"
 

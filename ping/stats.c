@@ -187,8 +187,8 @@ void headline(const state_t *rts, size_t nodatalen) {
 	// called once at ping setup
 	socklen_t len = rts->ip6 ?
 		sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
-	const char *target = sprint_addr(&rts->whereto, len, false);
-	printf("%s %s (%s)", _("PING"), rts->hostname, target);
+	printf("%s %s (%s)", _("PING"), rts->hostname,
+		sprint_addr(&rts->whereto, len, false));
 	if (rts->ip6 && rts->flowlabel)
 		printf(", %s 0x%05x", _("flow"), ntohl(rts->flowlabel));
 	if (rts->device || rts->opt.strictsource) {

@@ -854,6 +854,10 @@ msgid "DIFFERENT ADDRESS"
 msgstr "地址不同"
 
 #
+msgid "record route"
+msgstr "记录路线"
+
+#
 msgid "wrong byte #"
 msgstr "错误的数据字节 #"
 

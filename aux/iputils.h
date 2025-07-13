@@ -99,4 +99,6 @@ void timespecsub(const struct timespec *a, const struct timespec *b, struct time
 void timersub(const struct timeval *a, const struct timeval *b, struct timeval *res);
 #endif
 
+int validate_hostlen(const char *host, bool fail);
+
 #endif
