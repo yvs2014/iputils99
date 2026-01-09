@@ -29,8 +29,6 @@ option('BUILD_GAI',       type: 'boolean', value: true,
 # extra
 option('TESTS',                 type: 'boolean', value: true,
 	description: 'Include tests')
-option('DOCGEN',                type: 'boolean', value: false,
-	description: 'Generate man/html from xml templates')
 option('INSTALL_WITH_CAPS',     type: 'boolean', value: false,
 	description: 'Set linux capabilities at installation')
 option('NEED_NET_RAW',          type: 'boolean', value: true,

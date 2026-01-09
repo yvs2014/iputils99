@@ -238,13 +238,6 @@ if tests
 	subdir('test')
 endif
 
-docgen = get_option('DOCGEN')
-docgen_okay = true
-if docgen
-	docgen_excl = ['gai']
-	subdir('doc')
-endif
-
 
 # summary at the end
 #
@@ -265,9 +258,6 @@ sect_cnf = {
 	'Altnames' : alt_ifname,
 	'Tests'    : tests,
 }
-if docgen or not docgen_okay
-	sect_cnf += {'Generate docs': docgen and docgen_okay}
-endif
 
 sect_dir = {
 	'prefix'   : prefix,

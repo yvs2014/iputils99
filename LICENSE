@@ -1,5 +1,6 @@
 arping: GPL-2.0-or-later
 clockdiff: BSD-3-Clause
+gai: GPL-2.0-or-later
 ping: BSD-3-Clause
 tracepath: GPL-2.0-or-later
 
