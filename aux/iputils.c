@@ -199,16 +199,15 @@ int gai_wrapper2(const char *restrict node, const char *restrict service,
 // err() if 'fail' is true, otherwise warn()
 // return 'errno' unless 'fail'
 int validate_hostlen(const char *host, bool fail) {
+	int re = 0;
 	if (!host || !host[0]) {
-		errno = EDESTADDRREQ;
-		if (fail) err(errno, NULL);
-		else { warn(NULL); return errno; }
+		re = errno = EDESTADDRREQ;
+		fail ? err(errno, NULL) : warn(NULL);
+	} else if (strnlen(host, HOSTNAME_MAXLEN) >= HOSTNAME_MAXLEN) {
+		re = errno = EOVERFLOW;
+		fail ? err(errno, "%.*s", HOSTNAME_MAXLEN, host) :
+		       warn("%.*s", HOSTNAME_MAXLEN, host);
 	}
-	if (strnlen(host, HOSTNAME_MAXLEN) >= HOSTNAME_MAXLEN) {
-		errno = EOVERFLOW;
-		if (fail) err(errno, "%.*s", HOSTNAME_MAXLEN, host);
-		else { warn("%.*s", HOSTNAME_MAXLEN, host); return errno; }
-	}
-	return 0;
+	return re;
 }
 

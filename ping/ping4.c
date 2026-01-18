@@ -495,8 +495,9 @@ int ping4_run(state_t *rts, int argc, char **argv,
 	char hnamebuf[NI_MAXHOST] = "";
 	int arg_cnt = 0;
 	while (argc > 0) {
-		char *target = *argv;
-		if (!validate_hostlen(target, false)) {
+		const char *target = *argv;
+		if (validate_hostlen(target, false)) errno = 0;
+		else {
 			ping4_run_args(rts, whereto, target, argc, ai, hnamebuf, sizeof(hnamebuf));
 			arg_cnt++;
 		}

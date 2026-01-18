@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
 	if (gai_opt.verbose)
 		printf("hints: af=%d type=%d flags=%u(0x%04x)\n",
 			hints.ai_family, hints.ai_socktype,
-			hints.ai_flags, hints.ai_flags);
+			hints.ai_flags,  hints.ai_flags);
 
 	int re = EXIT_SUCCESS;
 
@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
 		const char *name = argv[i];
 		errno = validate_hostlen(name, false);
 		if (errno) {
-			re = EXIT_FAILURE;
+			re = errno;
 			continue;
 		}
 		struct addrinfo *res = NULL;
@@ -184,27 +184,21 @@ int main(int argc, char **argv) {
 #endif
 			gai_wrapper(name, NULL, &hints, &res);
 		if (rc) {
-			if (rc == EAI_SYSTEM)
-				warn("%s", name);
-			else
+			(rc == EAI_SYSTEM) ? warn("%s", name) :
 				warnx(TARGET_FMT ": %s", name, gai_strerror(rc));
-			re = EXIT_FAILURE;
-			continue;
-		}
-
-		for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
+			re = rc;
+		} else for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
 			int af = ai->ai_family;
-			socklen_t len =	(af == AF_INET)  ? sizeof(struct sockaddr_in)  :
-					(af == AF_INET6) ? sizeof(struct sockaddr_in6) : 0;
-			if (!len) {
-				errno = EAFNOSUPPORT;
+			char c = (af == AF_INET) ? '4' : (af == AF_INET6) ? '6' : 0;
+			if (c) {
+				printf("%s ip%c: ", name, c);
+				println_gni(ai->ai_addr, ai->ai_addrlen);
+			} else {
+				re = errno = EAFNOSUPPORT;
 				warn("%s: ai_family=%d", name, af);
-				re = EXIT_FAILURE;
-				continue;
 			}
-			printf("%s ip%c: ", name, (af == AF_INET) ? '4' : '6');
-			println_gni(ai->ai_addr, len);
 		}
+		if (res) freeaddrinfo(res);
 	}
 
 	return re;
