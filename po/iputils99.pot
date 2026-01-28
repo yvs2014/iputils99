@@ -149,14 +149,49 @@ msgid ""
 "            use -F multiple times to combine flags\n"
 "  -i        convert IDN names using libidn2\n"
 "            (available if IDN is not transparently supported)\n"
-"  -h        print help and exit\n"
+"  -l        list AI_xxx constants\n"
+"  -h        print help\n"
 "  -v        verbose output\n"
-"  -V        print version and exit\n"
+"  -V        print version\n"
 msgstr ""
 
 #
 msgid "no need in -i, IDN is transparently supported"
 msgstr ""
+
+### AI_xxx descriptions
+
+msgid "Socket address for bind()"
+msgstr ""
+
+msgid "Request for canonical name"
+msgstr ""
+
+msgid "Don't use host resolution"
+msgstr ""
+
+msgid "IPv4 mapped addresses are acceptable"
+msgstr ""
+
+msgid "IPv4 mapped and IPv6 addresses"
+msgstr ""
+
+msgid "Use host configuration to choose address type"
+msgstr ""
+
+msgid "Convert to IDN format if necessary"
+msgstr ""
+
+msgid "Translate canonical name from IDN format"
+msgstr ""
+
+msgid "Don't use service resolution"
+msgstr ""
+
+msgid "deprecated"
+msgstr ""
+
+###
 
 #
 msgid "Sent probes"

@@ -461,7 +461,7 @@ int main(int argc, char **argv) {
 #ifdef HAVE_LIBCAP
 	// limit caps to net_raw|sys_nice
 	{ cap_value_t caps[] = {CAP_NET_RAW, CAP_SYS_NICE};
-	  limit_cap(caps, ARRAY_SIZE(caps)); }
+	  limit_cap(caps, ARRAY_LEN(caps)); }
 	NET_RAW_OFF;
 	SYS_NICE_OFF;
 #else

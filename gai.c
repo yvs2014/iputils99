@@ -19,14 +19,23 @@
 #include "iputils.h"
 #include "str2num.h"
 
+#define AI_FMTLEN 16
+
 typedef struct gai_opts {
-	int af;
-	int flags;
+	int  af;
+	int  flags;
 	bool verbose;
 #ifdef USE_LIBIDN2
 	bool idn2;
 #endif
-} gai_opt_s;
+} gaiopt_s;
+
+typedef struct valstr {
+	int  val;
+	const char *str;
+	const char *dsc;
+} valstr_s;
+
 
 NORETURN static void gai_usage(int rc) {
 	const char *options =
@@ -38,61 +47,138 @@ NORETURN static void gai_usage(int rc) {
 "            use -F multiple times to combine flags\n"
 "  -i        convert IDN names using libidn2\n"
 "            (available if IDN is not transparently supported)\n"
-"  -h        print help and exit\n"
+"  -l        list AI_xxx constants\n"
+"  -h        print help\n"
 "  -v        verbose output\n"
-"  -V        print version and exit\n"
+"  -V        print version\n"
 ;
 	usage_common(rc, options, "HOST", MORE);
 }
 
-/* known AI_xxx: 16 is long enough */
-#define STREQ(a, b) (!strncmp((a), (b), 16))
+#define STREQ(a, b) (!strncmp((a), (b), AI_FMTLEN * 2))
+
+#define IF_AI_MACRO(macro) { if (STREQ((arg), (#macro))) return (macro); }
 
 static inline unsigned ai_macro2value(char opt, const char *arg) {
 #ifdef AI_PASSIVE
-	if (STREQ(arg, "AI_PASSIVE"))
-		return AI_PASSIVE;
+	IF_AI_MACRO(AI_PASSIVE);
 #endif
 #ifdef AI_CANONNAME
-	if (STREQ(arg, "AI_CANONNAME"))
-		return AI_CANONNAME;
+	IF_AI_MACRO(AI_CANONNAME);
 #endif
 #ifdef AI_NUMERICHOST
-	if (STREQ(arg, "AI_NUMERICHOST"))
-		return AI_NUMERICHOST;
+	IF_AI_MACRO(AI_NUMERICHOST);
 #endif
 #ifdef AI_V4MAPPED
-	if (STREQ(arg, "AI_V4MAPPED"))
-		return AI_V4MAPPED;
+	IF_AI_MACRO(AI_V4MAPPED);
 #endif
 #ifdef AI_ALL
-	if (STREQ(arg, "AI_ALL"))
-		return AI_ALL;
+	IF_AI_MACRO(AI_ALL);
 #endif
 #ifdef AI_ADDRCONFIG
-	if (STREQ(arg, "AI_ADDRCONFIG"))
-		return AI_ADDRCONFIG;
+	IF_AI_MACRO(AI_ADDRCONFIG);
 #endif
 #ifdef AI_IDN
-	if (STREQ(arg, "AI_IDN"))
-		return AI_IDN;
+	IF_AI_MACRO(AI_IDN);
 #endif
 #ifdef AI_CANONIDN
-	if (STREQ(arg, "AI_CANONIDN"))
-		return AI_CANONIDN;
+	IF_AI_MACRO(AI_CANONIDN);
 #endif
+	// deprecated
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-W#pragma-messages"
+#ifdef AI_IDN_ALLOW_UNASSIGNED
+	IF_AI_MACRO(AI_IDN_ALLOW_UNASSIGNED);
+#endif
+#ifdef AI_IDN_USE_STD3_ASCII_RULES
+	IF_AI_MACRO(AI_IDN_USE_STD3_ASCII_RULES);
+#endif
+#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
+	//
 #ifdef AI_NUMERICSERV
-	if (STREQ(arg, "AI_NUMERICSERV"))
-		return AI_NUMERICSERV;
+	IF_AI_MACRO(AI_NUMERICSERV);
 #endif
+	//
 	errno = EINVAL;
 	err(errno, "-%c %s", opt, arg);
 }
 
-static void parse_opt(int argc, char **argv, gai_opt_s *gai_opt) {
+
+#define VALSTR_M(macro, desc) {.val = (macro), .str = #macro, .dsc = (desc)}
+
+NORETURN static inline void list_ai_consts(void) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-W#pragma-messages"
+#ifdef AI_IDN_ALLOW_UNASSIGNED
+	valstr_s ai0100 = VALSTR_M(AI_IDN_ALLOW_UNASSIGNED, _("deprecated"));
+#endif
+#ifdef AI_IDN_USE_STD3_ASCII_RULES
+	valstr_s ai0200 = VALSTR_M(AI_IDN_USE_STD3_ASCII_RULES, _("deprecated"));
+#endif
+#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
+	//
+	valstr_s ai[] = {
+#ifdef AI_PASSIVE
+		VALSTR_M(AI_PASSIVE,
+	_("Socket address for bind()")),
+#endif
+#ifdef AI_CANONNAME
+		VALSTR_M(AI_CANONNAME,
+	_("Request for canonical name")),
+#endif
+#ifdef AI_NUMERICHOST
+		VALSTR_M(AI_NUMERICHOST,
+	_("Don't use host resolution")),
+#endif
+#ifdef AI_V4MAPPED
+		VALSTR_M(AI_V4MAPPED,
+	_("IPv4 mapped addresses are acceptable")),
+#endif
+#ifdef AI_ALL
+		VALSTR_M(AI_ALL,
+	_("IPv4 mapped and IPv6 addresses")),
+#endif
+#ifdef AI_ADDRCONFIG
+		VALSTR_M(AI_ADDRCONFIG,
+	_("Use host configuration to choose address type")),
+#endif
+#ifdef AI_IDN
+		VALSTR_M(AI_IDN,
+	_("Convert to IDN format if necessary")),
+#endif
+#ifdef AI_CANONIDN
+		VALSTR_M(AI_CANONIDN,
+	_("Translate canonical name from IDN format")),
+#endif
+	// deprecated
+#ifdef AI_IDN_ALLOW_UNASSIGNED
+		ai0100,
+#endif
+#ifdef AI_IDN_USE_STD3_ASCII_RULES
+		ai0200,
+#endif
+	//
+#ifdef AI_NUMERICSERV
+		VALSTR_M(AI_NUMERICSERV,
+	_("Don't use service resolution")),
+#endif
+	};
+	for (uint i = 0; i < ARRAY_LEN(ai); i++)
+		printf("%-*s 0x%04x %s\n", AI_FMTLEN, ai[i].str,
+			ai[i].val, *ai[i].dsc ? ai[i].dsc : "");
+	exit(EXIT_SUCCESS);
+}
+
+static inline void parse_opt(int argc, char **argv, gaiopt_s *gai_opt) {
 	if (argc <= 0)
 		return;
-	const char *optstr = "hf:F:ivV46";
+	const char *optstr = "hf:F:ilvV46";
 	int opt;
 	while ((opt = getopt(argc, argv, optstr)) != EOF) {
 		switch (opt) {
@@ -104,16 +190,6 @@ static void parse_opt(int argc, char **argv, gai_opt_s *gai_opt) {
 				OPTEXCL('4', '6');
 			gai_opt->af = ip4 ? AF_INET : AF_INET6;
 		}	break;
-		case 'i':
-#ifdef USE_LIBIDN2
-			if (!gai_opt->idn2)
-				gai_opt->idn2 = true;
-#else
-			warnx(_("no need in -i, IDN is transparently supported"));
-#endif
-			break;
-		case 'h':
-			gai_usage(EXIT_SUCCESS);
 		case 'f':
 		case 'F':
 			if (!optarg || !*optarg)
@@ -124,11 +200,23 @@ static void parse_opt(int argc, char **argv, gai_opt_s *gai_opt) {
 				VALID_INTSTR(0, USHRT_MAX) :
 				ai_macro2value(opt, optarg);
 			break;
+		case 'i':
+#ifdef USE_LIBIDN2
+			if (!gai_opt->idn2)
+				gai_opt->idn2 = true;
+#else
+			warnx(_("no need in -i, IDN is transparently supported"));
+#endif
+			break;
+		case 'l':
+			list_ai_consts();
 		case 'v':
 			gai_opt->verbose = true;
 			break;
 		case 'V':
 			version_n_exit(EXIT_SUCCESS, FEAT_IDN | FEAT_NLS);
+		case 'h':
+			gai_usage(EXIT_SUCCESS);
 		default:
 			gai_usage(EXIT_FAILURE);
                 }
@@ -150,7 +238,7 @@ int main(int argc, char **argv) {
 	setmyname(argv[0]);
 	BIND_NLS;
 
-	gai_opt_s gai_opt = {.af = -1, .flags = -1};
+	gaiopt_s gai_opt = {.af = -1, .flags = -1};
 	parse_opt(argc, argv, &gai_opt);
 	argc -= optind;
 	argv += optind;

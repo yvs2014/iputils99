@@ -475,7 +475,7 @@ int main(int argc, char **argv) {
 #ifdef HAVE_LIBCAP
 	// limit caps to net_raw
 	{ cap_value_t caps[] = {CAP_NET_RAW};
-	  limit_cap(caps, ARRAY_SIZE(caps)); }
+	  limit_cap(caps, ARRAY_LEN(caps)); }
 	NET_RAW_OFF;
 #else
 	keep_euid();

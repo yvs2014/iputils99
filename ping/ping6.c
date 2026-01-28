@@ -341,7 +341,7 @@ static void ping6_bpf_filter(const state_t *rts, const sock_t *sock) {
 		BPF_STMT(BPF_RET | BPF_K, 0), 			/* Reject not our echo replies */
 	};
 	const struct sock_fprog fprog = {
-		.len    = ARRAY_SIZE(filter),
+		.len    = ARRAY_LEN(filter),
 		.filter = filter,
 	};
 	setsock_bpf(rts, sock, &fprog);

@@ -42,8 +42,8 @@
 # define NI_FLAGS 0
 #endif /* NI_IDN */
 
-#ifndef ARRAY_SIZE
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#ifndef ARRAY_LEN
+#define ARRAY_LEN(arr) (sizeof(arr) / sizeof((arr)[0]))
 #endif
 
 #define WARN	"WARNING"	// warning prefix

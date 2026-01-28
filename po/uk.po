@@ -231,9 +231,11 @@ msgid ""
 "            use -F multiple times to combine flags\n"
 "  -i        convert IDN names using libidn2\n"
 "            (available if IDN is not transparently supported)\n"
-"  -h        print help and exit\n"
+"  -l        list AI_xxx constants\n"
+"  -h        print help\n"
 "  -v        verbose output\n"
-"  -V        print version and exit\n"
+"  -V        print version\n"
+
 msgstr ""
 "  -4        сімейство адрес IPv4\n"
 "  -6        сімейство адрес IPv6\n"
@@ -243,13 +245,48 @@ msgstr ""
 "            використовуйте -F декілька разів для об'єднання аргументів\n"
 "  -i        конвертувати IDN назви за допомогою libidn2\n"
 "            (опція доступна, якщо IDN не підтримується прозоро)\n"
-"  -h        вивести довідку і завершити роботу\n"
+"  -l        перелік AI_xxx констант\n"
+"  -h        вивести довідку\n"
 "  -v        докладне виведення\n"
-"  -V        вивести версію і завершити роботу\n"
+"  -V        вивести версію\n"
 
 #
 msgid "no need in -i, IDN is transparently supported"
 msgstr "опція -i не потрібна, IDN підтримується прозоро"
+
+### AI_xxx descriptions
+
+msgid "Socket address for bind()"
+msgstr "Адреса сокета для bind()"
+
+msgid "Request for canonical name"
+msgstr "Запит на канонічну назву"
+
+msgid "Don't use host resolution"
+msgstr "Не використовувати DNS"
+
+msgid "IPv4 mapped addresses are acceptable"
+msgstr "Дозволити зіставлені IPv4 адреси"
+
+msgid "IPv4 mapped and IPv6 addresses"
+msgstr "IPv6 та зіставлені IPv4 адреси"
+
+msgid "Use host configuration to choose address type"
+msgstr "Використати конфігурацію хоста для вибору типу адреси"
+
+msgid "Convert to IDN format if necessary"
+msgstr "Конвертувати у формат IDN за потреби"
+
+msgid "Translate canonical name from IDN format"
+msgstr "Конвертувати канонічну назву з формату IDN"
+
+msgid "Don't use service resolution"
+msgstr "Без розпізнавання назви сервісу"
+
+msgid "deprecated"
+msgstr "застаріло"
+
+###
 
 #
 msgid "Sent probes"

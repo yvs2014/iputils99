@@ -1,6 +1,6 @@
 # Copyright (c) Iputils Project, 2017-2025
 
-# local edition: yvs, 2024-2025
+# local edition: yvs, 2024-2026
 
 project('iputils99', 'c',
 	default_options: [
@@ -11,7 +11,7 @@ project('iputils99', 'c',
 	meson_version: '>=0.55',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
-			check: false).stdout().strip() : '20250622',
+			check: false).stdout().strip() : '20260128',
 )
 
 add_project_arguments('-D_GNU_SOURCE', language: 'c')

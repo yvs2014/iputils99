@@ -1,4 +1,4 @@
-iputils99 (1:99-yyyymmdd-rc1) noble; urgency=low
+iputils99 (1:99-20260128-rc1) noble; urgency=low
 
   * iputils in C99 style for _testing_
     upstream: https://github.com/iputils/iputils/

@@ -10,6 +10,9 @@ build:
 	test -d _build || meson setup _build
 	meson compile -C _build
 
+install: build
+	meson install -C _build
+
 clean:
 	rm -rf _build
 
