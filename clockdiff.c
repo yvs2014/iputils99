@@ -96,8 +96,8 @@ enum {
 	MODULO =  86400000,
 	PROCESSING_TIME	= 0,	/* ms. to reduce error in measurement */
 	//
-	OPTLEN_O = 4 + 4 * 8,
-	OPTLEN_1 = 4 + 3 * 8,
+	OPTLEN_2 = 4 + 4 * 8,
+	OPTLEN_3 = 4 + 3 * 8,
 };
 
 typedef struct run_state {
@@ -230,7 +230,7 @@ static int measure_inner_loop(state_t *rts, struct measure_vars *mv) {
 			}
 			{ // high 4bits
 			  uint8_t high = opt[3] >> 4;
-			  if (high && ((high != 1) || (rts->optlen != OPTLEN_1)))
+			  if (high && ((high != 1) || (rts->optlen != OPTLEN_3)))
 				 warnx("%s: %u", _("Overflow hops"), high);
 			}
 			sendtime = recvtime = peer_time1 = peer_time2 = 0;
@@ -247,7 +247,7 @@ static int measure_inner_loop(state_t *rts, struct measure_vars *mv) {
 					peer_time1 = peer_time2 = t;
 					break;
 				case 2:
-					if (rts->optlen == OPTLEN_O)
+					if (rts->optlen == OPTLEN_2)
 						peer_time2 = t;
 					else
 						recvtime = t;
@@ -418,33 +418,31 @@ static int measure(state_t *rts) {
 NORETURN static void usage(int rc) {
 	drop_priv();
 	const char *options =
-"                without -o, use icmp timestamp only\n"
-"                (see RFC792, page 16)\n"
-"  -o            use IP timestamp and icmp echo\n"
-"  -o1           use three-term IP timestamp and icmp echo\n"
-"  -T, --time-format <ctime|iso>\n"
-"                specify display time format, ctime is the default\n"
-"  -I            alias of --time-format=iso\n"
-"  -h, --help    display this help\n"
-"  -V, --version print version and exit\n"
+"      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
+"  -2  use IP timestamp and ICMP echo\n"
+"  -3  use three-term IP timestamp and ICMP echo\n"
+"\n"
+"      by default, 'ctime' format is used\n"
+"  -I  use ISO time format\n"
+"\n"
+"  -h  print help and exit\n"
+"  -V  print version and exit\n"
 ;
 	usage_common(rc, options, "HOST", !MORE);
 }
 
-static void parse_opts(state_t *rts, int argc, char **argv) {
+static void parse_options(state_t *rts, int argc, char **argv) {
 	int ch;
-	while ((ch = getopt(argc, argv, "hIoV1")) != EOF)
+	while ((ch = getopt(argc, argv, "hIV23")) != EOF)
 		switch (ch) {
-		case '1':
-			if (rts->optlen == OPTLEN_O)
-				OPTEXCL('o', '1');
-			rts->optlen = OPTLEN_1;
-			break;
-		case 'o':
-			if (rts->optlen == OPTLEN_1)
-				OPTEXCL('1', 'o');
-			rts->optlen = OPTLEN_O;
-			break;
+		case '2':
+		case '3': {
+			bool both = (ch == '2');
+			uint8_t incompat = both ? OPTLEN_3 : OPTLEN_2;
+			if (rts->optlen == incompat)
+				OPTEXCL('2', '3');
+			rts->optlen = both ? OPTLEN_2 : OPTLEN_3;
+			} break;
 		case 'I':
 			rts->ts_format = "%FT%T%z"; /*iso*/
 			break;
@@ -473,7 +471,7 @@ int main(int argc, char **argv) {
 	atexit(close_stdout);
 
 	state_t rts = {.rtt = 1000, .ts_format = "%c" /*local*/};
-	parse_opts(&rts, argc, argv);
+	parse_options(&rts, argc, argv);
 	argc -= optind;
 	argv += optind;
 	if (argc <= 0) {
@@ -552,7 +550,7 @@ int main(int argc, char **argv) {
 		((uint32_t *) (rspace + 4))[0 * 2] = myaddr.sin_addr.s_addr;
 		((uint32_t *) (rspace + 4))[1 * 2] = rts.server.sin_addr.s_addr;
 		((uint32_t *) (rspace + 4))[2 * 2] = myaddr.sin_addr.s_addr;
-		if (rts.optlen == OPTLEN_O) {
+		if (rts.optlen == OPTLEN_2) {
 			((uint32_t *) (rspace + 4))[2 * 2] = rts.server.sin_addr.s_addr;
 			((uint32_t *) (rspace + 4))[3 * 2] = myaddr.sin_addr.s_addr;
 		}

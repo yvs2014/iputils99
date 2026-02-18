@@ -22,7 +22,7 @@
 .SH "NAME"
 clockdiff \- measure clock difference between hosts
 .SH "SYNOPSIS"
-\fBclockdiff\fR [\fB\-hIoV1\fR] HOST
+\fBclockdiff\fR [\fB\-hIV23\fR] HOST
 .SH "DESCRIPTION"
 .PP
 \fBclockdiff\fR
@@ -31,14 +31,14 @@ measures clock difference between us and
 with 1 msec resolution using ICMP TIMESTAMP [2] packets or, optionally, IP TIMESTAMP option [3] added to ICMP ECHO [1]
 .SH "OPTIONS"
 .PP
-\fB\-o\fR
+\fB\-2\fR
 .RS 4
 Use IP TIMESTAMP with ICMP ECHO instead of ICMP TIMESTAMP messages\&. It is useful with some destinations, which do not support ICMP TIMESTAMP (for example Solaris <2\&.4)\&.
 .RE
 .PP
-\fB\-1\fR
+\fB\-3\fR
 .RS 4
-Slightly different form of \fB\-o\fR, namely it uses three\-term IP TIMESTAMP with prespecified hop addresses instead of four term one\&. What flavor works better depends on target host\&. Particularly, \fB\-o\fR is better for Linux\&.
+Slightly different form of \fB\-2\fR, namely it uses three\-term IP TIMESTAMP with prespecified hop addresses instead of four term one\&. What flavor works better depends on target host\&. Particularly, \fB\-2\fR is better for Linux\&.
 .RE
 .PP
 \fB\-I\fR
