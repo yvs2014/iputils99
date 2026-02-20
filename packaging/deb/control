@@ -6,6 +6,12 @@ Standards-Version: 4.6.2
 Build-Depends: debhelper, meson, pkgconf | pkg-config, git, sed, libcap2-bin, libcap-dev
 Homepage: https://github.com/yvs2014/iputils99/
 
+Package: iputils99-tdeb
+Architecture: all
+Depends: ${misc:Depends}
+Description: Gettext translation files for iputils99
+ This package contains the translation files for iputils99
+
 Package: iputils99-ping
 Provides: ping
 Depends: ${shlibs:Depends}, ${misc:Depends}
