@@ -6,8 +6,12 @@ export DEBIAN_LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
 export BUILD_DIR=obj-$(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 export DH_QUIET=1
 
+NOCAP := $(shell sysctl -n net.ipv4.ping_group_range | grep -q '^0\s' && echo yes)
+
 %:
 	dh $@ --buildsystem=meson+ninja --builddirectory=$(BUILD_DIR)
 
-#override_dh_auto_test:
+ifneq ($(NOCAP),yes)
+override_dh_auto_test:
+endif
 
