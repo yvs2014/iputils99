@@ -45,12 +45,12 @@
  * userspace headers.
  */
 #ifndef AX25_P_IP
-# define AX25_P_IP	0xcc	/* ARPA Internet Protocol     */
+#define AX25_P_IP	0xcc	/* ARPA Internet Protocol */
 #endif
 
-#define FINAL_PACKS	2
-
 #define ARPING_FEATURES	(FEAT_CAP | FEAT_IDN | FEAT_NLS | FEAT_ALTNAME)
+
+#define SLL(sa) ((struct sockaddr_ll *)(sa))
 
 typedef struct arpdev {
 	char name[IF_NAMESIZE];
@@ -100,8 +100,7 @@ typedef struct run_state {
 
 static inline size_t sll_len(size_t halen) {
 	size_t len = offsetof(struct sockaddr_ll, sll_addr) + halen;
-	return (len < sizeof(struct sockaddr_ll)) ?
-		sizeof(struct sockaddr_ll) : len;
+	return (len < sizeof(struct sockaddr_ll)) ? sizeof(struct sockaddr_ll) : len;
 }
 
 NORETURN static void usage(int rc) {
@@ -123,72 +122,73 @@ NORETURN static void usage(int rc) {
 	usage_common(rc, options, "TARGET", !MORE);
 }
 
-static int send_pack(state_t *ctl) {
+static inline bool send_pack(const struct sockaddr_ll *me, const struct sockaddr_ll *he,
+	const struct in_addr *src, const struct in_addr *dst, int sock, bool advert)
+{
 	unsigned char buf[256];
 	struct arphdr *ah = (struct arphdr *)buf;
-	struct sockaddr_ll *ME = (struct sockaddr_ll *)&(ctl->me);
-	struct sockaddr_ll *HE = (struct sockaddr_ll *)&(ctl->he);
-
-	ah->ar_hrd = htons(ME->sll_hatype);
+	ah->ar_hrd = htons(me->sll_hatype);
 	if (ah->ar_hrd == htons(ARPHRD_FDDI))
 		ah->ar_hrd = htons(ARPHRD_ETHER);
-
 	/*
 	 * Exceptions everywhere. AX.25 uses the AX.25 PID value not the
 	 * DIX code for the protocol. Make these device structure fields.
 	 */
-	if (ah->ar_hrd == htons(ARPHRD_AX25) ||
-	    ah->ar_hrd == htons(ARPHRD_NETROM))
-		ah->ar_pro = htons(AX25_P_IP);
-	else
-		ah->ar_pro = htons(ETH_P_IP);
+	ah->ar_pro =
+		((ah->ar_hrd == htons(ARPHRD_AX25)) || (ah->ar_hrd == htons(ARPHRD_NETROM))) ?
+			htons(AX25_P_IP) : htons(ETH_P_IP);
 
-	ah->ar_hln = ME->sll_halen;
+	ah->ar_hln = me->sll_halen;
 	ah->ar_pln = 4;
-	ah->ar_op  = ctl->opt.advert ? htons(ARPOP_REPLY) : htons(ARPOP_REQUEST);
+	ah->ar_op  = advert ? htons(ARPOP_REPLY) : htons(ARPOP_REQUEST);
 
 	unsigned char *p = (unsigned char *)(ah + 1);
-	memcpy(p, &ME->sll_addr, ah->ar_hln);
-	p += ME->sll_halen;
+	memcpy(p, &me->sll_addr, ah->ar_hln);
+	p += me->sll_halen;
 
-	memcpy(p, &ctl->src, 4);
+	memcpy(p, src, 4);
 	p += 4;
 
-	memcpy(p, ctl->opt.advert ? &ME->sll_addr : &HE->sll_addr, ah->ar_hln);
+	memcpy(p, advert ? &me->sll_addr : &he->sll_addr, ah->ar_hln);
 	p += ah->ar_hln;
 
-	memcpy(p, &ctl->dst, 4);
+	memcpy(p, dst, 4);
 	p += 4;
+	int sent = sendto(sock, buf, p - buf, 0, (struct sockaddr *)he, sll_len(ah->ar_hln));
+	return (sent == (p - buf));
+}
 
-	struct timespec now = {0};
-	clock_gettime(CLOCK_MONOTONIC, &now);
-	int err = sendto(ctl->sock, buf, p - buf, 0, (struct sockaddr *)HE, sll_len(ah->ar_hln));
-	if (err == (p - buf)) {
-		ctl->last = now;
-		ctl->sent++;
-		if (!ctl->opt.unicast)
-			ctl->brd_sent++;
-	}
-	return err;
+static inline void update_stat(struct timespec *last, int *sent, int *brd_sent) {
+	if (last)
+		clock_gettime(CLOCK_MONOTONIC, last);
+	if (sent)
+		(*sent)++;
+	if (brd_sent)
+		(*brd_sent)++;
+}
+
+static void send_n_stat(state_t *rts) {
+	if (send_pack(SLL(&rts->me), SLL(&rts->he), &rts->src, &rts->dst, rts->sock, rts->opt.advert))
+		update_stat(&rts->last, &rts->sent, rts->opt.unicast ? NULL : &rts->brd_sent);
 }
 
 static void resume(const state_t *rts) {
-	printf("%s: %d", _("Sent probes"), rts->sent);
-	printf(" (%d %s)\n", rts->brd_sent,
-		_n("broadcast", "broadcasts", rts->brd_sent));
+	printf("%s: %d (%d %s)\n", _("Sent probes"), rts->sent,
+		rts->brd_sent, _n("broadcast", "broadcasts", rts->brd_sent));
 	printf("%s: %d", _("Received responses"), rts->received);
 	if (rts->brd_recv || rts->req_recv) {
 		printf(" (");
 		if (rts->req_recv)
 			printf("%d %s", rts->req_recv,
 				_n("request", "requests", rts->req_recv));
+		if (rts->req_recv && rts->brd_recv)
+			printf(", ");
 		if (rts->brd_recv)
-			printf("%s%d %s",
-				rts->req_recv ? ", " : "", rts->brd_recv,
+			printf("%d %s", rts->brd_recv,
 				_n("broadcast", "broadcasts", rts->brd_recv));
 		printf(")");
 	}
-	printf("\n");
+	putchar('\n');
 	fflush(stdout);
 }
 
@@ -200,22 +200,19 @@ static void print_hex(unsigned char *p, int len) {
 	}
 }
 
-static inline int print_pack(state_t *rts,
+static inline bool final_pack(state_t *rts,
 	unsigned char *buf, ssize_t len, bool broadcast, uint16_t sll_hatype)
 {
-	struct timespec ts = {0};
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-
 	struct arphdr *ah = (struct arphdr *)buf;
 	/* Only these types are recognised */
 	if (ah->ar_op != htons(ARPOP_REQUEST) &&
 	    ah->ar_op != htons(ARPOP_REPLY))
-		return 0;
+		return false;
 
 	/* ARPHRD check and this darned FDDI hack here :-( */
 	if ((ah->ar_hrd != htons(sll_hatype)) &&
 	   ((sll_hatype != ARPHRD_FDDI) || (ah->ar_hrd != htons(ARPHRD_ETHER))))
-		return 0;
+		return false;
 
 	/*
 	 * Protocol must be IP - but exceptions everywhere. AX.25 and NETROM
@@ -224,16 +221,16 @@ static inline int print_pack(state_t *rts,
 	if ((ah->ar_hrd == htons(ARPHRD_AX25)) ||
 	    (ah->ar_hrd == htons(ARPHRD_NETROM))) {
 		if (ah->ar_pro != htons(AX25_P_IP))
-			return 0;
+			return false;
 	} else if (ah->ar_pro != htons(ETH_P_IP))
-		return 0;
+		return false;
 
 	if (ah->ar_pln != 4)
-		return 0;
-	if (ah->ar_hln != ((struct sockaddr_ll *)&rts->me)->sll_halen)
-		return 0;
+		return false;
+	if (ah->ar_hln != SLL(&rts->me)->sll_halen)
+		return false;
 	if (len < (ssize_t) sizeof(*ah) + 2 * (4 + ah->ar_hln))
-		return 0;
+		return false;
 
 	unsigned char *p = (unsigned char *)(ah + 1);
 	struct in_addr src_ip;
@@ -243,13 +240,11 @@ static inline int print_pack(state_t *rts,
 
 	if (!rts->opt.dad) {
 		if (src_ip.s_addr != rts->dst.s_addr)
-			return 0;
+			return false;
 		if (rts->src.s_addr != dst_ip.s_addr)
-			return 0;
-		if (memcmp(p + ah->ar_hln + 4,
-				((struct sockaddr_ll *)&rts->me)->sll_addr,
-				ah->ar_hln))
-			return 0;
+			return false;
+		if (memcmp(p + ah->ar_hln + 4, SLL(&rts->me)->sll_addr, ah->ar_hln))
+			return false;
 	} else {
 		/*
 		 * DAD packet was:
@@ -266,12 +261,11 @@ static inline int print_pack(state_t *rts,
 		 * dst_ip/dst_hw do not matter.
 		 */
 		if (src_ip.s_addr != rts->dst.s_addr)
-			return 0;
-		struct sockaddr_ll *sll = (struct sockaddr_ll *)&rts->me;
-		if (!memcmp(p, sll->sll_addr, sll->sll_halen))
-			return 0;
+			return false;
+		if (!memcmp(p, SLL(&rts->me)->sll_addr, SLL(&rts->me)->sll_halen))
+			return false;
 		if (rts->src.s_addr && (rts->src.s_addr != dst_ip.s_addr))
-			return 0;
+			return false;
 	}
 	if (!rts->opt.quiet) {
 		bool printed = false;
@@ -284,10 +278,7 @@ static inline int print_pack(state_t *rts,
 			printf(" %s %s", _("for"), inet_ntoa(dst_ip));
 			printed = true;
 		}
-		if (memcmp(p + ah->ar_hln + 4,
-			((struct sockaddr_ll *)&rts->me)->sll_addr,
-			ah->ar_hln))
-		{
+		if (memcmp(p + ah->ar_hln + 4, SLL(&rts->me), ah->ar_hln)) {
 			if (!printed)
 				printf(" %s", _("for"));
 			printf(" [");
@@ -295,7 +286,8 @@ static inline int print_pack(state_t *rts,
 			printf("]");
 		}
 		if (rts->last.tv_sec) {
-			struct timespec sub = {0};
+			struct timespec ts = {0}, sub = {0};
+			clock_gettime(CLOCK_MONOTONIC, &ts);
 			timespecsub(&ts, &rts->last, &sub);
 			double ms = sub.tv_sec * 1000 + sub.tv_nsec / 1000000.;
 			printf(" " TMMS, ms, _("ms"));
@@ -306,19 +298,18 @@ static inline int print_pack(state_t *rts,
 	}
 	rts->received++;
 	if (rts->timeout && (rts->received == rts->count))
-		return FINAL_PACKS;
+		return true;
 	if (broadcast)
 		rts->brd_recv++;
 	if (ah->ar_op == htons(ARPOP_REQUEST))
 		rts->req_recv++;
 	if (rts->opt.quit || (!rts->count && (rts->received == rts->sent)))
-		return FINAL_PACKS;
+		return true;
 	if (!rts->opt.broadcast) {
-		memcpy(((struct sockaddr_ll *)&rts->he)->sll_addr, p,
-		       ((struct sockaddr_ll *)&rts->me)->sll_halen);
+		memcpy(SLL(&rts->he)->sll_addr, p, SLL(&rts->me)->sll_halen);
 		rts->opt.unicast = true;
 	}
-	return 1;
+	return false;
 }
 
 static int oif2ndx(const struct nlmsghdr *nh, const char *data UNUSED) {
@@ -377,25 +368,20 @@ static bool valid_flags(unsigned flags, const char *name, bool quiet, bool dad) 
 	return true;
 }
 
-static bool valid_ifa(const struct ifaddrs *ifa,
-	const arpdev_t *dev, const arpopt_t *opt)
-{
-	return
-	ifa->ifa_name && ifa->ifa_broadaddr && ifa->ifa_addr &&
-	(ifa->ifa_addr->sa_family == AF_PACKET) &&
-	valid_flags(ifa->ifa_flags, dev->name, opt->quiet, opt->dad) &&
-	((struct sockaddr_ll *)ifa->ifa_addr)->sll_halen;
-}
+#define VALID_IFA(ifa, dev, opt) (                                      \
+	ifa->ifa_name && ifa->ifa_broadaddr && ifa->ifa_addr &&         \
+	(ifa->ifa_addr->sa_family == AF_PACKET) &&                      \
+	valid_flags(ifa->ifa_flags, dev->name, opt->quiet, opt->dad) && \
+	SLL(ifa->ifa_addr)->sll_halen                                   \
+)
 
 static const struct ifaddrs* ifa_by_name(const struct ifaddrs* list,
 	const arpdev_t *dev, const arpopt_t *opt)
 {
 	const struct ifaddrs *ifa = list;
-	for (; ifa; ifa = ifa->ifa_next) {
-		if (NL_STREQ(ifa->ifa_name, dev->name))
-			if (valid_ifa(ifa, dev, opt))
-				break;
-	}
+	for (; ifa; ifa = ifa->ifa_next)
+		if (NL_STREQ(ifa->ifa_name, dev->name) && VALID_IFA(ifa, dev, opt))
+			break;
 	return ifa;
 }
 
@@ -460,9 +446,7 @@ static int check_device(state_t *rts) {
  * based on information found by check_device() function.
  */
 static void find_brd_addr(arpdev_t *dev, struct sockaddr_ll *he, bool quiet) {
-	struct sockaddr_ll *ll = dev->ifa ?
-		(struct sockaddr_ll *)dev->ifa->ifa_broadaddr :
-		NULL;
+	const struct sockaddr_ll *ll = dev->ifa ? SLL(dev->ifa->ifa_broadaddr) : NULL;
 	if (ll && (ll->sll_halen == he->sll_halen))
 		memcpy(he->sll_addr, ll->sll_addr, he->sll_halen);
 	else {
@@ -476,7 +460,25 @@ static void find_brd_addr(arpdev_t *dev, struct sockaddr_ll *he, bool quiet) {
 	}
 }
 
-static int event_loop(state_t *ctl) {
+#define SET_PFD(typ, nam, val) {     \
+	pfds[typ].fd = (val);        \
+	if (pfds[typ].fd < 0) {      \
+		warn("%s", (nam));   \
+		return EXIT_FAILURE; \
+	}                            \
+}
+#define SET_TFD(typ, var, val)                              \
+	struct itimerspec var = {                           \
+		.it_interval.tv_sec  = (val),               \
+		.it_value.tv_sec     = (val),               \
+	};                                                  \
+	if (timerfd_settime(pfds[typ].fd, 0, &var, NULL)) { \
+		warn("%s", "timerfd_settime()");            \
+		return EXIT_FAILURE;                        \
+	}                                                   \
+	pfds[typ].events = ev_mask;                         \
+
+static int loop(state_t *rts) {
 	enum {
 		POLLFD_SIGNAL = 0,
 		POLLFD_TIMER,
@@ -484,8 +486,10 @@ static int event_loop(state_t *ctl) {
 		POLLFD_SOCKET,
 		POLLFD_COUNT
 	};
-
-	/* signalfd */
+	struct pollfd pfds[POLLFD_COUNT] = {0};
+	const short ev_mask = POLLIN | POLLERR | POLLHUP;
+	//
+	// signal
 	sigset_t mask;
 	sigemptyset(&mask);
 	sigaddset(&mask, SIGINT);
@@ -493,66 +497,36 @@ static int event_loop(state_t *ctl) {
 	sigaddset(&mask, SIGTERM);
 	if (sigprocmask(SIG_BLOCK, &mask, NULL) < 0) {
 		warn("%s", "sigprocmask()");
-		return 1;
+		return EXIT_FAILURE;
 	}
-	int sfd = signalfd(-1, &mask, 0);
-	if (sfd < 0) {
-		warn("%s", "signalfd()");
-		return 1;
-	}
-	struct pollfd pfds[POLLFD_COUNT];
-	pfds[POLLFD_SIGNAL].fd     = sfd;
-	pfds[POLLFD_SIGNAL].events = POLLIN | POLLERR | POLLHUP;
+	SET_PFD(POLLFD_SIGNAL, "signalfd()", signalfd(-1, &mask, 0));
+	pfds[POLLFD_SIGNAL].events = ev_mask;
+	//
+	// interval
+	SET_PFD(POLLFD_TIMER, "timerfd_create()", timerfd_create(CLOCK_MONOTONIC, 0));
+	SET_TFD(POLLFD_TIMER, it_interval, rts->interval);
+	//
+	// timeout
+	SET_PFD(POLLFD_TIMEOUT, "timerfd_create()", timerfd_create(CLOCK_MONOTONIC, 0));
+	SET_TFD(POLLFD_TIMEOUT, it_timeout, rts->timeout);
+	//
+	// socket
+	SET_PFD(POLLFD_SOCKET, "SOCKET", rts->sock);
+	pfds[POLLFD_SOCKET].events = ev_mask;
+	//
 
-	/* interval timerfd */
-	int tfd = timerfd_create(CLOCK_MONOTONIC, 0);
-	if (tfd < 0) {
-		warn("%s", "timerfd_create()");
-		return 1;
-	}
-	struct itimerspec timerfd_vals = {
-		.it_interval.tv_sec  = ctl->interval,
-		.it_value.tv_sec     = ctl->interval,
-	};
-	if (timerfd_settime(tfd, 0, &timerfd_vals, NULL)) {
-		warn("%s", "timerfd_settime()");
-		return 1;
-	}
-	pfds[POLLFD_TIMER].fd     = tfd;
-	pfds[POLLFD_TIMER].events = POLLIN | POLLERR | POLLHUP;
-
-	/* timeout timerfd */
-	int timeoutfd = timerfd_create(CLOCK_MONOTONIC, 0);
-	if (timeoutfd < 0) {
-		warn("%s", "timerfd_create()");
-		return 1;
-	}
-	struct itimerspec timeoutfd_vals = {
-		.it_interval.tv_sec = ctl->timeout,
-		.it_value.tv_sec    = ctl->timeout,
-	};
-	if (timerfd_settime(timeoutfd, 0, &timeoutfd_vals, NULL)) {
-		warn("%s", "timerfd_settime()");
-		return 1;
-	}
-	pfds[POLLFD_TIMEOUT].fd     = timeoutfd;
-	pfds[POLLFD_TIMEOUT].events = POLLIN | POLLERR | POLLHUP;
-
-	/* socket */
-	pfds[POLLFD_SOCKET].fd     = ctl->sock;
-	pfds[POLLFD_SOCKET].events = POLLIN | POLLERR | POLLHUP;
-	send_pack(ctl);
+	send_n_stat(rts);
 
 	unsigned char packet[4096];
 	uint64_t total_expires = 1;
-	int exit_loop = 0, rc = 0;
-	while (!exit_loop) {
+	int rc = 0;
+	for (bool run = true; run;) {
 		if (poll(pfds, POLLFD_COUNT, -1) <= 0) {
 			if (errno == EAGAIN)
 				continue;
 			if (errno)
 				warn("%s", "poll()");
-			exit_loop = 1;
+			run = false;
 			continue;
 		}
 
@@ -562,8 +536,7 @@ static int event_loop(state_t *ctl) {
 			switch (i) {
 			case POLLFD_SIGNAL: {
 				struct signalfd_siginfo sigval = {0};
-				if (read(sfd, &sigval, sizeof(sigval)) != sizeof(sigval))
-				{
+				if (read(pfds[i].fd, &sigval, sizeof(sigval)) != sizeof(sigval)) {
 					if (errno)
 						warn("read(%s)", "signalfd");
 					else
@@ -573,14 +546,13 @@ static int event_loop(state_t *ctl) {
 				if ((sigval.ssi_signo == SIGINT ) ||
 				    (sigval.ssi_signo == SIGQUIT) ||
 				    (sigval.ssi_signo == SIGTERM))
-					exit_loop = 1;
+					run = false;
 				else
 					warn("unexpected signal: %d", sigval.ssi_signo);
 			}	break;
 			case POLLFD_TIMER: {
 				uint64_t exp = 0;
-				if (read(tfd, &exp, sizeof(exp)) != sizeof(exp))
-				{
+				if (read(pfds[i].fd, &exp, sizeof(exp)) != sizeof(exp)) {
 					if (errno)
 						warn("read(%s)", "timerfd");
 					else
@@ -588,20 +560,21 @@ static int event_loop(state_t *ctl) {
 					continue;
 				}
 				total_expires += exp;
-				if ((0 < ctl->count) && ((uint64_t)ctl->count < total_expires)) {
-					exit_loop = 1;
+				if ((0 < rts->count) && ((uint64_t)rts->count < total_expires)) {
+					run = false;
 					continue;
 				}
-				send_pack(ctl);
+
+				send_n_stat(rts);
 			}	break;
 			case POLLFD_TIMEOUT:
-				exit_loop = 1;
+				run = false;
 				break;
 			case POLLFD_SOCKET: {
 				struct sockaddr_storage from;
 				socklen_t socklen = sizeof(from);
 				memset(&from, 0, socklen);
-				ssize_t size = recvfrom(ctl->sock, packet, sizeof(packet), 0,
+				ssize_t size = recvfrom(pfds[i].fd, packet, sizeof(packet), 0,
 					      (struct sockaddr *)&from, &socklen);
 				if (size < 0) {
 					warn("%s", "recvfrom()");
@@ -609,64 +582,62 @@ static int event_loop(state_t *ctl) {
 						rc = 2;
 					continue;
 				}
-				struct sockaddr_ll *sll = (struct sockaddr_ll *)&from;
 				bool broadcast = false;
-				switch (sll->sll_pkttype) {
+				switch (SLL(&from)->sll_pkttype) {
 					case PACKET_HOST:
 						break;
 					case PACKET_BROADCAST:
 					case PACKET_MULTICAST:
 						broadcast = true;
 						break;
-					default: /* Filter out wild packets */
+					default: // Filter out wild packets
 						continue;
 				}
-				if (print_pack(ctl, packet, size, broadcast, sll->sll_hatype)
-						== FINAL_PACKS)
-					exit_loop = 1;
+				run = !final_pack(rts, packet, size, broadcast, SLL(&from)->sll_hatype);
 			}	break;
 			default:
 				abort();
 			}
 		}
 	}
-	close(sfd);
-	close(tfd);
-	if (!ctl->opt.quiet)
-		resume(ctl);
-	bool got = (ctl->received > 0) ? true : false;
-	rc |= ctl->opt.dad         ? got   :
-	      ctl->opt.unsolicited ? false :
+	//
+	for (uint i = 0; i < ARRAY_LEN(pfds); i++)
+		close(pfds[i].fd);
+	if (!rts->opt.quiet)
+		resume(rts);
+	bool got = (rts->received > 0) ? true : false;
+	rc |= rts->opt.dad         ? got   :
+	      rts->opt.unsolicited ? false :
 	      !got;
-	if (!ctl->opt.unsolicited) {
-		bool all_uni = (ctl->received == ctl->sent);
-		bool all_brd = (ctl->received == ctl->brd_sent);
-		rc |=
-			/* dad: Duplicate Address Detection mode */
-			(ctl->opt.dad && ctl->opt.quit)     ? all_brd :
-			(ctl->timeout && (ctl->count <= 0)) ? !got    :
+	if (!rts->opt.unsolicited) {
+		bool all_uni = (rts->received == rts->sent);
+		bool all_brd = (rts->received == rts->brd_sent);
+		rc |= // note: DAD stands for Duplicate Address Detection
+			(rts->opt.dad && rts->opt.quit)     ? all_brd :
+			(rts->timeout && (rts->count <= 0)) ? !got    :
 			!all_uni;
 	}
 	return rc;
 }
 
-static inline void bind_sock(state_t *rts) {
-	struct sockaddr_ll *sll = (struct sockaddr_ll *)&rts->me;
-	sll->sll_family   = AF_PACKET;
-	sll->sll_ifindex  = rts->dev.ndx;
-	sll->sll_protocol = htons(ETH_P_ARP);
-	if (bind(rts->sock, (struct sockaddr *)&rts->me, sizeof(rts->me)) < 0)
+static inline void bind_sock(struct sockaddr_storage *me, struct sockaddr_storage *he,
+	int ifndx, const char *ifname, int sock, bool quiet, bool dad)
+{
+	SLL(me)->sll_family   = AF_PACKET;
+	SLL(me)->sll_ifindex  = ifndx;
+	SLL(me)->sll_protocol = htons(ETH_P_ARP);
+	if (bind(sock, (struct sockaddr *)me, sizeof(*me)) < 0)
 		err(errno, "bind()");
-	socklen_t alen = sizeof(rts->me);
-	if (getsockname(rts->sock, (struct sockaddr *)&rts->me, &alen) < 0)
+	socklen_t alen = sizeof(*me);
+	if (getsockname(sock, (struct sockaddr *)me, &alen) < 0)
 		err(errno, "%s", "getsockname()");
-	if (((struct sockaddr_ll *)&rts->me)->sll_halen == 0) {
-		if (!rts->opt.quiet)
-			warnx("%s: %s (%s)", rts->dev.name,
+	if (!SLL(me)->sll_halen) {
+		if (!quiet)
+			warnx("%s: %s (%s)", ifname,
 _("Interface is not ARPable"), _("no ll address"));
-		exit(rts->opt.dad ? EXIT_SUCCESS : EXIT_FAILURE);
+		exit(dad ? EXIT_SUCCESS : EXIT_FAILURE);
 	}
-	rts->he = rts->me;
+	*he = *me;
 }
 
 static inline int arping_sock(void) {
@@ -860,18 +831,18 @@ int main(int argc, char **argv) {
 	arping_setup(&rts);
 	drop_priv();
 	//
-
-	bind_sock(&rts);
-	find_brd_addr(&rts.dev, (struct sockaddr_ll *)&rts.he, rts.opt.quiet);
+	//
+	bind_sock(&rts.me, &rts.he, rts.dev.ndx, rts.dev.name, rts.sock, rts.opt.quiet, rts.opt.dad);
+	find_brd_addr(&rts.dev, SLL(&rts.he), rts.opt.quiet);
 	if (!rts.opt.quiet) {
-		const char *dev =
+		const char *ifname =
 			rts.dev.req && (strlen(rts.dev.req) < IF_NAMESIZE) ?
 			rts.dev.req : rts.dev.name;
-		print_header(dev, rts.src, rts.dst);
+		print_header(ifname, rts.src, rts.dst);
 	}
 	if (!rts.source && !rts.src.s_addr && !rts.opt.dad)
 		errx(EINVAL, "%s", _("No source address in not-DAD mode"));
 
-	return event_loop(&rts);
+	return loop(&rts);
 }
 
