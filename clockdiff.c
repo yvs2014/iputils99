@@ -592,7 +592,7 @@ int main(int argc, char **argv) {
 			rts.delta1, ms, rts.delta2, ms);
 		printf("[%s]", ts);
 	  } else
-		printf("%ld %d %d", now, rts.delta1, rts.delta2);
+		printf("%lld %d %d", (long long)now, rts.delta1, rts.delta2);
 	  putchar('\n');
 	}
 	exit(EXIT_SUCCESS);

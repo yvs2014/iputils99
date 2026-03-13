@@ -36,7 +36,6 @@ snapshot() {
     cd "$pkgname"
   fi
   _git="$(git rev-parse --short HEAD)"
-  cd -
   git archive --prefix="$pkgname/" -o "$srcdir/$pkgname-$pkgver.tar.gz" "$_git"
 }
 
@@ -66,4 +65,4 @@ package() {
   DESTDIR="$pkgdir" meson install -C "$_build"
 }
 
-sha256sums=SKIP
+#sha256sums=SKIP

@@ -272,14 +272,14 @@ static inline void calculator(state_t *rts, stat_aux_t *stat) {
 		do {
 			timersub(&tv, &peer, &tv);
 			struct timeval diff = tv;
-			bool wrong_usec = labs(tv.tv_usec) >= MLN;
+			bool wrong_usec = llabs(tv.tv_usec) >= MLN;
 			if (wrong_usec) {
 				diff.tv_usec = MLN - 1;
 				if (tv.tv_usec < 0) diff.tv_usec = -diff.tv_usec;
 				warnx("%s: %s: .%06ld: %s",
 					_WARN, _("rtt"), tv.tv_usec, strerror(EDOM));
 			}
-			bool wrong_sec = labs(tv.tv_sec) >= RTT_MAX;
+			bool wrong_sec = llabs(tv.tv_sec) >= RTT_MAX;
 			if (wrong_sec) {
 				diff.tv_sec = RTT_MAX; diff.tv_usec = 0;
 				if (tv.tv_sec < 0) diff.tv_sec = -diff.tv_sec;
