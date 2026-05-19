@@ -192,9 +192,9 @@ void print4_ip_opts(const uint8_t *cp, int hlen, bool resolve, bool flood) {
 				l = (l << 8) + *cp++;
 				long ld = l;
 				const char *comment = NULL;
-				if (l & 0x80000000) {
+				if (IS_BIT31_SET(l)) {
 					comment = _(nonstdtime ? "not-standard" : "absolute not-standard");
-					ld &= 0x7fffffff;
+					ld &= INT32_MAX;
 					nonstdtime = ld;
 					ld -= nonstdtime;
 				} else {

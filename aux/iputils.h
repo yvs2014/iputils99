@@ -13,13 +13,17 @@
 #define NOOP ((void)0)
 #endif
 
+#ifndef IS_BIT31_SET
+#define IS_BIT31_SET(x) ((x) & 0x80000000)
+#endif
+
 #ifdef USE_NLS
 #include <locale.h>
 #include <libintl.h>
-#define BIND_NLS do { \
-	setlocale(LC_ALL, ""); \
+#define BIND_NLS do {                            \
+	setlocale(LC_ALL, "");                   \
 	bindtextdomain(PACKAGE_NAME, LOCALEDIR); \
-	textdomain(PACKAGE_NAME); \
+	textdomain(PACKAGE_NAME);                \
 } while (0)
 #define _(text) gettext(text)
 #define _n(singular, plural, number) ngettext((singular), (plural), (number))

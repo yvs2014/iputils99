@@ -1,4 +1,4 @@
-iputils99 (1:99-20260310-rc1) noble; urgency=low
+iputils99 (1:99-20260519-rc1) noble; urgency=low
 
   * iputils in C99 style for _testing_
     iputils99: https://github.com/yvs2014/iputils99/

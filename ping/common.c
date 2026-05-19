@@ -236,15 +236,15 @@ int get_interval(const state_t *rts) {
 }
 
 inline int in_flight(const state_t *rts) {
-	uint16_t diff = rts->ntransmitted - rts->acked;
-	return (diff <= 0x7FFF) ? diff : (rts->ntransmitted - rts->nreceived - rts->nerrors);
+	uint16_t diff = (uint16_t)rts->ntransmitted - rts->acked;
+	return (diff <= INT16_MAX) ? diff : (rts->ntransmitted - rts->nreceived - rts->nerrors);
 }
 
 static inline void advance_ntransmitted(state_t *rts) {
 	rts->ntransmitted++;
 	/* Invalidate acked, if 16 bit seq overflows */
-	if (((uint16_t)rts->ntransmitted - rts->acked) > 0x7FFF)
-	rts->acked = (uint16_t)rts->ntransmitted + 1;
+	if (((uint16_t)rts->ntransmitted - rts->acked) > INT16_MAX)
+		rts->acked = (uint16_t)rts->ntransmitted + 1;
 }
 
 /*
@@ -547,19 +547,16 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
 		int polling = 0;
 		int recv_error = 0;
 		if (rts->opt.adaptive || rts->opt.flood_poll || (next <= SCHINT(rts->interval))) {
-			int recv_expected = in_flight(rts);
-
-			/* If we are here, recvmsg() is unable to wait for required timeout */
+			// If we are here, recvmsg() is unable to wait for required timeout
 			if (1000 % HZ == 0 ? next <= 1000 / HZ : (next < INT_MAX / HZ && next * HZ <= 1000)) {
-							// Very short timeout ...
-				if (recv_expected) {	// If we wait for something, sleep for MIN_GAP_MS
+						     // Very short timeout ...
+				if (in_flight(rts))  // If we wait for something, sleep for MIN_GAP_MS
 					next = MIN_GAP_MS;
-				} else {		// otherwise spin
+				else {               // otherwise spin
 					next = 0;
-					// No reason to poll at spinning, instead use nonblocking recvmsg()
-					polling = MSG_DONTWAIT;
-					// but yield yet
-					sched_yield();
+					polling = MSG_DONTWAIT; // No reason to poll at spinning,
+								// instead use nonblocking recvmsg().
+					sched_yield();          // But yield yet.
 				}
 			}
 
@@ -711,11 +708,12 @@ const char *sprint_addr(const void *sa, socklen_t salen, bool resolve) {
 
 inline void acknowledge(state_t *rts, uint16_t seq) {
 	uint16_t diff = (uint16_t)rts->ntransmitted - seq;
-	if (diff <= 0x7FFF) {
-		if ((int)diff + 1 > rts->pipesize)
-			rts->pipesize = (int)diff + 1;
+	if (diff <= INT16_MAX) {
+		int piped = (int)diff + 1;
+		if (piped > rts->pipesize)
+			rts->pipesize = piped;
 		if ((int16_t)(seq - rts->acked) > 0 ||
-		    (uint16_t)rts->ntransmitted - rts->acked > 0x7FFF)
+		    (uint16_t)rts->ntransmitted - rts->acked > INT16_MAX)
 			rts->acked = seq;
 	}
 }

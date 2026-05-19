@@ -79,22 +79,29 @@
 #include "perm.h"
 #endif
 
+#define TODAY_MSEC(tv) (((tv).tv_sec % DAY_IN_SEC) * 1000 + (tv).tv_nsec / 1000000)
+
+typedef enum {
+	DT_GOOD    =  0,
+	DT_UNREACH =  2,
+	DT_NONSTD  =  3,
+	DT_BREAK   =  4,
+	DT_CONT    =  5,
+	DT_ERROR   = -1,
+} timediff_e;
+
 enum {
-	RANGE   =  1,		/* best expected round-trip time, ms */
+	RANGE   =  1,         // the best expected RTT, in msec
 	MSGS    = 50,
 	TRIALS  = 10,
 	//
-	GOOD        = 0,
-	UNREACHABLE = 2,
-	NONSTDTIME  = 3,
-	BREAK       = 4,
-	CONTINUE    = 5,
-	HOSTDOWN    = 0x7fffffff,
+	HOSTDOWN = INT32_MAX,
+//	PROCESSING_TIME	= 0,  // to reduce error in measurement, in msec
 	//
-	BIASP  =  43199999,
-	BIASN  = -43200000,
-	MODULO =  86400000,
-	PROCESSING_TIME	= 0,	/* ms. to reduce error in measurement */
+	DAY_IN_SEC  = 24 * 3600,
+	DAY_IN_MSEC = DAY_IN_SEC * 1000,
+	HALFDAY_BEFORE = -DAY_IN_MSEC / 2,     // in msec
+	HALFDAY_AFTER  =  DAY_IN_MSEC / 2 - 1, // in msec
 	//
 	OPTLEN_2 = 4 + 4 * 8,
 	OPTLEN_3 = 4 + 3 * 8,
@@ -102,8 +109,8 @@ enum {
 
 typedef struct run_state {
 	uint16_t id16;
+	struct sockaddr_in sa;
 	int sock;
-	struct sockaddr_in server;
 	uint8_t optlen;
 	int delta1;
 	int delta2;
@@ -113,13 +120,12 @@ typedef struct run_state {
 	long rtt;
 	long min_rtt;
 	long sigma;
-	char *host;
 	const char *ts_format;
 	bool interactive;
 } state_t;
 
-struct measure_vars {
-	struct timespec ts1;
+typedef struct measurement_data {
+	struct timespec ts;
 	struct timespec tout;
 	int msgcount;
 	long min1;
@@ -127,7 +133,11 @@ struct measure_vars {
 	struct iphdr   *ip;
 	struct icmphdr *icmp;
 	uint8_t packet[1024];
-};
+} measurement_data_t;
+
+typedef struct delta_timing {
+	long send, recv, peer1, peer2;
+} delta_timing_t;
 
 /*
  * All includes, definitions, struct declarations, and global variables are above.  After
@@ -186,156 +196,136 @@ static int clockdiff_in_cksum(const unsigned short *addr, int len) {
 	return (~sum & 0xffff);
 }
 
-static int measure_inner_loop(state_t *rts, struct measure_vars *mv) {
+static inline timediff_e opt_measure(state_t *rts, measurement_data_t *m, delta_timing_t *dt) {
+	uint8_t *opt = m->packet + sizeof(struct iphdr);
+	{ // low 4bits
+	  uint8_t low = opt[3] & 0xf;
+	  if (low != IPOPT_TS_PRESPEC) {
+		warnx("%s: %u", _("Wrong timestamp"), low);
+		return DT_NONSTD;
+	  }
+	}
+	{ // high 4bits
+	  uint8_t high = opt[3] >> 4;
+	  if (high && ((high != 1) || (rts->optlen != OPTLEN_3)))
+		 warnx("%s: %u", _("Overflow hops"), high);
+	}
+	for (int i = 0; i < (opt[2] - 5) / 8; i++) {
+		uint32_t *timep = (uint32_t *)(opt + 4 + i * 8 + 4);
+		uint32_t t = ntohl(*timep);
+		if (IS_BIT31_SET(t))
+			return DT_NONSTD;
+		switch (i) {
+		case 0:
+			dt->send = t;
+			break;
+		case 1:
+			dt->peer1 = dt->peer2 = t;
+			break;
+		case 2:
+			if (rts->optlen == OPTLEN_2)
+				dt->peer2 = t;
+			else
+				dt->recv = t;
+			break;
+		case 3:
+			dt->recv = t;
+			break;
+		default: break;
+		}
+	}
+	if (!(dt->send && dt->recv && dt->peer1 && dt->peer2)) {
+		warnx("%s", _("Wrong timestamp"));
+		return DT_ERROR;
+	}
+	return DT_GOOD;
+}
+
+static inline timediff_e measure_msg(state_t *rts, measurement_data_t *m) {
 	{ long tmo = MAX(rts->rtt + rts->sigma, 1);
-	  mv->tout.tv_sec  = tmo / 1000;
-	  mv->tout.tv_nsec = (tmo - (tmo / 1000) * 1000) * 1000000; }
+	  m->tout.tv_sec  = tmo / 1000;
+	  m->tout.tv_nsec = (tmo - (tmo / 1000) * 1000) * 1000000; }
 
-	struct pollfd p = { .fd = rts->sock, .events = POLLIN | POLLHUP };
-	if (ppoll(&p, 1, &mv->tout, NULL) <= 0)
-		return BREAK;
+	{ struct pollfd p = { .fd = rts->sock, .events = POLLIN | POLLHUP };
+	  if (ppoll(&p, 1, &m->tout, NULL) <= 0)
+		return DT_BREAK; }
+	{ if (clock_gettime(CLOCK_REALTIME, &m->ts) < 0)
+		return DT_ERROR; }
+	{ socklen_t len = sizeof(struct sockaddr_in);
+	  if (recvfrom(rts->sock, m->packet, sizeof(m->packet), 0, NULL, &len) < 0)
+		return DT_ERROR; }
 
-	clock_gettime(CLOCK_REALTIME, &mv->ts1);
+	m->icmp = (struct icmphdr *)(m->packet + (m->ip->ihl << 2));
 
-	socklen_t len = sizeof(struct sockaddr_in);
-	if (recvfrom(rts->sock, mv->packet, sizeof(mv->packet),
-			0, NULL, &len) < 0)
-		return -1;
-
-	mv->icmp = (struct icmphdr *)(mv->packet + (mv->ip->ihl << 2));
-
-	long recvtime, sendtime;
-	long peer_time1 = 0;
-	long peer_time2 = 0;
-	bool reply_with_ts = (mv->icmp->type == ICMP_TIMESTAMPREPLY) ||
-		(rts->optlen                        &&
-		 (mv->icmp->type == ICMP_ECHOREPLY) &&
-		 (mv->packet[20] == IPOPT_TIMESTAMP));
-
-	if (reply_with_ts
-	    && (mv->icmp->un.echo.id       == rts->id16)
-	    && (mv->icmp->un.echo.sequence >= rts->seqno0)
-	    && (mv->icmp->un.echo.sequence <= rts->seqno))
-	{
-		if (rts->acked < mv->icmp->un.echo.sequence)
-			rts->acked = mv->icmp->un.echo.sequence;
+#define REPLY_WITH_TS ((m->icmp->type == ICMP_TIMESTAMPREPLY) || \
+  (rts->optlen && (m->icmp->type == ICMP_ECHOREPLY) && (m->packet[20] == IPOPT_TIMESTAMP)))
+//
+#define ICMP_ECHO_OKAY ((m->icmp->un.echo.id       == rts->id16  ) && \
+                        (m->icmp->un.echo.sequence >= rts->seqno0) && \
+	                (m->icmp->un.echo.sequence <= rts->seqno ))
+	delta_timing_t dt = {0};
+	if (REPLY_WITH_TS && ICMP_ECHO_OKAY) {
+		if (rts->acked < m->icmp->un.echo.sequence)
+			rts->acked = m->icmp->un.echo.sequence;
 		if (rts->optlen) {
-			uint8_t *opt = mv->packet + sizeof(struct iphdr);
-			{ // low 4bits
-			  uint8_t low = opt[3] & 0xf;
-			  if (low != IPOPT_TS_PRESPEC) {
-				warnx("%s: %u", _("Wrong timestamp"), low);
-				return NONSTDTIME;
-			  }
-			}
-			{ // high 4bits
-			  uint8_t high = opt[3] >> 4;
-			  if (high && ((high != 1) || (rts->optlen != OPTLEN_3)))
-				 warnx("%s: %u", _("Overflow hops"), high);
-			}
-			sendtime = recvtime = peer_time1 = peer_time2 = 0;
-			for (int i = 0; i < (opt[2] - 5) / 8; i++) {
-				uint32_t *timep = (uint32_t *)(opt + 4 + i * 8 + 4);
-				uint32_t t = ntohl(*timep);
-				if (t & 0x80000000)
-					return NONSTDTIME;
-				switch (i) {
-				case 0:
-					sendtime = t;
-					break;
-				case 1:
-					peer_time1 = peer_time2 = t;
-					break;
-				case 2:
-					if (rts->optlen == OPTLEN_2)
-						peer_time2 = t;
-					else
-						recvtime = t;
-					break;
-				case 3:
-					recvtime = t;
-					break;
-				default:
-					break;
-				}
-			}
-
-			if (!(sendtime && recvtime && peer_time1 && peer_time2)) {
-				warnx("%s", _("Wrong timestamp"));
-				return -1;
-			}
+			timediff_e status = opt_measure(rts, m, &dt);
+			if (status != DT_GOOD)
+				return status;
 		} else {
-			recvtime = (mv->ts1.tv_sec % (24 * 60 * 60)) * 1000 +
-					mv->ts1.tv_nsec / 1000000;
-			sendtime = ntohl(*(uint32_t *)(mv->icmp + 1));
+			dt.send = ntohl(*(uint32_t *)(m->icmp + 1));
+			dt.recv = TODAY_MSEC(m->ts);
 		}
 
-		long diff = recvtime - sendtime;
-		if (diff < 0) /* diff can be less than 0 around midnight */
-			return CONTINUE;
+		long diff = dt.recv - dt.send;
+		if (diff < 0) // probably around midnight
+			return DT_CONT;
 		rts->rtt   = (rts->rtt   * 3 + diff)                  / 4;
 		rts->sigma = (rts->sigma * 3 + labs(diff - rts->rtt)) / 4;
-		mv->msgcount++;
+		m->msgcount++;
 		if (!rts->optlen) {
-			peer_time1 = ntohl(((uint32_t *)(mv->icmp + 1))[1]);
+			dt.peer1 = ntohl(((uint32_t *)(m->icmp + 1))[1]);
 			/*
 			 * a hosts using a time format different from ms.  since midnight
 			 * UT (as per RFC792) should set the high order bit of the 32-bit
 			 * time value it transmits.
 			 */
-			if ((peer_time1 & 0x80000000) != 0)
-				return NONSTDTIME;
+			if (IS_BIT31_SET(dt.peer1))
+				return DT_NONSTD;
 		}
 		if (rts->interactive) {
 			printf(".");
 			fflush(stdout);
 		}
 
-		long delta1 = peer_time1 - sendtime;
-		/*
-		 * Handles wrap-around to avoid that around midnight small time
-		 * differences appear enormous.  However, the two machine's clocks must
-		 * be within 12 hours from each other.
-		 */
-		if      (delta1 < BIASN)
-			delta1 += MODULO;
-		else if (delta1 > BIASP)
-			delta1 -= MODULO;
-
-		long delta2 = recvtime;
-		delta2 -= rts->optlen ? peer_time2 : peer_time1;
-		if      (delta2 < BIASN)
-			delta2 += MODULO;
-		else if (delta2 > BIASP)
-			delta2 -= MODULO;
-
-		if (delta1 < mv->min1)
-			mv->min1 = delta1;
-		if (delta2 < mv->min2)
-			mv->min2 = delta2;
+// Handles wrap-around to avoid that around midnight small time differences appear enormous.
+// However, the two machine's clocks must be within 12 hours from each other.
+#define SET_DELTA(delta, keep, value) long delta = (value);    \
+	if      (delta < HALFDAY_BEFORE) delta += DAY_IN_MSEC; \
+	else if (delta > HALFDAY_AFTER)  delta -= DAY_IN_MSEC; \
+	if (delta < keep) keep = delta;
+//
+		SET_DELTA(delta1, m->min1, dt.peer1 - dt.send)
+		SET_DELTA(delta2, m->min2, dt.recv - (rts->optlen ? dt.peer2 : dt.peer1))
+//
 		int rtt = delta1 + delta2;
 		if (rtt < rts->min_rtt) {
 			rts->min_rtt = rtt;
-			rts->delta2  = (delta1 - delta2) / 2 + PROCESSING_TIME;
+			rts->delta2  = (delta1 - delta2) / 2;
+//			rts->delta2 += PROCESSING_TIME;
 		}
 		if (diff < RANGE) {
-			mv->min1 = delta1;
-			mv->min2 = delta2;
-			return BREAK;
+			m->min1 = delta1;
+			m->min2 = delta2;
+			return DT_BREAK;
 		}
 	}
-	return CONTINUE;
+	return DT_CONT;
 }
 
-/*
- * Measures the differences between machines' clocks using ICMP timestamp messages
- */
-static int measure(state_t *rts) {
-	struct measure_vars mv = {
-		.min1 = LONG_MAX,
-		.min2 = LONG_MAX,
-	};
-	mv.ip = (struct iphdr *)mv.packet;
+// Measure the differences between machines' clocks using ICMP timestamp messages
+static timediff_e measure(state_t *rts) {
+	measurement_data_t m = {.min1 = LONG_MAX, .min2 = LONG_MAX};
+	m.ip = (struct iphdr *)m.packet;
 
 	rts->min_rtt = LONG_MAX;
 	rts->delta1  = HOSTDOWN;
@@ -343,11 +333,10 @@ static int measure(state_t *rts) {
 
 	/* empties the icmp input queue */
 	struct pollfd p = { .fd = rts->sock, .events = POLLIN | POLLHUP };
-	while (ppoll(&p, 1, &mv.tout, NULL)) {
+	while (ppoll(&p, 1, &m.tout, NULL)) {
 		socklen_t len = sizeof(struct sockaddr_in);
-		if (recvfrom(rts->sock, mv.packet, sizeof(mv.packet),
-				0, NULL, &len) < 0)
-			return -1;
+		if (recvfrom(rts->sock, m.packet, sizeof(m.packet), 0, NULL, &len) < 0)
+			return DT_ERROR;
 	}
 
 	/*
@@ -357,62 +346,47 @@ static int measure(state_t *rts) {
 	 * time in each of the two directions.  Use these two latter quantities to
 	 * compute the delta between the two clocks.
 	 */
-
-	unsigned char opacket[64] = {0};
-	struct icmphdr *oicp = (struct icmphdr *)opacket;
-
-	oicp->type       = rts->optlen ? ICMP_ECHO : ICMP_TIMESTAMP;
-	oicp->code       = 0;
-	oicp->checksum   = 0;
-	oicp->un.echo.id = rts->id16;
-	((uint32_t *)(oicp + 1))[0] = 0;
-	((uint32_t *)(oicp + 1))[1] = 0;
-	((uint32_t *)(oicp + 1))[2] = 0;
+	uint8_t opacket[64] = {0};
+	struct icmphdr *icmp = (struct icmphdr *)opacket;
+	icmp->type       = rts->optlen ? ICMP_ECHO : ICMP_TIMESTAMP;
+	icmp->code       = 0;
+	icmp->checksum   = 0;
+	icmp->un.echo.id = rts->id16;
+	((uint32_t *)(icmp + 1))[0] = 0;
+	((uint32_t *)(icmp + 1))[1] = 0;
+	((uint32_t *)(icmp + 1))[2] = 0;
 
 	rts->acked = rts->seqno = rts->seqno0 = 0;
-
-	for (mv.msgcount = 0; mv.msgcount < MSGS;) {
-		char escape = 0;
-
-		/*
-		 * If no answer is received for TRIALS consecutive times, the machine is
-		 * assumed to be down
-		 */
+	for (m.msgcount = 0; m.msgcount < MSGS;) {
+		// If no answer is received for TRIALS consecutive times,
+		// the machine is assumed to be down
 		if ((rts->seqno - rts->acked) > TRIALS) {
 			errno = EHOSTDOWN;
-			return -1;
+			return DT_ERROR;
 		}
-
-		oicp->un.echo.sequence = ++rts->seqno;
-		oicp->checksum = 0;
-
-		clock_gettime(CLOCK_REALTIME, &mv.ts1);
-		*(uint32_t *) (oicp + 1) =
-		    htonl((mv.ts1.tv_sec % (24 * 60 * 60)) * 1000 + mv.ts1.tv_nsec / 1000000);
-		oicp->checksum = clockdiff_in_cksum((unsigned short *)oicp, sizeof(*oicp) + 12);
-
-		if (sendto(rts->sock, opacket, sizeof(*oicp) + 12, 0,
-		       (struct sockaddr *)&rts->server, sizeof(struct sockaddr_in)) < 0)
-		{
+		//
+		icmp->un.echo.sequence = ++rts->seqno;
+		icmp->checksum = 0;
+		//
+		clock_gettime(CLOCK_REALTIME, &m.ts);
+		*(uint32_t *) (icmp + 1) = htonl(TODAY_MSEC(m.ts));
+		icmp->checksum = clockdiff_in_cksum((unsigned short *)icmp, sizeof(*icmp) + 12);
+		//
+		if (sendto(rts->sock, opacket, sizeof(*icmp) + 12, 0,
+		  (struct sockaddr *)&rts->sa, sizeof(rts->sa)) < 0) {
 			errno = EHOSTUNREACH;
-			return -1;
+			return DT_ERROR;
 		}
-
-		while (!escape) {
-			int ret = measure_inner_loop(rts, &mv);
-			switch (ret) {
-				case BREAK:
-					escape = 1;
-					break;
-				case CONTINUE:
-					continue;
-				default:
-					return ret;
-			}
+		//
+		while (true) {
+			timediff_e status = measure_msg(rts, &m); // with recvfrom()
+			if      (status == DT_BREAK) break;
+			else if (status != DT_CONT ) return status;
 		}
 	}
-	rts->delta1 = (mv.min1 - mv.min2) / 2 + PROCESSING_TIME;
-	return GOOD;
+	rts->delta1  = (m.min1 - m.min2) / 2;
+//	rts->delta1 += PROCESSING_TIME;
+	return DT_GOOD;
 }
 
 NORETURN static void usage(int rc) {
@@ -514,6 +488,10 @@ int main(int argc, char **argv) {
 	rts.id16 = htons(getpid() & USHRT_MAX);
 #endif
 
+#define PEERNAME (canonname ? canonname : target)
+	const char *target = argv[0];
+	char *canonname = NULL;
+
 	{ // resolv
 	  const struct addrinfo hints = {
 		.ai_family   = AF_INET,
@@ -529,11 +507,11 @@ int main(int argc, char **argv) {
 	  }
 	  if (!res)
 		errx(EXIT_FAILURE, "%s", "getaddrinfo()");
-	  rts.host = strdup(res->ai_canonname);
-	  memcpy(&rts.server, res->ai_addr, sizeof(rts.server));
+	  canonname = strdup(res->ai_canonname);
+	  memcpy(&rts.sa, res->ai_addr, sizeof(rts.sa));
 	  freeaddrinfo(res);
 	}
-	if (connect(rts.sock, (struct sockaddr *)&rts.server, sizeof(rts.server)) < 0)
+	if (connect(rts.sock, (struct sockaddr *)&rts.sa, sizeof(rts.sa)) < 0)
 		err(errno, "%s", "connect()");
 	if (rts.optlen) {
 		struct sockaddr_in myaddr = { 0 };
@@ -548,10 +526,10 @@ int main(int argc, char **argv) {
 		if (getsockname(rts.sock, (struct sockaddr *)&myaddr, &addrlen) < 0)
 			err(errno, "getsockname");
 		((uint32_t *) (rspace + 4))[0 * 2] = myaddr.sin_addr.s_addr;
-		((uint32_t *) (rspace + 4))[1 * 2] = rts.server.sin_addr.s_addr;
+		((uint32_t *) (rspace + 4))[1 * 2] = rts.sa.sin_addr.s_addr;
 		((uint32_t *) (rspace + 4))[2 * 2] = myaddr.sin_addr.s_addr;
 		if (rts.optlen == OPTLEN_2) {
-			((uint32_t *) (rspace + 4))[2 * 2] = rts.server.sin_addr.s_addr;
+			((uint32_t *) (rspace + 4))[2 * 2] = rts.sa.sin_addr.s_addr;
 			((uint32_t *) (rspace + 4))[3 * 2] = myaddr.sin_addr.s_addr;
 		}
 
@@ -562,18 +540,13 @@ int main(int argc, char **argv) {
 		free(rspace);
 	}
 
-	{ const char *name = rts.host ? rts.host : "";
-	  int status = measure(&rts);
-	  if (status < 0) {
-		if (errno)
-			err(errno, "%s(%s)", _("measure"), name);
-		errx(EXIT_FAILURE, "%s(%s): %s", _("measure"), name, _("Unknown failure"));
-	  }
-	  switch (status) {
-	  case NONSTDTIME:
-		errx(EXIT_FAILURE, "%s(%s): %s", _("measure"), name, _("Non-standard time format"));
-		break;
-	  }
+	switch (measure(&rts)) {
+	case DT_ERROR:
+		if (errno) err(errno, "%s(%s)", _("measure"), PEERNAME);
+		errx(EXIT_FAILURE, "%s(%s): %s", _("measure"), PEERNAME, _("Unknown failure"));
+	case DT_NONSTD:
+		errx(EXIT_FAILURE, "%s(%s): %s", _("measure"), PEERNAME, _("Non-standard time format"));
+	default: break;
 	}
 
 	{ time_t now = time(NULL);
@@ -585,7 +558,7 @@ int main(int argc, char **argv) {
 			ts[0] = 0;
 		const char *ms = _("ms");
 		putchar('\n');
-		printf("%s=%s ", _("host"), rts.host);
+		printf("%s=%s ", _("host"), PEERNAME);
 		printf("%s=%ld(%ld)%s/%ld%s ", _("rtt"),
 			rts.rtt, rts.sigma, ms, rts.min_rtt, ms);
 		printf("%s=%d%s/%d%s ", _("delta"),
@@ -595,6 +568,8 @@ int main(int argc, char **argv) {
 		printf("%lld %d %d", (long long)now, rts.delta1, rts.delta2);
 	  putchar('\n');
 	}
+	if (canonname)
+		free(canonname);
 	exit(EXIT_SUCCESS);
 }
 
