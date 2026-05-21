@@ -57,6 +57,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <byteswap.h>
 
 #include "ping4_aux.h"
 #include "iputils.h"
@@ -96,124 +97,116 @@ uint16_t in_cksum(const uint16_t *addr, int len, uint16_t csum) {
 
 static inline void puts_addr(in_addr_t addr, bool resolve) {
 	putchar('\t');
-	if (addr) {
-		struct sockaddr_in sin = { .sin_family = AF_INET,
-			.sin_addr.s_addr = addr };
-		fputs(sprint_addr(&sin, sizeof(sin), resolve), stdout);
-	} else
-		fputs("0.0.0.0", stdout);
+	fputs(addr ? sprint_addr4(addr, resolve) : "0.0.0.0", stdout);
 }
 
-void print4_ip_opts(const uint8_t *cp, int hlen, bool resolve, bool flood) {
-	static int old_rrlen;
-	static char old_rr[MAX_IPOPTLEN];
+static inline void puts_addrln(in_addr_t addr, bool resolve) {
+	putchar('\t');
+	puts(addr ? sprint_addr4(addr, resolve) : "0.0.0.0");
+}
 
-	int totlen = hlen - sizeof(struct iphdr);
-	const unsigned char *optptr = cp;
 
-	while (totlen > 0) {
-		if (*optptr == IPOPT_EOL)
-			break;
-		if (*optptr == IPOPT_NOP) {
-			totlen--;
-			optptr++;
-			printf("\nNOP");
-			continue;
+//
+// NOTE: ipopt_xxx() functions: data behind TYPE-LENGTH
+static void ipopt_sr(const uint8_t *data, int len, bool resolve, char kind) {
+	if (len > IPOPT_MINOFF) {
+		printf("\n%cSRR: ", kind);
+		for (; len > IPOPT_MINOFF; len -= 4, data += 4)
+			puts_addrln(*(in_addr_t*)data, resolve);
+	}
+}
+// first two bytes: LENGTH, POINTER
+#define VALIDATE_OPT_LP(min) do {   \
+	int size = *data++;         \
+	if (size > len) size = len; \
+	size -= (min);              \
+	if (size <= 0) return;      \
+	/* note: `len' is reused */ \
+	len = size;                 \
+} while (0)
+//
+static void ipopt_rr(const uint8_t *data, int len, bool resolve, bool flood) {
+	VALIDATE_OPT_LP(IPOPT_MINOFF);
+	static int rr_tab_len;
+	static char rr_tab[MAX_IPOPTLEN];
+	uint limsz = (uint)len > sizeof(rr_tab) ? sizeof(rr_tab) : (uint)len;
+	if ((len != rr_tab_len) || memcmp(data, rr_tab, limsz) || flood) {
+		rr_tab_len = len;
+		memcpy(rr_tab, data, limsz);
+		printf("\nRR: ");
+		for (; len > 0; len -= 4, data += 4)
+			puts_addrln(*(in_addr_t*)data, resolve);
+	} else
+		printf("\t%s", _("(same route)"));
+}
+//
+static void print_ipopt_ts(uint32_t ts, uint32_t* xtime, const char *rel, const char *abs) {
+	uint32_t x = *xtime;
+	*xtime = ts;
+	printf("\t%ld", x ? ((int64_t)ts - x) : ts);
+	const char *comment = x ? rel : abs;
+	if (comment)
+		printf(" %s", comment);
+	putchar('\n');
+}
+//
+static void ipopt_ts(const uint8_t *data, int len, bool resolve) {
+	VALIDATE_OPT_LP(5);
+	uint8_t flags = *data++;
+	bool not_tsonly = ((flags & 0xF) != IPOPT_TS_TSONLY);
+	uint32_t stdtime = 0, nonstdtime = 0;
+	printf("\nTS: ");
+	for (; len > 0; len -= 4, data += 4) {
+		if (not_tsonly) {
+			puts_addr(*(in_addr_t*)data, resolve);
+			len  -= 4;
+			data += 4;
+			if (len <= 0)
+				break;
 		}
-		cp = optptr;
-		int olen = optptr[1];
-		if ((olen < 2) || (olen > totlen))
-			break;
+		uint32_t ts = bswap_32(*(uint32_t*)data);
+		if (IS_BIT31_SET(ts))
+			print_ipopt_ts(ts & INT32_MAX, &nonstdtime, _("not-standard"), _("absolute not-standard"));
+		else
+			print_ipopt_ts(ts, &stdtime, NULL, _("absolute"));
+	}
+	uint8_t unrec = flags >> 4;
+	if (unrec)
+		printf("%s: %u\n", _("Unrecorded hops"), unrec);
+}
+//
 
-		switch (*cp) {
-		case IPOPT_SSRR:
-		case IPOPT_LSRR: {
-			printf("\n%cSRR: ", (*cp == IPOPT_SSRR) ? 'S' : 'L');
-			int j = *++cp;
-			cp++;
-			for (; j > IPOPT_MINOFF; j -= 4, cp += 4) {
-				in_addr_t addr;
-				memcpy(&addr, cp, sizeof(in_addr_t));
-				puts_addr(addr, resolve);
-				putchar('\n');
-			}
-		}
-			break;
-		case IPOPT_RR: {
-			int j = *++cp;		/* get length */
-			int i = *++cp;		/* and pointer */
-			if (i > j)
-				i = j;
-			i -= IPOPT_MINOFF;
-			if (i <= 0)
+void print4_ip_opts(const uint8_t *opt, int len, bool resolve, bool flood) {
+	if (opt && (len <= MAX_IPOPTLEN)) for (int l;
+	     (len > 0) && (*opt != IPOPT_EOL);
+	     len -= l, opt += l)
+	{
+		uint8_t t = *opt++;
+		bool nop = t == IPOPT_NOP;
+		if (nop) {
+			l = 1;
+			fputs("\nNOP\n", stdout);
+		} else {
+			l = *opt++;
+			int rest = l - 2;
+			if ((l > len) || (rest <= 0))
 				break;
-			if (i == old_rrlen && !memcmp(cp, old_rr, i) && !flood) {
-				putchar('\t');
-				fputs(_("(same route)"), stdout);
+			switch (t) {
+			case IPOPT_SSRR:
+			case IPOPT_LSRR:
+				ipopt_sr(opt, rest, resolve, (t == IPOPT_SSRR) ? 'S' : 'L');
+				break;
+			case IPOPT_RR:
+				ipopt_rr(opt, rest, resolve, flood);
+				break;
+			case IPOPT_TS:
+				ipopt_ts(opt, rest, resolve);
+				break;
+			default:
+				printf("\n%s %u (0x%02x)", _("Unknown option"), t, t);
 				break;
 			}
-			old_rrlen = i;
-			memcpy(old_rr, (char *)cp, i);
-			printf("\nRR: ");
-			cp++;
-			for (; i > 0; i -= 4, cp += 4) {
-				in_addr_t addr;
-				memcpy(&addr, cp, sizeof(in_addr_t));
-				puts_addr(addr, resolve);
-				putchar('\n');
-			}
 		}
-			break;
-		case IPOPT_TS: {
-			int j = *++cp;		/* get length */
-			int i = *++cp;		/* and pointer */
-			if (i > j)
-				i = j;
-			i -= 5;
-			if (i <= 0)
-				break;
-			printf("\nTS: ");
-			uint8_t flags = *++cp;
-			cp++;
-			int stdtime = 0, nonstdtime = 0;
-			for (; i > 0; i -= 4) {
-				if ((flags & 0xF) != IPOPT_TS_TSONLY) {
-					in_addr_t addr;
-					memcpy(&addr, cp, sizeof(in_addr_t));
-					puts_addr(addr, resolve);
-					cp += 4;
-					i  -= 4;
-					if (i <= 0)
-						break;
-				}
-				long l = *cp++;
-				l = (l << 8) + *cp++;
-				l = (l << 8) + *cp++;
-				l = (l << 8) + *cp++;
-				long ld = l;
-				const char *comment = NULL;
-				if (IS_BIT31_SET(l)) {
-					comment = _(nonstdtime ? "not-standard" : "absolute not-standard");
-					ld &= INT32_MAX;
-					nonstdtime = ld;
-					ld -= nonstdtime;
-				} else {
-					comment = stdtime ? "" : _("absolute");
-					stdtime = ld;
-					ld -= stdtime;
-				}
-				printf("\t%ld %s\n", ld, comment);
-			}
-			if (flags >> 4)
-				printf("%s: %d\n", _("Unrecorded hops"), flags >> 4);
-			break;
-		}
-		default:
-			printf("\n%s 0x%02x", _("Unknown option"), *cp);
-			break;
-		}
-		totlen -= olen;
-		optptr += olen;
 	}
 }
 
@@ -226,10 +219,10 @@ void print4_iph(const struct iphdr *ip, bool resolve, bool flood) {
 	printf("  %02x  %02x %04x", ip->ttl, ip->protocol, ip->check);
 	printf(" %s ", inet_ntoa(*(struct in_addr *)&ip->saddr));
 	printf(" %s ", inet_ntoa(*(struct in_addr *)&ip->daddr));
-	printf("\n");
-	int hlen = ip->ihl << 2;
-	const uint8_t *cp = (uint8_t *)ip + 20;	/* point to options */
-	print4_ip_opts(cp, hlen, resolve, flood);
+	putchar('\n');
+	int olen = (ssize_t)(ip->ihl * 4) - sizeof(struct iphdr);
+	if (olen > 0)
+		print4_ip_opts((uint8_t *)ip + sizeof(struct iphdr), olen, resolve, flood);
 }
 
 

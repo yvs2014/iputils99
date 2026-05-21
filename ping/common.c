@@ -706,6 +706,11 @@ const char *sprint_addr(const void *sa, socklen_t salen, bool resolve) {
 	return nicached;
 }
 
+inline const char *sprint_addr4(in_addr_t addr, bool resolve) {
+	struct sockaddr_in sin = {.sin_family = AF_INET, .sin_addr.s_addr = addr};
+	return sprint_addr(&sin, sizeof(sin), resolve);
+}
+
 inline void acknowledge(state_t *rts, uint16_t seq) {
 	uint16_t diff = (uint16_t)rts->ntransmitted - seq;
 	if (diff <= INT16_MAX) {

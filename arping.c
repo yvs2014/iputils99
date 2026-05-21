@@ -287,10 +287,11 @@ static inline bool final_pack(state_t *rts,
 		}
 		if (rts->last.tv_sec) {
 			struct timespec ts = {0}, sub = {0};
-			clock_gettime(CLOCK_MONOTONIC, &ts);
-			timespecsub(&ts, &rts->last, &sub);
-			double ms = sub.tv_sec * 1000 + sub.tv_nsec / 1000000.;
-			printf(" " TMMS, ms, _("ms"));
+			if (!clock_gettime(CLOCK_MONOTONIC, &ts)) {
+				timespecsub(&ts, &rts->last, &sub);
+				double ms = sub.tv_sec * 1000 + sub.tv_nsec / 1000000.;
+				printf(" " TMMS, ms, _("ms"));
+			}
 		} else
 			printf(" %s?", _("UNSOLICITED"));
 		putchar('\n');

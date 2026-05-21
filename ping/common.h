@@ -172,6 +172,7 @@ typedef struct fnset_t {
 } fnset_t;
 
 const char *sprint_addr(const void *sa, socklen_t salen, bool resolve);
+const char *sprint_addr4(in_addr_t addr, bool resolve);
 void acknowledge(state_t *rts, uint16_t seq);
 
 #define IS_OURS(rts, rawsock, rcvd_id) (!(rawsock) || ((rcvd_id) == (rts)->ident16))

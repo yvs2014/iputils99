@@ -101,13 +101,15 @@ static ssize_t ping4_send_probe(state_t *rts, int fd, uint8_t *packet) {
 	icmp->un.echo.sequence = htons(rts->ntransmitted + 1);
 	icmp->un.echo.id       = rts->ident16;
 	if (rts->timing) {
-		if (rts->opt.latency) {
+		bool lat = rts->opt.latency;
+		if (lat) {
 			struct timeval tv;
-			gettimeofday(&tv, NULL);
-			memcpy(icmp + 1, &tv, sizeof(tv));
-		} else {
-			memset(icmp + 1, 0, sizeof(struct timeval));
+			lat = !gettimeofday(&tv, NULL);
+			if (lat)
+				memcpy(icmp + 1, &tv, sizeof(tv));
 		}
+		if (!lat)
+			memset(icmp + 1, 0, sizeof(struct timeval));
 	}
 	// note: timestamp is accounted in data area
 	ssize_t len = sizeof(struct icmphdr) + rts->datalen;
@@ -115,7 +117,7 @@ static ssize_t ping4_send_probe(state_t *rts, int fd, uint8_t *packet) {
 	/* compute ICMP checksum here */
 	icmp->checksum = in_cksum((uint16_t *)icmp, len, 0);
 	if (rts->timing && !rts->opt.latency) {
-		struct timeval tv;
+		struct timeval tv = {0};
 		gettimeofday(&tv, NULL);
 		memcpy(icmp + 1, &tv, sizeof(tv));
 		icmp->checksum = in_cksum((uint16_t *)&tv, sizeof(tv), ~icmp->checksum);
@@ -227,8 +229,7 @@ static inline bool ping4_icmp_extra_type(state_t *rts,
 		_("icmp_seq"), ntohs(orig->un.echo.sequence));
 	if (bad)
 		printf("(%s!)", _("BAD CHECKSUM"));
-	if (print4_icmph(icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp,
-			rts->opt.resolve, color))
+	if (print4_icmph(icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp, rts->opt.resolve, color))
 		if (rts->opt.verbose)
 			print4_iph(iph, rts->opt.resolve, rts->opt.flood);
 	putchar('\n');
@@ -263,12 +264,12 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 					_("Packet too short"), received, BYTES(received));
 			return true;
 		}
-		away = ip->ttl;
+		away  = ip->ttl;
+		// options (without header)
 		opts += sizeof(struct iphdr);
-		olen = (ssize_t)hlen - sizeof(struct iphdr);
+		olen  = (ssize_t)hlen - sizeof(struct iphdr);
 	} else for (struct cmsghdr *c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c)) {
-		if (c->cmsg_level == IPPROTO_IP)
-			switch (c->cmsg_type) {
+		if (c->cmsg_level == IPPROTO_IP) switch (c->cmsg_type) {
 			case IP_TTL:
 				if (c->cmsg_len >= sizeof(int)) {
 					uint8_t *ttl = CMSG_DATA(c);
@@ -276,11 +277,12 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 				}
 				break;
 			case IP_RETOPTS:
+				// options (without header)
 				opts = (uint8_t *)CMSG_DATA(c);
-				olen = c->cmsg_len;
+				olen = c->cmsg_len - CMSG_LEN(0);
 				break;
 			default: break;
-			}
+		}
 	}
 
 	RETURN_IF_TOO_SHORT(received, hlen + sizeof(struct icmphdr));
@@ -331,9 +333,9 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 		if (!rts->opt.verbose || rts->uid)
 			return false;
 		if (rts->opt.ptimeofday) {
-			struct timeval recv_time;
-			gettimeofday(&recv_time, NULL);
-			printf("%lu.%06lu ", (unsigned long)recv_time.tv_sec, (unsigned long)recv_time.tv_usec);
+			struct timeval tm;
+			if (!gettimeofday(&tm, NULL))
+				printf("%lu.%06lu ", (unsigned long)tm.tv_sec, (unsigned long)tm.tv_usec);
 		}
 
 		printf("%s %s: ", _("From"), sprint_addr(from, sizeof(*from), rts->opt.resolve));
@@ -355,7 +357,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 			fflush(stdout);
 	}
 	if (!rts->opt.flood) {
-		print4_ip_opts(opts, olen + sizeof(struct iphdr), rts->opt.resolve, rts->opt.flood);
+		print4_ip_opts(opts, olen, rts->opt.resolve, rts->opt.flood);
 		putchar('\n');
 		fflush(stdout);
 	}
