@@ -74,6 +74,7 @@
 #include "stats.h"
 #include "ping_aux.h"
 #include "ping4_aux.h"
+#include "ping4_opt.h"
 #include "nbind.h"
 #include "nlink.h"
 

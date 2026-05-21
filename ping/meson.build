@@ -5,6 +5,7 @@
 ping_src  = aux_src + perm_src + sub_src
 ping_src += 'ping.c'
 ping_src += 'ping_aux.c'
+ping_src += 'ping4_opt.c'
 ping_src += 'ping4.c'
 ping_src += 'ping4_aux.c'
 ping_src += 'ping6.c'

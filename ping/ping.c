@@ -258,7 +258,7 @@ static inline void opt_s(state_t *rts) {
 }
 
 /* Parse command line options */
-void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
+static void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
 	if ((argc <= 0) || !hints || !rts)
 		return;
 	const char *optstr =

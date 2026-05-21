@@ -380,8 +380,8 @@ static timediff_e measure(state_t *rts) {
 		//
 		while (true) {
 			timediff_e status = measure_msg(rts, &m); // with recvfrom()
-			if      (status == DT_BREAK) break;
-			else if (status != DT_CONT ) return status;
+			if (status == DT_BREAK) break;
+			if (status != DT_CONT ) return status;
 		}
 	}
 	rts->delta1  = (m.min1 - m.min2) / 2;

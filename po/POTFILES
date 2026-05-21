@@ -12,6 +12,7 @@ ping/common.c
 ping/extra.c
 ping/ping_aux.h
 ping/ping4_aux.c
+ping/ping4_opt.c
 ping/ping4.c
 ping/ping6_aux.c
 ping/ping6.c

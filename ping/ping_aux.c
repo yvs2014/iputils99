@@ -145,7 +145,12 @@ void setsock_ttl(int fd, bool ip6, int ttl) {
 
 void pmtu_interval(state_t *rts) {
 	rts->multicast = true;
+#if IPV6_PMTUDISC_DO == IPV6_PMTUDISC_DO
+#define	PMTUDISCDO IP_PMTUDISC_DO
+#else
 	int pmtudo = rts->ip6 ? IPV6_PMTUDISC_DO : IP_PMTUDISC_DO;
+#define	PMTUDISCDO pmtudo
+#endif
 	if (rts->uid) {
 		if (rts->interval < MIN_MCAST_MS) {
 			errx(EINVAL, "%s %u %s, %s", _(rts->ip6 ?
@@ -153,14 +158,15 @@ void pmtu_interval(state_t *rts) {
 				"Minimal user interval for broadcast ping must be >="),
 				MIN_MCAST_MS, _("ms"), _("see -i option for details"));
 		}
-		if ((rts->pmtudisc >= 0) && (rts->pmtudisc != pmtudo))
+		if ((rts->pmtudisc >= 0) && (rts->pmtudisc != PMTUDISCDO))
 			errx(EINVAL, "%s %s", _(rts->ip6 ?
 				"Multicast ping" : "Broadcast ping"),
 				_("does not fragment"));
 	}
 	if (rts->pmtudisc < 0)
-		rts->pmtudisc = pmtudo;
+		rts->pmtudisc = PMTUDISCDO;
 }
+#undef PMTUDISCDO
 
 void mtudisc_n_bind(state_t *rts, const sock_t *sock) {
 	// called once at setup

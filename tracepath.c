@@ -197,8 +197,7 @@ do { // was 'restart:'
 				break;
 			default:
 				printf("cmsg6:%d\n ", cmsg->cmsg_type);
-			}
-			break;
+			} break;
 		case IPPROTO_IP:
 			switch (cmsg->cmsg_type) {
 			case IP_RECVERR:
@@ -209,7 +208,8 @@ do { // was 'restart:'
 				break;
 			default:
 				printf("cmsg4:%d\n ", cmsg->cmsg_type);
-			}
+			} break;
+		default: break;
 		}
 	}
 
@@ -220,31 +220,20 @@ do { // was 'restart:'
 
 	if (e->ee_origin == SO_EE_ORIGIN_LOCAL)
 		printf("%2d?: [%s] ", rts->ttl, _("LOCALHOST"));
-	else if (e->ee_origin == SO_EE_ORIGIN_ICMP6 ||
-		 e->ee_origin == SO_EE_ORIGIN_ICMP) {
+	else if (e->ee_origin == SO_EE_ORIGIN_ICMP6 || e->ee_origin == SO_EE_ORIGIN_ICMP) {
 		struct sockaddr *sa = (struct sockaddr *)(e + 1);
-		socklen_t salen;
-
+		socklen_t salen =
+			(sa->sa_family == AF_INET ) ? sizeof(struct sockaddr_in ) :
+			(sa->sa_family == AF_INET6) ? sizeof(struct sockaddr_in6) :
+			0;
 		if (sndhops > 0)
 			printf("%2d:  ", sndhops);
 		else
 			printf("%2d?: ", rts->ttl);
-
-		switch (sa->sa_family) {
-		case AF_INET6:
-			salen = sizeof(struct sockaddr_in6);
-			break;
-		case AF_INET:
-			salen = sizeof(struct sockaddr_in);
-			break;
-		default:
-			salen = 0;
-			break;
-		}
-
+		//
 		// print "host (addr)"
-		char hostbuf[NI_MAXHOST] = "";
-		char addrbuf[NI_MAXHOST] = "";
+		char hostbuf[NI_MAXHOST] = {0};
+		char addrbuf[NI_MAXHOST] = {0};
 		if (getnameinfo(sa, salen, hostbuf, sizeof(hostbuf), NULL, 0, rts->ni_flags))
 			strcpy(hostbuf, UNKN);
 		if (rts->show_both &&

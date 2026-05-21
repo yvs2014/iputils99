@@ -53,13 +53,10 @@
 // ping4.c auxiliary functions
 
 #include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <byteswap.h>
 
 #include "ping4_aux.h"
+#include "ping4_opt.h"
 #include "iputils.h"
 #include "common.h"
 
@@ -70,6 +67,7 @@
 #else
 # define ODDBYTE(v)	htons((unsigned short)(v) << 8)
 #endif
+
 
 /*
  *  Our algorithm is simple, using a 32 bit accumulator (sum),
@@ -93,121 +91,6 @@ uint16_t in_cksum(const uint16_t *addr, int len, uint16_t csum) {
 	sum += (sum >> 16);			/* add carry */
 	uint16_t answer = ~sum;			/* truncate to 16 bits */
 	return answer;
-}
-
-static inline void puts_addr(in_addr_t addr, bool resolve) {
-	putchar('\t');
-	fputs(addr ? sprint_addr4(addr, resolve) : "0.0.0.0", stdout);
-}
-
-static inline void puts_addrln(in_addr_t addr, bool resolve) {
-	putchar('\t');
-	puts(addr ? sprint_addr4(addr, resolve) : "0.0.0.0");
-}
-
-
-//
-// NOTE: ipopt_xxx() functions: data behind TYPE-LENGTH
-static void ipopt_sr(const uint8_t *data, int len, bool resolve, char kind) {
-	if (len > IPOPT_MINOFF) {
-		printf("\n%cSRR: ", kind);
-		for (; len > IPOPT_MINOFF; len -= 4, data += 4)
-			puts_addrln(*(in_addr_t*)data, resolve);
-	}
-}
-// first two bytes: LENGTH, POINTER
-#define VALIDATE_OPT_LP(min) do {   \
-	int size = *data++;         \
-	if (size > len) size = len; \
-	size -= (min);              \
-	if (size <= 0) return;      \
-	/* note: `len' is reused */ \
-	len = size;                 \
-} while (0)
-//
-static void ipopt_rr(const uint8_t *data, int len, bool resolve, bool flood) {
-	VALIDATE_OPT_LP(IPOPT_MINOFF);
-	static int rr_tab_len;
-	static char rr_tab[MAX_IPOPTLEN];
-	uint limsz = (uint)len > sizeof(rr_tab) ? sizeof(rr_tab) : (uint)len;
-	if ((len != rr_tab_len) || memcmp(data, rr_tab, limsz) || flood) {
-		rr_tab_len = len;
-		memcpy(rr_tab, data, limsz);
-		printf("\nRR: ");
-		for (; len > 0; len -= 4, data += 4)
-			puts_addrln(*(in_addr_t*)data, resolve);
-	} else
-		printf("\t%s", _("(same route)"));
-}
-//
-static void print_ipopt_ts(uint32_t ts, uint32_t* xtime, const char *rel, const char *abs) {
-	uint32_t x = *xtime;
-	*xtime = ts;
-	printf("\t%ld", x ? ((int64_t)ts - x) : ts);
-	const char *comment = x ? rel : abs;
-	if (comment)
-		printf(" %s", comment);
-	putchar('\n');
-}
-//
-static void ipopt_ts(const uint8_t *data, int len, bool resolve) {
-	VALIDATE_OPT_LP(5);
-	uint8_t flags = *data++;
-	bool not_tsonly = ((flags & 0xF) != IPOPT_TS_TSONLY);
-	uint32_t stdtime = 0, nonstdtime = 0;
-	printf("\nTS: ");
-	for (; len > 0; len -= 4, data += 4) {
-		if (not_tsonly) {
-			puts_addr(*(in_addr_t*)data, resolve);
-			len  -= 4;
-			data += 4;
-			if (len <= 0)
-				break;
-		}
-		uint32_t ts = bswap_32(*(uint32_t*)data);
-		if (IS_BIT31_SET(ts))
-			print_ipopt_ts(ts & INT32_MAX, &nonstdtime, _("not-standard"), _("absolute not-standard"));
-		else
-			print_ipopt_ts(ts, &stdtime, NULL, _("absolute"));
-	}
-	uint8_t unrec = flags >> 4;
-	if (unrec)
-		printf("%s: %u\n", _("Unrecorded hops"), unrec);
-}
-//
-
-void print4_ip_opts(const uint8_t *opt, int len, bool resolve, bool flood) {
-	if (opt && (len <= MAX_IPOPTLEN)) for (int l;
-	     (len > 0) && (*opt != IPOPT_EOL);
-	     len -= l, opt += l)
-	{
-		uint8_t t = *opt++;
-		bool nop = t == IPOPT_NOP;
-		if (nop) {
-			l = 1;
-			fputs("\nNOP\n", stdout);
-		} else {
-			l = *opt++;
-			int rest = l - 2;
-			if ((l > len) || (rest <= 0))
-				break;
-			switch (t) {
-			case IPOPT_SSRR:
-			case IPOPT_LSRR:
-				ipopt_sr(opt, rest, resolve, (t == IPOPT_SSRR) ? 'S' : 'L');
-				break;
-			case IPOPT_RR:
-				ipopt_rr(opt, rest, resolve, flood);
-				break;
-			case IPOPT_TS:
-				ipopt_ts(opt, rest, resolve);
-				break;
-			default:
-				printf("\n%s %u (0x%02x)", _("Unknown option"), t, t);
-				break;
-			}
-		}
-	}
 }
 
 
