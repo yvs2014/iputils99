@@ -694,11 +694,9 @@ const char *sprint_addr(const void *sa, socklen_t salen, bool resolve) {
 	if (resolve && !exiting)
 		getnameinfo(sa, salen, name, sizeof(name), NULL, 0, NI_FLAGS);
 	//
-	int rc = -1;
-	if (*name && strncmp(name, addr, NI_MAXADDR))
-		rc = snprintf(nicached, sizeof(nicached), "%s (%s)", name, addr);
-	else
-		rc = snprintf(nicached, sizeof(nicached), "%s", addr);
+	int rc =  (*name && strncmp(name, addr, NI_MAXADDR)) ?
+		snprintf(nicached, sizeof(nicached), "%s (%s)", name, addr) :
+		snprintf(nicached, sizeof(nicached), "%s", addr);
 	if (rc < 0)
 		nicached[0] = 0;
 	//

@@ -272,15 +272,15 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 	} else for (struct cmsghdr *c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c)) {
 		if (c->cmsg_level == IPPROTO_IP) switch (c->cmsg_type) {
 			case IP_TTL:
-				if (c->cmsg_len >= sizeof(int)) {
+				if (c->cmsg_len >= (CMSG_LEN(0) + sizeof(int))) {
 					uint8_t *ttl = CMSG_DATA(c);
-					away = (int)*ttl;
+					away = *(int*)ttl;
 				}
 				break;
 			case IP_RETOPTS:
 				// options (without header)
 				opts = (uint8_t *)CMSG_DATA(c);
-				olen = c->cmsg_len - CMSG_LEN(0);
+				olen = (ssize_t)c->cmsg_len - CMSG_LEN(0);
 				break;
 			default: break;
 		}
