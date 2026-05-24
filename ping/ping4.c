@@ -141,11 +141,25 @@ static inline void setsock4_icmp_filter(int fd) {
 		err(errno, "setsockopt(%s)", "ICMP_FILTER");
 }
 
+// aux_fn:addr_equal
+#define SA4(sa) ((struct sockaddr_in *)(sa))
+static bool in_addr4equal(const struct sockaddr *a, const struct sockaddr_storage *b) {
+	return !memcmp(&SA4(a)->sin_addr, &SA4(b)->sin_addr, sizeof(struct in_addr));
+}
+// aux_fn:eerr_extra
+static void icmp4_ee_extra(state_t *rts, const sock_t *sock, uint16_t seq) {
+	acknowledge(rts, seq);
+	static bool icmp4_filter_applied;
+	if (sock->raw && !icmp4_filter_applied) {
+		/* Set additional filter */
+		setsock4_icmp_filter(sock->fd);
+		icmp4_filter_applied = true;
+	}
+}
+
 // func_set:receive_error
 static int ping4_receive_error(state_t *rts, const sock_t *sock) {
-	int saved_errno = errno;
-	//
-	char cbuf[512];
+	char cbuf[512] = {0};
 	struct icmphdr icmp = {0};
 	struct iovec iov = { .iov_base = &icmp, .iov_len = sizeof(icmp) };
 	struct sockaddr_in sa = {0};
@@ -157,50 +171,7 @@ static int ping4_receive_error(state_t *rts, const sock_t *sock) {
 		.msg_control    = cbuf,
 		.msg_controllen = sizeof(cbuf),
 	};
-	//
-	int net_errors = 0;
-	int local_errors = 0;
-	ssize_t res = recvmsg(sock->fd, &msg, MSG_ERRQUEUE | MSG_DONTWAIT);
-	if (res < 0) {
-		if (errno == EAGAIN || errno == EINTR)
-			local_errors++;
-	} else {
-		struct sock_extended_err *ee = NULL;
-		for (struct cmsghdr *m = CMSG_FIRSTHDR(&msg); m; m = CMSG_NXTHDR(&msg, m))
-			if ((m->cmsg_level == IPPROTO_IP) && (m->cmsg_type == IP_RECVERR))
-				ee = (struct sock_extended_err *)CMSG_DATA(m);
-		if (!ee)
-			abort();
-		if (ee->ee_origin == SO_EE_ORIGIN_LOCAL) {
-			local_errors++;
-			rts->nerrors++;
-			if (!rts->opt.quiet)
-				print_local_ee(rts, ee);
-		} else if (ee->ee_origin == SO_EE_ORIGIN_ICMP) {
-			struct sockaddr_in *to = (struct sockaddr_in *)&rts->whereto;
-			if ((res < (ssize_t)sizeof(icmp))               ||
-			    (sa.sin_addr.s_addr != to->sin_addr.s_addr) ||
-			    (icmp.type != ICMP_ECHO)                    ||
-			    !IS_OURS(rts, sock->raw, icmp.un.echo.id)) {
-				/* Not our error, not an error at all, clear */
-				saved_errno = 0;
-			} else {
-				net_errors++;
-				rts->nerrors++;
-				uint16_t seq = ntohs(icmp.un.echo.sequence);
-				acknowledge(rts, seq);
-				static bool icmp4_filter_applied;
-				if (sock->raw && !icmp4_filter_applied) {
-					/* Set additional filter */
-					setsock4_icmp_filter(sock->fd);
-					icmp4_filter_applied = true;
-				}
-				print_addr_seq(rts, seq, ee, sizeof(struct sockaddr_in));
-			}
-		}
-	}
-	errno = saved_errno;
-	return net_errors ? net_errors : -local_errors;
+	return get_errmsg(rts, sock, &msg);
 }
 
 static inline bool ping4_icmp_extra_type(state_t *rts,
@@ -230,9 +201,9 @@ static inline bool ping4_icmp_extra_type(state_t *rts,
 		_("icmp_seq"), ntohs(orig->un.echo.sequence));
 	if (bad)
 		printf("(%s!)", _("BAD CHECKSUM"));
-	if (print4_icmph(icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp, rts->opt.resolve, color))
+	if (print_icmp4msg(icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp, rts->opt.resolve, color))
 		if (rts->opt.verbose)
-			print4_iph(iph, rts->opt.resolve, rts->opt.flood);
+			print_ip4hdr(iph, rts->opt.resolve, rts->opt.flood);
 	putchar('\n');
 	return true;
 }
@@ -272,10 +243,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 	} else for (struct cmsghdr *c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c)) {
 		if (c->cmsg_level == IPPROTO_IP) switch (c->cmsg_type) {
 			case IP_TTL:
-				if (c->cmsg_len >= (CMSG_LEN(0) + sizeof(int))) {
-					uint8_t *ttl = CMSG_DATA(c);
-					away = *(int*)ttl;
-				}
+				CMSG_INT(c, &away);
 				break;
 			case IP_RETOPTS:
 				// options (without header)
@@ -344,10 +312,10 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 			printf("(%s!)\n", _("BAD CHECKSUM"));
 			return false;
 		}
-		bool add_iph = print4_icmph(icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp,
+		bool add_iph = print_icmp4msg(icmp->type, icmp->code, ntohl(icmp->un.gateway), icmp,
 			rts->opt.resolve, rts->red);
 		if (add_iph && rts->opt.verbose)
-			print4_iph((struct iphdr *)(icmp + 1), rts->opt.resolve, rts->opt.flood);
+			print_ip4hdr((struct iphdr *)(icmp + 1), rts->opt.resolve, rts->opt.flood);
 		putchar('\n');
 		fflush(stdout);
 		return false;
@@ -483,10 +451,14 @@ int ping4_run(state_t *rts, int argc, char **argv,
 	fnset_t ping4_func_set = {
 		.bpf_filter     = ping4_bpf_filter,
 		.send_probe     = ping4_send_probe,
-		.receive_error  = ping4_receive_error,
 		.parse_reply    = ping4_parse_reply,
+		.receive_error  = ping4_receive_error,
 	};
-
+	rts->ee_aux.echo_value  = ICMP_ECHO;
+	rts->ee_aux.ee_origin   = SO_EE_ORIGIN_ICMP;
+	rts->ee_aux.addr_equal  = in_addr4equal;
+	rts->ee_aux.eerr_extra  = icmp4_ee_extra;
+	//
 	rts->ip6 = false;
 	route_t route4 = {0};
 	rts->route = &route4;

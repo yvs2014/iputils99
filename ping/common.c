@@ -577,7 +577,6 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
 		for (;;) {
 			/* Raw socket can receive messages destined to other running pings */
 			bool not_ours = false;
-
 			iov.iov_len = packlen;
 			struct msghdr msg = {
 				.msg_name       = addrbuf,
@@ -587,10 +586,8 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
 				.msg_control    = ans_data,
 				.msg_controllen = sizeof(ans_data),
 			};
-
 			ssize_t received = recvmsg(sock->fd, &msg, polling);
 			polling = MSG_DONTWAIT;
-
 			if (received < 0) {
 				/* If there was a POLLERR and there is no packet
 				 * on the socket, try to read the error queue.
@@ -614,15 +611,14 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
 #else
 					NULL;
 #endif
-				struct timeval timeval;
+				struct timeval timeval = {0};
 				if (rts->opt.latency || !recv_tv) {
 					if (rts->opt.latency || ioctl(sock->fd, SIOCGSTAMP, &timeval)) {
-						if (gettimeofday(&timeval, NULL) < 0) // no way
+						if (gettimeofday(&timeval, NULL) < 0)
 							memset(&timeval, 0, sizeof(timeval));
 					}
 					recv_tv = &timeval;
 				}
-				assert(received >= 0); // be sure in ssize_t to size_t conversion at one place
 				not_ours = fnset->parse_reply(rts, sock->raw, &msg, received, addrbuf, recv_tv);
 			}
 
@@ -694,7 +690,7 @@ const char *sprint_addr(const void *sa, socklen_t salen, bool resolve) {
 	if (resolve && !exiting)
 		getnameinfo(sa, salen, name, sizeof(name), NULL, 0, NI_FLAGS);
 	//
-	int rc =  (*name && strncmp(name, addr, NI_MAXADDR)) ?
+	int rc = (*name && strncmp(name, addr, NI_MAXADDR)) ?
 		snprintf(nicached, sizeof(nicached), "%s (%s)", name, addr) :
 		snprintf(nicached, sizeof(nicached), "%s", addr);
 	if (rc < 0)

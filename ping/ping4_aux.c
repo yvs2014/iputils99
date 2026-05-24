@@ -95,7 +95,7 @@ uint16_t in_cksum(const uint16_t *addr, int len, uint16_t csum) {
 
 
 /* Print an IP header with options */
-void print4_iph(const struct iphdr *ip, bool resolve, bool flood) {
+void print_ip4hdr(const struct iphdr *ip, bool resolve, bool flood) {
 	printf("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n");
 	printf(" %1x  %1x  %02x %04x %04x", ip->version, ip->ihl, ip->tos, ip->tot_len, ip->id);
 	printf("   %1x %04x", ((ip->frag_off) & 0xe000) >> 13, (ip->frag_off) & 0x1fff);
@@ -109,8 +109,8 @@ void print4_iph(const struct iphdr *ip, bool resolve, bool flood) {
 }
 
 
-/* Print a descriptive string about an ICMP header */
-bool print4_icmph(uint8_t type, uint8_t code, uint32_t info,
+// Print a descriptive string about an ICMP header
+bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info,
 	const struct icmphdr *icmp, bool resolve, uint8_t color)
 {
 	bool re = false;

@@ -18,9 +18,8 @@ void setsock_ttl(int fd, bool ip6, int ttl);
 void pmtu_interval(state_t *rts);
 void set_estimate_buf(state_t *rts, int fd,
 	size_t iplen, size_t extra, size_t icmplen);
-void print_addr_seq(const state_t *rts, uint16_t seq,
-	const struct sock_extended_err *ee, socklen_t salen);
 void print_local_ee(const state_t *rts, const struct sock_extended_err *ee);
+int get_errmsg(state_t *rts, const sock_t *sock, struct msghdr *msg);
 
 #define RETURN_IF_TOO_SHORT(received, minimum) do {		\
 	if ((received) < (minimum)) {				\
@@ -30,6 +29,11 @@ _("Packet too short"), (size_t)(received), BYTES(received),	\
 _("minimal"), (size_t)(minimum));				\
 		return true;					\
 	}							\
+} while (0)
+
+#define CMSG_INT(cmsg, to) do {                  \
+  if ((cmsg)->cmsg_len >= CMSG_LEN(sizeof(int))) \
+    memcpy((to), CMSG_DATA(cmsg), sizeof(int));  \
 } while (0)
 
 #endif

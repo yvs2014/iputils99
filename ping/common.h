@@ -155,6 +155,13 @@ typedef struct ping_state {
 #ifdef ENABLE_RFC4620
 	struct ping_ni *ni;	/* allocated with -N option */
 #endif
+	// aux functions and some constants
+	struct ee_aux {
+		uint16_t echo_value; // icmp echo:    either ICMP_ECHO or ICMP6_ECHO_REQUEST
+		uint8_t ee_origin;   // error origin: either SO_EE_ORIGIN_ICMP or SO_EE_ORIGIN_ICMP6
+		bool (*addr_equal)(const struct sockaddr *a, const struct sockaddr_storage *b);
+		void (*eerr_extra)(struct ping_state *rts, const sock_t *sock, uint16_t seq);
+	} ee_aux;
 	// termios.h: ws_col type
 	unsigned short screen_width;
 	// colored option -aa+
@@ -166,9 +173,9 @@ typedef struct ping_state {
 typedef struct fnset_t {
 	void (*bpf_filter)(const state_t *rts, const sock_t *sock);
 	ssize_t (*send_probe)(state_t *rts, int fd, uint8_t *packet);
-	int (*receive_error)(state_t *rts, const sock_t *sock);
 	bool (*parse_reply)(state_t *rts, bool rawsock, struct msghdr *msg,
 		size_t received, void *addr, const struct timeval *at);
+	int (*receive_error)(state_t *rts, const sock_t *sock);
 } fnset_t;
 
 const char *sprint_addr(const void *sa, socklen_t salen, bool resolve);

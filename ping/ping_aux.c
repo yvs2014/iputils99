@@ -71,6 +71,15 @@
 #include "ping4_aux.h"
 #include "ping6_aux.h"
 
+// common IPv4/IPv6 ICMP header
+typedef struct icmp46h {
+	uint8_t type;
+	uint8_t code;
+	uint16_t sum;
+	uint16_t id;
+	uint16_t seq;
+} icmp46h_t;
+
 #define DX_SHIFT(str) (((str)[0] == '0') && (((str)[1] == 'x') || ((str)[1] == 'X')) ? 2 : 0)
 unsigned parse_flow(const char *str) {
 	/* handle both hex and decimal values */
@@ -220,9 +229,8 @@ void set_estimate_buf(state_t *rts, int fd,
 }
 
 // func_set:receive_error:print_addr_seq
-void print_addr_seq(const state_t *rts, uint16_t seq,
-	const struct sock_extended_err *ee, socklen_t salen)
-{
+static void print_addr_seq(const state_t *rts, uint16_t seq,
+  const struct sock_extended_err *ee, socklen_t salen) {
 	if (rts->opt.quiet)
 		return;
 	if (rts->opt.flood) {
@@ -234,9 +242,9 @@ void print_addr_seq(const state_t *rts, uint16_t seq,
 			_("From"), sprint_addr(sa, salen, rts->opt.resolve),
 			_("icmp_seq"), seq);
 		if (rts->ip6)
-			print6_icmp(ee->ee_type, ee->ee_code, ee->ee_info, rts->red);
+			print_icmp6msg(ee->ee_type, ee->ee_code, ee->ee_info, rts->red);
 		else
-			print4_icmph(ee->ee_type, ee->ee_code, ee->ee_info,
+			print_icmp4msg(ee->ee_type, ee->ee_code, ee->ee_info,
 				NULL, rts->opt.resolve, rts->red);
 		putchar('\n');
 		fflush(stdout);
@@ -251,5 +259,62 @@ inline void print_local_ee(const state_t *rts, const struct sock_extended_err *e
 		warnx("%s", _("Local error"));
 	else
 		warnx("%s: %s: mtu=%u", _("Local error"), _("Message too long"), ee->ee_info);
+}
+
+
+// extended error functions
+//
+
+static const struct sock_extended_err *cmsg_sock_ext_err(struct msghdr *msg) {
+	const struct sock_extended_err *e = NULL;
+	for (struct cmsghdr *c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c))
+		if ((c->cmsg_level == IPPROTO_IP) && (c->cmsg_type == IP_RECVERR))
+			e = (struct sock_extended_err *)CMSG_DATA(c);
+	if (e) return e;
+	abort();
+}
+
+static bool print_ee_reply(state_t *rts, size_t n,
+  const sock_t *sock, const struct sock_extended_err *e,
+  const icmp46h_t *icmp, size_t icmplen,
+  const struct sockaddr *sa, socklen_t salen) {
+	bool our = (n >= icmplen) &&
+	  rts->ee_aux.addr_equal(sa, &rts->whereto) &&
+	  (rts->ee_aux.echo_value = icmp->type) &&
+	  IS_OURS(rts, sock->raw, icmp->id);
+	if (our) {
+		rts->nerrors++;
+		uint16_t seq = ntohs(icmp->seq);
+		if (rts->ee_aux.eerr_extra)
+			rts->ee_aux.eerr_extra(rts, sock, seq);
+		print_addr_seq(rts, seq, e, salen);
+	}
+	return our;
+}
+
+int get_errmsg(state_t *rts, const sock_t *sock, struct msghdr *msg) {
+	int keep_errno = errno, net_errors = 0, local_errors = 0;
+	ssize_t n = recvmsg(sock->fd, msg, MSG_ERRQUEUE | MSG_DONTWAIT);
+	if (n < 0) {
+		if (errno == EAGAIN || errno == EINTR)
+			local_errors++;
+	} else {
+		const struct sock_extended_err *ee = cmsg_sock_ext_err(msg);
+		if (ee->ee_origin == SO_EE_ORIGIN_LOCAL) {
+			local_errors++;
+			rts->nerrors++;
+			if (!rts->opt.quiet)
+				print_local_ee(rts, ee);
+		} else if (ee->ee_origin == rts->ee_aux.ee_origin) {
+			if (print_ee_reply(rts, n, sock, ee,
+			  msg->msg_iov->iov_base, msg->msg_iov->iov_len,
+			  msg->msg_name, msg->msg_namelen))
+				net_errors++;
+			else // not our error, clear
+				keep_errno = 0;
+		}
+	}
+	errno = keep_errno;
+	return net_errors ? net_errors : -local_errors;
 }
 

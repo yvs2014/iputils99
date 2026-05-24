@@ -49,7 +49,7 @@ enum {
 	MAX_PROBES   =    10,
 	HOST_LEN     =    52,      // for printing
 	HIS_ELEMS    =    64,      // in 'his' list
-	CMSG_LEN     =   512,
+	CBUF_LEN     =   512,
 	DEFAULT_MTU  = UINT16_MAX,
 	DEFAULT_IPH4 =    28,      // sizeof(iphdr)   + sizeof(udphdr)
 	DEFAULT_IPH6 =    48,      // sizeof(ip6_hdr) + sizeof(udphdr)
@@ -121,7 +121,7 @@ static int recverr(state_t *rts) {
 		.iov_base = &rcvbuf,
 		.iov_len = sizeof(rcvbuf)
 	};
-	char cbuf[CMSG_LEN];
+	char cbuf[CBUF_LEN];
 	const struct msghdr reset = {
 		.msg_name = (uint8_t *)&addr,
 		.msg_namelen = sizeof(addr),

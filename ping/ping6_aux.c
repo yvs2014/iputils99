@@ -100,7 +100,7 @@ ssize_t build_echo_hdr(const state_t *rts, uint8_t *hdr) {
 	return sizeof(struct icmp6_hdr);
 }
 
-void print6_icmp(uint8_t type, uint8_t code, uint32_t info, uint8_t color) {
+void print_icmp6msg(uint8_t type, uint8_t code, uint32_t info, uint8_t color) {
 	if (color)
 		printf(ESC_STRING "%um", color);
 	switch (type) {

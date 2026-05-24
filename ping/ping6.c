@@ -124,11 +124,15 @@ static ssize_t ping6_send_probe(state_t *rts, int fd, uint8_t *packet) {
 	return (rc == len) ? 0 : rc;
 }
 
+// aux_fn:addr_equal
+#define SA6(sa) ((struct sockaddr_in6 *)(sa))
+static bool in_addr6equal(const struct sockaddr *a, const struct sockaddr_storage *b) {
+	return !memcmp(&SA6(a)->sin6_addr, &SA6(b)->sin6_addr, sizeof(struct in6_addr));
+}
+
 // func_set:receive_error
 static int ping6_receive_error(state_t *rts, const sock_t *sock) {
-	int saved_errno = errno;
-	//
-	char cbuf[512];
+	char cbuf[512] = {0};
 	struct icmp6_hdr icmp = {0};
 	struct iovec iov = { .iov_base = &icmp, .iov_len = sizeof(icmp) };
 	struct sockaddr_in6 sa = {0};
@@ -140,45 +144,8 @@ static int ping6_receive_error(state_t *rts, const sock_t *sock) {
 		.msg_control    = cbuf,
 		.msg_controllen = sizeof(cbuf),
 	};
-	//
-	int net_errors = 0;
-	int local_errors = 0;
-	ssize_t res = recvmsg(sock->fd, &msg, MSG_ERRQUEUE | MSG_DONTWAIT);
-	if (res < 0) {
-		if (errno == EAGAIN || errno == EINTR)
-			local_errors++;
-	} else {
-		struct sock_extended_err *ee = NULL;
-		for (struct cmsghdr *c = CMSG_FIRSTHDR(&msg); c; c = CMSG_NXTHDR(&msg, c))
-			if ((c->cmsg_level == IPPROTO_IPV6) && (c->cmsg_type == IPV6_RECVERR))
-				ee = (struct sock_extended_err *)CMSG_DATA(c);
-		if (!ee)
-			abort();
-		if (ee->ee_origin == SO_EE_ORIGIN_LOCAL) {
-			local_errors++;
-			rts->nerrors++;
-			if (!rts->opt.quiet)
-				print_local_ee(rts, ee);
-		} else if (ee->ee_origin == SO_EE_ORIGIN_ICMP6) {
-			struct sockaddr_in6 *to = (struct sockaddr_in6 *)&rts->whereto;
-			if ((res < (ssize_t)sizeof(icmp))                 ||
-			    memcmp(&sa.sin6_addr, &to->sin6_addr, 16) ||
-			    (icmp.icmp6_type != ICMP6_ECHO_REQUEST)       ||
-			    !IS_OURS(rts, sock->raw, icmp.icmp6_id)) {
-				/* Not our error, not an error at all, clear */
-				saved_errno = 0;
-			} else {
-				net_errors++;
-				rts->nerrors++;
-				print_addr_seq(rts, ntohs(icmp.icmp6_seq), ee,
-					sizeof(struct sockaddr_in6));
-			}
-		}
-	}
-	errno = saved_errno;
-	return net_errors ? net_errors : -local_errors;
+	return get_errmsg(rts, sock, &msg);
 }
-
 
 // func_set:parse_reply:fin
 static inline void ping6_parse_reply_fin(bool audible, bool flood) {
@@ -223,7 +190,7 @@ static inline int ping6_icmp_extra_type(state_t *rts,
 		return true;
 	PRINT_TIMESTAMP;
 	printf("%s %s: ", _("From"), sprint_addr(from, sizeof(*from), rts->opt.resolve));
-	print6_icmp(icmp->icmp6_type, icmp->icmp6_code, ntohl(icmp->icmp6_mtu), color);
+	print_icmp6msg(icmp->icmp6_type, icmp->icmp6_code, ntohl(icmp->icmp6_mtu), color);
 	return -1;
 }
 
@@ -248,8 +215,7 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 #ifdef IPV6_2292HOPLIMIT
 			case IPV6_2292HOPLIMIT:
 #endif
-				if (c->cmsg_len >= CMSG_LEN(sizeof(int)))
-					memcpy(&away, CMSG_DATA(c), sizeof(away));
+				CMSG_INT(c, &away);
 				break;
 			default: break;
 			}
@@ -354,11 +320,15 @@ int ping6_run(state_t *rts, int argc, char **argv,
 	fnset_t ping6_func_set = {
 		.bpf_filter	= ping6_bpf_filter,
 		.send_probe     = ping6_send_probe,
-		.receive_error  = ping6_receive_error,
 		.parse_reply    = ping6_parse_reply,
+		.receive_error  = ping6_receive_error,
 	};
-
+	rts->ee_aux.echo_value  = ICMP6_ECHO_REQUEST;
+	rts->ee_aux.ee_origin   = SO_EE_ORIGIN_ICMP6;
+	rts->ee_aux.addr_equal  = in_addr6equal;
+	rts->ee_aux.eerr_extra  = NULL;
 	rts->ip6 = true;
+	//
 	cmsg_t cmsg6 = {0};
 	rts->cmsg = &cmsg6;
 
