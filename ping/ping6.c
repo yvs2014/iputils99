@@ -322,15 +322,17 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		.send_probe     = ping6_send_probe,
 		.parse_reply    = ping6_parse_reply,
 		.receive_error  = ping6_receive_error,
+        };
+	rts->ee_aux = (struct ee_aux){
+		.echo_value  = ICMP6_ECHO_REQUEST,
+		.ee_origin   = SO_EE_ORIGIN_ICMP6,
+		.ee_level    = IPPROTO_IPV6,
+		.ee_type     = IPV6_RECVERR,
+		.addr_equal  = in_addr6equal,
 	};
-	rts->ee_aux.echo_value  = ICMP6_ECHO_REQUEST;
-	rts->ee_aux.ee_origin   = SO_EE_ORIGIN_ICMP6;
-	rts->ee_aux.addr_equal  = in_addr6equal;
-	rts->ee_aux.eerr_extra  = NULL;
-	rts->ip6 = true;
-	//
 	cmsg_t cmsg6 = {0};
 	rts->cmsg = &cmsg6;
+	rts->ip6 = true;
 
 	struct sockaddr_in6 *source   = (struct sockaddr_in6 *)&rts->source;
 	struct sockaddr_in6 *firsthop = (struct sockaddr_in6 *)&rts->firsthop;

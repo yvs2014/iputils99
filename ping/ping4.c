@@ -454,14 +454,17 @@ int ping4_run(state_t *rts, int argc, char **argv,
 		.parse_reply    = ping4_parse_reply,
 		.receive_error  = ping4_receive_error,
 	};
-	rts->ee_aux.echo_value  = ICMP_ECHO;
-	rts->ee_aux.ee_origin   = SO_EE_ORIGIN_ICMP;
-	rts->ee_aux.addr_equal  = in_addr4equal;
-	rts->ee_aux.eerr_extra  = icmp4_ee_extra;
-	//
-	rts->ip6 = false;
+	rts->ee_aux = (struct ee_aux){
+		.echo_value  = ICMP_ECHO,
+		.ee_origin   = SO_EE_ORIGIN_ICMP,
+		.ee_level    = IPPROTO_IP,
+		.ee_type     = IP_RECVERR,
+		.addr_equal  = in_addr4equal,
+		.eerr_extra  = icmp4_ee_extra,
+	};
 	route_t route4 = {0};
 	rts->route = &route4;
+	rts->ip6 = false;
 
 	struct sockaddr_in *source  = (struct sockaddr_in *)&rts->source;
 	struct sockaddr_in *whereto = (struct sockaddr_in *)&rts->whereto;

@@ -265,12 +265,13 @@ inline void print_local_ee(const state_t *rts, const struct sock_extended_err *e
 // extended error functions
 //
 
-static const struct sock_extended_err *cmsg_sock_ext_err(struct msghdr *msg) {
+static const struct sock_extended_err *cmsg_sock_ext_err(struct msghdr *msg, int level, int type) {
 	const struct sock_extended_err *e = NULL;
 	for (struct cmsghdr *c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c))
-		if ((c->cmsg_level == IPPROTO_IP) && (c->cmsg_type == IP_RECVERR))
+		if ((c->cmsg_level == level) && (c->cmsg_type == type))
 			e = (struct sock_extended_err *)CMSG_DATA(c);
 	if (e) return e;
+	errx(EXIT_FAILURE, "%s() abort: no suitable extended error for level=%d and type=%d", __func__, level, type);
 	abort();
 }
 
@@ -299,7 +300,7 @@ int get_errmsg(state_t *rts, const sock_t *sock, struct msghdr *msg) {
 		if (errno == EAGAIN || errno == EINTR)
 			local_errors++;
 	} else {
-		const struct sock_extended_err *ee = cmsg_sock_ext_err(msg);
+		const struct sock_extended_err *ee = cmsg_sock_ext_err(msg, rts->ee_aux.ee_level, rts->ee_aux.ee_type);
 		if (ee->ee_origin == SO_EE_ORIGIN_LOCAL) {
 			local_errors++;
 			rts->nerrors++;

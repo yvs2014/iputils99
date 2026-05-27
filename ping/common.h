@@ -157,8 +157,10 @@ typedef struct ping_state {
 #endif
 	// aux functions and some constants
 	struct ee_aux {
-		uint16_t echo_value; // icmp echo:    either ICMP_ECHO or ICMP6_ECHO_REQUEST
-		uint8_t ee_origin;   // error origin: either SO_EE_ORIGIN_ICMP or SO_EE_ORIGIN_ICMP6
+		uint16_t echo_value; // either ICMP_ECHO or ICMP6_ECHO_REQUEST
+		uint8_t ee_origin;   // either SO_EE_ORIGIN_ICMP or SO_EE_ORIGIN_ICMP6
+		int ee_level;        // either IPPROTO_IP or IPPROTO_IPV6
+		int ee_type;         // either IP_RECVERR or IPV6_RECVERR
 		bool (*addr_equal)(const struct sockaddr *a, const struct sockaddr_storage *b);
 		void (*eerr_extra)(struct ping_state *rts, const sock_t *sock, uint16_t seq);
 	} ee_aux;
