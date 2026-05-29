@@ -188,15 +188,13 @@ void mtudisc_n_bind(state_t *rts, const sock_t *sock) {
 	}
 	bool set_ident = (rts->custom_ident > 0) && !sock->raw;
 	if (set_ident) {
-		in_port_t *port = rts->ip6 ?
-			&((struct sockaddr_in6 *)&rts->source)->sin6_port :
-			&((struct sockaddr_in  *)&rts->source)->sin_port;
-		*port = rts->ident16;
+		if (rts->ip6)
+			SA6(&rts->source)->sin6_port = rts->ident16;
+		else
+			SA4(&rts->source)->sin_port  = rts->ident16;
 	}
 	if (rts->opt.strictsource || set_ident) {
-		socklen_t socklen = rts->ip6 ?
-			sizeof(struct sockaddr_in6) :
-			sizeof(struct sockaddr_in);
+		socklen_t socklen = rts->ip6 ? SA6_LEN : SA4_LEN;
 		if (bind(sock->fd, (struct sockaddr *)&rts->source, socklen) < 0)
 			err(errno, "bind(%s)", "icmp-socket");
 	}
@@ -228,28 +226,6 @@ void set_estimate_buf(state_t *rts, int fd,
 				_("Probably, rcvbuf is not enough to hold preload"));
 }
 
-// func_set:receive_error:print_addr_seq
-static void print_addr_seq(const state_t *rts, uint16_t seq,
-  const struct sock_extended_err *ee, socklen_t salen) {
-	if (rts->opt.quiet)
-		return;
-	if (rts->opt.flood) {
-		if (write(STDOUT_FILENO, "\bE", 2)) {};
-	} else {
-		PRINT_TIMESTAMP;
-		const void *sa = ee + 1;
-		printf("%s %s: %s=%u ",
-			_("From"), sprint_addr(sa, salen, rts->opt.resolve),
-			_("icmp_seq"), seq);
-		if (rts->ip6)
-			print_icmp6msg(ee->ee_type, ee->ee_code, ee->ee_info, rts->red);
-		else
-			print_icmp4msg(ee->ee_type, ee->ee_code, ee->ee_info,
-				NULL, rts->opt.resolve, rts->red);
-		putchar('\n');
-		fflush(stdout);
-	}
-}
 
 // func_set:receive_error:print_local_ee
 inline void print_local_ee(const state_t *rts, const struct sock_extended_err *ee) {
@@ -265,7 +241,7 @@ inline void print_local_ee(const state_t *rts, const struct sock_extended_err *e
 // extended error functions
 //
 
-static const struct sock_extended_err *cmsg_sock_ext_err(struct msghdr *msg, int level, int type) {
+static inline const struct sock_extended_err *cmsg_sock_ext_err(struct msghdr *msg, int level, int type) {
 	const struct sock_extended_err *e = NULL;
 	for (struct cmsghdr *c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c))
 		if ((c->cmsg_level == level) && (c->cmsg_type == type))
@@ -276,19 +252,36 @@ static const struct sock_extended_err *cmsg_sock_ext_err(struct msghdr *msg, int
 }
 
 static bool print_ee_reply(state_t *rts, size_t n,
-  const sock_t *sock, const struct sock_extended_err *e,
-  const icmp46h_t *icmp, size_t icmplen,
-  const struct sockaddr *sa, socklen_t salen) {
+	const sock_t *sock, const struct sock_extended_err *ee,
+	const icmp46h_t *icmp, size_t icmplen,
+	const struct sockaddr *sa, socklen_t salen)
+{
 	bool our = (n >= icmplen) &&
-	  rts->ee_aux.addr_equal(sa, &rts->whereto) &&
-	  (rts->ee_aux.echo_value = icmp->type) &&
-	  IS_OURS(rts, sock->raw, icmp->id);
+		rts->ee_aux.addr_equal(sa, &rts->whereto) &&
+		(rts->ee_aux.echo_value = icmp->type) &&
+		IS_OURS(rts, sock->raw, icmp->id);
 	if (our) {
 		rts->nerrors++;
 		uint16_t seq = ntohs(icmp->seq);
 		if (rts->ee_aux.eerr_extra)
 			rts->ee_aux.eerr_extra(rts, sock, seq);
-		print_addr_seq(rts, seq, e, salen);
+		if (!rts->opt.quiet) {
+			if (rts->opt.flood)
+				write(STDOUT_FILENO, "\bE", 2);
+			else {
+				PRINT_TIMESTAMP;
+				printf("%s %s: %s=%u ",
+					_("From"), sprint_addr(ee + 1, salen, rts->opt.resolve),
+					_("icmp_seq"), seq);
+				if (rts->ip6)
+					print_icmp6msg(ee->ee_type, ee->ee_code, ee->ee_info, rts->red);
+				else
+					print_icmp4msg(ee->ee_type, ee->ee_code, ee->ee_info, 0,
+						rts->opt.resolve, rts->red);
+				putchar('\n');
+				fflush(stdout);
+			}
+		}
 	}
 	return our;
 }

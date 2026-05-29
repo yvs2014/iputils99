@@ -151,10 +151,10 @@ do { // was 'restart:'
 	int slot = -rts->port;
 	switch (rts->af) {
 	case AF_INET6:
-		slot += ntohs(((struct sockaddr_in6 *)&addr)->sin6_port);
+		slot += ntohs(SA6(&addr)->sin6_port);
 		break;
 	case AF_INET:
-		slot += ntohs(((struct sockaddr_in *)&addr)->sin_port);
+		slot += ntohs(SA4(&addr)->sin_port);
 		break;
 	default:
 		assert("Unknown IP address family");
@@ -223,8 +223,8 @@ do { // was 'restart:'
 	else if (e->ee_origin == SO_EE_ORIGIN_ICMP6 || e->ee_origin == SO_EE_ORIGIN_ICMP) {
 		struct sockaddr *sa = (struct sockaddr *)(e + 1);
 		socklen_t salen =
-			(sa->sa_family == AF_INET ) ? sizeof(struct sockaddr_in ) :
-			(sa->sa_family == AF_INET6) ? sizeof(struct sockaddr_in6) :
+			(sa->sa_family == AF_INET ) ? SA4_LEN :
+			(sa->sa_family == AF_INET6) ? SA6_LEN :
 			0;
 		if (sndhops > 0)
 			printf("%2d:  ", sndhops);
@@ -379,12 +379,10 @@ static int probe_ttl(state_t *rts) {
 			hdr->ttl = rts->ttl;
 			switch (rts->af) {
 			case AF_INET6:
-				((struct sockaddr_in6 *)&rts->addr)->sin6_port =
-				    htons(rts->port + rts->hisptr);
+				SA6(&rts->addr)->sin6_port = htons(rts->port + rts->hisptr);
 				break;
 			case AF_INET:
-				((struct sockaddr_in *)&rts->addr)->sin_port =
-				    htons(rts->port + rts->hisptr);
+				SA4(&rts->addr)->sin_port  = htons(rts->port + rts->hisptr);
 				break;
 			}
 			clock_gettime(CLOCK_MONOTONIC, &hdr->ts);
@@ -458,8 +456,7 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 	int sock = -1;
 	for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
 		// ip4-in-ip6-space workaround
-		if ((ai->ai_family == AF_INET6) &&
-		    IN6_IS_ADDR_V4MAPPED(&((struct sockaddr_in6 *)ai->ai_addr)->sin6_addr))
+		if ((ai->ai_family == AF_INET6) && IN6_IS_ADDR_V4MAPPED(&SA6_IN(ai->ai_addr)))
 			switch (hints->ai_family) {
 			case AF_INET6:
 				errno = ENETUNREACH;
@@ -469,13 +466,12 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 				// like ping:unmap_ai_sa4(ai);
 				if (!ai->ai_addr)
 					break;
-				struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *)ai->ai_addr;
 				struct sockaddr_in sa4 = {
 					.sin_family = AF_INET,
-					.sin_addr.s_addr = ((uint32_t*)&sa6->sin6_addr)[3],
+					.sin_addr.s_addr = ((uint32_t*)&SA6_IN(ai->ai_addr))[3],
 				};
-				memcpy(ai->ai_addr, &sa4, sizeof(sa4));
-				ai->ai_addrlen = sizeof(sa4);
+				memcpy(ai->ai_addr, &sa4, SA4_LEN);
+				ai->ai_addrlen = SA4_LEN;
 				ai->ai_family  = AF_INET;
 				warnx("%s: %s", WARN, _(V4IN6_WARN));
 			}	break;

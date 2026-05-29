@@ -68,7 +68,7 @@ typedef struct cmsg_data {
 	uint8_t data[MAX_CMSG_SIZE];
 } cmsg_t;
 
-typedef struct ping_bool_opts {
+typedef struct bool_opt {
 	bool adaptive;
 	bool audible;
 	bool flood;
@@ -92,7 +92,7 @@ typedef struct ping_bool_opts {
 	bool verbose;
 	bool connect_sk;
 	bool broadcast;
-} ping_bool_opts;
+} bool_opt_t;
 
 /* ping runtime state */
 typedef struct ping_state {
@@ -169,7 +169,7 @@ typedef struct ping_state {
 	// colored option -aa+
 	uint8_t red, yellow;
 	// boolean options
-	struct ping_bool_opts opt;
+	bool_opt_t opt;
 } state_t;
 
 typedef struct fnset_t {

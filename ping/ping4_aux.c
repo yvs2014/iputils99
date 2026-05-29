@@ -110,10 +110,10 @@ void print_ip4hdr(const struct iphdr *ip, bool resolve, bool flood) {
 
 
 // Print a descriptive string about an ICMP header
-bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info,
-	const struct icmphdr *icmp, bool resolve, uint8_t color)
+bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info, uint32_t gateway,
+	bool resolve, uint8_t color)
 {
-	bool re = false;
+	bool print_ip_hdr_too = false;
 	if (color)
 		printf(ESC_STRING "%um", color);
 	switch (type) {
@@ -175,11 +175,11 @@ bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info,
 			printf("%s, %s: %d", _("Dest Unreachable"), _("Bad Code"), code);
 			break;
 		}
-		re = true;
+		print_ip_hdr_too = true;
 		break;
 	case ICMP_SOURCE_QUENCH:
 		fputs(_("Source Quench"), stdout);
-		re = true;
+		print_ip_hdr_too = true;
 		break;
 	case ICMP_REDIRECT:
 		switch (code) {
@@ -201,12 +201,12 @@ bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info,
 		}
 		{ struct sockaddr_in sin = {
 			.sin_family = AF_INET,
-			.sin_addr.s_addr = icmp ? htonl(icmp->un.gateway) : htonl(info),
+			.sin_addr.s_addr = gateway ? gateway : info,
 		  };
 		  printf("(%s: %s)", _("New nexthop"),
 			sprint_addr(&sin, sizeof(sin), resolve));
 		}
-		re = true;
+		print_ip_hdr_too = true;
 		break;
 	case ICMP_ECHO:
 		fputs(_("Echo Request"), stdout);
@@ -224,12 +224,11 @@ bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info,
 			printf("%s, %s: %d", _("Time exceeded"), _("Bad Code"), code);
 			break;
 		}
-		re = true;
+		print_ip_hdr_too = true;
 		break;
 	case ICMP_PARAMETERPROB:
-		printf("%s: %u", _("Parameter problem"),
-			icmp ? (ntohl(icmp->un.gateway) >> 24) : info);
-		re = true;
+		printf("%s: %u", _("Parameter problem"), gateway ? (gateway >> 24) : info);
+		print_ip_hdr_too = true;
 		break;
 	case ICMP_TIMESTAMP:
 		fputs(_("Timestamp"), stdout);
@@ -262,7 +261,7 @@ bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info,
 	}
 	if (color)
 		fputs(ESC_STRING "0m", stdout);
-	return re;
+	return print_ip_hdr_too;
 	// note: no \n, no stdout flush
 }
 

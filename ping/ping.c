@@ -201,14 +201,12 @@ static inline void opt_I(state_t *rts, const char *str) {
 			*scope++ = 0;
 			rts->device = str + (scope - addr);
 		}
-		struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&rts->source;
-		if (inet_pton(AF_INET6, addr, &sin6->sin6_addr) <= 0)
+		if (inet_pton(AF_INET6, addr, &SA6_IN(&rts->source)) <= 0)
 			errx(EINVAL, "%s: %s", _("Invalid source address"), str);
 		rts->opt.strictsource = true;
 		free(addr);
 	} else {
-		struct sockaddr_in *sin = (struct sockaddr_in *)&rts->source;
-		int rc = inet_pton(AF_INET, str, &sin->sin_addr);
+		int rc = inet_pton(AF_INET, str, &SA4_IN(&rts->source));
 		if (rc < 0)
 			errx(EINVAL, "%s: %s", _("Invalid source"), str);
 		if (rc)
@@ -545,7 +543,7 @@ int main(int argc, char **argv) {
 
 		// ip4-in-ip6-space workaround
 		if ((ai->ai_family == AF_INET6) &&
-		    IN6_IS_ADDR_V4MAPPED(&((struct sockaddr_in6 *)ai->ai_addr)->sin6_addr))
+		    IN6_IS_ADDR_V4MAPPED(&SA6_IN(ai->ai_addr)))
 			switch (hints.ai_family) {
 			case AF_INET6:
 				errno = ENETUNREACH;
@@ -563,11 +561,11 @@ int main(int argc, char **argv) {
 		case AF_INET6: {
 			rts.ip6 = (ai->ai_family == AF_INET6);
 			if (rts.ip6) { // linklocal scopeid workaround
-				struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *)ai->ai_addr;
-				if (sa6 && IN6_IS_ADDR_LINKLOCAL(&sa6->sin6_addr) && !sa6->sin6_scope_id)
-					ping6_unspec(target, &sa6->sin6_addr, &hints);
+				if (IN6_IS_ADDR_LINKLOCAL(&SA6_IN(ai->ai_addr)) &&
+				    !SA6(ai->ai_addr)->sin6_scope_id)
+					ping6_unspec(target, &SA6_IN(ai->ai_addr), &hints);
 			}
-			sock_t sock = { .fd = -1, .raw = (hints.ai_socktype == SOCK_RAW) };
+			sock_t sock = {.fd = -1, .raw = (hints.ai_socktype == SOCK_RAW)};
 			open_socket(&sock, rts.ip6 ? AF_INET6 : AF_INET,
 				rts.ip6 ? IPPROTO_ICMPV6 : IPPROTO_ICMP, rts.opt.verbose);
 			if (rts.ip6) // be sure in pathmtu disc6 constants

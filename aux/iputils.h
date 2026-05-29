@@ -17,6 +17,15 @@
 #define IS_BIT31_SET(x) ((x) & 0x80000000)
 #endif
 
+#define SA4(sa) ((struct sockaddr_in *)(sa))
+#define SA6(sa) ((struct sockaddr_in6 *)(sa))
+#define SA4_LEN (sizeof(struct sockaddr_in))
+#define SA6_LEN (sizeof(struct sockaddr_in6))
+#define SA4_IN(sa) (SA4(sa)->sin_addr)
+#define SA6_IN(sa) (SA6(sa)->sin6_addr)
+//
+#define SA4ADDR(sa) (SA4_IN(sa).s_addr)
+
 #ifdef USE_NLS
 #include <locale.h>
 #include <libintl.h>

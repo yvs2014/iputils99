@@ -51,6 +51,7 @@
 #define ARPING_FEATURES	(FEAT_CAP | FEAT_IDN | FEAT_NLS | FEAT_ALTNAME)
 
 #define SLL(sa) ((struct sockaddr_ll *)(sa))
+#define SLL_LEN (sizeof(struct sockaddr_ll))
 
 typedef struct arpdev {
 	char name[IF_NAMESIZE];
@@ -100,7 +101,7 @@ typedef struct run_state {
 
 static inline size_t sll_len(size_t halen) {
 	size_t len = offsetof(struct sockaddr_ll, sll_addr) + halen;
-	return (len < sizeof(struct sockaddr_ll)) ? sizeof(struct sockaddr_ll) : len;
+	return (len < SLL_LEN) ? SLL_LEN : len;
 }
 
 NORETURN static void usage(int rc) {
@@ -671,7 +672,7 @@ static inline void arping_setup(state_t *rts) {
 		}
 		if (!res)
 			errx(EXIT_FAILURE, "%s", "getaddrinfo()");
-		memcpy(&rts->dst, &((struct sockaddr_in *)res->ai_addr)->sin_addr, sizeof(rts->dst));
+		memcpy(&rts->dst, &SA4_IN(res->ai_addr), sizeof(struct in_addr));
 		rts->af = res->ai_family;
 		freeaddrinfo(res);
 	}
@@ -711,25 +712,26 @@ static inline void arping_setup(state_t *rts) {
 		if (rts->dev.name[0] && (bindtodev(probe_fd, rts->dev.name) < 0))
 			warn("%s: %s: %s", _WARN, rts->dev.name,
 				_("Interface is ignored"));
-		struct sockaddr_in saddr = { .sin_family = AF_INET };
+		//
+		struct sockaddr_in addr = {.sin_family = AF_INET};
 		if (rts->source || rts->src.s_addr) {
-			saddr.sin_addr = rts->src;
-			if (bind(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
+			addr.sin_addr = rts->src;
+			if (bind(probe_fd, &addr, SA4_LEN) < 0)
 				err(errno, "%s", "bind()");
 		} else if (!rts->opt.dad) {
-			saddr.sin_port = htons(1025);
-			saddr.sin_addr = rts->dst;
+			addr.sin_port = htons(1025);
+			addr.sin_addr = rts->dst;
 			if (!rts->opt.unsolicited) {
 				int on = 1;
 				if (setsockopt(probe_fd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof(on)) < 0)
 					warn("%s: setsockopt(%s)", _WARN, "SO_DONTROUTE");
-				if (connect(probe_fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0)
+				if (connect(probe_fd, &addr, SA4_LEN) < 0)
 					err(errno, "%s", "connect()");
-				socklen_t alen = sizeof(saddr);
-				if (getsockname(probe_fd, (struct sockaddr *)&saddr, &alen) < 0)
+				socklen_t len = SA4_LEN;
+				if (getsockname(probe_fd, &addr, &len) < 0)
 					err(errno, "%s", "getsockname()");
 			}
-			rts->src = saddr.sin_addr;
+			rts->src = addr.sin_addr;
 		}
 		close(probe_fd);
 	};

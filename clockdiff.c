@@ -49,19 +49,20 @@
  * number of messages sent in each measurement.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <string.h>
+#include <getopt.h>
+//
 #include <arpa/inet.h>
 #include <fcntl.h>
-#include <getopt.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <poll.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <string.h>
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -90,6 +91,8 @@ typedef enum {
 	DT_ERROR   = -1,
 } timediff_e;
 
+#define _OPTLEN(n) (4 + (n) * (sizeof(struct in_addr) * 2))
+#define OPTLEN(n) (_OPTLEN(n) + 4)
 enum {
 	RANGE   =  1,         // the best expected RTT, in msec
 	MSGS    = 50,
@@ -103,13 +106,12 @@ enum {
 	HALFDAY_BEFORE = -DAY_IN_MSEC / 2,     // in msec
 	HALFDAY_AFTER  =  DAY_IN_MSEC / 2 - 1, // in msec
 	//
-	OPTLEN_2 = 4 + 4 * 8,
-	OPTLEN_3 = 4 + 3 * 8,
+	OPTLEN_2 = _OPTLEN(4),
+	OPTLEN_3 = _OPTLEN(3),
 };
 
 typedef struct run_state {
 	uint16_t id16;
-	struct sockaddr_in sa;
 	int sock;
 	uint8_t optlen;
 	int delta1;
@@ -211,7 +213,7 @@ static inline timediff_e opt_measure(state_t *rts, measurement_data_t *m, delta_
 		 warnx("%s: %u", _("Overflow hops"), high);
 	}
 	for (int i = 0; i < (opt[2] - 5) / 8; i++) {
-		uint32_t *timep = (uint32_t *)(opt + 4 + i * 8 + 4);
+		uint32_t *timep = (uint32_t *)(opt + OPTLEN(i));
 		uint32_t t = ntohl(*timep);
 		if (IS_BIT31_SET(t))
 			return DT_NONSTD;
@@ -226,7 +228,7 @@ static inline timediff_e opt_measure(state_t *rts, measurement_data_t *m, delta_
 			if (rts->optlen == OPTLEN_2)
 				dt->peer2 = t;
 			else
-				dt->recv = t;
+				dt->recv  = t;
 			break;
 		case 3:
 			dt->recv = t;
@@ -251,7 +253,7 @@ static inline timediff_e measure_msg(state_t *rts, measurement_data_t *m) {
 		return DT_BREAK; }
 	{ if (clock_gettime(CLOCK_REALTIME, &m->ts) < 0)
 		return DT_ERROR; }
-	{ socklen_t len = sizeof(struct sockaddr_in);
+	{ socklen_t len = SA4_LEN;
 	  if (recvfrom(rts->sock, m->packet, sizeof(m->packet), 0, NULL, &len) < 0)
 		return DT_ERROR; }
 
@@ -323,7 +325,7 @@ static inline timediff_e measure_msg(state_t *rts, measurement_data_t *m) {
 }
 
 // Measure the differences between machines' clocks using ICMP timestamp messages
-static timediff_e measure(state_t *rts) {
+static timediff_e measure(state_t *rts, const struct sockaddr_in *sa, socklen_t salen) {
 	measurement_data_t m = {.min1 = LONG_MAX, .min2 = LONG_MAX};
 	m.ip = (struct iphdr *)m.packet;
 
@@ -332,9 +334,9 @@ static timediff_e measure(state_t *rts) {
 	rts->delta2  = HOSTDOWN;
 
 	/* empties the icmp input queue */
-	struct pollfd p = { .fd = rts->sock, .events = POLLIN | POLLHUP };
+	struct pollfd p = {.fd = rts->sock, .events = POLLIN | POLLHUP};
 	while (ppoll(&p, 1, &m.tout, NULL)) {
-		socklen_t len = sizeof(struct sockaddr_in);
+		socklen_t len = SA4_LEN;
 		if (recvfrom(rts->sock, m.packet, sizeof(m.packet), 0, NULL, &len) < 0)
 			return DT_ERROR;
 	}
@@ -369,11 +371,10 @@ static timediff_e measure(state_t *rts) {
 		icmp->checksum = 0;
 		//
 		clock_gettime(CLOCK_REALTIME, &m.ts);
-		*(uint32_t *) (icmp + 1) = htonl(TODAY_MSEC(m.ts));
+		*(uint32_t *)(icmp + 1) = htonl(TODAY_MSEC(m.ts));
 		icmp->checksum = clockdiff_in_cksum((unsigned short *)icmp, sizeof(*icmp) + 12);
 		//
-		if (sendto(rts->sock, opacket, sizeof(*icmp) + 12, 0,
-		  (struct sockaddr *)&rts->sa, sizeof(rts->sa)) < 0) {
+		if (sendto(rts->sock, opacket, sizeof(*icmp) + 12, 0, sa, salen) < 0) {
 			errno = EHOSTUNREACH;
 			return DT_ERROR;
 		}
@@ -492,6 +493,7 @@ int main(int argc, char **argv) {
 	const char *target = argv[0];
 	char *canonname = NULL;
 
+	struct sockaddr_in to = {0};
 	{ // resolv
 	  const struct addrinfo hints = {
 		.ai_family   = AF_INET,
@@ -508,14 +510,13 @@ int main(int argc, char **argv) {
 	  if (!res)
 		errx(EXIT_FAILURE, "%s", "getaddrinfo()");
 	  canonname = strdup(res->ai_canonname);
-	  memcpy(&rts.sa, res->ai_addr, sizeof(rts.sa));
+	  memcpy(&to, res->ai_addr, SA4_LEN);
 	  freeaddrinfo(res);
 	}
-	if (connect(rts.sock, (struct sockaddr *)&rts.sa, sizeof(rts.sa)) < 0)
+	if (connect(rts.sock, &to, SA4_LEN) < 0)
 		err(errno, "%s", "connect()");
 	if (rts.optlen) {
-		struct sockaddr_in myaddr = { 0 };
-		socklen_t addrlen = sizeof(myaddr);
+		struct sockaddr_in my = {0};
 		uint8_t *rspace = calloc(1, rts.optlen);
 		if (!rspace)
 			err(errno, "calloc(%d)", rts.optlen);
@@ -523,14 +524,15 @@ int main(int argc, char **argv) {
 		rspace[1] = rts.optlen;
 		rspace[2] = 5;
 		rspace[3] = IPOPT_TS_PRESPEC;
-		if (getsockname(rts.sock, (struct sockaddr *)&myaddr, &addrlen) < 0)
-			err(errno, "getsockname");
-		((uint32_t *) (rspace + 4))[0 * 2] = myaddr.sin_addr.s_addr;
-		((uint32_t *) (rspace + 4))[1 * 2] = rts.sa.sin_addr.s_addr;
-		((uint32_t *) (rspace + 4))[2 * 2] = myaddr.sin_addr.s_addr;
+		{ socklen_t len = SA4_LEN;
+		  if (getsockname(rts.sock, &my, &len) < 0)
+			err(errno, "getsockname"); }
+		((uint32_t *) (rspace + 4))[0 * 2] = my.sin_addr.s_addr;
+		((uint32_t *) (rspace + 4))[1 * 2] = to.sin_addr.s_addr;
+		((uint32_t *) (rspace + 4))[2 * 2] = my.sin_addr.s_addr;
 		if (rts.optlen == OPTLEN_2) {
-			((uint32_t *) (rspace + 4))[2 * 2] = rts.sa.sin_addr.s_addr;
-			((uint32_t *) (rspace + 4))[3 * 2] = myaddr.sin_addr.s_addr;
+			((uint32_t *) (rspace + 4))[2 * 2] = to.sin_addr.s_addr;
+			((uint32_t *) (rspace + 4))[3 * 2] = my.sin_addr.s_addr;
 		}
 
 		if (setsockopt(rts.sock, IPPROTO_IP, IP_OPTIONS, rspace, rts.optlen) < 0) {
@@ -540,7 +542,7 @@ int main(int argc, char **argv) {
 		free(rspace);
 	}
 
-	switch (measure(&rts)) {
+	switch (measure(&rts, &to, SA4_LEN)) {
 	case DT_ERROR:
 		if (errno) err(errno, "%s(%s)", _("measure"), PEERNAME);
 		errx(EXIT_FAILURE, "%s(%s): %s", _("measure"), PEERNAME, _("Unknown failure"));

@@ -102,32 +102,27 @@ static ssize_t ping6_send_probe(state_t *rts, int fd, uint8_t *packet) {
 #endif
 		build_echo_hdr(rts, packet);
 	len += rts->datalen;
-	//
 	ssize_t rc = 0;
-	if (rts->cmsg->len == 0) {
-		rc = sendto(fd, packet, len, rts->confirm,
-			    (struct sockaddr *)&rts->whereto,
-			    sizeof(struct sockaddr_in6));
-	} else {
-		struct iovec iov = { .iov_len = len, .iov_base = packet };
+	if (rts->cmsg->len) {
+		struct iovec iov = {.iov_len = len, .iov_base = packet};
 		struct msghdr msg = {
 			.msg_name       = &rts->whereto,
-			.msg_namelen    = sizeof(struct sockaddr_in6),
+			.msg_namelen    = SA6_LEN,
 			.msg_iov        = &iov,
 			.msg_iovlen     = 1,
 			.msg_control    = rts->cmsg->data,
 			.msg_controllen = rts->cmsg->len,
 		};
 		rc = sendmsg(fd, &msg, rts->confirm);
-	}
+	} else
+		rc = sendto(fd, packet, len, rts->confirm, SA6(&rts->whereto), SA6_LEN);
 	rts->confirm = 0;
 	return (rc == len) ? 0 : rc;
 }
 
 // aux_fn:addr_equal
-#define SA6(sa) ((struct sockaddr_in6 *)(sa))
-static bool in_addr6equal(const struct sockaddr *a, const struct sockaddr_storage *b) {
-	return !memcmp(&SA6(a)->sin6_addr, &SA6(b)->sin6_addr, sizeof(struct in6_addr));
+static bool addr6equal(const struct sockaddr *a, const struct sockaddr_storage *b) {
+	return !memcmp(&SA6_IN(a), &SA6_IN(b), sizeof(struct in6_addr));
 }
 
 // func_set:receive_error
@@ -138,7 +133,7 @@ static int ping6_receive_error(state_t *rts, const sock_t *sock) {
 	struct sockaddr_in6 sa = {0};
 	struct msghdr msg = {
 		.msg_name       = &sa,
-		.msg_namelen    = sizeof(sa),
+		.msg_namelen    = SA6_LEN,
 		.msg_iov        = &iov,
 		.msg_iovlen     = 1,
 		.msg_control    = cbuf,
@@ -161,9 +156,9 @@ static inline void ping6_parse_reply_fin(bool audible, bool flood) {
 }
 
 static inline int ping6_icmp_extra_type(state_t *rts,
-		const struct icmp6_hdr *icmp, size_t received, bool raw,
-		const struct sockaddr_in6 *from, const struct sockaddr_in6 *to,
-		uint8_t color)
+	const struct icmp6_hdr *icmp, size_t received, bool raw,
+	const struct sockaddr_in6 *from, const struct sockaddr_in6 *to,
+	uint8_t color)
 {
 	const struct ip6_hdr   *iph  = (struct ip6_hdr   *)(icmp + 1);
 	const struct icmp6_hdr *orig = (struct icmp6_hdr *)(iph  + 1);
@@ -204,9 +199,6 @@ static inline int ping6_icmp_extra_type(state_t *rts,
 static bool ping6_parse_reply(state_t *rts, bool raw,
 	struct msghdr *msg, size_t received, void *addr, const struct timeval *at)
 {
-	struct sockaddr_in6 *from = addr;
-	uint8_t *base = msg->msg_iov->iov_base;
-
 	int away = -1;
 	for (struct cmsghdr *c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c)) {
 		if (c->cmsg_level == IPPROTO_IPV6)
@@ -220,26 +212,24 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 			default: break;
 			}
 	}
-
+	//
 	RETURN_IF_TOO_SHORT(received, sizeof(struct icmp6_hdr));
-
-	/* Now the ICMP part */
-	struct icmp6_hdr *icmp = (struct icmp6_hdr *)base;
-	struct sockaddr_in6 *whereto = (struct sockaddr_in6 *)&rts->whereto;
-
+	//
+	// Now the ICMP part
+	struct icmp6_hdr *icmp = (struct icmp6_hdr *)msg->msg_iov->iov_base;
 	if (icmp->icmp6_type == ICMP6_ECHO_REPLY) {
 		if (!IS_OURS(rts, raw, icmp->icmp6_id))
 			return true;
 		stat_aux_t stat = {
-			.from = sprint_addr(from, sizeof(*from), rts->opt.resolve),
+			.from = sprint_addr(SA6(addr), SA6_LEN, rts->opt.resolve),
 			.seq  = ntohs(icmp->icmp6_seq),
 			.rcvd = received,
 			.tv   = at,
 			.icmp = (const uint8_t *)icmp,
 			.data = (const uint8_t *)(icmp + 1),
 			.ack  = true,
-			.okay = !memcmp(&from->sin6_addr.s6_addr, &whereto->sin6_addr.s6_addr, 16)
-				|| rts->multicast || rts->subnet_router_anycast,
+			.okay = rts->multicast || rts->subnet_router_anycast ||
+			        addr6equal(addr, &rts->whereto),
 			.away = away,
 		};
 		if (statistics(rts, &stat))
@@ -276,7 +266,7 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 		 * however, just to remember what crap we avoided
 		 * using RECVRERR. :-)
 		 */
-		int rc = ping6_icmp_extra_type(rts, icmp, received, raw, from, whereto, rts->red);
+		int rc = ping6_icmp_extra_type(rts, icmp, received, raw, SA6(addr), SA6(&rts->whereto), rts->red);
 		if (rc >= 0)
 			return rc;
 	}
@@ -284,10 +274,10 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 	return false;
 }
 
-static inline bool get_subnet_anycast(const struct sockaddr_in6 *whereto) {
+static inline bool get_subnet_anycast(const struct sockaddr_in6 *to) {
 	/* detect Subnet-Router anycast at least for the default prefix 64 */
 	for (size_t i = 8; i < sizeof(struct in6_addr); i++)
-		if (whereto->sin6_addr.s6_addr[i])
+		if (to->sin6_addr.s6_addr[i])
 			return false;
 	return true;
 }
@@ -314,30 +304,23 @@ static void ping6_bpf_filter(const state_t *rts, const sock_t *sock) {
 }
 
 /* Return >= 0: exit with this code, < 0: go on to next addrinfo result */
-int ping6_run(state_t *rts, int argc, char **argv,
-		struct addrinfo *ai, const sock_t *sock)
-{
+int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const sock_t *sock) {
 	fnset_t ping6_func_set = {
 		.bpf_filter	= ping6_bpf_filter,
 		.send_probe     = ping6_send_probe,
 		.parse_reply    = ping6_parse_reply,
 		.receive_error  = ping6_receive_error,
-        };
+	};
 	rts->ee_aux = (struct ee_aux){
 		.echo_value  = ICMP6_ECHO_REQUEST,
 		.ee_origin   = SO_EE_ORIGIN_ICMP6,
 		.ee_level    = IPPROTO_IPV6,
 		.ee_type     = IPV6_RECVERR,
-		.addr_equal  = in_addr6equal,
+		.addr_equal  = addr6equal,
 	};
 	cmsg_t cmsg6 = {0};
 	rts->cmsg = &cmsg6;
 	rts->ip6 = true;
-
-	struct sockaddr_in6 *source   = (struct sockaddr_in6 *)&rts->source;
-	struct sockaddr_in6 *firsthop = (struct sockaddr_in6 *)&rts->firsthop;
-	struct sockaddr_in6 *whereto  = (struct sockaddr_in6 *)&rts->whereto;
-	source->sin6_family = AF_INET6;
 
 #ifdef ENABLE_RFC4620
 	if (rts->ni && niquery_is_enabled(rts->ni)) {
@@ -364,32 +347,33 @@ int ping6_run(state_t *rts, int argc, char **argv,
 #endif
 	validate_hostlen(target, true);
 
-	memcpy(whereto, ai->ai_addr, sizeof(*whereto));
-	whereto->sin6_port = htons(IPPROTO_ICMPV6);
+	memcpy(&rts->whereto, ai->ai_addr, SA6_LEN);
+	SA6(&rts->whereto)->sin6_port = htons(IPPROTO_ICMPV6);
 
 	if (target && memchr(target, ':', strlen(target)))
 		rts->opt.resolve = false;
 
-	if (IN6_IS_ADDR_UNSPECIFIED(&firsthop->sin6_addr)) {
-		memcpy(&firsthop->sin6_addr, &whereto->sin6_addr, sizeof(firsthop->sin6_addr));
-		firsthop->sin6_scope_id = whereto->sin6_scope_id;
+	if (IN6_IS_ADDR_UNSPECIFIED(&SA6_IN(&rts->firsthop))) {
+		memcpy(&SA6_IN(&rts->firsthop), &SA6_IN(&rts->whereto), sizeof(struct in6_addr));
+		SA6(&rts->firsthop)->sin6_scope_id = SA6(&rts->whereto)->sin6_scope_id;
 		/* Verify scope_id is the same as intermediate nodes */
 		static uint32_t scope_id;
 		if (!scope_id)
-			scope_id = firsthop->sin6_scope_id;
-		else if (firsthop->sin6_scope_id && (firsthop->sin6_scope_id != scope_id))
+			scope_id = SA6(&rts->firsthop)->sin6_scope_id;
+		else if (SA6(&rts->firsthop)->sin6_scope_id &&
+			 (SA6(&rts->firsthop)->sin6_scope_id != scope_id))
 			errx(EINVAL, "%s", _("Scope discrepancy among the nodes"));
 	}
 
 	rts->hostname = target;
 
-	if (IN6_IS_ADDR_UNSPECIFIED(&source->sin6_addr)) {
+	if (IN6_IS_ADDR_UNSPECIFIED(&SA6_IN(&rts->source))) {
 		int probe_fd = socket(AF_INET6, SOCK_DGRAM, 0);
 		if (probe_fd < 0)
 			err(errno, "socket");
 
-		bool scoped = IN6_IS_ADDR_LINKLOCAL(&firsthop->sin6_addr) ||
-			      IN6_IS_ADDR_MC_LINKLOCAL(&firsthop->sin6_addr);
+		bool scoped = IN6_IS_ADDR_LINKLOCAL(&SA6_IN(&rts->firsthop)) ||
+			      IN6_IS_ADDR_MC_LINKLOCAL(&SA6_IN(&rts->firsthop));
 		if (rts->device) {
 			unsigned iface = nl_name2ndx(rts->device);
 			if (!iface) {
@@ -404,25 +388,25 @@ int ping6_run(state_t *rts, int argc, char **argv,
 			    (bindtodev(sock->fd, rts->device) < 0))
 				err(errno, "%s", rts->device);
 			if (scoped)
-				firsthop->sin6_scope_id = iface;
+				SA6(&rts->firsthop)->sin6_scope_id = iface;
 		}
 		if (!scoped)
-			firsthop->sin6_family = AF_INET6;
+			SA6(&rts->firsthop)->sin6_family = AF_INET6;
 		sock_settos(probe_fd, rts->qos, rts->ip6);
 		sock_setmark(rts, probe_fd);
 
-		firsthop->sin6_port = htons(1025);
-		if (connect(probe_fd, (struct sockaddr *)firsthop, sizeof(*firsthop)) < 0) {
+		SA6(&rts->firsthop)->sin6_port = htons(1025);
+		if (connect(probe_fd, SA6(&rts->firsthop), SA6_LEN) < 0) {
 			if ((errno == EHOSTUNREACH || errno == ENETUNREACH) && ai->ai_next) {
 				close(probe_fd);
 				return -1;
 			}
 			err(errno, "connect");
 		}
-		socklen_t socklen = sizeof(struct sockaddr_in6);
-		if (getsockname(probe_fd, (struct sockaddr *)source, &socklen) < 0)
-			err(errno, "getsockname");
-		source->sin6_port = 0;
+		{ socklen_t socklen = SA6_LEN;
+		  if (getsockname(probe_fd, SA6(&rts->source), &socklen) < 0)
+			err(errno, "getsockname"); }
+		SA6(&rts->source)->sin6_port = 0;
 		close(probe_fd);
 
 		if (rts->device && !nl_name2ndx(rts->device)) {
@@ -430,11 +414,12 @@ int ping6_run(state_t *rts, int argc, char **argv,
 			rts->unreldev = true;
 		}
 
-	} else if (rts->device && (IN6_IS_ADDR_LINKLOCAL(&source->sin6_addr) ||
-			      IN6_IS_ADDR_MC_LINKLOCAL(&source->sin6_addr))) {
-		source->sin6_scope_id = nl_name2ndx(rts->device);
-		if (!source->sin6_scope_id) {
-			if (!errno) errno = ENODEV;
+	} else if (rts->device && (IN6_IS_ADDR_LINKLOCAL(&SA6_IN(&rts->source)) ||
+			      IN6_IS_ADDR_MC_LINKLOCAL(&SA6_IN(&rts->source)))) {
+		SA6(&rts->source)->sin6_scope_id = nl_name2ndx(rts->device);
+		if (!SA6(&rts->source)->sin6_scope_id) {
+			if (!errno)
+				errno = ENODEV;
 			err(errno, NETDEV_FMT, rts->device);
 		}
 	}
@@ -464,7 +449,7 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		}
 	}
 
-	if (IN6_IS_ADDR_MULTICAST(&whereto->sin6_addr))
+	if (IN6_IS_ADDR_MULTICAST(&SA6_IN(&rts->whereto)))
 		pmtu_interval(rts);
 
 	if (sock->raw) {
@@ -509,16 +494,16 @@ int ping6_run(state_t *rts, int argc, char **argv,
 		freq->flr_action = IPV6_FL_A_GET;
 		freq->flr_flags  = IPV6_FL_F_CREATE;
 		freq->flr_share  = IPV6_FL_S_EXCL;
-		memcpy(&freq->flr_dst, &whereto->sin6_addr, sizeof(whereto->sin6_addr));
+		memcpy(&freq->flr_dst, &SA6_IN(&rts->whereto), sizeof(struct in6_addr));
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWLABEL_MGR, freq, sizeof(*freq)) < 0)
 			err(errno, "setsockopt(%s)", "IPV6_FLOWLABEL");
-		whereto->sin6_flowinfo = rts->flowlabel = freq->flr_label;
+		SA6(&rts->whereto)->sin6_flowinfo = rts->flowlabel = freq->flr_label;
 		int on = 1;
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND, &on, sizeof(on)) < 0)
 			err(errno, "setsockopt(%s)", "IPV6_FLOWINFO");
 	}
 
-	rts->subnet_router_anycast = get_subnet_anycast(whereto);
+	rts->subnet_router_anycast = get_subnet_anycast(SA6(&rts->whereto));
 	mtudisc_n_bind(rts, sock);
 	setsock_recverr(sock->fd, rts->ip6);
 	set_estimate_buf(rts, sock->fd, sizeof(struct ip6_hdr), 0, sizeof(struct icmp6_hdr));

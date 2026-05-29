@@ -185,8 +185,7 @@ void print_timestamp(void) {
 
 void headline(const state_t *rts, size_t nodatalen) {
 	// called once at ping setup
-	socklen_t len = rts->ip6 ?
-		sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+	socklen_t len = rts->ip6 ? SA6_LEN : SA4_LEN;
 	printf("%s %s (%s)", _("PING"), rts->hostname,
 		sprint_addr(&rts->whereto, len, false));
 	if (rts->ip6 && rts->flowlabel)
