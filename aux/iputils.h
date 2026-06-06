@@ -17,14 +17,20 @@
 #define IS_BIT31_SET(x) ((x) & 0x80000000)
 #endif
 
+#define SA(sa)  ((struct sockaddr *)(sa))
 #define SA4(sa) ((struct sockaddr_in *)(sa))
 #define SA6(sa) ((struct sockaddr_in6 *)(sa))
 #define SA4_LEN (sizeof(struct sockaddr_in))
 #define SA6_LEN (sizeof(struct sockaddr_in6))
 #define SA4_IN(sa) (SA4(sa)->sin_addr)
 #define SA6_IN(sa) (SA6(sa)->sin6_addr)
-//
 #define SA4ADDR(sa) (SA4_IN(sa).s_addr)
+//
+#define GETSOCKNAME(sock, addr, addrlen) do {      \
+	socklen_t len = (addrlen);                 \
+	if (getsockname((sock), (addr), &len) < 0) \
+		err(errno, "%s", "getsockname()"); \
+} while (0)
 
 #ifdef USE_NLS
 #include <locale.h>
@@ -63,9 +69,8 @@
 #define _WARN	_(WARN)
 #define V4IN6_WARN	"Embedded IPv4 Address"
 
-#define OPTEXCL(optA, optB) do { errx(EINVAL, "%s: -%c -%c", \
-	_("Mutually exclusive options"), (optA), (optB)); } \
-	while (0)
+#define EXCL_OPTS_MSG _("Mutually exclusive options")
+#define OPTEXCL(a, b) errx(EINVAL, "%s: -%c -%c", EXCL_OPTS_MSG, (a), (b))
 
 #define MSFMT "%.3f"		// common timing format in milliseconds
 #define TMMS  MSFMT "%s"	// ".3fms"

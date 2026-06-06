@@ -115,7 +115,7 @@ static ssize_t ping6_send_probe(state_t *rts, int fd, uint8_t *packet) {
 		};
 		rc = sendmsg(fd, &msg, rts->confirm);
 	} else
-		rc = sendto(fd, packet, len, rts->confirm, SA6(&rts->whereto), SA6_LEN);
+		rc = sendto(fd, packet, len, rts->confirm, SA(&rts->whereto), SA6_LEN);
 	rts->confirm = 0;
 	return (rc == len) ? 0 : rc;
 }
@@ -396,16 +396,14 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		sock_setmark(rts, probe_fd);
 
 		SA6(&rts->firsthop)->sin6_port = htons(1025);
-		if (connect(probe_fd, SA6(&rts->firsthop), SA6_LEN) < 0) {
+		if (connect(probe_fd, SA(&rts->firsthop), SA6_LEN) < 0) {
 			if ((errno == EHOSTUNREACH || errno == ENETUNREACH) && ai->ai_next) {
 				close(probe_fd);
 				return -1;
 			}
 			err(errno, "connect");
 		}
-		{ socklen_t socklen = SA6_LEN;
-		  if (getsockname(probe_fd, SA6(&rts->source), &socklen) < 0)
-			err(errno, "getsockname"); }
+		GETSOCKNAME(probe_fd, SA(&rts->source), SA6_LEN);
 		SA6(&rts->source)->sin6_port = 0;
 		close(probe_fd);
 

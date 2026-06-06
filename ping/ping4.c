@@ -124,7 +124,7 @@ static ssize_t ping4_send_probe(state_t *rts, int fd, uint8_t *packet) {
 		icmp->checksum = in_cksum((uint16_t *)&tv, sizeof(tv), ~icmp->checksum);
 	}
 
-	ssize_t rc = sendto(fd, packet, len, 0, SA4(&rts->whereto), SA4_LEN);
+	ssize_t rc = sendto(fd, packet, len, 0, SA(&rts->whereto), SA4_LEN);
 	return (rc == len) ? 0 : rc;
 }
 
@@ -508,7 +508,7 @@ int ping4_run(state_t *rts, int argc, char **argv,
 		SA4(&rts->whereto)->sin_port = htons(1025);
 		if (rts->route->n)
 			SA4ADDR(&rts->whereto) = rts->route->data[0];
-		if (connect(probe_fd, SA4(&rts->whereto), SA4_LEN) < 0) {
+		if (connect(probe_fd, SA(&rts->whereto), SA4_LEN) < 0) {
 			switch (errno) {
 			case EACCES:
 				if (!rts->opt.broadcast)
@@ -518,7 +518,7 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 				int opt = rts->opt.broadcast;
 				if (setsockopt(probe_fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
 					err(errno, "%s", _("Cannot set broadcasting"));
-				if (connect(probe_fd, SA4(&rts->whereto), SA4_LEN) < 0)
+				if (connect(probe_fd, SA(&rts->whereto), SA4_LEN) < 0)
 					err(errno, "connect");
 				break;
 			case EHOSTUNREACH:
@@ -534,9 +534,7 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 				break;
 			}
 		}
-		{ socklen_t socklen = SA4_LEN;
-		  if (getsockname(probe_fd, SA4(&rts->source), &socklen) < 0)
-			err(errno, "getsockname"); }
+		GETSOCKNAME(probe_fd, SA(&rts->source), SA4_LEN);
 		SA4(&rts->source)->sin_port = 0;
 		close(probe_fd);
 
@@ -597,7 +595,7 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 	if (rts->ttl >= 0)
 		setsock_ttl(sock->fd, rts->ip6, rts->ttl);
 	if (rts->opt.connect_sk)
-		if (connect(sock->fd, SA4(&rts->whereto), SA4_LEN) < 0)
+		if (connect(sock->fd, SA(&rts->whereto), SA4_LEN) < 0)
 			err(errno, "%s", "connect()");
 
 	mtudisc_n_bind(rts, sock);

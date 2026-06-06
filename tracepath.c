@@ -221,7 +221,7 @@ do { // was 'restart:'
 	if (e->ee_origin == SO_EE_ORIGIN_LOCAL)
 		printf("%2d?: [%s] ", rts->ttl, _("LOCALHOST"));
 	else if (e->ee_origin == SO_EE_ORIGIN_ICMP6 || e->ee_origin == SO_EE_ORIGIN_ICMP) {
-		struct sockaddr *sa = (struct sockaddr *)(e + 1);
+		struct sockaddr *sa = SA(e + 1);
 		socklen_t salen =
 			(sa->sa_family == AF_INET ) ? SA4_LEN :
 			(sa->sa_family == AF_INET6) ? SA6_LEN :
@@ -391,8 +391,7 @@ static int probe_ttl(state_t *rts) {
 			ssize_t size = rts->pktsize - rts->hdrsize;
 			if (size < 0)
 				return -1;
-			if (sendto(rts->sock, rts->pktbuf, size, 0,
-				   (struct sockaddr *)&rts->addr, rts->addrlen) > 0)
+			if (sendto(rts->sock, rts->pktbuf, size, 0, SA(&rts->addr), rts->addrlen) > 0)
 				break;
 			int rc = recverr(rts);
 			rts->his[rts->hisptr].hops = 0;

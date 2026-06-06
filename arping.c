@@ -71,25 +71,27 @@ typedef struct arping_opt_s {
 	bool unsolicited;
 } arpopt_t;
 
+typedef struct counter {
+	int sent;
+	int recv;
+	int brd_sent;
+	int brd_recv;
+	int req_recv;
+} counter_t;
+
 typedef struct run_state {
-	arpdev_t dev;
 	char *source;
-	struct in_addr src, dst;
-	int af; // ai_family
 	char *target;
+	arpdev_t dev;
+	int sock;
+	int af; // ai_family
+	struct in_addr src, dst;
+	struct sockaddr_storage from, to;
+	struct timespec start, last;
 	int count;
 	int timeout;
 	unsigned interval;
-	int sock;
-	struct sockaddr_storage me;
-	struct sockaddr_storage he;
-	struct timespec start;
-	struct timespec last;
-	int sent;
-	int brd_sent;
-	int received;
-	int brd_recv;
-	int req_recv;
+	counter_t stat;
 	arpopt_t opt;
 } state_t;
 
@@ -123,12 +125,12 @@ NORETURN static void usage(int rc) {
 	usage_common(rc, options, "TARGET", !MORE);
 }
 
-static inline bool send_pack(const struct sockaddr_ll *me, const struct sockaddr_ll *he,
+static inline bool send_pack(const struct sockaddr_ll *from, const struct sockaddr_ll *to,
 	const struct in_addr *src, const struct in_addr *dst, int sock, bool advert)
 {
-	unsigned char buf[256];
+	uint8_t buf[256] = {0};
 	struct arphdr *ah = (struct arphdr *)buf;
-	ah->ar_hrd = htons(me->sll_hatype);
+	ah->ar_hrd = htons(from->sll_hatype);
 	if (ah->ar_hrd == htons(ARPHRD_FDDI))
 		ah->ar_hrd = htons(ARPHRD_ETHER);
 	/*
@@ -138,24 +140,23 @@ static inline bool send_pack(const struct sockaddr_ll *me, const struct sockaddr
 	ah->ar_pro =
 		((ah->ar_hrd == htons(ARPHRD_AX25)) || (ah->ar_hrd == htons(ARPHRD_NETROM))) ?
 			htons(AX25_P_IP) : htons(ETH_P_IP);
-
-	ah->ar_hln = me->sll_halen;
+	ah->ar_hln = from->sll_halen;
 	ah->ar_pln = 4;
 	ah->ar_op  = advert ? htons(ARPOP_REPLY) : htons(ARPOP_REQUEST);
 
-	unsigned char *p = (unsigned char *)(ah + 1);
-	memcpy(p, &me->sll_addr, ah->ar_hln);
-	p += me->sll_halen;
+	uint8_t *p = (uint8_t *)(ah + 1);
+	memcpy(p, &from->sll_addr, ah->ar_hln);
+	p += from->sll_halen;
 
 	memcpy(p, src, 4);
 	p += 4;
 
-	memcpy(p, advert ? &me->sll_addr : &he->sll_addr, ah->ar_hln);
+	memcpy(p, advert ? &from->sll_addr : &to->sll_addr, ah->ar_hln);
 	p += ah->ar_hln;
 
 	memcpy(p, dst, 4);
 	p += 4;
-	int sent = sendto(sock, buf, p - buf, 0, (struct sockaddr *)he, sll_len(ah->ar_hln));
+	int sent = sendto(sock, buf, p - buf, 0, SA(to), sll_len(ah->ar_hln));
 	return (sent == (p - buf));
 }
 
@@ -168,25 +169,26 @@ static inline void update_stat(struct timespec *last, int *sent, int *brd_sent) 
 		(*brd_sent)++;
 }
 
-static void send_n_stat(state_t *rts) {
-	if (send_pack(SLL(&rts->me), SLL(&rts->he), &rts->src, &rts->dst, rts->sock, rts->opt.advert))
-		update_stat(&rts->last, &rts->sent, rts->opt.unicast ? NULL : &rts->brd_sent);
+static inline void send_n_stat(state_t *rts) {
+	if (send_pack(SLL(&rts->from), SLL(&rts->to), &rts->src, &rts->dst,
+			rts->sock, rts->opt.advert))
+		update_stat(&rts->last, &rts->stat.sent, rts->opt.unicast ? NULL : &rts->stat.brd_sent);
 }
 
-static void resume(const state_t *rts) {
-	printf("%s: %d (%d %s)\n", _("Sent probes"), rts->sent,
-		rts->brd_sent, _n("broadcast", "broadcasts", rts->brd_sent));
-	printf("%s: %d", _("Received responses"), rts->received);
-	if (rts->brd_recv || rts->req_recv) {
+static void resume(const counter_t *stat) {
+	printf("%s: %d (%d %s)\n", _("Sent probes"), stat->sent,
+		stat->brd_sent, _n("broadcast", "broadcasts", stat->brd_sent));
+	printf("%s: %d", _("Received responses"), stat->recv);
+	if (stat->brd_recv || stat->req_recv) {
 		printf(" (");
-		if (rts->req_recv)
-			printf("%d %s", rts->req_recv,
-				_n("request", "requests", rts->req_recv));
-		if (rts->req_recv && rts->brd_recv)
+		if (stat->req_recv)
+			printf("%d %s", stat->req_recv,
+				_n("request", "requests", stat->req_recv));
+		if (stat->req_recv && stat->brd_recv)
 			printf(", ");
-		if (rts->brd_recv)
-			printf("%d %s", rts->brd_recv,
-				_n("broadcast", "broadcasts", rts->brd_recv));
+		if (stat->brd_recv)
+			printf("%d %s", stat->brd_recv,
+				_n("broadcast", "broadcasts", stat->brd_recv));
 		printf(")");
 	}
 	putchar('\n');
@@ -228,7 +230,7 @@ static inline bool final_pack(state_t *rts,
 
 	if (ah->ar_pln != 4)
 		return false;
-	if (ah->ar_hln != SLL(&rts->me)->sll_halen)
+	if (ah->ar_hln != SLL(&rts->from)->sll_halen)
 		return false;
 	if (len < (ssize_t) sizeof(*ah) + 2 * (4 + ah->ar_hln))
 		return false;
@@ -244,7 +246,7 @@ static inline bool final_pack(state_t *rts,
 			return false;
 		if (rts->src.s_addr != dst_ip.s_addr)
 			return false;
-		if (memcmp(p + ah->ar_hln + 4, SLL(&rts->me)->sll_addr, ah->ar_hln))
+		if (memcmp(p + ah->ar_hln + 4, SLL(&rts->from)->sll_addr, ah->ar_hln))
 			return false;
 	} else {
 		/*
@@ -263,7 +265,7 @@ static inline bool final_pack(state_t *rts,
 		 */
 		if (src_ip.s_addr != rts->dst.s_addr)
 			return false;
-		if (!memcmp(p, SLL(&rts->me)->sll_addr, SLL(&rts->me)->sll_halen))
+		if (!memcmp(p, SLL(&rts->from)->sll_addr, SLL(&rts->from)->sll_halen))
 			return false;
 		if (rts->src.s_addr && (rts->src.s_addr != dst_ip.s_addr))
 			return false;
@@ -279,7 +281,7 @@ static inline bool final_pack(state_t *rts,
 			printf(" %s %s", _("for"), inet_ntoa(dst_ip));
 			printed = true;
 		}
-		if (memcmp(p + ah->ar_hln + 4, SLL(&rts->me), ah->ar_hln)) {
+		if (memcmp(p + ah->ar_hln + 4, SLL(&rts->from), ah->ar_hln)) {
 			if (!printed)
 				printf(" %s", _("for"));
 			printf(" [");
@@ -298,17 +300,17 @@ static inline bool final_pack(state_t *rts,
 		putchar('\n');
 		fflush(stdout);
 	}
-	rts->received++;
-	if (rts->timeout && (rts->received == rts->count))
+	rts->stat.recv++;
+	if (rts->timeout && (rts->stat.recv == rts->count))
 		return true;
 	if (broadcast)
-		rts->brd_recv++;
+		rts->stat.brd_recv++;
 	if (ah->ar_op == htons(ARPOP_REQUEST))
-		rts->req_recv++;
-	if (rts->opt.quit || (!rts->count && (rts->received == rts->sent)))
+		rts->stat.req_recv++;
+	if (rts->opt.quit || (!rts->count && (rts->stat.recv == rts->stat.sent)))
 		return true;
 	if (!rts->opt.broadcast) {
-		memcpy(SLL(&rts->he)->sll_addr, p, SLL(&rts->me)->sll_halen);
+		memcpy(SLL(&rts->to)->sll_addr, p, SLL(&rts->from)->sll_halen);
 		rts->opt.unicast = true;
 	}
 	return false;
@@ -573,11 +575,10 @@ static int loop(state_t *rts) {
 				run = false;
 				break;
 			case POLLFD_SOCKET: {
-				struct sockaddr_storage from;
+				struct sockaddr_storage from = {0};
 				socklen_t socklen = sizeof(from);
-				memset(&from, 0, socklen);
-				ssize_t size = recvfrom(pfds[i].fd, packet, sizeof(packet), 0,
-					      (struct sockaddr *)&from, &socklen);
+				ssize_t size = recvfrom(pfds[i].fd, packet, sizeof(packet),
+					0, SA(&from), &socklen);
 				if (size < 0) {
 					warn("%s", "recvfrom()");
 					if (errno == ENETDOWN)
@@ -606,14 +607,14 @@ static int loop(state_t *rts) {
 	for (uint i = 0; i < ARRAY_LEN(pfds); i++)
 		close(pfds[i].fd);
 	if (!rts->opt.quiet)
-		resume(rts);
-	bool got = (rts->received > 0) ? true : false;
+		resume(&rts->stat);
+	bool got = (rts->stat.recv > 0) ? true : false;
 	rc |= rts->opt.dad         ? got   :
 	      rts->opt.unsolicited ? false :
 	      !got;
 	if (!rts->opt.unsolicited) {
-		bool all_uni = (rts->received == rts->sent);
-		bool all_brd = (rts->received == rts->brd_sent);
+		bool all_uni = (rts->stat.recv == rts->stat.sent);
+		bool all_brd = (rts->stat.recv == rts->stat.brd_sent);
 		rc |= // note: DAD stands for Duplicate Address Detection
 			(rts->opt.dad && rts->opt.quit)     ? all_brd :
 			(rts->timeout && (rts->count <= 0)) ? !got    :
@@ -622,24 +623,22 @@ static int loop(state_t *rts) {
 	return rc;
 }
 
-static inline void bind_sock(struct sockaddr_storage *me, struct sockaddr_storage *he,
+static inline void bind_sock(struct sockaddr_ll *from, struct sockaddr_ll *to,
 	int ifndx, const char *ifname, int sock, bool quiet, bool dad)
 {
-	SLL(me)->sll_family   = AF_PACKET;
-	SLL(me)->sll_ifindex  = ifndx;
-	SLL(me)->sll_protocol = htons(ETH_P_ARP);
-	if (bind(sock, (struct sockaddr *)me, sizeof(*me)) < 0)
+	from->sll_family   = AF_PACKET;
+	from->sll_ifindex  = ifndx;
+	from->sll_protocol = htons(ETH_P_ARP);
+	if (bind(sock, SA(from), SLL_LEN) < 0)
 		err(errno, "bind()");
-	socklen_t alen = sizeof(*me);
-	if (getsockname(sock, (struct sockaddr *)me, &alen) < 0)
-		err(errno, "%s", "getsockname()");
-	if (!SLL(me)->sll_halen) {
+	GETSOCKNAME(sock, SA(from), SLL_LEN);
+	if (!from->sll_halen) {
 		if (!quiet)
 			warnx("%s: %s (%s)", ifname,
 _("Interface is not ARPable"), _("no ll address"));
 		exit(dad ? EXIT_SUCCESS : EXIT_FAILURE);
 	}
-	*he = *me;
+	*to = *from;
 }
 
 static inline int arping_sock(void) {
@@ -716,7 +715,7 @@ static inline void arping_setup(state_t *rts) {
 		struct sockaddr_in addr = {.sin_family = AF_INET};
 		if (rts->source || rts->src.s_addr) {
 			addr.sin_addr = rts->src;
-			if (bind(probe_fd, &addr, SA4_LEN) < 0)
+			if (bind(probe_fd, SA(&addr), SA4_LEN) < 0)
 				err(errno, "%s", "bind()");
 		} else if (!rts->opt.dad) {
 			addr.sin_port = htons(1025);
@@ -725,11 +724,9 @@ static inline void arping_setup(state_t *rts) {
 				int on = 1;
 				if (setsockopt(probe_fd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof(on)) < 0)
 					warn("%s: setsockopt(%s)", _WARN, "SO_DONTROUTE");
-				if (connect(probe_fd, &addr, SA4_LEN) < 0)
+				if (connect(probe_fd, SA(&addr), SA4_LEN) < 0)
 					err(errno, "%s", "connect()");
-				socklen_t len = SA4_LEN;
-				if (getsockname(probe_fd, &addr, &len) < 0)
-					err(errno, "%s", "getsockname()");
+				GETSOCKNAME(probe_fd, SA(&addr), SA4_LEN);
 			}
 			rts->src = addr.sin_addr;
 		}
@@ -835,8 +832,9 @@ int main(int argc, char **argv) {
 	drop_priv();
 	//
 	//
-	bind_sock(&rts.me, &rts.he, rts.dev.ndx, rts.dev.name, rts.sock, rts.opt.quiet, rts.opt.dad);
-	find_brd_addr(&rts.dev, SLL(&rts.he), rts.opt.quiet);
+	bind_sock(SLL(&rts.from), SLL(&rts.to), rts.dev.ndx, rts.dev.name, rts.sock,
+		rts.opt.quiet, rts.opt.dad);
+	find_brd_addr(&rts.dev, SLL(&rts.to), rts.opt.quiet);
 	if (!rts.opt.quiet) {
 		const char *ifname =
 			rts.dev.req && (strlen(rts.dev.req) < IF_NAMESIZE) ?

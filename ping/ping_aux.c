@@ -195,7 +195,7 @@ void mtudisc_n_bind(state_t *rts, const sock_t *sock) {
 	}
 	if (rts->opt.strictsource || set_ident) {
 		socklen_t socklen = rts->ip6 ? SA6_LEN : SA4_LEN;
-		if (bind(sock->fd, (struct sockaddr *)&rts->source, socklen) < 0)
+		if (bind(sock->fd, SA(&rts->source), socklen) < 0)
 			err(errno, "bind(%s)", "icmp-socket");
 	}
 }

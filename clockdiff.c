@@ -325,7 +325,7 @@ static inline timediff_e measure_msg(state_t *rts, measurement_data_t *m) {
 }
 
 // Measure the differences between machines' clocks using ICMP timestamp messages
-static timediff_e measure(state_t *rts, const struct sockaddr_in *sa, socklen_t salen) {
+static timediff_e measure(state_t *rts, const struct sockaddr *sa, socklen_t salen) {
 	measurement_data_t m = {.min1 = LONG_MAX, .min2 = LONG_MAX};
 	m.ip = (struct iphdr *)m.packet;
 
@@ -513,36 +513,34 @@ int main(int argc, char **argv) {
 	  memcpy(&to, res->ai_addr, SA4_LEN);
 	  freeaddrinfo(res);
 	}
-	if (connect(rts.sock, &to, SA4_LEN) < 0)
+	if (connect(rts.sock, SA(&to), SA4_LEN) < 0)
 		err(errno, "%s", "connect()");
 	if (rts.optlen) {
-		struct sockaddr_in my = {0};
-		uint8_t *rspace = calloc(1, rts.optlen);
-		if (!rspace)
-			err(errno, "calloc(%d)", rts.optlen);
-		rspace[0] = IPOPT_TIMESTAMP;
-		rspace[1] = rts.optlen;
-		rspace[2] = 5;
-		rspace[3] = IPOPT_TS_PRESPEC;
-		{ socklen_t len = SA4_LEN;
-		  if (getsockname(rts.sock, &my, &len) < 0)
-			err(errno, "getsockname"); }
-		((uint32_t *) (rspace + 4))[0 * 2] = my.sin_addr.s_addr;
-		((uint32_t *) (rspace + 4))[1 * 2] = to.sin_addr.s_addr;
-		((uint32_t *) (rspace + 4))[2 * 2] = my.sin_addr.s_addr;
-		if (rts.optlen == OPTLEN_2) {
-			((uint32_t *) (rspace + 4))[2 * 2] = to.sin_addr.s_addr;
-			((uint32_t *) (rspace + 4))[3 * 2] = my.sin_addr.s_addr;
-		}
-
-		if (setsockopt(rts.sock, IPPROTO_IP, IP_OPTIONS, rspace, rts.optlen) < 0) {
+		struct sockaddr_in from = {0};
+		GETSOCKNAME(rts.sock, SA(&from), SA4_LEN);
+		struct ip_timestamp ipt = {
+			.ipt_code = IPOPT_TIMESTAMP,
+			.ipt_len  = rts.optlen,
+			.ipt_ptr  = 5,
+			.ipt_flg  = IPOPT_TS_PRESPEC,
+			.data = {
+				from.sin_addr.s_addr,
+				0,
+				to.sin_addr.s_addr,
+				0,
+				rts.optlen == OPTLEN_2 ? to.sin_addr.s_addr : from.sin_addr.s_addr,
+				0,
+				rts.optlen == OPTLEN_2 ? from.sin_addr.s_addr : 0,
+				0,
+			},
+		};
+		if (setsockopt(rts.sock, IPPROTO_IP, IP_OPTIONS, &ipt, ipt.ipt_len) < 0) {
 			warn("IP_OPTIONS: fallback to ICMP timestamp");
 			rts.optlen = 0;
 		}
-		free(rspace);
 	}
 
-	switch (measure(&rts, &to, SA4_LEN)) {
+	switch (measure(&rts, SA(&to), SA4_LEN)) {
 	case DT_ERROR:
 		if (errno) err(errno, "%s(%s)", _("measure"), PEERNAME);
 		errx(EXIT_FAILURE, "%s(%s): %s", _("measure"), PEERNAME, _("Unknown failure"));
