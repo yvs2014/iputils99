@@ -134,8 +134,7 @@ msgid ""
 "  -4                 use IPv4\n"
 "  -b                 allow pinging broadcast\n"
 "  -R                 record route\n"
-"  -T <timestamp>     define timestamp, can be one of <tsonly|tsandaddr|"
-"tsprespec>\n"
+"  -T <timestamp>     define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC\n"
 "\n"
 "IPv6 options:\n"
 "  -6                 use IPv6\n"
@@ -182,7 +181,7 @@ msgstr ""
 "  -4                 IPv4 kullan\n"
 "  -b                 genel yayın pinglemeye izin ver\n"
 "  -R                 rotayı kaydet\n"
-"  -T <damga>         zaman damgasını belirt, <tsonly|tsandaddr|tsprespec> "
+"  -T <damga>         zaman damgasını belirt, TSONLY|TSANDADDR|TSPRESPEC "
 "seçeneklerinden biri olabilir\n"
 "\n"
 "IPv6 seçenekleri:\n"
@@ -855,6 +854,18 @@ msgstr "YANLIŞ SAĞLAMA TOPLAMI"
 #
 msgid "DIFFERENT ADDRESS"
 msgstr "FARKLI ADRES"
+
+#
+msgid "timestamp length is not a multiple of 4"
+msgstr ""
+
+#
+msgid "timestamp option"
+msgstr ""
+
+#
+msgid "No intermediate hops for TSPRESPEC"
+msgstr ""
 
 #
 msgid "record route"

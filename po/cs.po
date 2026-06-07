@@ -139,8 +139,7 @@ msgid ""
 "  -4                 use IPv4\n"
 "  -b                 allow pinging broadcast\n"
 "  -R                 record route\n"
-"  -T <timestamp>     define timestamp, can be one of <tsonly|tsandaddr|"
-"tsprespec>\n"
+"  -T <timestamp>     define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC\n"
 "\n"
 "IPv6 options:\n"
 "  -6                 use IPv6\n"
@@ -191,8 +190,7 @@ msgstr ""
 "  -4                   použije IPv4\n"
 "  -b                   povolí všesměrový ping\n"
 "  -R                   zaznamenat routování\n"
-"  -T <časová značka>   definuje časovou značku, jedno z "
-"<tsonly|tsandaddr|tsprespec>\n"
+"  -T <časová značka>   definuje časovou značku, jedno z TSONLY|TSANDADDR|TSPRESPEC\n"
 "\n"
 "IPv6 volby:\n"
 "  -6                   použije IPv6\n"
@@ -869,6 +867,18 @@ msgstr "CHYBNÝ KONTROLNÍ SOUČET"
 #
 msgid "DIFFERENT ADDRESS"
 msgstr "ODLIŠNÁ ADRESA"
+
+#
+msgid "timestamp length is not a multiple of 4"
+msgstr "délka časové značky není násobkem 4"
+
+#
+msgid "timestamp option"
+msgstr "volba časové značky"
+
+#
+msgid "No intermediate hops for TSPRESPEC"
+msgstr "Chybí tranzitní skoky pro TSPRESPEC"
 
 #
 msgid "record route"

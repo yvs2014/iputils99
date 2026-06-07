@@ -138,8 +138,7 @@ msgid ""
 "  -4                 use IPv4\n"
 "  -b                 allow pinging broadcast\n"
 "  -R                 record route\n"
-"  -T <timestamp>     define timestamp, can be one of <tsonly|tsandaddr|"
-"tsprespec>\n"
+"  -T <timestamp>     define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC\n"
 "\n"
 "IPv6 options:\n"
 "  -6                 use IPv6\n"
@@ -812,6 +811,18 @@ msgstr "잘못된 검사합"
 #
 msgid "DIFFERENT ADDRESS"
 msgstr "다른 주소"
+
+#
+msgid "timestamp length is not a multiple of 4"
+msgstr ""
+
+#
+msgid "timestamp option"
+msgstr ""
+
+#
+msgid "No intermediate hops for TSPRESPEC"
+msgstr ""
 
 #
 msgid "record route"

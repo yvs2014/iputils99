@@ -56,12 +56,6 @@ typedef struct ping_sock {
 	bool raw;
 } sock_t;
 
-#define MAX_ROUTES	9
-typedef struct route_data {
-	unsigned n;
-	uint32_t data[MAX_ROUTES + 1];
-} route_t;
-
 #define MAX_CMSG_SIZE	4096
 typedef struct cmsg_data {
 	size_t len;
@@ -88,13 +82,24 @@ typedef struct bool_opt {
 	bool so_dontroute;
 	bool sourceroute;
 	bool strictsource;
-	bool timestamp;
 	bool verbose;
 	bool connect_sk;
 	bool broadcast;
 } bool_opt_t;
 
-/* ping runtime state */
+typedef struct pre_noped_ipopt {
+	uint8_t nop;
+	uint8_t val, len, off;
+	uint32_t data[9];
+} pre_noped_ipopt_t;
+
+typedef union ipopt_space {
+	uint8_t *u8;
+	struct ip_timestamp *ipt;
+	struct pre_noped_ipopt *ipo;
+} ipopt_space_t;
+
+// ping runtime state
 typedef struct ping_state {
 	size_t datalen;
 	const char *hostname;
@@ -146,8 +151,8 @@ typedef struct ping_state {
 	uint8_t qos;				/* TOS/TCLASS */
 	bool multicast;
 	// ping4 only
-	uint8_t ipt_flg;	/* ip option: timestamp flags */
-	route_t *route;		/* allocated in ping4 */
+	int8_t ts_opt;		/* IP option timestamp kind (TSONLY TSANDADDR PRESPEC, otherwise -1) */
+	ipopt_space_t ipopt;	/* allocated in ping4: IPv4 option space (size MAX_IPOPTLEN) */
 	// ping6 only
 	uint32_t flowlabel;
 	bool subnet_router_anycast;

@@ -288,22 +288,26 @@ static void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rt
 			rts->custom_ident = rts->ident16;
 			break;
 		case 'R':
-			if (rts->opt.timestamp)
+			if (rts->ts_opt >= 0)
 				OPTEXCL('T', 'R');
 			rts->opt.rroute = true;
 			break;
 		case 'T':
 			if (rts->opt.rroute)
 				OPTEXCL('R', 'T');
-			rts->opt.timestamp = true;
-			if      (strcmp(optarg, "tsonly")    == 0)
-				rts->ipt_flg = IPOPT_TS_TSONLY;
-			else if (strcmp(optarg, "tsandaddr") == 0)
-				rts->ipt_flg = IPOPT_TS_TSANDADDR;
-			else if (strcmp(optarg, "tsprespec") == 0)
-				rts->ipt_flg = IPOPT_TS_PRESPEC;
-			else
-				errx(EINVAL, "%s: %s", _("Invalid timestamp type"), optarg);
+#define TSSTREQ(lit) (!strncasecmp(optarg, lit, sizeof(lit)))
+			if      TSSTREQ("tsonly")
+				rts->ts_opt = IPOPT_TS_TSONLY;
+			else if TSSTREQ("tsandaddr")
+				rts->ts_opt = IPOPT_TS_TSANDADDR;
+			else if (TSSTREQ("tsprespec") || TSSTREQ("prespec"))
+				rts->ts_opt = IPOPT_TS_PRESPEC;
+			else { // 0(TSONLY) 1(TSANDADDR) 3(PRESPEC)
+				rts->ts_opt = str2ll(optarg, 0, 3, _("Invalid timestamp type"));
+				if (rts->ts_opt == 2) // 2: reserved
+					errx(EINVAL, "%s: %s", _("Invalid timestamp type"), optarg);
+			}
+#undef TSSTREQ
 			break;
 		/* IPv6 specific options */
 		case 'F':
@@ -470,6 +474,7 @@ int main(int argc, char **argv) {
 		.max_away     = -1,
 		.tmin         = LONG_MAX,
 		.pipesize     = -1,
+		.ts_opt       = -1,
 		.screen_width = USHRT_MAX,
 		.opt.resolve  = true,
 	};

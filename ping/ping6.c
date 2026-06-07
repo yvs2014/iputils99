@@ -504,7 +504,7 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	rts->subnet_router_anycast = get_subnet_anycast(SA6(&rts->whereto));
 	mtudisc_n_bind(rts, sock);
 	setsock_recverr(sock->fd, rts->ip6);
-	set_estimate_buf(rts, sock->fd, sizeof(struct ip6_hdr), 0, sizeof(struct icmp6_hdr));
+	set_estimate_buf(rts, sock->fd, sizeof(struct ip6_hdr), sizeof(struct icmp6_hdr));
 
 	size_t hlen = sizeof(struct ip6_hdr) + sizeof(struct icmp6_hdr);
 	headline(rts, hlen);

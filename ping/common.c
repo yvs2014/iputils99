@@ -133,7 +133,7 @@ void usage(int rc) {
 "  -4                 use IPv4\n"
 "  -b                 allow pinging broadcast\n"
 "  -R                 record route\n"
-"  -T <timestamp>     define timestamp, can be one of <tsonly|tsandaddr|tsprespec>\n"
+"  -T <timestamp>     define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC\n"
 "\n"
 "IPv6 options:\n"
 "  -6                 use IPv6\n"

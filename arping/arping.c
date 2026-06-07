@@ -339,7 +339,7 @@ static int main_loop(state_t *rts) {
 	int rc = 0;
 	for (continue_t run = CONTINUE; run;) {
 		// error
-		if (poll(fds, POLLFD_COUNT, -1) <= 0) {
+		if (poll(fds, ARRAY_LEN(fds), -1) <= 0) {
 			if (errno == EAGAIN)
 				continue;
 			if (errno)

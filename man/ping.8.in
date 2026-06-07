@@ -327,17 +327,24 @@ Set socket sndbuf\&. If not specified, it is selected to buffer not more than on
 only\&. Set the IP Time to Live\&.
 .RE
 .PP
-\fB\-T\fR \fItimestamp option\fR
+\fB\-T\fR \fItimestamp_option\fR
 .RS 4
-Set special IP timestamp options\&.
-\fItimestamp option\fR
-may be either
-\fItsonly\fR
-(only timestamps),
-\fItsandaddr\fR
-(timestamps and addresses) or
-\fItsprespec host1 [host2 [host3 [host4]]]\fR
-(timestamp prespecified hops)\&.
+Set IPv4 timestamp option. Use option names or their values: \fBTSONLY\fR(\fB0\fR), \fBTSANDADDR\fR(\fB1\fR), and \fB[TS]PRESPEC\fR(\fB3\fR)\&.
+.PP
+\fBTSONLY\fR
+.RS 4
+only timestamps
+.RE
+.PP
+\fBTSANDADDR\fR
+.RS 4
+timestamps and IP-addresses of intermediary hops
+.RE
+.PP
+\fBPRESPEC host1 [host2 [host3 [host4]]]\fR
+.RS 4
+timestamps only for pre-specified hosts
+.RE
 .RE
 .PP
 \fB\-U\fR

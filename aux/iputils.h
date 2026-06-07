@@ -24,6 +24,7 @@
 #define SA6_LEN (sizeof(struct sockaddr_in6))
 #define SA4_IN(sa) (SA4(sa)->sin_addr)
 #define SA6_IN(sa) (SA6(sa)->sin6_addr)
+#define SA(sa) ((struct sockaddr *)(sa))
 #define SA4ADDR(sa) (SA4_IN(sa).s_addr)
 //
 #define GETSOCKNAME(sock, addr, addrlen) do {      \

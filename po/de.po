@@ -139,8 +139,7 @@ msgid ""
 "  -4                 use IPv4\n"
 "  -b                 allow pinging broadcast\n"
 "  -R                 record route\n"
-"  -T <timestamp>     define timestamp, can be one of <tsonly|tsandaddr|"
-"tsprespec>\n"
+"  -T <timestamp>     define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC\n"
 "\n"
 "IPv6 options:\n"
 "  -6                 use IPv6\n"
@@ -194,7 +193,7 @@ msgstr ""
 "  -b                 Erlaube Broadcast-Pinging\n"
 "  -R                 Zeichne Route auf\n"
 "  -T <Zeitstempel>   Legt den Zeitstempel fest, kann eines der folgenden\n"
-"                     sein <tsonly|tsandaddr|tsprespec>\n"
+"                     sein TSONLY|TSANDADDR|TSPRESPEC\n"
 "\n"
 "IPv6-Optionen:\n"
 "  -6                 Verwende IPv6\n"
@@ -869,6 +868,18 @@ msgstr "FALSCHE PRÜFSUMME"
 #
 msgid "DIFFERENT ADDRESS"
 msgstr "ANDERE ADRESSE"
+
+#
+msgid "timestamp length is not a multiple of 4"
+msgstr ""
+
+#
+msgid "timestamp option"
+msgstr ""
+
+#
+msgid "No intermediate hops for TSPRESPEC"
+msgstr ""
 
 #
 msgid "record route"

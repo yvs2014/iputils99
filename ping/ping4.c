@@ -330,48 +330,39 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 	return false;
 }
 
-static inline void set_route_space(int fd) {
-	uint8_t space[3 + 4 * MAX_ROUTES + 1] = {0};	/* record route space */
-	space[0]                = IPOPT_NOP;
-	space[1 + IPOPT_OPTVAL] = IPOPT_RR;
-	space[1 + IPOPT_OLEN]   = sizeof(space) - 1;
-	space[1 + IPOPT_OFFSET] = IPOPT_MINOFF;
-	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, space, sizeof(space)) < 0)
-		err(errno, _("record route"));
-}
-
-static inline void set_ts_space(int fd, const route_t *route, uint8_t ipt_flg) {
-	uint8_t space[3 + 4 * MAX_ROUTES + 1] = {0};	/* record route space */
-	space[0] = IPOPT_TIMESTAMP;
-	space[1] = (ipt_flg == IPOPT_TS_TSONLY) ? MAX_IPOPTLEN : 36;
-	space[2] = 5;
-	space[3] = ipt_flg;
-	if (ipt_flg == IPOPT_TS_PRESPEC) {
-		space[1] = 4 + route->n * 8;
-		for (unsigned i = 0; i < route->n; i++) {
-			uint32_t *data = (uint32_t *)&space[4 + i * 8];
-			*data = route->data[i];
-		}
-	}
-	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, space, space[1]) < 0) {
-		space[3] = 2;
-		if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, space, space[1]) < 0)
-			err(errno, "ts option");
+static inline void set_opt_ts(int fd, struct ip_timestamp *opt, uint8_t flg, uint8_t len) {
+	if (len % 4)
+		err(EINVAL, _("timestamp length is not a multiple of 4"));
+	opt->ipt_code = IPOPT_TIMESTAMP,
+	opt->ipt_len  = len;
+	opt->ipt_ptr  = 5;
+	opt->ipt_flg  = flg;
+	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, opt->ipt_len) < 0) {
+//		opt->ipt_flg = 2; // ???
+//		if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, opt->ipt_len) < 0)
+		err(errno, _("timestamp option"));
 	}
 }
 
-static inline void set_src_space(int fd, const route_t *route, bool dontroute) {
-	uint8_t space[3 + 4 * MAX_ROUTES + 1] = {0};	/* record route space */
-	space[0]                = IPOPT_NOOP;
-	space[1 + IPOPT_OPTVAL] = dontroute ? IPOPT_SSRR : IPOPT_LSRR;
-	space[1 + IPOPT_OLEN]   = 3 + route->n * 4;
-	space[1 + IPOPT_OFFSET] = IPOPT_MINOFF;
-	for (unsigned i = 0; i < route->n; i++) {
-		uint32_t *data = (uint32_t *)&space[4 + i * 4];
-		*data = route->data[i];
-	}
-	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, space, 4 + route->n * 4) < 0)
+static inline void set_opt_rr(int fd, pre_noped_ipopt_t *opt) {
+	opt->nop = IPOPT_NOP;
+	opt->val = IPOPT_RR;
+	opt->len = sizeof(pre_noped_ipopt_t) - sizeof(((pre_noped_ipopt_t*)0)->nop); /*39*/
+	opt->off = IPOPT_MINOFF;
+	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, sizeof(*opt)) < 0)
 		err(errno, _("record route"));
+}
+
+static inline void set_opt_xrr(int fd, pre_noped_ipopt_t *opt, uint8_t val, uint8_t len) {
+	opt->nop = IPOPT_NOP;
+	opt->val = val;
+	opt->len = len;
+	opt->off = IPOPT_MINOFF;
+	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, len + 1) < 0)
+		err(errno, "%s: %s(%d)", _("record route"),
+			val == IPOPT_SSRR ? "IPOPT_SSRR" :
+			val == IPOPT_LSRR ? "IPOPT_LSRR" :
+			"?", val);
 }
 
 static void ping4_bpf_filter(const state_t *rts, const sock_t *sock) {
@@ -396,18 +387,17 @@ static void ping4_bpf_filter(const state_t *rts, const sock_t *sock) {
 	setsock_bpf(rts, sock, &fprog);
 }
 
-static inline void ping4_run_args(state_t *rts, const char *target,
-	int argc, struct addrinfo *ai, char *hname, size_t hlen)
+static inline const char *ping4_run_args(const char *target, bool hops, struct addrinfo *ai,
+	char *hname, size_t hlen, struct sockaddr_in *to, struct ip_timestamp *ipt)
 {
-	memset(SA4(&rts->whereto), 0, SA4_LEN);
-	SA4(&rts->whereto)->sin_family = AF_INET;
-	if (inet_aton(target, &SA4_IN(&rts->whereto)) == 1) {
-		rts->hostname = target;
-		if (argc == 1)
-			rts->opt.resolve = false;
-	} else {
+	const char *hostname = NULL; // return ref
+	memset(to, 0, SA4_LEN);
+	to->sin_family = AF_INET;
+	if (inet_aton(target, &to->sin_addr) == 1)
+		hostname = target;
+	else {
 		struct addrinfo *res = ai;
-		if (argc > 1) {
+		if (hops) {
 			const struct addrinfo hints = {
 				.ai_family = AF_INET,
 				.ai_flags  = AI_FLAGS,
@@ -421,30 +411,74 @@ static inline void ping4_run_args(state_t *rts, const char *target,
 		}
 		if (!res)
 			errx(EXIT_FAILURE, "%s", "getaddrinfo()");
-		memcpy(&rts->whereto, res->ai_addr, SA4_LEN);
+		memcpy(to, res->ai_addr, SA4_LEN);
 		/*
 		 * On certain network setup getaddrinfo() can return empty
 		 * ai_canonname. Instead of printing nothing in "PING"
 		 * line use the target.
 		 */
 		strncpy(hname, res->ai_canonname ? res->ai_canonname : target, hlen - 1);
-		rts->hostname = hname;
-		if (argc > 1)
+		hostname = hname;
+		if (hops)
 			freeaddrinfo(res);
 	}
-	if (argc > 1) {
-		if (rts->route->n < MAX_ROUTES)
-			rts->route->data[rts->route->n++] = SA4ADDR(&rts->whereto);
-		else
-			errx(EINVAL, "%s, %s=%d", _("Too many intermediate hops"),
-				_("max"), MAX_ROUTES);
+	if (hops && ipt) {
+		if ((ipt->ipt_len * 2) < (ARRAY_LEN(ipt->data) - 1)) {
+			ipt->data[ipt->ipt_len * 2] = to->sin_addr.s_addr;
+			ipt->ipt_len++;
+		} else
+			errx(EINVAL, "%s, %s=%zd", _("Too many intermediate hops"),
+				_("max"), ARRAY_LEN(ipt->data) / 2);
 	}
+	return hostname;
 }
 
-/* Return >= 0: exit with this code, < 0: go on to next addrinfo result */
-int ping4_run(state_t *rts, int argc, char **argv,
-		struct addrinfo *ai, const sock_t *sock)
-{
+static int probe_dst4(state_t *rts, struct sockaddr_in dst, int sock_fd, bool next) {
+	int fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (fd < 0)
+		err(errno, "socket");
+	if (rts->device) {
+//		struct in_pktinfo ipi = { .ipi_ifindex = if_name2index(rts->device) };
+//		if ((setsockopt(fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
+//		    (setsockopt(sock_fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0))
+//			err(errno, "setsockopt(%s, %s)", "IP_PKTINFO", rts->device);
+		if ((bindtodev(fd, rts->device) < 0) || (bindtodev(sock_fd, rts->device) < 0))
+			err(errno, "%s", rts->device);
+	}
+	sock_settos(fd, rts->qos, rts->ip6);
+	sock_setmark(rts, fd);
+	dst.sin_port = htons(1025);
+	if (rts->ipopt.ipt && rts->ipopt.ipt->ipt_len)
+		dst.sin_addr.s_addr = rts->ipopt.ipt->data[0]; // note: `dst' is a copy
+	if (connect(fd, &dst, SA4_LEN) >= 0)
+		return fd;
+	//
+	switch (errno) {
+	case EACCES: {
+#define WANT_BRD _("Do you want to ping broadcast? Then -b. If not, check your local firewall rules")
+		if (!rts->opt.broadcast)
+			errx(EINVAL, WANT_BRD);
+		warnx("%s: %s", _WARN, _("Pinging broadcast address"));
+		int opt = rts->opt.broadcast;
+		if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
+			err(errno, "%s", _("Cannot set broadcasting"));
+		if (connect(fd, &dst, SA4_LEN) >= 0)
+			return fd;
+	}	break;
+	case EHOSTUNREACH:
+	case ENETUNREACH:
+		if (next) {
+			close(fd);
+			return -1;
+		}
+		break;
+	}
+	//
+	err(errno, "connect");
+}
+
+// take next addrinfo if `rc' < 0, otherwise exit with `rc'
+int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const sock_t *sock) {
 	fnset_t ping4_func_set = {
 		.bpf_filter     = ping4_bpf_filter,
 		.send_probe     = ping4_send_probe,
@@ -459,8 +493,8 @@ int ping4_run(state_t *rts, int argc, char **argv,
 		.addr_equal  = addr4equal,
 		.eerr_extra  = icmp4_ee_extra,
 	};
-	route_t route4 = {0};
-	rts->route = &route4;
+	uint8_t ipopt_space[MAX_IPOPTLEN] = {0};
+	rts->ipopt.u8 = ipopt_space;
 	rts->ip6 = false;
 	SA4(&rts->source)->sin_family = AF_INET;
 	//
@@ -470,79 +504,43 @@ int ping4_run(state_t *rts, int argc, char **argv,
 		if (validate_hostlen(*argv, false))
 			errno = 0;
 		else {
-			ping4_run_args(rts, *argv, argc, ai, hnamebuf, sizeof(hnamebuf));
+			const char *target = ping4_run_args(*argv, argc > 1, ai, hnamebuf, sizeof(hnamebuf),
+				(struct sockaddr_in *)&rts->whereto, rts->ipopt.ipt);
+			if (target)
+				rts->hostname = target;
+			if ((argc == 1) && (target == *argv))
+				rts->opt.resolve = false;
 			arg_cnt++;
 		}
 	}
-
+	if (rts->ipopt.ipt->ipt_len) { // counter -> size (header + data)
+		rts->ipopt.ipt->ipt_len *= 2 * sizeof(rts->ipopt.ipt->data[0]); // *= 8
+		rts->ipopt.ipt->ipt_len += 4;
+	}
 	if (arg_cnt > 1) {
 		if (rts->opt.rroute)
 			usage(EINVAL);
-		else if (rts->opt.timestamp) {
-			if (rts->ipt_flg != IPOPT_TS_PRESPEC)
-				errx(EINVAL, "%s", _("Only 'tsprespec' is allowed with intermediate hops"));
-#define MAX_TS_ROUTES ((MAX_ROUTES + 1) / 2) /* 5 */
-			if (argc > MAX_TS_ROUTES)
-				errx(EINVAL, "%s, %s=%d", _("Too many intermediate TS hops"),
-					_("max"), MAX_TS_ROUTES - 1);
-		} else
+		else if (rts->ts_opt < 0)
 			rts->opt.sourceroute = true;
-	}
+		else if (rts->ts_opt != IPOPT_TS_PRESPEC)
+			errx(EINVAL, "%s", _("Only TSPRESPEC is allowed with intermediate hops"));
+		else if ((size_t)argc > ARRAY_LEN(((struct ip_timestamp *)0)->data))
+			errx(EINVAL, "%s: %d (%s=%zd)", _("Too many intermediate TS hops"), argc,
+				_("max"), ARRAY_LEN(((struct ip_timestamp *)0)->data) - 1);
+	} else if (rts->ts_opt == IPOPT_TS_PRESPEC)
+		errx(EINVAL, "%s", _("No intermediate hops for TSPRESPEC"));
 
 	if (!SA4ADDR(&rts->source)) {
-		int probe_fd = socket(AF_INET, SOCK_DGRAM, 0);
-		if (probe_fd < 0)
-			err(errno, "socket");
-		if (rts->device) {
-//			struct in_pktinfo ipi = { .ipi_ifindex = if_name2index(rts->device) };
-//			if ((setsockopt(probe_fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
-//			    (setsockopt(sock->fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0))
-//				err(errno, "setsockopt(%s, %s)", "IP_PKTINFO", rts->device);
-			if ((bindtodev(probe_fd, rts->device) < 0) ||
-			    (bindtodev(sock->fd, rts->device) < 0))
-				err(errno, "%s", rts->device);
-		}
-		sock_settos(probe_fd, rts->qos, rts->ip6);
-		sock_setmark(rts, probe_fd);
-
-		SA4(&rts->whereto)->sin_port = htons(1025);
-		if (rts->route->n)
-			SA4ADDR(&rts->whereto) = rts->route->data[0];
-		if (connect(probe_fd, SA(&rts->whereto), SA4_LEN) < 0) {
-			switch (errno) {
-			case EACCES:
-				if (!rts->opt.broadcast)
-					errx(EINVAL,
-_("Do you want to ping broadcast? Then -b. If not, check your local firewall rules"));
-				warnx("%s: %s", _WARN, _("Pinging broadcast address"));
-				int opt = rts->opt.broadcast;
-				if (setsockopt(probe_fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
-					err(errno, "%s", _("Cannot set broadcasting"));
-				if (connect(probe_fd, SA(&rts->whereto), SA4_LEN) < 0)
-					err(errno, "connect");
-				break;
-			case EHOSTUNREACH:
-			case ENETUNREACH:
-				if (ai->ai_next) {
-					close(probe_fd);
-					return -1;
-				}
-				err(errno, "connect");
-				break;
-			default:
-				err(errno, "connect");
-				break;
-			}
-		}
-		GETSOCKNAME(probe_fd, SA(&rts->source), SA4_LEN);
+		int fd = probe_dst4(rts, *(struct sockaddr_in*)&rts->whereto, sock->fd, ai->ai_next);
+		if (fd < 0)
+			return -1;
+		GETSOCKNAME(fd, SA(&rts->source), SA4_LEN);
 		SA4(&rts->source)->sin_port = 0;
-		close(probe_fd);
-
+		close(fd);
 		if (rts->device && !nl_name2ndx(rts->device)) {
 			warnx("%s: %s: %s", _WARN, rts->device, WARN_NOSRCDEV);
 			rts->unreldev = true;
 		}
-
 	} else if (rts->device && (bindtodev(sock->fd, rts->device) < 0)) {
 		if (!errno) errno = ENODEV;
 			err(errno, NETDEV_FMT, rts->device);
@@ -573,17 +571,6 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 			warn("%s: setsockopt(%s)", _WARN, "IP_RETOPTS");
 	}
 
-	int optlen = (rts->opt.rroute || rts->opt.timestamp || rts->opt.sourceroute) ?
-		MAX_IPOPTLEN : 0;
-	if (optlen) {
-		if (rts->opt.rroute)
-			set_route_space(sock->fd);
-		if (rts->opt.timestamp)
-			set_ts_space(sock->fd, rts->route, rts->ipt_flg);
-		if (rts->opt.sourceroute)
-			set_src_space(sock->fd, rts->route, rts->opt.so_dontroute);
-	}
-
 	if (rts->opt.broadcast) {
 		int opt = 1;
 		if (setsockopt(sock->fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
@@ -600,7 +587,24 @@ _("Do you want to ping broadcast? Then -b. If not, check your local firewall rul
 
 	mtudisc_n_bind(rts, sock);
 	setsock_recverr(sock->fd, rts->ip6);
-	set_estimate_buf(rts, sock->fd, sizeof(struct iphdr), optlen, sizeof(struct icmphdr));
+	//
+	int optlen = ((rts->ts_opt >= 0) || rts->opt.rroute || rts->opt.sourceroute) ?
+		MAX_IPOPTLEN : 0;
+	if (optlen) { // rr, ts, etc. - exclusive?
+		if (rts->ts_opt >= 0)
+			set_opt_ts(sock->fd, rts->ipopt.ipt, rts->ts_opt,
+				(rts->ts_opt == IPOPT_TS_PRESPEC) ? rts->ipopt.ipt->ipt_len :
+				(rts->ts_opt == IPOPT_TS_TSONLY)  ? MAX_IPOPTLEN            :
+				(MAX_IPOPTLEN - 4));
+		else if (rts->opt.rroute)
+			set_opt_rr(sock->fd, rts->ipopt.ipo);
+		else if (rts->opt.sourceroute)
+			set_opt_xrr(sock->fd, rts->ipopt.ipo,
+				rts->opt.so_dontroute ? IPOPT_SSRR : IPOPT_LSRR,
+				rts->ipopt.ipt->ipt_len - 4 - 1);
+	}
+	//
+	set_estimate_buf(rts, sock->fd, sizeof(struct iphdr) + optlen, sizeof(struct icmphdr));
 
 	size_t hlen = sizeof(struct iphdr) + sizeof(struct icmphdr);
 	headline(rts, hlen + optlen);

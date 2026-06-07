@@ -121,7 +121,7 @@ static void ipopt_ts(const uint8_t *data, int len, bool resolve) {
 	uint8_t flags = *data++;
 	bool not_tsonly = ((flags & 0xF) != IPOPT_TS_TSONLY);
 	uint32_t stdtime = 0, nonstdtime = 0;
-	printf("\nTS: ");
+	printf("\nTS:");
 	for (; len > 0; len -= 4, data += 4) {
 		if (not_tsonly) {
 			puts_addr(*(in_addr_t*)data, resolve);

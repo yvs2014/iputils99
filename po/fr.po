@@ -140,8 +140,7 @@ msgid ""
 "  -4                 use IPv4\n"
 "  -b                 allow pinging broadcast\n"
 "  -R                 record route\n"
-"  -T <timestamp>     define timestamp, can be one of <tsonly|tsandaddr|"
-"tsprespec>\n"
+"  -T <timestamp>     define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC\n"
 "\n"
 "IPv6 options:\n"
 "  -6                 use IPv6\n"
@@ -193,9 +192,8 @@ msgstr ""
 "   -4                utiliser IPv4\n"
 "   -b                autoriser la diffusion du ping\n"
 "   -R                enregistrer la route\n"
-"   -T <timestamp>    définit le timestamp, peut être l'un des "
-"<tsonly|tsandaddr|tsprespec>\n"
-"\t\t\t\t\t \n"
+"   -T <timestamp>    définit le timestamp, peut être l'un des TSONLY|TSANDADDR|TSPRESPEC\n"
+"\n"
 "Options IPv6 :       \n"
 "   -6                utiliser IPv6\n"
 "   -F <flowlabel>    définit l'étiquette du flux, la valeur par défaut est "
@@ -871,6 +869,18 @@ msgstr "MAUVAISE SOMME DE CONTRÔLE"
 #
 msgid "DIFFERENT ADDRESS"
 msgstr "ADRESSE DIFFÉRENTE"
+
+#
+msgid "timestamp length is not a multiple of 4"
+msgstr ""
+
+#
+msgid "timestamp option"
+msgstr ""
+
+#
+msgid "No intermediate hops for TSPRESPEC"
+msgstr ""
 
 #
 msgid "record route"

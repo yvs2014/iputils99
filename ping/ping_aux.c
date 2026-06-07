@@ -202,13 +202,11 @@ void mtudisc_n_bind(state_t *rts, const sock_t *sock) {
 
 /* Estimate memory eaten by single packet. It is rough estimate.
  * Actually, for small datalen's it depends on kernel side a lot. */
-void set_estimate_buf(state_t *rts, int fd,
-	size_t iplen, size_t extra, size_t icmplen)
-{
+void set_estimate_buf(state_t *rts, int fd, size_t iphlen, size_t icmphlen) {
 	if (!rts->sndbuf)
 /* Set socket buffers, "alloc" is an estimate of memory taken by single packet */
-		rts->sndbuf = ((icmplen + rts->datalen + 511) / 512) *
-			(iplen + extra + 2 * icmplen + DEFIPPAYLOAD + 160);
+		rts->sndbuf = ((icmphlen + rts->datalen + 511) / 512) *
+			(iphlen + 2 * icmphlen + DEFIPPAYLOAD + 160);
 	if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &rts->sndbuf, sizeof(rts->sndbuf)) < 0)
 		warn("setsockopt(%s)", "SO_SNDBUF");
 	//

@@ -138,8 +138,7 @@ msgid ""
 "  -4                 use IPv4\n"
 "  -b                 allow pinging broadcast\n"
 "  -R                 record route\n"
-"  -T <timestamp>     define timestamp, can be one of <tsonly|tsandaddr|"
-"tsprespec>\n"
+"  -T <timestamp>     define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC\n"
 "\n"
 "IPv6 options:\n"
 "  -6                 use IPv6\n"
@@ -183,7 +182,7 @@ msgstr ""
 "  -4                 使用 IPv4\n"
 "  -b                 允许 ping 广播\n"
 "  -R                 记录路线\n"
-"  -T <timestamp>     定义时间戳，可以是 <tsonly|tsandaddr|tsprespec> 之一\n"
+"  -T <timestamp>     定义时间戳，可以是 TSONLY|TSANDADDR|TSPRESPEC 之一\n"
 "\n"
 "IPv6 选项：\n"
 "  -6                 使用 IPv6\n"
@@ -852,6 +851,18 @@ msgstr "CHECKSUM 错误"
 #
 msgid "DIFFERENT ADDRESS"
 msgstr "地址不同"
+
+#
+msgid "timestamp length is not a multiple of 4"
+msgstr ""
+
+#
+msgid "timestamp option"
+msgstr ""
+
+#
+msgid "No intermediate hops for TSPRESPEC"
+msgstr ""
 
 #
 msgid "record route"

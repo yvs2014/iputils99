@@ -137,8 +137,7 @@ msgid ""
 "  -4                 use IPv4\n"
 "  -b                 allow pinging broadcast\n"
 "  -R                 record route\n"
-"  -T <timestamp>     define timestamp, can be one of <tsonly|tsandaddr|"
-"tsprespec>\n"
+"  -T <timestamp>     define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC\n"
 "\n"
 "IPv6 options:\n"
 "  -6                 use IPv6\n"
@@ -183,7 +182,7 @@ msgstr ""
 "  -b                salli ping-yleislähetyksen\n"
 "  -R                tallenna reitti\n"
 "  -T <timestamp>    määrittää aikaleiman, voi olla jokin seuraavista:\n"
-"                    <tsonly|tsandaddr|tsprespec>\n"
+"                    TSONLY|TSANDADDR|TSPRESPEC\n"
 "\n"
 "IPv6-vaihtoehdot:\n"
 "  -6                käyttää IPv6:ta\n"
@@ -857,6 +856,18 @@ msgstr "Kelvoton tarkistussumma"
 #
 msgid "DIFFERENT ADDRESS"
 msgstr "Eri osoite"
+
+#
+msgid "timestamp length is not a multiple of 4"
+msgstr ""
+
+#
+msgid "timestamp option"
+msgstr ""
+
+#
+msgid "No intermediate hops for TSPRESPEC"
+msgstr ""
 
 #
 msgid "record route"
