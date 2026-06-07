@@ -11,7 +11,7 @@ project('iputils99', 'c',
 	meson_version: '>=0.55',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
-			check: false).stdout().strip() : '20260606',
+			check: false).stdout().strip() : '20260607',
 )
 
 add_project_arguments('-D_GNU_SOURCE', language: 'c')
@@ -190,8 +190,8 @@ aux = 'aux'
 aux_src     = []
 perm_src    = []
 iface_src   = []
-subdir(aux)
-subfoldered = ['ping']
+subdir(aux) # add sources to aux_src, perm_src, and iface_src
+subfoldered = ['ping', 'arping']
 iface_tools = ['ping', 'arping']
 
 app = {}

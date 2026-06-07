@@ -9,7 +9,7 @@
  * Authors:	Alexey Kuznetsov, <kuznet@ms2.inr.ac.ru>
  */
 
-// local changes: yvs, 2025
+// local changes by yvs@
 
 #include <stdbool.h>
 #include <stdio.h>

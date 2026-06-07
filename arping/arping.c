@@ -10,26 +10,25 @@
  * 		YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
  */
 
-#include <arpa/inet.h>
-#include <linux/if_ether.h>
-#include <linux/if_packet.h>
-#include <net/if_arp.h>
-#include <net/if.h>
+// local changes by yvs@
+
 #include <poll.h>
 #include <signal.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <stdbool.h>
 #include <limits.h>
-#include <sys/signalfd.h>
-#include <sys/timerfd.h>
 #include <err.h>
 #include <errno.h>
 #include <assert.h>
+#include <sys/signalfd.h>
+#include <sys/timerfd.h>
+#include <net/if.h>
+#include <net/ethernet.h>
+#include <arpa/inet.h>
 
+#include "processing.h"
 #include "iputils.h"
 #include "str2num.h"
 #include "nbind.h"
@@ -40,18 +39,9 @@
 #include "perm.h"
 #endif
 
-/*
- * As of July 2021 AX.25 PID values are not currently defined in any
- * userspace headers.
- */
-#ifndef AX25_P_IP
-#define AX25_P_IP	0xcc	/* ARPA Internet Protocol */
-#endif
-
 #define ARPING_FEATURES	(FEAT_CAP | FEAT_IDN | FEAT_NLS | FEAT_ALTNAME)
 
 #define SLL(sa) ((struct sockaddr_ll *)(sa))
-#define SLL_LEN (sizeof(struct sockaddr_ll))
 
 typedef struct arpdev {
 	char name[IF_NAMESIZE];
@@ -60,24 +50,6 @@ typedef struct arpdev {
 	struct ifaddrs *ifa_list;
 	const struct ifaddrs *ifa;
 } arpdev_t;
-
-typedef struct arping_opt_s {
-	bool dad;
-	bool quiet;
-	bool advert;
-	bool quit; // on reply
-	bool unicast;
-	bool broadcast;
-	bool unsolicited;
-} arpopt_t;
-
-typedef struct counter {
-	int sent;
-	int recv;
-	int brd_sent;
-	int brd_recv;
-	int req_recv;
-} counter_t;
 
 typedef struct run_state {
 	char *source;
@@ -88,23 +60,12 @@ typedef struct run_state {
 	struct in_addr src, dst;
 	struct sockaddr_storage from, to;
 	struct timespec start, last;
-	int count;
-	int timeout;
 	unsigned interval;
 	counter_t stat;
 	arpopt_t opt;
 } state_t;
 
-
-/*
- * All includes, definitions, struct declarations, and global variables are
- * above.  After this comment all you can find is functions.
- */
-
-static inline size_t sll_len(size_t halen) {
-	size_t len = offsetof(struct sockaddr_ll, sll_addr) + halen;
-	return (len < SLL_LEN) ? SLL_LEN : len;
-}
+//
 
 NORETURN static void usage(int rc) {
 	drop_priv();
@@ -125,41 +86,6 @@ NORETURN static void usage(int rc) {
 	usage_common(rc, options, "TARGET", !MORE);
 }
 
-static inline bool send_pack(const struct sockaddr_ll *from, const struct sockaddr_ll *to,
-	const struct in_addr *src, const struct in_addr *dst, int sock, bool advert)
-{
-	uint8_t buf[256] = {0};
-	struct arphdr *ah = (struct arphdr *)buf;
-	ah->ar_hrd = htons(from->sll_hatype);
-	if (ah->ar_hrd == htons(ARPHRD_FDDI))
-		ah->ar_hrd = htons(ARPHRD_ETHER);
-	/*
-	 * Exceptions everywhere. AX.25 uses the AX.25 PID value not the
-	 * DIX code for the protocol. Make these device structure fields.
-	 */
-	ah->ar_pro =
-		((ah->ar_hrd == htons(ARPHRD_AX25)) || (ah->ar_hrd == htons(ARPHRD_NETROM))) ?
-			htons(AX25_P_IP) : htons(ETH_P_IP);
-	ah->ar_hln = from->sll_halen;
-	ah->ar_pln = 4;
-	ah->ar_op  = advert ? htons(ARPOP_REPLY) : htons(ARPOP_REQUEST);
-
-	uint8_t *p = (uint8_t *)(ah + 1);
-	memcpy(p, &from->sll_addr, ah->ar_hln);
-	p += from->sll_halen;
-
-	memcpy(p, src, 4);
-	p += 4;
-
-	memcpy(p, advert ? &from->sll_addr : &to->sll_addr, ah->ar_hln);
-	p += ah->ar_hln;
-
-	memcpy(p, dst, 4);
-	p += 4;
-	int sent = sendto(sock, buf, p - buf, 0, SA(to), sll_len(ah->ar_hln));
-	return (sent == (p - buf));
-}
-
 static inline void update_stat(struct timespec *last, int *sent, int *brd_sent) {
 	if (last)
 		clock_gettime(CLOCK_MONOTONIC, last);
@@ -170,8 +96,7 @@ static inline void update_stat(struct timespec *last, int *sent, int *brd_sent) 
 }
 
 static inline void send_n_stat(state_t *rts) {
-	if (send_pack(SLL(&rts->from), SLL(&rts->to), &rts->src, &rts->dst,
-			rts->sock, rts->opt.advert))
+	if (send_pack(SLL(&rts->from), SLL(&rts->to), rts->src, rts->dst, rts->sock, rts->opt.advert))
 		update_stat(&rts->last, &rts->stat.sent, rts->opt.unicast ? NULL : &rts->stat.brd_sent);
 }
 
@@ -193,127 +118,6 @@ static void resume(const counter_t *stat) {
 	}
 	putchar('\n');
 	fflush(stdout);
-}
-
-static void print_hex(unsigned char *p, int len) {
-	for (int i = 0; i < len; i++) {
-		printf("%02X", p[i]);
-		if (i != (len - 1))
-			printf(":");
-	}
-}
-
-static inline bool final_pack(state_t *rts,
-	unsigned char *buf, ssize_t len, bool broadcast, uint16_t sll_hatype)
-{
-	struct arphdr *ah = (struct arphdr *)buf;
-	/* Only these types are recognised */
-	if (ah->ar_op != htons(ARPOP_REQUEST) &&
-	    ah->ar_op != htons(ARPOP_REPLY))
-		return false;
-
-	/* ARPHRD check and this darned FDDI hack here :-( */
-	if ((ah->ar_hrd != htons(sll_hatype)) &&
-	   ((sll_hatype != ARPHRD_FDDI) || (ah->ar_hrd != htons(ARPHRD_ETHER))))
-		return false;
-
-	/*
-	 * Protocol must be IP - but exceptions everywhere. AX.25 and NETROM
-	 * use the AX.25 PID value not the DIX code for the protocol.
-	 */
-	if ((ah->ar_hrd == htons(ARPHRD_AX25)) ||
-	    (ah->ar_hrd == htons(ARPHRD_NETROM))) {
-		if (ah->ar_pro != htons(AX25_P_IP))
-			return false;
-	} else if (ah->ar_pro != htons(ETH_P_IP))
-		return false;
-
-	if (ah->ar_pln != 4)
-		return false;
-	if (ah->ar_hln != SLL(&rts->from)->sll_halen)
-		return false;
-	if (len < (ssize_t) sizeof(*ah) + 2 * (4 + ah->ar_hln))
-		return false;
-
-	unsigned char *p = (unsigned char *)(ah + 1);
-	struct in_addr src_ip;
-	memcpy(&src_ip, p + ah->ar_hln, 4);
-	struct in_addr dst_ip;
-	memcpy(&dst_ip, p + ah->ar_hln + 4 + ah->ar_hln, 4);
-
-	if (!rts->opt.dad) {
-		if (src_ip.s_addr != rts->dst.s_addr)
-			return false;
-		if (rts->src.s_addr != dst_ip.s_addr)
-			return false;
-		if (memcmp(p + ah->ar_hln + 4, SLL(&rts->from)->sll_addr, ah->ar_hln))
-			return false;
-	} else {
-		/*
-		 * DAD packet was:
-		 * src_ip = 0 (or some src)
-		 * src_hw = ME
-		 * dst_ip = tested address
-		 * dst_hw = <unspec>
-		 *
-		 * We fail, if receive request/reply with:
-		 * src_ip = tested_address
-		 * src_hw != ME
-		 * if src_ip in request was not zero, check
-		 * also that it matches to dst_ip, otherwise
-		 * dst_ip/dst_hw do not matter.
-		 */
-		if (src_ip.s_addr != rts->dst.s_addr)
-			return false;
-		if (!memcmp(p, SLL(&rts->from)->sll_addr, SLL(&rts->from)->sll_halen))
-			return false;
-		if (rts->src.s_addr && (rts->src.s_addr != dst_ip.s_addr))
-			return false;
-	}
-	if (!rts->opt.quiet) {
-		bool printed = false;
-		printf("%s %s %s", broadcast ? _("Broadcast") : _("Unicast"),
-			_("from"), inet_ntoa(src_ip));
-		printf(" [");
-		print_hex(p, ah->ar_hln);
-		printf("]");
-		if (dst_ip.s_addr != rts->src.s_addr) {
-			printf(" %s %s", _("for"), inet_ntoa(dst_ip));
-			printed = true;
-		}
-		if (memcmp(p + ah->ar_hln + 4, SLL(&rts->from), ah->ar_hln)) {
-			if (!printed)
-				printf(" %s", _("for"));
-			printf(" [");
-			print_hex(p + ah->ar_hln + 4, ah->ar_hln);
-			printf("]");
-		}
-		if (rts->last.tv_sec) {
-			struct timespec ts = {0}, sub = {0};
-			if (!clock_gettime(CLOCK_MONOTONIC, &ts)) {
-				timespecsub(&ts, &rts->last, &sub);
-				double ms = sub.tv_sec * 1000 + sub.tv_nsec / 1000000.;
-				printf(" " TMMS, ms, _("ms"));
-			}
-		} else
-			printf(" %s?", _("UNSOLICITED"));
-		putchar('\n');
-		fflush(stdout);
-	}
-	rts->stat.recv++;
-	if (rts->timeout && (rts->stat.recv == rts->count))
-		return true;
-	if (broadcast)
-		rts->stat.brd_recv++;
-	if (ah->ar_op == htons(ARPOP_REQUEST))
-		rts->stat.req_recv++;
-	if (rts->opt.quit || (!rts->count && (rts->stat.recv == rts->stat.sent)))
-		return true;
-	if (!rts->opt.broadcast) {
-		memcpy(SLL(&rts->to)->sll_addr, p, SLL(&rts->from)->sll_halen);
-		rts->opt.unicast = true;
-	}
-	return false;
 }
 
 static int oif2ndx(const struct nlmsghdr *nh, const char *data UNUSED) {
@@ -351,7 +155,7 @@ static void guess_device(int af, struct in_addr dst, arpdev_t *dev) {
 		err(errno ? errno : EXIT_FAILURE, "if_indextoname(%d)", ndx);
 }
 
-/* Common check for ifa->ifa_flags */
+// common checks for `ifa_flags'
 static bool valid_flags(unsigned flags, const char *name, bool quiet, bool dad) {
 	if (!(flags & IFF_UP)) {
 		if (name && name[0]) {
@@ -465,8 +269,8 @@ static void find_brd_addr(arpdev_t *dev, struct sockaddr_ll *he, bool quiet) {
 }
 
 #define SET_PFD(typ, nam, val) {     \
-	pfds[typ].fd = (val);        \
-	if (pfds[typ].fd < 0) {      \
+	fds[typ].fd = (val);         \
+	if (fds[typ].fd < 0) {       \
 		warn("%s", (nam));   \
 		return EXIT_FAILURE; \
 	}                            \
@@ -476,13 +280,22 @@ static void find_brd_addr(arpdev_t *dev, struct sockaddr_ll *he, bool quiet) {
 		.it_interval.tv_sec  = (val),               \
 		.it_value.tv_sec     = (val),               \
 	};                                                  \
-	if (timerfd_settime(pfds[typ].fd, 0, &var, NULL)) { \
+	if (timerfd_settime(fds[typ].fd, 0, &var, NULL)) {  \
 		warn("%s", "timerfd_settime()");            \
 		return EXIT_FAILURE;                        \
 	}                                                   \
-	pfds[typ].events = ev_mask;                         \
+	fds[typ].events = ev_mask;                          \
 
-static int loop(state_t *rts) {
+static inline bool rc_unsol(const counter_t *stat, const arpopt_t *opt, bool got) {
+	bool all_uni = (stat->recv == stat->sent);
+	bool all_brd = (stat->recv == stat->brd_sent);
+	return // note: DAD stands for Duplicate Address Detection
+		(opt->dad && opt->quit)               ? all_brd :
+		(stat->timeout && (stat->count <= 0)) ? !got    :
+		!all_uni;
+}
+
+static int main_loop(state_t *rts) {
 	enum {
 		POLLFD_SIGNAL = 0,
 		POLLFD_TIMER,
@@ -490,7 +303,7 @@ static int loop(state_t *rts) {
 		POLLFD_SOCKET,
 		POLLFD_COUNT
 	};
-	struct pollfd pfds[POLLFD_COUNT] = {0};
+	struct pollfd fds[POLLFD_COUNT] = {0};
 	const short ev_mask = POLLIN | POLLERR | POLLHUP;
 	//
 	// signal
@@ -504,7 +317,7 @@ static int loop(state_t *rts) {
 		return EXIT_FAILURE;
 	}
 	SET_PFD(POLLFD_SIGNAL, "signalfd()", signalfd(-1, &mask, 0));
-	pfds[POLLFD_SIGNAL].events = ev_mask;
+	fds[POLLFD_SIGNAL].events = ev_mask;
 	//
 	// interval
 	SET_PFD(POLLFD_TIMER, "timerfd_create()", timerfd_create(CLOCK_MONOTONIC, 0));
@@ -512,11 +325,11 @@ static int loop(state_t *rts) {
 	//
 	// timeout
 	SET_PFD(POLLFD_TIMEOUT, "timerfd_create()", timerfd_create(CLOCK_MONOTONIC, 0));
-	SET_TFD(POLLFD_TIMEOUT, it_timeout, rts->timeout);
+	SET_TFD(POLLFD_TIMEOUT, it_timeout, rts->stat.timeout);
 	//
 	// socket
 	SET_PFD(POLLFD_SOCKET, "SOCKET", rts->sock);
-	pfds[POLLFD_SOCKET].events = ev_mask;
+	fds[POLLFD_SOCKET].events = ev_mask;
 	//
 
 	send_n_stat(rts);
@@ -524,102 +337,101 @@ static int loop(state_t *rts) {
 	unsigned char packet[4096];
 	uint64_t total_expires = 1;
 	int rc = 0;
-	for (bool run = true; run;) {
-		if (poll(pfds, POLLFD_COUNT, -1) <= 0) {
+	for (continue_t run = CONTINUE; run;) {
+		// error
+		if (poll(fds, POLLFD_COUNT, -1) <= 0) {
 			if (errno == EAGAIN)
 				continue;
 			if (errno)
 				warn("%s", "poll()");
-			run = false;
-			continue;
+			break;
 		}
-
-		for (size_t i = 0; i < POLLFD_COUNT; i++) {
-			if (!pfds[i].revents)
-				continue;
+		// okay
+		for (size_t i = 0; i < ARRAY_LEN(fds); i++) {
+			if (!fds[i].revents)
+				continue; // internal loop
 			switch (i) {
 			case POLLFD_SIGNAL: {
 				struct signalfd_siginfo sigval = {0};
-				if (read(pfds[i].fd, &sigval, sizeof(sigval)) != sizeof(sigval)) {
+				if (read(fds[i].fd, &sigval, sizeof(sigval)) != sizeof(sigval)) {
 					if (errno)
 						warn("read(%s)", "signalfd");
 					else
 						warnx("read(%s)", "signalfd");
-					continue;
+					continue; // internal loop
 				}
 				if ((sigval.ssi_signo == SIGINT ) ||
 				    (sigval.ssi_signo == SIGQUIT) ||
 				    (sigval.ssi_signo == SIGTERM))
-					run = false;
+					run = QUIT;
 				else
 					warn("unexpected signal: %d", sigval.ssi_signo);
 			}	break;
 			case POLLFD_TIMER: {
 				uint64_t exp = 0;
-				if (read(pfds[i].fd, &exp, sizeof(exp)) != sizeof(exp)) {
+				if (read(fds[i].fd, &exp, sizeof(exp)) != sizeof(exp)) {
 					if (errno)
 						warn("read(%s)", "timerfd");
 					else
 						warnx("read(%s)", "timerfd");
-					continue;
+					continue; // internal loop
 				}
 				total_expires += exp;
-				if ((0 < rts->count) && ((uint64_t)rts->count < total_expires)) {
-					run = false;
-					continue;
+				if ((0 < rts->stat.count) && ((uint64_t)rts->stat.count < total_expires)) {
+					run = QUIT;
+					continue; // internal loop
 				}
-
 				send_n_stat(rts);
 			}	break;
 			case POLLFD_TIMEOUT:
-				run = false;
+				run = QUIT;
 				break;
 			case POLLFD_SOCKET: {
-				struct sockaddr_storage from = {0};
-				socklen_t socklen = sizeof(from);
-				ssize_t size = recvfrom(pfds[i].fd, packet, sizeof(packet),
-					0, SA(&from), &socklen);
+				struct sockaddr_storage got = {0};
+				socklen_t socklen = sizeof(got);
+				ssize_t size = recvfrom(fds[i].fd, packet, sizeof(packet),
+					0, SA(&got), &socklen);
 				if (size < 0) {
 					warn("%s", "recvfrom()");
 					if (errno == ENETDOWN)
-						rc = 2;
-					continue;
+						rc = errno;
+					continue; // internal loop
 				}
-				bool broadcast = false;
-				switch (SLL(&from)->sll_pkttype) {
+				bool broadcasted = false;
+				switch (SLL(&got)->sll_pkttype) {
 					case PACKET_HOST:
 						break;
 					case PACKET_BROADCAST:
 					case PACKET_MULTICAST:
-						broadcast = true;
+						broadcasted = true;
 						break;
 					default: // Filter out wild packets
-						continue;
+						continue; // internal loop
 				}
-				run = !final_pack(rts, packet, size, broadcast, SLL(&from)->sll_hatype);
+				run = checkin_print((struct arphdr *)packet, size,
+					rts->src, rts->dst,
+					SLL(&rts->from), SLL(&rts->to)->sll_addr,
+					&rts->opt, &rts->stat,
+					broadcasted, SLL(&got)->sll_hatype, &rts->last);
 			}	break;
 			default:
 				abort();
 			}
-		}
+		} // internal loop
 	}
 	//
-	for (uint i = 0; i < ARRAY_LEN(pfds); i++)
-		close(pfds[i].fd);
+	for (size_t i = 0; i < ARRAY_LEN(fds); i++)
+		close(fds[i].fd);
 	if (!rts->opt.quiet)
 		resume(&rts->stat);
-	bool got = (rts->stat.recv > 0) ? true : false;
-	rc |= rts->opt.dad         ? got   :
-	      rts->opt.unsolicited ? false :
-	      !got;
-	if (!rts->opt.unsolicited) {
-		bool all_uni = (rts->stat.recv == rts->stat.sent);
-		bool all_brd = (rts->stat.recv == rts->stat.brd_sent);
-		rc |= // note: DAD stands for Duplicate Address Detection
-			(rts->opt.dad && rts->opt.quit)     ? all_brd :
-			(rts->timeout && (rts->count <= 0)) ? !got    :
-			!all_uni;
+	if (!rc) {
+		bool got = (rts->stat.recv > 0);
+		rc = rts->opt.dad         ? got   :
+		     rts->opt.unsolicited ? false :
+		     !got;
 	}
+	if (!rc && rts->opt.unsolicited)
+		rc = rc_unsol(&rts->stat, &rts->opt, rts->stat.recv > 0);
 	return rc;
 }
 
@@ -746,9 +558,9 @@ static inline void print_header(const char *name,
 }
 
 static inline void parse_options(state_t *rts, int argc, char **argv) {
-	int ch;
-	while ((ch = getopt(argc, argv, "Abc:Dfhi:I:qs:UVw:?")) != EOF) {
-		switch (ch) {
+	int c;
+	while ((c = getopt(argc, argv, "Abc:Dfhi:I:qs:UVw:?")) != EOF) {
+		switch (c) {
 		case 'b':
 			rts->opt.broadcast = true;
 			break;
@@ -767,10 +579,10 @@ static inline void parse_options(state_t *rts, int argc, char **argv) {
 			rts->opt.quiet = true;
 			break;
 		case 'c':
-			rts->count = VALID_INTSTR(1, INT_MAX);
+			rts->stat.count = VALID_INTSTR(1, INT_MAX);
 			break;
 		case 'w':
-			rts->timeout = VALID_INTSTR(0, INT_MAX);
+			rts->stat.timeout = VALID_INTSTR(0, INT_MAX);
 			break;
 		case 'i':
 			rts->interval = VALID_INTSTR(0, INT_MAX);
@@ -810,7 +622,7 @@ int main(int argc, char **argv) {
 	BIND_NLS;
 	atexit(close_stdout);
 
-	struct run_state rts = { .count = -1, .interval = 1 };
+	struct run_state rts = { .stat.count = -1, .interval = 1 };
 #ifdef DEFAULT_DEVICE
 	strncpy(rts.dev.name, DEFAULT_DEVICE, sizeof(rts.dev.name) - 1);
 #endif
@@ -844,6 +656,6 @@ int main(int argc, char **argv) {
 	if (!rts.source && !rts.src.s_addr && !rts.opt.dad)
 		errx(EINVAL, "%s", _("No source address in not-DAD mode"));
 
-	return loop(&rts);
+	return main_loop(&rts);
 }
 
