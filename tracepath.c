@@ -504,12 +504,14 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 }
 
 static inline void parse_opts(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
-	int ch;
-	while ((ch = getopt(argc, argv, "bhl:m:np:vV46?")) != EOF) {
-		switch (ch) {
+	opterr = 0;
+	int c;
+	while ((c = getopt(argc, argv, "bhl:m:np:vV46?")) != EOF) {
+		int o = optopt ? optopt : c;
+		switch (o) {
 		case '4':
 		case '6': {
-			bool ip6 = (ch == '6');
+			bool ip6 = (o == '6');
 			int not = ip6 ? AF_INET : AF_INET6;
 			if (hints->ai_family == not)
 				OPTEXCL('4', '6');
@@ -546,6 +548,8 @@ static inline void parse_opts(int argc, char **argv, struct addrinfo *hints, sta
 		case '?':
 			usage(EXIT_SUCCESS);
 		default:
+			errno = EINVAL;
+			warn("-%c", o);
 			usage(EXIT_FAILURE);
 		}
 	}

@@ -261,12 +261,14 @@ static void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rt
 		return;
 	const char *optstr =
 		"46?aAbBc:CdDe:fF:hHi:I:l:Lm:M:nN:Op:qQ:rRs:S:t:T:UvVw:W:";
-	int ch;
-	while ((ch = getopt(argc, argv, optstr)) != EOF) {
-		switch (ch) {
+	opterr = 0;
+	int c;
+	while ((c = getopt(argc, argv, optstr)) != EOF) {
+		int o = optopt ? optopt : c;
+		switch (o) {
 		case '4':
 		case '6': {
-			bool ip4 = (ch == '4');
+			bool ip4 = (o == '4');
 #ifdef ENABLE_RFC4620
 			if (rts->ni && ip4) // '-N' indication
 				errx(EINVAL, "%s: %s", _WARN,
@@ -381,7 +383,7 @@ _("Cannot set preload to value greater than 3"), rts->preload);
 				rts->pmtudisc = IP_PMTUDISC_PROBE;
 			else {
 				errno = EINVAL;
-				err(errno, "-%c %s", ch, optarg);
+				err(errno, "-%c %s", o, optarg);
 			}
 			break;
 		case 'n':
@@ -444,6 +446,8 @@ _("Cannot set preload to value greater than 3"), rts->preload);
 		case 'h':
 			usage(EXIT_SUCCESS);
 		default:
+			errno = EINVAL;
+			warn("-%c", o);
 			usage(EXIT_FAILURE);
 		}
 	}

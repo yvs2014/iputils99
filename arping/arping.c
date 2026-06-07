@@ -558,9 +558,11 @@ static inline void print_header(const char *name,
 }
 
 static inline void parse_options(state_t *rts, int argc, char **argv) {
+	opterr = 0;
 	int c;
 	while ((c = getopt(argc, argv, "Abc:Dfhi:I:qs:UVw:?")) != EOF) {
-		switch (c) {
+		int o = optopt ? optopt : c;
+		switch (o) {
 		case 'b':
 			rts->opt.broadcast = true;
 			break;
@@ -603,6 +605,8 @@ static inline void parse_options(state_t *rts, int argc, char **argv) {
 		case '?':
 			usage(EXIT_SUCCESS);
 		default:
+			errno = EINVAL;
+			warn("-%c", o);
 			usage(EXIT_FAILURE);
 		}
 	}

@@ -54,7 +54,6 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
-#include <getopt.h>
 //
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -407,12 +406,14 @@ NORETURN static void usage(int rc) {
 }
 
 static void parse_options(state_t *rts, int argc, char **argv) {
-	int ch;
-	while ((ch = getopt(argc, argv, "hIV23")) != EOF)
-		switch (ch) {
+	opterr = 0;
+	int c;
+	while ((c = getopt(argc, argv, "hIV23")) != EOF) {
+		int o = optopt ? optopt : c;
+		switch (o) {
 		case '2':
 		case '3': {
-			bool both = (ch == '2');
+			bool both = (o == '2');
 			uint8_t incompat = both ? OPTLEN_3 : OPTLEN_2;
 			if (rts->optlen == incompat)
 				OPTEXCL('2', '3');
@@ -426,8 +427,11 @@ static void parse_options(state_t *rts, int argc, char **argv) {
 		case 'h':
 			usage(EXIT_SUCCESS);
 		default:
+			errno = EINVAL;
+			warn("-%c", o);
 			usage(EXIT_FAILURE);
 		}
+	}
 }
 
 int main(int argc, char **argv) {

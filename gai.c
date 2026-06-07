@@ -179,12 +179,14 @@ static inline void parse_opt(int argc, char **argv, gaiopt_s *gai_opt) {
 	if (argc <= 0)
 		return;
 	const char *optstr = "hf:F:ilvV46";
-	int opt;
-	while ((opt = getopt(argc, argv, optstr)) != EOF) {
-		switch (opt) {
+	opterr = 0;
+	int c;
+	while ((c = getopt(argc, argv, optstr)) != EOF) {
+		int o = optopt ? optopt : c;
+		switch (o) {
 		case '4':
 		case '6': {
-			bool ip4 = (opt == '4');
+			bool ip4 = (o == '4');
 			int incompat = ip4 ? AF_INET6 : AF_INET;
 			if (gai_opt->af == incompat)
 				OPTEXCL('4', '6');
@@ -196,9 +198,9 @@ static inline void parse_opt(int argc, char **argv, gaiopt_s *gai_opt) {
 				break;
 			if (gai_opt->flags < 0)
 				gai_opt->flags = 0;
-			gai_opt->flags |= (opt == 'f') ?
+			gai_opt->flags |= (o == 'f') ?
 				VALID_INTSTR(0, USHRT_MAX) :
-				ai_macro2value(opt, optarg);
+				ai_macro2value(o, optarg);
 			break;
 		case 'i':
 #ifdef USE_LIBIDN2
@@ -218,6 +220,8 @@ static inline void parse_opt(int argc, char **argv, gaiopt_s *gai_opt) {
 		case 'h':
 			gai_usage(EXIT_SUCCESS);
 		default:
+			errno = EINVAL;
+			warn("-%c", o);
 			gai_usage(EXIT_FAILURE);
                 }
 	}
