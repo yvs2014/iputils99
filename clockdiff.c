@@ -49,27 +49,27 @@
  * number of messages sent in each measurement.
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
+#include <err.h>
+#include <time.h>
 //
 #include <arpa/inet.h>
-#include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <poll.h>
+#include <fcntl.h>
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/timex.h>
 #include <sys/types.h>
-#include <time.h>
-#include <err.h>
-#include <errno.h>
 
 #include "iputils.h"
 
@@ -405,33 +405,23 @@ NORETURN static void usage(int rc) {
 	usage_common(rc, options, "HOST", !MORE);
 }
 
-static void parse_options(state_t *rts, int argc, char **argv) {
-	opterr = 0;
-	int c;
-	while ((c = getopt(argc, argv, "hIV23")) != EOF) {
-		int o = optopt ? optopt : c;
-		switch (o) {
-		case '2':
-		case '3': {
-			bool both = (o == '2');
-			uint8_t incompat = both ? OPTLEN_3 : OPTLEN_2;
-			if (rts->optlen == incompat)
-				OPTEXCL('2', '3');
-			rts->optlen = both ? OPTLEN_2 : OPTLEN_3;
-			} break;
-		case 'I':
-			rts->ts_format = "%FT%T%z"; /*iso*/
-			break;
-		case 'V':
-			version_n_exit(EXIT_SUCCESS, FEAT_CAP | FEAT_IDN | FEAT_NLS);
-		case 'h':
-			usage(EXIT_SUCCESS);
-		default:
-			errno = EINVAL;
-			warn("-%c", o);
-			usage(EXIT_FAILURE);
-		}
+static char *optstr = "hIV23";
+static void switch_opt(char c, void *data) { // NONNULL(1, 2)
+#define RTS_DATA ((state_t *)data)
+	switch (c) {
+	case '2':
+	case '3': {
+		bool both = (c == '2');
+		uint8_t incompat = both ? OPTLEN_3 : OPTLEN_2;
+		if (RTS_DATA->optlen == incompat)
+			OPTEXCL('2', '3');
+		RTS_DATA->optlen = both ? OPTLEN_2 : OPTLEN_3;
+	}	break;
+	case 'I':
+		RTS_DATA->ts_format = "%FT%T%z"; // ISO
+		break;
 	}
+#undef RTS_DATA
 }
 
 int main(int argc, char **argv) {
@@ -450,7 +440,7 @@ int main(int argc, char **argv) {
 	atexit(close_stdout);
 
 	state_t rts = {.rtt = 1000, .ts_format = "%c" /*local*/};
-	parse_options(&rts, argc, argv);
+	common_getopt(argc, argv, optstr, FEAT_CAP | FEAT_IDN | FEAT_NLS, usage, switch_opt, &rts);
 	argc -= optind;
 	argv += optind;
 	if (argc <= 0) {

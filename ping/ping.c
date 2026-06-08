@@ -53,17 +53,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h>
 #include <unistd.h>
 #include <string.h>
 #include <limits.h>
 #include <assert.h>
 #include <errno.h>
 #include <err.h>
-#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
 
 #include "iputils.h"
 #include "str2num.h"
@@ -255,206 +255,196 @@ static inline void opt_s(state_t *rts) {
 	rts->datalen = len;
 }
 
-/* Parse command line options */
-static void parse_opt(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
-	if ((argc <= 0) || !hints || !rts)
-		return;
-	const char *optstr =
-		"46?aAbBc:CdDe:fF:hHi:I:l:Lm:M:nN:Op:qQ:rRs:S:t:T:UvVw:W:";
-	opterr = 0;
-	int c;
-	while ((c = getopt(argc, argv, optstr)) != EOF) {
-		int o = optopt ? optopt : c;
-		switch (o) {
-		case '4':
-		case '6': {
-			bool ip4 = (o == '4');
+static char *optstr =
+	"aAbBc:CdDe:fF:hHi:I:l:Lm:M:n"
 #ifdef ENABLE_RFC4620
-			if (rts->ni && ip4) // '-N' indication
-				errx(EINVAL, "%s: %s", _WARN,
-					_("NodeInfo client is for IPv6 only"));
+	"N:"
 #endif
-			int incompat = ip4 ? AF_INET6 : AF_INET;
-			if (hints->ai_family == incompat)
-				OPTEXCL('4', '6');
-			hints->ai_family = ip4 ? AF_INET : AF_INET6;
-		}	break;
-		/* IPv4 specific options */
-		case 'b':
-			rts->opt.broadcast = true;
-			break;
-		case 'e':
-			rts->ident16 = htons(VALID_INTSTR(0, USHRT_MAX));
-			rts->custom_ident = rts->ident16;
-			break;
-		case 'R':
-			if (rts->ts_opt >= 0)
-				OPTEXCL('T', 'R');
-			rts->opt.rroute = true;
-			break;
-		case 'T':
-			if (rts->opt.rroute)
-				OPTEXCL('R', 'T');
-#define TSSTREQ(lit) (!strncasecmp(optarg, lit, sizeof(lit)))
-			if      TSSTREQ("tsonly")
-				rts->ts_opt = IPOPT_TS_TSONLY;
-			else if TSSTREQ("tsandaddr")
-				rts->ts_opt = IPOPT_TS_TSANDADDR;
-			else if (TSSTREQ("tsprespec") || TSSTREQ("prespec"))
-				rts->ts_opt = IPOPT_TS_PRESPEC;
-			else { // 0(TSONLY) 1(TSANDADDR) 3(PRESPEC)
-				rts->ts_opt = str2ll(optarg, 0, 3, _("Invalid timestamp type"));
-				if (rts->ts_opt == 2) // 2: reserved
-					errx(EINVAL, "%s: %s", _("Invalid timestamp type"), optarg);
-			}
-#undef TSSTREQ
-			break;
-		/* IPv6 specific options */
-		case 'F':
-			rts->flowlabel = parse_flow(optarg);
-			rts->opt.flowinfo = true;
-			break;
+	"Op:qQ:rRs:S:t:T:UvVw:W:46";
+
+static void switch_opt(char c, void *data) { // NONNULL(1, 2)
+#define RTS_DATA ((state_t *)data)
+#define RTS_HINT ((struct addrinfo *)(RTS_DATA->auxdata))
+	switch (c) {
+	case '4':
+	case '6': if (RTS_HINT) {
+		bool ip4 = (c == '4');
 #ifdef ENABLE_RFC4620
-		case 'N':
-			opt_N(rts, optarg, hints);
-			break;
+		if (rts->ni && ip4) // '-N' indication
+			errx(EINVAL, "%s: %s", _WARN,
+				_("NodeInfo client is for IPv6 only"));
 #endif
-		case 'a':
-		// 'a' -> audible, 'aa' -> colored, 'aaa' -> audible and colored
-			if (rts->opt.audible) {
-				if (!rts->red) {
-					rts->red    = RED_COLOR;
-					rts->yellow = YELLOW_COLOR;
-					rts->opt.audible = false;
-				}
-			} else
-				rts->opt.audible = true;
-			break;
-		case 'A':
-			rts->opt.adaptive = true;
-			break;
-		case 'B':
-			rts->opt.strictsource = true;
-			break;
-		case 'c':
-			rts->npackets = VALID_INTSTR(1, LONG_MAX);
-			break;
-		case 'C':
-			rts->opt.connect_sk = true;
-			break;
-		case 'd':
-			rts->opt.so_debug = true;
-			break;
-		case 'D':
-			rts->opt.ptimeofday = true;
-			break;
-		case 'H':
-			if (rts->opt.flood)
-				OPTEXCL('f', 'H');
-			rts->opt.resolve = true;
-			break;
-		case 'i': {
-			double value = str2dbl(optarg, 0, (double)INT_MAX / 1000,
-				_("Bad timing interval"));
-			rts->interval = (int)(value * 1000);
-			rts->opt.interval = true;
-		}
-			break;
-		case 'I':
-			opt_I(rts, optarg);
-			break;
-		case 'l':
-			rts->preload = VALID_INTSTR(1, MAX_DUP_CHK);
-			if (rts->uid && (rts->preload > 3))
-				errx(EINVAL, "%s: %d",
-_("Cannot set preload to value greater than 3"), rts->preload);
-			break;
-		case 'L':
-			rts->opt.noloop = true;
-			break;
-		case 'm':
-			rts->mark = VALID_INTSTR(0, UINT_MAX);
-			rts->opt.mark = true;
-			break;
-		case 'M':
-			if (strcmp(optarg, "do") == 0)
-				rts->pmtudisc = IP_PMTUDISC_DO;
-			else if (strcmp(optarg, "dont") == 0)
-				rts->pmtudisc = IP_PMTUDISC_DONT;
-			else if (strcmp(optarg, "want") == 0)
-				rts->pmtudisc = IP_PMTUDISC_WANT;
-			else if (strcmp(optarg, "probe") == 0)
-				rts->pmtudisc = IP_PMTUDISC_PROBE;
-			else {
-				errno = EINVAL;
-				err(errno, "-%c %s", o, optarg);
+		int incompat = ip4 ? AF_INET6 : AF_INET;
+		if (RTS_HINT->ai_family == incompat)
+			OPTEXCL('4', '6');
+		RTS_HINT->ai_family = ip4 ? AF_INET : AF_INET6;
+	}	break;
+	case 'a':
+	// 'a' -> audible, 'aa' -> colored, 'aaa' -> audible and colored
+		if (RTS_DATA->opt.audible) {
+			if (!RTS_DATA->red) {
+				RTS_DATA->red    = RED_COLOR;
+				RTS_DATA->yellow = YELLOW_COLOR;
+				RTS_DATA->opt.audible = false;
 			}
-			break;
-		case 'n':
-			rts->opt.resolve = false;
-			break;
-		case 'O':
-			rts->opt.outstanding = true;
-			break;
-		case 'f':
-			rts->opt.flood   = true;
-			rts->opt.resolve = false;         // disable resolve
-			setvbuf(stdout, NULL, _IONBF, 0); // turn off buffers
-			break;
-		case 'p':
-			if (rts->outpack && (rts->datalen > 0) && optarg) {
-				uint8_t *data_offset = rts->outpack + sizeof(struct icmphdr);
-				if (rts->datalen > sizeof(struct timeval))
-					data_offset += sizeof(struct timeval);
-				fill_payload(rts->opt.quiet, optarg,
-					data_offset, rts->datalen);
-				rts->opt.pingfilled = true;
-			}
-			break;
-		case 'q':
-			rts->opt.quiet = true;
-			break;
-		case 'Q':
-			rts->qos = parse_tos(optarg);
-			break;
-		case 'r':
-			rts->opt.so_dontroute = true;
-			break;
-		case 's':
-			opt_s(rts);
-			break;
-		case 'S':
-			rts->sndbuf = VALID_INTSTR(1, INT_MAX);
-			break;
-		case 't':
-			rts->ttl = VALID_INTSTR(0, UCHAR_MAX);
-			break;
-		case 'U':
-			rts->opt.latency = true;
-			break;
-		case 'v':
-			rts->opt.verbose = true;
-			break;
-		case 'w':
-			rts->deadline = VALID_INTSTR(0, INT_MAX);
-			break;
-		case 'W': {
-			double value = str2dbl(optarg, 0, (double)INT_MAX / 1000,
-				_("Bad linger time"));
-			/* lingertime will be converted to usec later */
-			rts->lingertime = (int)(value * 1000);
-		}
-			break;
-		case 'V':
-			version_n_exit(EXIT_SUCCESS, PING_FEATURES);
-		case 'h':
-			usage(EXIT_SUCCESS);
-		default:
+		} else
+			RTS_DATA->opt.audible = true;
+		break;
+	case 'A':
+		RTS_DATA->opt.adaptive = true;
+		break;
+	case 'b':
+		RTS_DATA->opt.broadcast = true;
+		break;
+	case 'B':
+		RTS_DATA->opt.strictsource = true;
+		break;
+	case 'c':
+		RTS_DATA->npackets = VALID_INTSTR(1, LONG_MAX);
+		break;
+	case 'C':
+		RTS_DATA->opt.connect_sk = true;
+		break;
+	case 'd':
+		RTS_DATA->opt.so_debug = true;
+		break;
+	case 'D':
+		RTS_DATA->opt.ptimeofday = true;
+		break;
+	case 'e':
+		RTS_DATA->ident16 = htons(VALID_INTSTR(0, USHRT_MAX));
+		RTS_DATA->custom_ident = RTS_DATA->ident16;
+		break;
+	case 'f':
+		RTS_DATA->opt.flood   = true;
+		RTS_DATA->opt.resolve = false;         // disable resolve
+		setvbuf(stdout, NULL, _IONBF, 0); // turn off buffers
+		break;
+	case 'F':
+		RTS_DATA->flowlabel = parse_flow(optarg);
+		RTS_DATA->opt.flowinfo = true;
+		break;
+	case 'H':
+		if (RTS_DATA->opt.flood)
+			OPTEXCL('f', 'H');
+		RTS_DATA->opt.resolve = true;
+		break;
+	case 'i': {
+		double value = str2dbl(optarg, 0, (double)INT_MAX / 1000,
+			_("Bad timing interval"));
+		RTS_DATA->interval = (int)(value * 1000);
+		RTS_DATA->opt.interval = true;
+	}	break;
+	case 'I':
+		opt_I(RTS_DATA, optarg);
+		break;
+	case 'l':
+		RTS_DATA->preload = VALID_INTSTR(1, MAX_DUP_CHK);
+		if (RTS_DATA->uid && (RTS_DATA->preload > 3))
+			errx(EINVAL, "%s: %d",
+_("Cannot set preload to value greater than 3"), RTS_DATA->preload);
+		break;
+	case 'L':
+		RTS_DATA->opt.noloop = true;
+		break;
+	case 'm':
+		RTS_DATA->mark = VALID_INTSTR(0, UINT_MAX);
+		RTS_DATA->opt.mark = true;
+		break;
+	case 'M':
+		if (strcmp(optarg, "do") == 0)
+			RTS_DATA->pmtudisc = IP_PMTUDISC_DO;
+		else if (strcmp(optarg, "dont") == 0)
+			RTS_DATA->pmtudisc = IP_PMTUDISC_DONT;
+		else if (strcmp(optarg, "want") == 0)
+			RTS_DATA->pmtudisc = IP_PMTUDISC_WANT;
+		else if (strcmp(optarg, "probe") == 0)
+			RTS_DATA->pmtudisc = IP_PMTUDISC_PROBE;
+		else {
 			errno = EINVAL;
-			warn("-%c", o);
-			usage(EXIT_FAILURE);
+			err(errno, "-%c %s", c, optarg);
 		}
+		break;
+	case 'n':
+		RTS_DATA->opt.resolve = false;
+		break;
+#ifdef ENABLE_RFC4620
+	case 'N':
+		if (RTS_HINT)
+			opt_N(RTS_DATA, optarg, RTS_HINT);
+		break;
+#endif
+	case 'O':
+		RTS_DATA->opt.outstanding = true;
+		break;
+	case 'p':
+		if (RTS_DATA->outpack && (RTS_DATA->datalen > 0) && optarg) {
+			uint8_t *data_offset = RTS_DATA->outpack + sizeof(struct icmphdr);
+			if (RTS_DATA->datalen > sizeof(struct timeval))
+				data_offset += sizeof(struct timeval);
+			fill_payload(RTS_DATA->opt.quiet, optarg,
+				data_offset, RTS_DATA->datalen);
+			RTS_DATA->opt.pingfilled = true;
+		}
+		break;
+	case 'q':
+		RTS_DATA->opt.quiet = true;
+		break;
+	case 'Q':
+		RTS_DATA->qos = parse_tos(optarg);
+		break;
+	case 'r':
+		RTS_DATA->opt.so_dontroute = true;
+		break;
+	case 'R':
+		if (RTS_DATA->ts_opt >= 0)
+			OPTEXCL('T', 'R');
+		RTS_DATA->opt.rroute = true;
+		break;
+	case 's':
+		opt_s(RTS_DATA);
+		break;
+	case 'S':
+		RTS_DATA->sndbuf = VALID_INTSTR(1, INT_MAX);
+		break;
+	case 't':
+		RTS_DATA->ttl = VALID_INTSTR(0, UCHAR_MAX);
+		break;
+	case 'T':
+#define TSSTREQ(lit) (!strncasecmp(optarg, lit, sizeof(lit)))
+		if (RTS_DATA->opt.rroute)
+			OPTEXCL('R', 'T');
+		if      TSSTREQ("tsonly")
+			RTS_DATA->ts_opt = IPOPT_TS_TSONLY;
+		else if TSSTREQ("tsandaddr")
+			RTS_DATA->ts_opt = IPOPT_TS_TSANDADDR;
+		else if (TSSTREQ("tsprespec") || TSSTREQ("prespec"))
+			RTS_DATA->ts_opt = IPOPT_TS_PRESPEC;
+		else { // 0(TSONLY) 1(TSANDADDR) 3(PRESPEC)
+			RTS_DATA->ts_opt = str2ll(optarg, 0, 3, _("Invalid timestamp type"));
+			if (RTS_DATA->ts_opt == 2) // 2: reserved
+				errx(EINVAL, "%s: %s", _("Invalid timestamp type"), optarg);
+		}
+#undef TSSTREQ
+		break;
+	case 'U':
+		RTS_DATA->opt.latency = true;
+		break;
+	case 'v':
+		RTS_DATA->opt.verbose = true;
+		break;
+	case 'w':
+		RTS_DATA->deadline = VALID_INTSTR(0, INT_MAX);
+		break;
+	case 'W': {
+		double value = str2dbl(optarg, 0, (double)INT_MAX / 1000,
+			_("Bad linger time"));
+		/* lingertime will be converted to usec later */
+		RTS_DATA->lingertime = (int)(value * 1000);
+	}	break;
 	}
+#undef RTS_DATA
+#undef RTS_HINT
 }
 
 
@@ -502,6 +492,7 @@ int main(int argc, char **argv) {
 		.ai_socktype = SOCK_DGRAM,
 		.ai_flags    = AI_FLAGS,
 	};
+	rts.auxdata = &hints;
 
 	/* Support being called using `ping4` or `ping6` symlinks */
 	if (argv[0][strlen(argv[0]) - 1] == '4')
@@ -509,7 +500,7 @@ int main(int argc, char **argv) {
 	else if (argv[0][strlen(argv[0]) - 1] == '6')
 		hints.ai_family = AF_INET6;
 
-	parse_opt(argc, argv, &hints, &rts);
+	common_getopt(argc, argv, optstr, PING_FEATURES, usage, switch_opt, &rts);
 	argc -= optind;
 	argv += optind;
 	if (argc <= 0) {

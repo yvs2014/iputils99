@@ -14,8 +14,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+#include <string.h>
 #include <limits.h>
 #include <assert.h>
 #include <err.h>
@@ -24,19 +24,13 @@
 #include <sys/time.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <netinet/ip_icmp.h>
+#include <netinet/icmp6.h>
 #include <arpa/inet.h>
 #include <resolv.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
-
-/*
- * Keep linux/ includes after standard headers.
- * https://github.com/iputils/iputils/issues/168
- */
-#include <linux/errqueue.h>
-#include <linux/icmp.h>
-#include <linux/icmpv6.h>
-#include <linux/types.h>
+#include <linux/errqueue.h> // SO_EE_ORIGIN_xxx
 
 #include "iputils.h"
 #include "str2num.h"
@@ -89,12 +83,11 @@ typedef struct run_state {
 	bool dns;
 	bool verbose;
 	bool show_both;
+	//
+	void *auxdata;
 } state_t;
 
-/*
- * All includes, definitions, struct declarations, and global variables are
- * above.  After this comment all you can find is functions.
- */
+//
 
 static void data_wait(int fd) {
 	fd_set fds;
@@ -281,8 +274,8 @@ do { // was 'restart:'
 		     e->ee_type == ICMP_TIME_EXCEEDED &&
 		     e->ee_code == ICMP_EXC_TTL) ||
 		    (e->ee_origin == SO_EE_ORIGIN_ICMP6 &&
-		     e->ee_type == ICMPV6_TIME_EXCEED &&
-		     e->ee_code == ICMPV6_EXC_HOPLIMIT)) {
+		     e->ee_type == ICMP6_TIME_EXCEEDED &&
+		     e->ee_code == ICMP6_TIME_EXCEED_TRANSIT)) {
 			if (rethops >= 0) {
 				bool sent = (sndhops >= 0);
 				if (( sent && (rethops != sndhops )) ||
@@ -503,55 +496,43 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 	return sock;
 }
 
-static inline void parse_opts(int argc, char **argv, struct addrinfo *hints, state_t *rts) {
-	opterr = 0;
-	int c;
-	while ((c = getopt(argc, argv, "bhl:m:np:vV46?")) != EOF) {
-		int o = optopt ? optopt : c;
-		switch (o) {
-		case '4':
-		case '6': {
-			bool ip6 = (o == '6');
-			int not = ip6 ? AF_INET : AF_INET6;
-			if (hints->ai_family == not)
-				OPTEXCL('4', '6');
-			hints->ai_family = ip6 ? AF_INET6 : AF_INET;
-			rts->hdrsize = ip6 ? DEFAULT_IPH6 : DEFAULT_IPH4;
-		}
-			break;
-		case 'n':
-			if (rts->show_both)
-				OPTEXCL('b', 'n');
-			rts->dns      = false;
-			rts->ni_flags = NI_NUMERICHOST;
-			break;
-		case 'b':
-			if (!rts->dns)
-				OPTEXCL('n', 'b');
-			rts->show_both = true;
-			break;
-		case 'l':
-			rts->pktsize = VALID_INTSTR(0, UINT16_MAX);
-			break;
-		case 'm':
-			rts->max_hops = VALID_INTSTR(0, UINT8_MAX);
-			break;
-		case 'p':
-			rts->port = VALID_INTSTR(0, UINT16_MAX);
-			break;
-		case 'v':
-			rts->verbose = true;
-			break;
-		case 'V':
-			version_n_exit(EXIT_SUCCESS, FEAT_IDN | FEAT_NLS);
-		case 'h':
-		case '?':
-			usage(EXIT_SUCCESS);
-		default:
-			errno = EINVAL;
-			warn("-%c", o);
-			usage(EXIT_FAILURE);
-		}
+static char *optstr = "bhl:m:np:vV46";
+static void switch_opt(char c, void *data) { // NONNULL(1, 2)
+#define RTS_DATA ((state_t *)data)
+#define RTS_HINT ((struct addrinfo *)(RTS_DATA->auxdata))
+	switch (c) {
+	case '4':
+	case '6': if (RTS_HINT) {
+		bool ip6 = (c == '6');
+		int not = ip6 ? AF_INET : AF_INET6;
+		if (RTS_HINT->ai_family == not)
+			OPTEXCL('4', '6');
+		RTS_HINT->ai_family = ip6 ? AF_INET6 : AF_INET;
+		RTS_DATA->hdrsize = ip6 ? DEFAULT_IPH6 : DEFAULT_IPH4;
+	}	break;
+	case 'b':
+		if (!RTS_DATA->dns)
+			OPTEXCL('n', 'b');
+		RTS_DATA->show_both = true;
+		break;
+	case 'l':
+		RTS_DATA->pktsize = VALID_INTSTR(0, UINT16_MAX);
+		break;
+	case 'm':
+		RTS_DATA->max_hops = VALID_INTSTR(0, UINT8_MAX);
+		break;
+	case 'n':
+		if (RTS_DATA->show_both)
+			OPTEXCL('b', 'n');
+		RTS_DATA->dns      = false;
+		RTS_DATA->ni_flags = NI_NUMERICHOST;
+		break;
+	case 'p':
+		RTS_DATA->port = VALID_INTSTR(0, UINT16_MAX);
+		break;
+	case 'v':
+		RTS_DATA->verbose = true;
+		break;
 	}
 }
 
@@ -570,6 +551,12 @@ int main(int argc, char **argv) {
 	BIND_NLS;
 	atexit(close_stdout);
 
+	struct addrinfo hints = {
+		.ai_family   = AF_UNSPEC,
+		.ai_socktype = SOCK_DGRAM,
+		.ai_protocol = IPPROTO_UDP,
+		.ai_flags    = AI_FLAGS,
+	};
 	state_t rts = {
 		.sock      = -1,
 		.port      = BASEPORT,
@@ -578,14 +565,9 @@ int main(int argc, char **argv) {
 		.hops_from = -1,
 		.ni_flags  = NI_FLAGS,
 		.dns       = true,
+		.auxdata   = &hints,
 	};
 
-	struct addrinfo hints = {
-		.ai_family   = AF_UNSPEC,
-		.ai_socktype = SOCK_DGRAM,
-		.ai_protocol = IPPROTO_UDP,
-		.ai_flags    = AI_FLAGS,
-	};
 	// Support tracepath[46] tool names */
 	if (argv[0][strlen(argv[0]) - 1] == '4')
 		hints.ai_family = AF_INET;
@@ -593,7 +575,7 @@ int main(int argc, char **argv) {
 		hints.ai_family = AF_INET6;
 
 	// Parse options
-	parse_opts(argc, argv, &hints, &rts);
+	common_getopt(argc, argv, optstr, FEAT_IDN | FEAT_NLS, usage, switch_opt, &rts);
 	argc -= optind;
 	argv += optind;
 	if (argc <= 0) {

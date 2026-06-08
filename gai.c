@@ -37,7 +37,7 @@ typedef struct valstr {
 } valstr_s;
 
 
-NORETURN static void gai_usage(int rc) {
+NORETURN static void usage(int rc) {
 	const char *options =
 "  -4        IPv4 family\n"
 "  -6        IPv6 family\n"
@@ -175,56 +175,43 @@ NORETURN static inline void list_ai_consts(void) {
 	exit(EXIT_SUCCESS);
 }
 
-static inline void parse_opt(int argc, char **argv, gaiopt_s *gai_opt) {
-	if (argc <= 0)
-		return;
-	const char *optstr = "hf:F:ilvV46";
-	opterr = 0;
-	int c;
-	while ((c = getopt(argc, argv, optstr)) != EOF) {
-		int o = optopt ? optopt : c;
-		switch (o) {
-		case '4':
-		case '6': {
-			bool ip4 = (o == '4');
-			int incompat = ip4 ? AF_INET6 : AF_INET;
-			if (gai_opt->af == incompat)
-				OPTEXCL('4', '6');
-			gai_opt->af = ip4 ? AF_INET : AF_INET6;
-		}	break;
-		case 'f':
-		case 'F':
-			if (!optarg || !*optarg)
-				break;
-			if (gai_opt->flags < 0)
-				gai_opt->flags = 0;
-			gai_opt->flags |= (o == 'f') ?
+static char *optstr = "hf:F:ilvV46";
+static void switch_opt(char c, void *data) { // NONNULL(1, 2)
+#define GAI_OPT ((gaiopt_s *)data)
+	switch (c) {
+	case '4':
+	case '6': {
+		bool ip4 = (c == '4');
+		int incompat = ip4 ? AF_INET6 : AF_INET;
+		if (GAI_OPT->af == incompat)
+			OPTEXCL('4', '6');
+		GAI_OPT->af = ip4 ? AF_INET : AF_INET6;
+	}	break;
+	case 'f':
+	case 'F':
+		if (optarg && *optarg) {
+			if (GAI_OPT->flags < 0)
+				GAI_OPT->flags = 0;
+			GAI_OPT->flags |= (c == 'f') ?
 				VALID_INTSTR(0, USHRT_MAX) :
-				ai_macro2value(o, optarg);
-			break;
-		case 'i':
+				ai_macro2value(c, optarg);
+		}
+		break;
+	case 'i':
 #ifdef USE_LIBIDN2
-			if (!gai_opt->idn2)
-				gai_opt->idn2 = true;
+		if (!GAI_OPT->idn2)
+			GAI_OPT->idn2 = true;
 #else
-			warnx(_("no need in -i, IDN is transparently supported"));
+		warnx(_("no need in -i, IDN is transparently supported"));
 #endif
-			break;
-		case 'l':
-			list_ai_consts();
-		case 'v':
-			gai_opt->verbose = true;
-			break;
-		case 'V':
-			version_n_exit(EXIT_SUCCESS, FEAT_IDN | FEAT_NLS);
-		case 'h':
-			gai_usage(EXIT_SUCCESS);
-		default:
-			errno = EINVAL;
-			warn("-%c", o);
-			gai_usage(EXIT_FAILURE);
-                }
+		break;
+	case 'l':
+		list_ai_consts();
+	case 'v':
+		GAI_OPT->verbose = true;
+		break;
 	}
+#undef GAI_OPT
 }
 
 static void println_gni(const void *sa, socklen_t salen) {
@@ -243,11 +230,11 @@ int main(int argc, char **argv) {
 	BIND_NLS;
 
 	gaiopt_s gai_opt = {.af = -1, .flags = -1};
-	parse_opt(argc, argv, &gai_opt);
+	common_getopt(argc, argv, optstr, FEAT_IDN | FEAT_NLS, usage, switch_opt, &gai_opt);
 	argc -= optind;
 	argv += optind;
 	if (argc < 1)
-		gai_usage(EXIT_FAILURE);
+		usage(EXIT_FAILURE);
 
 	const struct addrinfo hints = {
 		.ai_family   = (gai_opt.af >= 0) ? gai_opt.af : AF_UNSPEC,

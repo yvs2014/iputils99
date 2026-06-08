@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <time.h>
 #include <err.h>
@@ -209,5 +210,33 @@ int validate_hostlen(const char *host, bool fail) {
 		       warn("%.*s", HOSTNAME_MAXLEN, host);
 	}
 	return re;
+}
+
+void common_getopt(int argc, char **argv, const char *optstr, int features, // NONNUL(2, 3)
+	void (*usage_fn)(int), void (*switch_fn)(char, void*), void *data)
+{
+	opterr = 0;
+	int c;
+	while ((c = getopt(argc, argv, optstr)) != EOF) switch (c) {
+	case '?':
+		if (optopt) {
+			errno = EINVAL;
+			warn("-%c", optopt);
+		}
+		if (usage_fn)
+			usage_fn(optopt ? EXIT_FAILURE : EXIT_SUCCESS);
+		break;
+	case 'h':
+		if (usage_fn)
+			usage_fn(EXIT_SUCCESS);
+		break;
+	case 'V':
+		version_n_exit(EXIT_SUCCESS, features);
+		break;
+	default:
+		if (switch_fn && c && data)
+			switch_fn(c, data);
+		break;
+	}
 }
 

@@ -175,6 +175,8 @@ typedef struct ping_state {
 	uint8_t red, yellow;
 	// boolean options
 	bool_opt_t opt;
+	//
+	void *auxdata;
 } state_t;
 
 typedef struct fnset_t {

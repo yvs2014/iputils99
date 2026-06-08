@@ -120,4 +120,7 @@ void timersub(const struct timeval *a, const struct timeval *b, struct timeval *
 
 int validate_hostlen(const char *host, bool fail);
 
+void common_getopt(int argc, char **argv, const char *optstr, int features,
+	void (*usage_fn)(int), void (*switch_fn)(char, void*), void *data);
+
 #endif

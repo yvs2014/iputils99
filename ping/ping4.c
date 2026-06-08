@@ -63,6 +63,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+//
 //#include <linux/icmp.h> /* conflicted with <netinet/ip_icmp.h> */
 #include <linux/errqueue.h>
 #include <linux/filter.h>
@@ -450,7 +451,7 @@ static int probe_dst4(state_t *rts, struct sockaddr_in dst, int sock_fd, bool ne
 	dst.sin_port = htons(1025);
 	if (rts->ipopt.ipt && rts->ipopt.ipt->ipt_len)
 		dst.sin_addr.s_addr = rts->ipopt.ipt->data[0]; // note: `dst' is a copy
-	if (connect(fd, &dst, SA4_LEN) >= 0)
+	if (connect(fd, SA(&dst), SA4_LEN) >= 0)
 		return fd;
 	//
 	switch (errno) {
@@ -462,7 +463,7 @@ static int probe_dst4(state_t *rts, struct sockaddr_in dst, int sock_fd, bool ne
 		int opt = rts->opt.broadcast;
 		if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
 			err(errno, "%s", _("Cannot set broadcasting"));
-		if (connect(fd, &dst, SA4_LEN) >= 0)
+		if (connect(fd, SA(&dst), SA4_LEN) >= 0)
 			return fd;
 	}	break;
 	case EHOSTUNREACH:

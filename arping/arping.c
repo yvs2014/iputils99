@@ -557,59 +557,48 @@ static inline void print_header(const char *name,
 	putchar('\n');
 }
 
-static inline void parse_options(state_t *rts, int argc, char **argv) {
-	opterr = 0;
-	int c;
-	while ((c = getopt(argc, argv, "Abc:Dfhi:I:qs:UVw:?")) != EOF) {
-		int o = optopt ? optopt : c;
-		switch (o) {
-		case 'b':
-			rts->opt.broadcast = true;
-			break;
-		case 'D':
-			rts->opt.dad  = true;
-			rts->opt.quit = true;
-			break;
-		case 'U':
-			rts->opt.unsolicited = true;
-			break;
-		case 'A':
-			rts->opt.advert      = true;
-			rts->opt.unsolicited = true;
-			break;
-		case 'q':
-			rts->opt.quiet = true;
-			break;
-		case 'c':
-			rts->stat.count = VALID_INTSTR(1, INT_MAX);
-			break;
-		case 'w':
-			rts->stat.timeout = VALID_INTSTR(0, INT_MAX);
-			break;
-		case 'i':
-			rts->interval = VALID_INTSTR(0, INT_MAX);
-			break;
-		case 'I':
-			strncpy(rts->dev.name, optarg, sizeof(rts->dev.name) - 1);
-			rts->dev.req = optarg;
-			break;
-		case 'f':
-			rts->opt.quit = true;
-			break;
-		case 's':
-			rts->source = optarg;
-			break;
-		case 'V':
-			version_n_exit(EXIT_SUCCESS, ARPING_FEATURES);
-		case 'h':
-		case '?':
-			usage(EXIT_SUCCESS);
-		default:
-			errno = EINVAL;
-			warn("-%c", o);
-			usage(EXIT_FAILURE);
-		}
+static char *optstr = "Abc:Dfhi:I:qs:UVw:";
+static void switch_opt(char c, void *data) { // NONNULL(1, 2)
+#define RTS_DATA ((state_t *)data)
+	switch (c) {
+	case 'A':
+		RTS_DATA->opt.advert      = true;
+		RTS_DATA->opt.unsolicited = true;
+		break;
+	case 'b':
+		RTS_DATA->opt.broadcast = true;
+		break;
+	case 'c':
+		RTS_DATA->stat.count = VALID_INTSTR(1, INT_MAX);
+		break;
+	case 'D':
+		RTS_DATA->opt.dad  = true;
+		RTS_DATA->opt.quit = true;
+		break;
+	case 'f':
+		RTS_DATA->opt.quit = true;
+		break;
+	case 'i':
+		RTS_DATA->interval = VALID_INTSTR(0, INT_MAX);
+		break;
+	case 'I':
+		strncpy(RTS_DATA->dev.name, optarg, sizeof(RTS_DATA->dev.name) - 1);
+		RTS_DATA->dev.req = optarg;
+		break;
+	case 'q':
+		RTS_DATA->opt.quiet = true;
+		break;
+	case 's':
+		RTS_DATA->source = optarg;
+		break;
+	case 'U':
+		RTS_DATA->opt.unsolicited = true;
+		break;
+	case 'w':
+		RTS_DATA->stat.timeout = VALID_INTSTR(0, INT_MAX);
+		break;
 	}
+#undef RTS_DATA
 }
 
 int main(int argc, char **argv) {
@@ -631,7 +620,7 @@ int main(int argc, char **argv) {
 	strncpy(rts.dev.name, DEFAULT_DEVICE, sizeof(rts.dev.name) - 1);
 #endif
 
-	parse_options(&rts, argc, argv);
+	common_getopt(argc, argv, optstr, ARPING_FEATURES, usage, switch_opt, &rts);
 	argc -= optind;
 	argv += optind;
 	if (argc <= 0) {
