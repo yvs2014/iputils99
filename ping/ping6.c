@@ -245,7 +245,7 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 		if (seq < 0)
 			return true;
 		stat_aux_t stat = {
-			.from  = sprint_addr(from, sizeof(*from), rts->opt.resolve),
+			.from  = sprint_addr(SA6(addr), SA6_LEN, rts->opt.resolve),
 			.seq   = ntohs(icmp->icmp6_seq),
 			.rcvd  = received,
 			.tv    = at,
@@ -327,8 +327,8 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	if (rts->ni && niquery_is_enabled(rts->ni)) {
 		niquery_init_nonce(rts->ni);
 		if (!niquery_is_subject_valid(rts->ni)) {
-			rts->ni->subject      = &whereto->sin6_addr;
-			rts->ni->subject_len  = sizeof(whereto->sin6_addr);
+			rts->ni->subject      = &SA6_IN(&rts->whereto);
+			rts->ni->subject_len  = sizeof(struct in6_addr);
 			rts->ni->subject_type = IPUTILS_NI_ICMP6_SUBJ_IPV6;
 		}
 	}

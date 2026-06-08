@@ -270,7 +270,7 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 	case '6': if (RTS_HINT) {
 		bool ip4 = (c == '4');
 #ifdef ENABLE_RFC4620
-		if (rts->ni && ip4) // '-N' indication
+		if (RTS_DATA->ni && ip4) // '-N' indication
 			errx(EINVAL, "%s: %s", _WARN,
 				_("NodeInfo client is for IPv6 only"));
 #endif
