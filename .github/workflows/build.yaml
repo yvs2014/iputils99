@@ -34,6 +34,8 @@ jobs:
       - name: Meson tests
         run: |
           sudo /sbin/setcap cap_net_raw+p ./_build/ping/ping
+          sudo /sbin/setcap cap_net_raw+p ./_build/arping/arping
+          sudo /sbin/setcap cap_net_raw,cap_sys_nice+p ./_build/clockdiff
           meson test -C _build
       - name: Build .deb packages
         run: dpkg-buildpackage -us -uc
