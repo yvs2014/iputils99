@@ -415,7 +415,7 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	rts->hostname = target;
 
 	if (IN6_IS_ADDR_UNSPECIFIED(&SA6_IN(&rts->source))) {
-		int fd = probe_dst6(rts, SA6(&rts->source), sock->fd, ai->ai_next);
+		int fd = probe_dst6(rts, SA6(&rts->firsthop), sock->fd, ai->ai_next);
 		if (fd < 0)
 			return -1;
 		GETSOCKNAME(fd, SA(&rts->source), SA6_LEN);
