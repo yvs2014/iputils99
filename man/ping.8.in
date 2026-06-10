@@ -1,3 +1,4 @@
+.ds om "m
 .ds oN "N
 '\" t
 .TH "PING" "8" "" "iputils99" "iputils"
@@ -23,7 +24,7 @@
 .SH "NAME"
 ping \- send ICMP ECHO_REQUEST to network hosts
 .SH "SYNOPSIS"
-\fBping\fR [\fB\-aAbBcCdDefFhHiIlLmMn\*[oN]OpqQrRsStTUvVwW46\fR] [hop\&.\&.\&.] TARGET
+\fBping\fR [\fB\-aAbBcCdDefFhHiIlL\*[om]Mn\*[oN]OpqQrRsStTUvVwW46\fR] [hop\&.\&.\&.] TARGET
 .SH "DESCRIPTION"
 .PP
 \fBping\fR
@@ -163,6 +164,7 @@ sends that many packets not waiting for reply\&. Only the super\-user may select
 Suppress loopback of multicast packets\&. This flag only applies if the ping destination is a multicast address\&.
 .RE
 .PP
+.ie "m"\*[om]" \{\
 \fB\-m\fR \fImark\fR
 .RS 4
 use
@@ -170,6 +172,7 @@ use
 to tag the packets going out\&. This is useful for variety of reasons within the kernel such as using policy routing to select specific outbound processing\&. CAP_NET_ADMIN or CAP_NET_RAW (since Linux 5\&.17) capability is required, see
 \fBsocket\fR(7)\&.
 .RE
+.\}
 .PP
 \fB\-M\fR \fIpmtudisc_opt\fR
 .RS 4

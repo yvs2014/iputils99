@@ -304,6 +304,52 @@ static void ping6_bpf_filter(const state_t *rts, const sock_t *sock) {
 	setsock_bpf(rts, sock, &fprog);
 }
 
+static int probe_dst6(state_t *rts, struct sockaddr_in6 *dst, int sock_fd, bool next) { // NONNUL(1, 2)
+	int fd = socket(AF_INET6, SOCK_DGRAM, 0);
+	if (fd < 0)
+		err(errno, "socket");
+	//
+	bool scoped = IN6_IS_ADDR_LINKLOCAL(&SA6_IN(dst)) ||
+		      IN6_IS_ADDR_MC_LINKLOCAL(&SA6_IN(dst));
+	if (rts->device) {
+		unsigned iface = nl_name2ndx(rts->device);
+		if (!iface) {
+			if (!errno) errno = ENODEV;
+				err(errno, NETDEV_FMT, rts->device);
+		}
+//		struct in6_pktinfo ipi = { .ipi6_ifindex = iface };
+//		if ((setsockopt(fd,      IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
+//		    (setsockopt(sock_fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0))
+//			err(errno, "setsockopt(%s, %s)", "IPV6_PKTINFO", rts->device);
+		if ((bindtodev(fd, rts->device) < 0) ||
+		    (bindtodev(sock_fd, rts->device) < 0))
+			err(errno, "%s", rts->device);
+		if (scoped)
+			dst->sin6_scope_id = iface;
+	}
+	if (!scoped)
+		dst->sin6_family = AF_INET6;
+	sock_settos(fd, rts->qos, rts->ip6);
+#ifdef SO_MARK
+	sock_setmark(rts, fd); // privileged action if (SO_MARK & mark)
+#endif
+	//
+	dst->sin6_port = htons(1025);
+	if (connect(fd, SA(dst), SA6_LEN) >= 0)
+		return fd;
+	switch (errno) {
+	case EHOSTUNREACH:
+	case ENETUNREACH:
+		if (next) {
+			close(fd);
+			return -1;
+		}
+		break;
+	}
+	//
+	err(errno, "connect");
+}
+
 /* Return >= 0: exit with this code, < 0: go on to next addrinfo result */
 int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const sock_t *sock) {
 	fnset_t ping6_func_set = {
@@ -369,50 +415,16 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	rts->hostname = target;
 
 	if (IN6_IS_ADDR_UNSPECIFIED(&SA6_IN(&rts->source))) {
-		int probe_fd = socket(AF_INET6, SOCK_DGRAM, 0);
-		if (probe_fd < 0)
-			err(errno, "socket");
-
-		bool scoped = IN6_IS_ADDR_LINKLOCAL(&SA6_IN(&rts->firsthop)) ||
-			      IN6_IS_ADDR_MC_LINKLOCAL(&SA6_IN(&rts->firsthop));
-		if (rts->device) {
-			unsigned iface = nl_name2ndx(rts->device);
-			if (!iface) {
-				if (!errno) errno = ENODEV;
-				err(errno, NETDEV_FMT, rts->device);
-			}
-//			struct in6_pktinfo ipi = { .ipi6_ifindex = iface };
-//			if ((setsockopt(probe_fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
-//			    (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0))
-//				err(errno, "setsockopt(%s, %s)", "IPV6_PKTINFO", rts->device);
-			if ((bindtodev(probe_fd, rts->device) < 0) ||
-			    (bindtodev(sock->fd, rts->device) < 0))
-				err(errno, "%s", rts->device);
-			if (scoped)
-				SA6(&rts->firsthop)->sin6_scope_id = iface;
-		}
-		if (!scoped)
-			SA6(&rts->firsthop)->sin6_family = AF_INET6;
-		sock_settos(probe_fd, rts->qos, rts->ip6);
-		sock_setmark(rts, probe_fd);
-
-		SA6(&rts->firsthop)->sin6_port = htons(1025);
-		if (connect(probe_fd, SA(&rts->firsthop), SA6_LEN) < 0) {
-			if ((errno == EHOSTUNREACH || errno == ENETUNREACH) && ai->ai_next) {
-				close(probe_fd);
-				return -1;
-			}
-			err(errno, "connect");
-		}
-		GETSOCKNAME(probe_fd, SA(&rts->source), SA6_LEN);
+		int fd = probe_dst6(rts, SA6(&rts->whereto), sock->fd, ai->ai_next);
+		if (fd < 0)
+			return -1;
+		GETSOCKNAME(fd, SA(&rts->source), SA6_LEN);
 		SA6(&rts->source)->sin6_port = 0;
-		close(probe_fd);
-
+		close(fd);
 		if (rts->device && !nl_name2ndx(rts->device)) {
 			warnx("%s: %s: %s", _WARN, rts->device, WARN_NOSRCDEV);
 			rts->unreldev = true;
 		}
-
 	} else if (rts->device && (IN6_IS_ADDR_LINKLOCAL(&SA6_IN(&rts->source)) ||
 			      IN6_IS_ADDR_MC_LINKLOCAL(&SA6_IN(&rts->source)))) {
 		SA6(&rts->source)->sin6_scope_id = nl_name2ndx(rts->device);

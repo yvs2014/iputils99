@@ -256,7 +256,11 @@ static inline void opt_s(state_t *rts) {
 }
 
 static char *optstr =
-	"aAbBc:CdDe:fF:hHi:I:l:Lm:M:n"
+	"aAbBc:CdDe:fF:hHi:I:l:L"
+#ifdef SO_MARK
+	"m:"
+#endif
+	"M:n"
 #ifdef ENABLE_RFC4620
 	"N:"
 #endif
@@ -347,10 +351,11 @@ _("Cannot set preload to value greater than 3"), RTS_DATA->preload);
 	case 'L':
 		RTS_DATA->opt.noloop = true;
 		break;
+#ifdef SO_MARK
 	case 'm':
 		RTS_DATA->mark = VALID_INTSTR(0, UINT_MAX);
-		RTS_DATA->opt.mark = true;
 		break;
+#endif
 	case 'M':
 		if (strcmp(optarg, "do") == 0)
 			RTS_DATA->pmtudisc = IP_PMTUDISC_DO;

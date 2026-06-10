@@ -70,7 +70,6 @@ typedef struct bool_opt {
 	bool flowinfo;
 	bool interval;
 	bool latency;
-	bool mark;
 	bool noloop;
 	bool outstanding;
 	bool pingfilled;
@@ -129,7 +128,9 @@ typedef struct ping_state {
 	const char *device;
 	bool unreldev;			/* true if netdevice is not found */
 	int pmtudisc;
-	unsigned mark;
+#ifdef SO_MARK
+	uint32_t mark;
+#endif
 	// ttl related
 	int ttl;
 	int min_away;
@@ -193,7 +194,9 @@ void acknowledge(state_t *rts, uint16_t seq);
 
 #define IS_OURS(rts, rawsock, rcvd_id) (!(rawsock) || ((rcvd_id) == (rts)->ident16))
 
+#ifdef SO_MARK
 void sock_setmark(state_t *rts, int fd);
+#endif
 void sock_settos(int fd, int qos, bool ip6);
 int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
 	 const fnset_t* fnset);

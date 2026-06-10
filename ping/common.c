@@ -111,7 +111,9 @@ static const char *usestr =
 "  -i <interval>      seconds between sending each packet\n"
 "  -L                 suppress loopback of multicast packets\n"
 "  -l <preload>       send <preload> number of packages while waiting replies\n"
+#ifdef SO_MARK // TODO: split `usestr' .po into parts
 "  -m <mark>          tag the packets going out\n"
+#endif
 "  -M <pmtud opt>     define path MTU discovery, can be one of <do|dont|want|probe>\n"
 "  -n                 no reverse DNS name resolution, override -H\n"
 "  -O                 report outstanding replies\n"
@@ -136,7 +138,9 @@ static const char *usestr =
 "IPv6 options:\n"
 "  -6                 use IPv6\n"
 "  -F <flowlabel>     define flow label, default is random\n"
+#ifdef ENABLE_RFC4620
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
+#endif
 ;
 
 NORETURN void usage(int rc) {
@@ -388,9 +392,9 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 	return SCHINT(rts->interval);
 }
 
-void sock_setmark(state_t *rts, int fd) {
 #ifdef SO_MARK
-	if (!rts->opt.mark)
+void sock_setmark(state_t *rts, int fd) {
+	if (!rts->mark)
 		return;
 	NET_RAW_ON;  // linux4.x: NET_ADMIN
 	int rc = setsockopt(fd, SOL_SOCKET, SO_MARK, &rts->mark, sizeof(rts->mark));
@@ -402,12 +406,10 @@ void sock_setmark(state_t *rts, int fd) {
 		errno = keep;
 		if (errno == EPERM)
 			warn("%s: %s", _("=> missing capability"), "cap_net_raw+p");
-		rts->opt.mark = false;
+		rts->mark = 0;
 	}
-#else
-	warnx("%s: %s", _WARN, _("SO_MARK not supported"));
-#endif
 }
+#endif
 
 inline void sock_settos(int fd, int qos, bool ip6) {
 	if (qos && (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
@@ -444,7 +446,9 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 			warnx("%s: %s", _WARN, _("no SO_TIMESTAMP support, falling back to SIOCGSTAMP"));
 	}
 #endif
-	sock_setmark(rts, sock->fd); // privileged action if (SO_MARK & opt.mark)
+#ifdef SO_MARK
+	sock_setmark(rts, sock->fd); // privileged action if (SO_MARK & mark)
+#endif
 
 	/* Set some SNDTIMEO to prevent blocking forever
 	 * on sends, when device is too slow or stalls. Just put limit

@@ -14,7 +14,8 @@ project('iputils99', 'c',
 			check: false).stdout().strip() : '20260610',
 )
 
-add_project_arguments('-D_GNU_SOURCE', language: 'c')
+GNUSRC = '-D_GNU_SOURCE'
+add_project_arguments(GNUSRC, language: 'c')
 
 base    = 'iputils'
 name    = meson.project_name()
@@ -67,6 +68,8 @@ endif
 
 if build['ping']
 	extra_funcs += {'arc4random_uniform': {'hdr': ['stdlib.h']}}
+	_excl = []
+        # RFC4620
 	if rfc4620	# RFC4620 builtin client
 		conf.set('ENABLE_RFC4620', 1, description: 'build with RFC4620 NodeInfo client')
 		if get_option('NONCE_MEMORY')
@@ -75,7 +78,15 @@ if build['ping']
 		endif
 		extra_funcs += {'getrandom': {'hdr': ['sys/random.h']}}
 	else
-		manexcl += {'ping': ['N']}
+		_excl += ['N']
+	endif
+	# SO_MARK
+	if cc.get_define('SO_MARK', args: GNUSRC, prefix: '#include <sys/socket.h>') == ''
+		_excl += ['m']
+	endif
+	#
+	if _excl.length() > 0
+		manexcl += {'ping': _excl}
 	endif
 endif
 
@@ -91,11 +102,10 @@ endif
 altnames = get_option('ALTNAMES')
 if altnames
 	altname_c = '''
-#define _GNU_SOURCE
 #include <linux/rtnetlink.h>
 int main(int argc, char **argv) { return IFLA_ALT_IFNAME; }
 '''
-	alt_ifname = cc.compiles(altname_c, name: 'netdev-altnames support')
+	alt_ifname = cc.compiles(altname_c, args: GNUSRC, name: 'netdev-altnames support')
 	if alt_ifname
 		conf.set('USE_ALTNAMES', 1, description: 'Use netdev-altnames')
 	else
@@ -108,8 +118,7 @@ endif
 idn = get_option('IDN')
 idn_via = '' # libc
 if idn	# If available: use AI_IDN for getaddrinfo() queries
-	ai_prfx = '#define _GNU_SOURCE\n#include <netdb.h>\n'
-	if cc.get_define('AI_IDN', prefix: ai_prfx) == ''
+	if cc.get_define('AI_IDN', args: GNUSRC, prefix: '#include <netdb.h>') == ''
 		warning('IDN is not transparently supported')
 		deps += dependency('libidn2', required: true)
 		conf.set('USE_LIBIDN2', 1, description: 'Use libidn2 conversion')
@@ -136,7 +145,7 @@ foreach f, ext: extra_funcs
 	foreach h: hdrs
 		incl += cc.has_header(h) ? '#include <' + h + '>\n' : ''
 	endforeach
-	found = cc.has_function(f, args: '-D_GNU_SOURCE', prefix: incl)
+	found = cc.has_function(f, args: GNUSRC, prefix: incl)
 	if not found
 		libs = 'lib' in ext ? ext['lib'] : []
 		foreach l: libs
@@ -144,8 +153,7 @@ foreach f, ext: extra_funcs
 			if not lib.found()
 				lib = cc.find_library(l, required: false)
 			endif
-			if lib.found() and cc.has_function(f,
-			args: '-D_GNU_SOURCE', prefix: incl, dependencies: lib)
+			if lib.found() and cc.has_function(f, args: GNUSRC, prefix: incl, dependencies: lib)
 				found = true
 				deps += lib
 				break

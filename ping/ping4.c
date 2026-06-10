@@ -440,14 +440,16 @@ static int probe_dst4(state_t *rts, struct sockaddr_in dst, int sock_fd, bool ne
 		err(errno, "socket");
 	if (rts->device) {
 //		struct in_pktinfo ipi = { .ipi_ifindex = if_name2index(rts->device) };
-//		if ((setsockopt(fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
+//		if ((setsockopt(fd,      IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
 //		    (setsockopt(sock_fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0))
 //			err(errno, "setsockopt(%s, %s)", "IP_PKTINFO", rts->device);
 		if ((bindtodev(fd, rts->device) < 0) || (bindtodev(sock_fd, rts->device) < 0))
 			err(errno, "%s", rts->device);
 	}
 	sock_settos(fd, rts->qos, rts->ip6);
-	sock_setmark(rts, fd);
+#ifdef SO_MARK
+	sock_setmark(rts, fd); // privileged action if (SO_MARK & mark)
+#endif
 	dst.sin_port = htons(1025);
 	if (rts->ipopt.ipt && rts->ipopt.ipt->ipt_len)
 		dst.sin_addr.s_addr = rts->ipopt.ipt->data[0]; // note: `dst' is a copy
@@ -532,7 +534,7 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		errx(EINVAL, "%s", _("No intermediate hops for TSPRESPEC"));
 
 	if (!SA4ADDR(&rts->source)) {
-		int fd = probe_dst4(rts, *(struct sockaddr_in*)&rts->whereto, sock->fd, ai->ai_next);
+		int fd = probe_dst4(rts, *SA4(&rts->whereto), sock->fd, ai->ai_next);
 		if (fd < 0)
 			return -1;
 		GETSOCKNAME(fd, SA(&rts->source), SA4_LEN);
