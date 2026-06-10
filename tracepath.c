@@ -414,8 +414,7 @@ static int probe_ttl(state_t *rts) {
 	return 0;
 }
 
-NORETURN static void usage(int rc) {
-	const char *options =
+static const char *usestr =
 "  -4             use IPv4\n"
 "  -6             use IPv6\n"
 "  -b             print both name and IP\n"
@@ -426,7 +425,14 @@ NORETURN static void usage(int rc) {
 "  -v             verbose output\n"
 "  -V             print version and exit\n"
 ;
-	usage_common(rc, options, "TARGET", !MORE);
+
+NORETURN static void usage(int rc) {
+	usage_data_t use = {
+		.usestr = usestr,
+		.target = "TARGET",
+		.more   = !MORE,
+	};
+	usage_common(rc, &use);
 }
 
 static inline int resolve(const char *target, state_t *rts, const struct addrinfo *hints) {
@@ -568,22 +574,24 @@ int main(int argc, char **argv) {
 		.auxdata   = &hints,
 	};
 
-	// Support tracepath[46] tool names */
+	// Support tracepath[46] hardlinks
 	if (argv[0][strlen(argv[0]) - 1] == '4')
 		hints.ai_family = AF_INET;
 	else if (argv[0][strlen(argv[0]) - 1] == '6')
 		hints.ai_family = AF_INET6;
 
-	// Parse options
+	// Parse options and set target
 	common_getopt(argc, argv, optstr, FEAT_IDN | FEAT_NLS, usage, switch_opt, &rts);
 	argc -= optind;
 	argv += optind;
-	if (argc <= 0) {
-		errno = EDESTADDRREQ;
-		warn("%s", _("No goal"));
-		usage(EDESTADDRREQ);
-	} else if (argc != 1)
-		usage(EINVAL);
+	if (argc != 1) {
+		int rc = (argc > 0) ? EINVAL : EDESTADDRREQ;
+		if (argc <= 0) {
+			errno = rc;
+			warn("%s", _("No goal"));
+		}
+		usage(rc);
+	}
 	validate_hostlen(argv[0], true);
 
 	//

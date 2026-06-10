@@ -389,9 +389,7 @@ static timediff_e measure(state_t *rts, const struct sockaddr *sa, socklen_t sal
 	return DT_GOOD;
 }
 
-NORETURN static void usage(int rc) {
-	drop_priv();
-	const char *options =
+static const char *usestr =
 "      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
 "  -2  use IP timestamp and ICMP echo\n"
 "  -3  use three-term IP timestamp and ICMP echo\n"
@@ -402,7 +400,14 @@ NORETURN static void usage(int rc) {
 "  -h  print help and exit\n"
 "  -V  print version and exit\n"
 ;
-	usage_common(rc, options, "HOST", !MORE);
+
+NORETURN static void usage(int rc) {
+	usage_data_t use = {
+		.usestr = usestr,
+		.target = "HOST",
+		.more   = !MORE,
+	};
+	usage_common(rc, &use);
 }
 
 static char *optstr = "hIV23";
@@ -424,9 +429,35 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 #undef RTS_DATA
 }
 
+static inline int get_raw_socket(void) {
+	NET_RAW_ON;
+	errno = 0;
+	int sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+	int keep = errno;
+	NET_RAW_OFF;
+	if (sock < 0) {
+		errno = keep;
+		err(errno, "socket(%s, %s)", "AF_INET", "SOCK_RAW");
+	}
+	return sock;
+}
+
+static inline void set_nice(void) {
+	int inc = -16;
+	SYS_NICE_ON;
+	errno = 0;
+	nice(inc);
+	int keep = errno;
+	SYS_NICE_OFF;
+	if (errno) {
+		errno = keep;
+		err(errno, "nice(%d)", inc);
+	}
+}
+
 int main(int argc, char **argv) {
 #ifdef HAVE_LIBCAP
-	// limit caps to net_raw|sys_nice
+	// limit capabilities
 	{ cap_value_t caps[] = {CAP_NET_RAW, CAP_SYS_NICE};
 	  limit_cap(caps, ARRAY_LEN(caps)); }
 	NET_RAW_OFF;
@@ -434,44 +465,32 @@ int main(int argc, char **argv) {
 #else
 	keep_euid();
 #endif
+	// execute actions with elevated privileges
+	int sock = get_raw_socket();
+	set_nice();
+	// and drop privileges ASAP
+	drop_priv();
 
 	setmyname(argv[0]);
 	BIND_NLS;
 	atexit(close_stdout);
 
-	state_t rts = {.rtt = 1000, .ts_format = "%c" /*local*/};
+	state_t rts = {
+		.sock = sock,
+		.rtt = 1000,
+		.ts_format = "%c", // preferred representation for current locale
+	};
 	common_getopt(argc, argv, optstr, FEAT_CAP | FEAT_IDN | FEAT_NLS, usage, switch_opt, &rts);
 	argc -= optind;
 	argv += optind;
-	if (argc <= 0) {
-		errno = EDESTADDRREQ;
-		warn("%s", _("No goal"));
-		usage(EDESTADDRREQ);
-	} else if (argc != 1)
-		usage(EINVAL);
-
-	{
-	  NET_RAW_ON;
-	  rts.sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-	  int keep = errno;
-	  NET_RAW_OFF;
-	  if (rts.sock < 0) {
-		errno = keep;
-		err(errno, "socket(%s, %s)", "AF_INET", "SOCK_RAW");
-	  }
+	if (argc != 1) {
+		int rc = (argc > 0) ? EINVAL : EDESTADDRREQ;
+		if (argc <= 0) {
+			errno = rc;
+			warn("%s", _("No goal"));
+		}
+		usage(rc);
 	}
-	{ int inc = -16;
-	  SYS_NICE_ON;
-	  int rc = nice(inc);
-	  int keep = errno;
-	  SYS_NICE_OFF;
-	  if (rc == -1) {
-		errno = keep;
-		err(errno, "nice(%d)", inc);
-	  }
-	}
-
-	drop_priv();
 
 	if (isatty(fileno(stdin)) && isatty(fileno(stdout)))
 		rts.interactive = true;

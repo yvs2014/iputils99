@@ -83,16 +83,8 @@
 #define NETDEV_FMT "%.128s"	// limit to 128 characters
 #endif
 
-
-void close_stdout(void);
-void setmyname(const char *argv0);
-
-NORETURN void usage_common(int rc, const char *options, const char *target, bool more);
-#ifndef MORE
 #define MORE true
-#endif
 
-NORETURN void version_n_exit(int rc, int features);
 enum {
 	FEAT_CAP     = 0x1,
 	FEAT_IDN     = 0x2,
@@ -100,6 +92,21 @@ enum {
 	FEAT_ALTNAME = 0x8,
 	FEAT_RFC4620 = 0x10,
 };
+
+typedef struct usage_data {
+	const char *usestr, *target;
+	bool more;
+} usage_data_t;
+
+//
+
+void close_stdout(void);
+void setmyname(const char *argv0);
+
+NORETURN void usage_common(int rc, const usage_data_t *udata); // NONNULL(2)
+
+void common_getopt(int argc, char **argv, const char *optstr, int features,
+	void (*usage_fn)(int), void (*switch_fn)(char, void*), void *data);
 
 int gai_wrapper(const char *restrict node, const char *restrict service,
 	const struct addrinfo *restrict hints, struct addrinfo **restrict res);
@@ -119,8 +126,5 @@ void timersub(const struct timeval *a, const struct timeval *b, struct timeval *
 #endif
 
 int validate_hostlen(const char *host, bool fail);
-
-void common_getopt(int argc, char **argv, const char *optstr, int features,
-	void (*usage_fn)(int), void (*switch_fn)(char, void*), void *data);
 
 #endif

@@ -1,6 +1,6 @@
-iputils99 (1:99-20260608-rc1) noble; urgency=low
+iputils99 (1:99-20260610-rc1) noble; urgency=low
 
-  * rewritting iputils in C99 way
+  * iputils in C99 way for _testing_
     iputils99: https://github.com/yvs2014/iputils99/
     upstream:  https://github.com/iputils/iputils/
 

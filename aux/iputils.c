@@ -15,9 +15,6 @@
 
 #include "iputils.h"
 
-// gai_wrapper2():
-// IDN resolve using directly libidn2 for non-glibc libcs
-
 void close_stdout(void) {
 	if (fclose(stdout))
 		if ((errno != EBADF) && (errno != EPIPE))
@@ -92,7 +89,7 @@ void setmyname(const char *argv0) {
 #define RFC4620_FEATURE	'-'
 #endif
 
-void version_n_exit(int rc, int features) {
+NORETURN static void version_n_exit(int features) {
 	if (!myname)
 		setmyname(NULL);
 	printf("%s %s%s",
@@ -122,16 +119,16 @@ void version_n_exit(int rc, int features) {
 			printf(" %cRFC4620", RFC4620_FEATURE);
 	}
 	putchar('\n');
-	exit(rc);
+	exit(EXIT_SUCCESS);
 }
 
-void usage_common(int rc, const char *options, const char *target, bool more) {
+void usage_common(int rc, const usage_data_t *udata) { // NONNULL(2)
 	printf("\n%s:\n  %s", _("Usage"), myname);
-	if (options)
+	if (udata->usestr)
 		printf(" [%s]", _("options"));
-	printf(" %s%s\n", _(target), more ? " ..." : "");
-	if (options)
-		printf("\n%s:\n%s", _("Options"), _(options));
+	printf(" %s%s\n", _(udata->target), udata->more ? " ..." : "");
+	if (udata->usestr)
+		printf("\n%s:\n%s", _("Options"), _(udata->usestr));
 	printf("\n%s %s(8)\n", _("For more details see"), myname);
 	exit(rc);
 }
@@ -173,6 +170,8 @@ static inline char *idn2_decode(const char *restrict node) {
 	return decoded;
 }
 
+// gai_wrapper2():
+// IDN resolve using directly libidn2 for non-glibc libcs
 int gai_wrapper2(const char *restrict node, const char *restrict service,
 	const struct addrinfo *restrict hints, struct addrinfo **restrict res)
 {
@@ -231,7 +230,7 @@ void common_getopt(int argc, char **argv, const char *optstr, int features, // N
 			usage_fn(EXIT_SUCCESS);
 		break;
 	case 'V':
-		version_n_exit(EXIT_SUCCESS, features);
+		version_n_exit(features);
 		break;
 	default:
 		if (switch_fn && c && data)

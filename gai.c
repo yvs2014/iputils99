@@ -37,8 +37,7 @@ typedef struct valstr {
 } valstr_s;
 
 
-NORETURN static void usage(int rc) {
-	const char *options =
+static const char *usestr =
 "  -4        IPv4 family\n"
 "  -6        IPv6 family\n"
 "  -f value  ai_flags decimal or hex value\n"
@@ -52,7 +51,14 @@ NORETURN static void usage(int rc) {
 "  -v        verbose output\n"
 "  -V        print version\n"
 ;
-	usage_common(rc, options, "HOST", MORE);
+
+NORETURN static void usage(int rc) {
+	usage_data_t use = {
+		.usestr = usestr,
+		.target = "HOST",
+		.more   = MORE,
+	};
+	usage_common(rc, &use);
 }
 
 #define STREQ(a, b) (!strncmp((a), (b), AI_FMTLEN * 2))

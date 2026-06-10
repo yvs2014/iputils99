@@ -67,9 +67,7 @@ typedef struct run_state {
 
 //
 
-NORETURN static void usage(int rc) {
-	drop_priv();
-	const char *options =
+static const char *usestr =
 "  -f            quit on first reply\n"
 "  -q            be quiet\n"
 "  -b            keep on broadcasting, do not unicast\n"
@@ -83,7 +81,14 @@ NORETURN static void usage(int rc) {
 "  -I <device>   which ethernet device to use\n"
 "  -s <source>   source IP address\n"
 ;
-	usage_common(rc, options, "TARGET", !MORE);
+
+NORETURN static void usage(int rc) {
+	usage_data_t use = {
+		.usestr = usestr,
+		.target = "TARGET",
+		.more   = !MORE,
+	};
+	usage_common(rc, &use);
 }
 
 static inline void update_stat(struct timespec *last, int *sent, int *brd_sent) {
@@ -603,19 +608,23 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 
 int main(int argc, char **argv) {
 #ifdef HAVE_LIBCAP
-	// limit caps to net_raw
+	// limit capabilities
 	{ cap_value_t caps[] = {CAP_NET_RAW};
 	  limit_cap(caps, ARRAY_LEN(caps)); }
 	NET_RAW_OFF;
 #else
 	keep_euid();
 #endif
+	// execute actions with elevated privileges
+	int sock = arping_sock();
+	// and drop privileges ASAP
+	drop_priv();
 
 	setmyname(argv[0]);
 	BIND_NLS;
 	atexit(close_stdout);
 
-	struct run_state rts = { .stat.count = -1, .interval = 1 };
+	struct run_state rts = {.sock = sock, .stat.count = -1, .interval = 1};
 #ifdef DEFAULT_DEVICE
 	strncpy(rts.dev.name, DEFAULT_DEVICE, sizeof(rts.dev.name) - 1);
 #endif
@@ -623,18 +632,18 @@ int main(int argc, char **argv) {
 	common_getopt(argc, argv, optstr, ARPING_FEATURES, usage, switch_opt, &rts);
 	argc -= optind;
 	argv += optind;
-	if (argc <= 0) {
-		errno = EDESTADDRREQ;
-		warn("%s", _("No goal"));
-		usage(EDESTADDRREQ);
-	} else if (argc != 1)
-		usage(EINVAL);
+	if (argc != 1) {
+		int rc = (argc > 0) ? EINVAL : EDESTADDRREQ;
+		if (argc <= 0) {
+			errno = rc;
+			warn("%s", _("No goal"));
+		}
+		usage(rc);
+	}
 
 	rts.target = *argv;
 	validate_hostlen(rts.target, true);
-	rts.sock   = arping_sock();
 	arping_setup(&rts);
-	drop_priv();
 	//
 	//
 	bind_sock(SLL(&rts.from), SLL(&rts.to), rts.dev.ndx, rts.dev.name, rts.sock,

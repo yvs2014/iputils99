@@ -92,9 +92,7 @@ inline void rcvd_clear(uint16_t seq, bitmap_t *map) {
 	BITMAP_ARR(bit) &= ~BITMAP_BIT(bit);
 }
 
-void usage(int rc) {
-	drop_priv();
-	const char *options =
+static const char *usestr =
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
 "  -B                 sticky source address\n"
@@ -140,7 +138,15 @@ void usage(int rc) {
 "  -F <flowlabel>     define flow label, default is random\n"
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 ;
-	usage_common(rc, options, "TARGET", !MORE);
+
+NORETURN void usage(int rc) {
+	drop_priv();
+	usage_data_t use = {
+		.usestr = usestr,
+		.target = "TARGET",
+		.more   = !MORE,
+	};
+	usage_common(rc, &use);
 }
 
 // Fill payload area (supposed to be without timestamp area) with supplied pattern
@@ -386,10 +392,10 @@ void sock_setmark(state_t *rts, int fd) {
 #ifdef SO_MARK
 	if (!rts->opt.mark)
 		return;
-	NET_RAW_ON;  /* linux4.x: NET_ADMIN */
+	NET_RAW_ON;  // linux4.x: NET_ADMIN
 	int rc = setsockopt(fd, SOL_SOCKET, SO_MARK, &rts->mark, sizeof(rts->mark));
 	int keep = errno;
-	NET_RAW_OFF; /* linux4.x: NET_ADMIN */
+	NET_RAW_OFF; // linux4.x: NET_ADMIN
 	if (rc < 0) {
 		errno = keep;
 		warn("%s: %s: %u", _WARN, _("failed to set mark"), rts->mark);
@@ -438,7 +444,7 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 			warnx("%s: %s", _WARN, _("no SO_TIMESTAMP support, falling back to SIOCGSTAMP"));
 	}
 #endif
-	sock_setmark(rts, sock->fd);
+	sock_setmark(rts, sock->fd); // privileged action if (SO_MARK & opt.mark)
 
 	/* Set some SNDTIMEO to prevent blocking forever
 	 * on sends, when device is too slow or stalls. Just put limit
