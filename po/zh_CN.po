@@ -538,22 +538,6 @@ msgid "=> missing capability"
 msgstr "=> 缺少"
 
 #
-msgid "Bad value for flowinfo"
-msgstr "流信息的错误值"
-
-#
-msgid "Flow value is greater than 20 bits"
-msgstr "流值大于 20 位"
-
-#
-msgid "Bad TOS value"
-msgstr "错误的 TOS 值"
-
-#
-msgid "Decimal value of TOS bits must be in range 0-255"
-msgstr "TOS 位的十进制值必须在 0-255 范围内"
-
-#
 msgid "Invalid timestamp type"
 msgstr "时间戳类型无效"
 

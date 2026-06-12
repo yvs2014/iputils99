@@ -546,22 +546,6 @@ msgid "=> missing capability"
 msgstr "=> აკლია შესაძლებლობა"
 
 #
-msgid "Bad value for flowinfo"
-msgstr "Flowinfo-ის არასწორი მნიშვნელობა"
-
-#
-msgid "Flow value is greater than 20 bits"
-msgstr "დინების მნიშვნელობა 20 ბიტზე დიდია"
-
-#
-msgid "Bad TOS value"
-msgstr "TOS-ის არასწორი მნიშვნელობა"
-
-#
-msgid "Decimal value of TOS bits must be in range 0-255"
-msgstr "TOS-ის ბიტების რიცხვის მთელი მნიშვნელობა 0-255 დიაპაზონში უნდა იყოს"
-
-#
 msgid "Invalid timestamp type"
 msgstr "დროის სანიშნის არასწორი ტიპი"
 

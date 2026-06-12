@@ -7,16 +7,8 @@
 
 #include "common.h"
 
-unsigned parse_flow(const char *str);
-unsigned char parse_tos(const char *str);
-void setsock_bpf(const state_t *rts,
-	const sock_t *sock, const struct sock_fprog *prog);
 void mtudisc_n_bind(state_t *rts, const sock_t *sock);
-void setsock_recverr(int fd, bool ip6);
-void setsock_noloop(int fd, bool ip6);
-void setsock_ttl(int fd, bool ip6, int ttl);
 void pmtu_interval(state_t *rts);
-void set_estimate_buf(state_t *rts, int fd, size_t iphlen, size_t icmphlen);
 void print_local_ee(const state_t *rts, const struct sock_extended_err *ee);
 int get_errmsg(state_t *rts, const sock_t *sock, struct msghdr *msg);
 

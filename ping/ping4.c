@@ -59,23 +59,19 @@
 #include <err.h>
 #include <errno.h>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-//
 //#include <linux/icmp.h> /* conflicted with <netinet/ip_icmp.h> */
-#include <linux/errqueue.h>
-#include <linux/filter.h>
 
 #include "ping4.h"
-
 #include "iputils.h"
 #include "common.h"
 #include "stats.h"
 #include "ping_aux.h"
 #include "ping4_aux.h"
 #include "ping4_opt.h"
+#include "setsock.h"
 #include "nbind.h"
 #include "nlink.h"
 
@@ -385,7 +381,7 @@ static void ping4_bpf_filter(const state_t *rts, const sock_t *sock) {
 		.len    = ARRAY_LEN(filter),
 		.filter = filter,
 	};
-	setsock_bpf(rts, sock, &fprog);
+	setsock_filter(sock->fd, &fprog, rts->opt.verbose, '4', rts->ident16);
 }
 
 static inline const char *ping4_run_args(const char *target, bool hops, struct addrinfo *ai,
@@ -446,9 +442,11 @@ static int probe_dst4(state_t *rts, struct sockaddr_in dst, int sock_fd, bool ne
 		if ((bindtodev(fd, rts->device) < 0) || (bindtodev(sock_fd, rts->device) < 0))
 			err(errno, "%s", rts->device);
 	}
-	sock_settos(fd, rts->qos, rts->ip6);
+	if (rts->tos)
+		setsock_tos(fd, rts->tos, rts->ip6);
 #ifdef SO_MARK
-	sock_setmark(rts, fd); // privileged action if (SO_MARK & mark)
+	if (rts->mark >= 0)
+		setsock_mark(fd, rts->mark); // privileged action
 #endif
 	dst.sin_port = htons(1025);
 	if (rts->ipopt.ipt && rts->ipopt.ipt->ipt_len)
@@ -607,7 +605,10 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 				rts->ipopt.ipt->ipt_len - 4 - 1);
 	}
 	//
-	set_estimate_buf(rts, sock->fd, sizeof(struct iphdr) + optlen, sizeof(struct icmphdr));
+	if (!rts->sndbuf)
+		rts->sndbuf = estimate_packlen(sizeof(struct iphdr) + optlen,
+			sizeof(struct icmphdr), rts->datalen);
+	setsock_buffer(sock->fd, rts->sndbuf, rts->preload);
 
 	size_t hlen = sizeof(struct iphdr) + sizeof(struct icmphdr);
 	headline(rts, hlen + optlen);

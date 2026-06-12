@@ -550,22 +550,6 @@ msgid "=> missing capability"
 msgstr "=> chybí capability"
 
 #
-msgid "Bad value for flowinfo"
-msgstr "Chybná hodnota v údajích o toku"
-
-#
-msgid "Flow value is greater than 20 bits"
-msgstr "Hodnota toku se nevejde do 20 bitů"
-
-#
-msgid "Bad TOS value"
-msgstr "Chybná hodnota ToS"
-
-#
-msgid "Decimal value of TOS bits must be in range 0-255"
-msgstr "Je třeba, aby desítková hodnota bitů ToS byla z rozsahu 0 až 255"
-
-#
 msgid "Invalid timestamp type"
 msgstr "Neplatný druh časové značky"
 

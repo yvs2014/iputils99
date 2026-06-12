@@ -183,13 +183,13 @@ void print_timestamp(void) {
 	       (unsigned long)tv.tv_sec, (unsigned long)tv.tv_usec);
 }
 
+// Called once at ping setup
 void headline(const state_t *rts, size_t nodatalen) {
-	// called once at ping setup
 	socklen_t len = rts->ip6 ? SA6_LEN : SA4_LEN;
 	printf("%s %s (%s)", _("PING"), rts->hostname,
 		sprint_addr(&rts->whereto, len, false));
-	if (rts->ip6 && rts->flowlabel)
-		printf(", %s 0x%05x", _("flow"), ntohl(rts->flowlabel));
+	if (rts->ip6 && (rts->flow >= 0))
+		printf(", %s 0x%05x", _("flow"), ntohl(rts->flow));
 	if (rts->device || rts->opt.strictsource) {
 		const char *from = sprint_addr(&rts->source, len, false);
 		printf(" %s %s", _("from"), from);

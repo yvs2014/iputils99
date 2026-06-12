@@ -64,10 +64,12 @@
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <linux/in6.h>
 
 #include "iputils.h"
 #include "str2num.h"
 #include "common.h"
+#include "setsock.h"
 #include "ping_aux.h"
 #include "ping4.h"
 #include "ping6.h"
@@ -325,8 +327,7 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 		setvbuf(stdout, NULL, _IONBF, 0); // turn off buffers
 		break;
 	case 'F':
-		RTS_DATA->flowlabel = parse_flow(optarg);
-		RTS_DATA->opt.flowinfo = true;
+		RTS_DATA->flow = VALID_INTSTR(0, IPV6_FLOWINFO_FLOWLABEL);
 		break;
 	case 'H':
 		if (RTS_DATA->opt.flood)
@@ -358,13 +359,13 @@ _("Cannot set preload to value greater than 3"), RTS_DATA->preload);
 #endif
 	case 'M':
 		if (strcmp(optarg, "do") == 0)
-			RTS_DATA->pmtudisc = IP_PMTUDISC_DO;
+			RTS_DATA->mtudisc = IP_PMTUDISC_DO;
 		else if (strcmp(optarg, "dont") == 0)
-			RTS_DATA->pmtudisc = IP_PMTUDISC_DONT;
+			RTS_DATA->mtudisc = IP_PMTUDISC_DONT;
 		else if (strcmp(optarg, "want") == 0)
-			RTS_DATA->pmtudisc = IP_PMTUDISC_WANT;
+			RTS_DATA->mtudisc = IP_PMTUDISC_WANT;
 		else if (strcmp(optarg, "probe") == 0)
-			RTS_DATA->pmtudisc = IP_PMTUDISC_PROBE;
+			RTS_DATA->mtudisc = IP_PMTUDISC_PROBE;
 		else {
 			errno = EINVAL;
 			err(errno, "-%c %s", c, optarg);
@@ -396,7 +397,7 @@ _("Cannot set preload to value greater than 3"), RTS_DATA->preload);
 		RTS_DATA->opt.quiet = true;
 		break;
 	case 'Q':
-		RTS_DATA->qos = parse_tos(optarg);
+		RTS_DATA->tos = VALID_INTSTR(0, UINT8_MAX);
 		break;
 	case 'r':
 		RTS_DATA->opt.so_dontroute = true;
@@ -452,7 +453,6 @@ _("Cannot set preload to value greater than 3"), RTS_DATA->preload);
 #undef RTS_HINT
 }
 
-
 int main(int argc, char **argv) {
 	run_fn ping_run[2] = { ping4_run, ping6_run };
 	//
@@ -463,7 +463,9 @@ int main(int argc, char **argv) {
 		.preload      =  1,
 		.lingertime   = MAXWAIT * 1000,	/* in ms */
 		.confirm_flag = MSG_CONFIRM,
-		.pmtudisc     = -1,
+		.mtudisc      = -1,
+		.mark         = -1,
+		.flow         = -1,
 		.ttl          = -1,
 		.min_away     = -1,
 		.max_away     = -1,
@@ -475,10 +477,10 @@ int main(int argc, char **argv) {
 	};
 
 #ifdef HAVE_LIBCAP
-	// limit caps to net_raw
-	{ cap_value_t caps[] = {CAP_NET_RAW};
-	  limit_cap(caps, ARRAY_LEN(caps)); }
+	// limit capabilities
+	limit_caps((cap_value_t[]){CAP_NET_RAW, CAP_NET_ADMIN, -1});
 	NET_RAW_OFF;
+	NET_ADMIN_OFF;
 #else
 	keep_euid();
 #endif
@@ -574,9 +576,10 @@ int main(int argc, char **argv) {
 			open_socket(&sock, rts.ip6 ? AF_INET6 : AF_INET,
 				rts.ip6 ? IPPROTO_ICMPV6 : IPPROTO_ICMP, rts.opt.verbose);
 			if (rts.ip6) // be sure in pathmtu disc6 constants
-				MTUDISC6(rts.pmtudisc);
+				MTUDISC6(rts.mtudisc);
 			if (sock.fd >= 0) {
-				sock_settos(sock.fd, rts.qos, rts.ip6);
+				if (rts.tos)
+					setsock_tos(sock.fd, rts.tos, rts.ip6);
 				rcode = ping_run[rts.ip6](&rts, argc, argv, ai, &sock);
 				close(sock.fd);
 			}

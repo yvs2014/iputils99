@@ -10,7 +10,7 @@
 
 #include "caps.h"
 
-void limit_cap(const cap_value_t *limit, int ncap) {
+static inline void set_caps(const cap_value_t flag[]) { // NONNULL(1)
 	// init
 	cap_t curr = cap_get_proc();
 	if (!curr)
@@ -19,22 +19,23 @@ void limit_cap(const cap_value_t *limit, int ncap) {
 	if (!caps)
 		err(errno, "%s", "cap_init()");
 	// take only those that permitted
-	for (int i = 0; i < ncap; i++) {
-		cap_value_t flag = limit[i];
+	for (; *flag >= 0; flag++) {
 		cap_flag_value_t c = CAP_CLEAR;
-		if (cap_get_flag(curr, flag, CAP_PERMITTED, &c) < 0)
-			err(errno, "cap_get_flag(%s, %d)", "PERMITTED", flag);
+		if (cap_get_flag(curr, *flag, CAP_PERMITTED, &c) < 0)
+			err(errno, "cap_get_flag(%s, %d)", "PERMITTED", *flag);
 		if (c != CAP_CLEAR) // add to permitted
-			if (cap_set_flag(caps, CAP_PERMITTED, 1, &flag, CAP_SET) < 0)
-				err(errno, "cap_set_flag(flag=%d, onoff=%d)", flag, CAP_SET);
+			if (cap_set_flag(caps, CAP_PERMITTED, 1, flag, CAP_SET) < 0)
+				err(errno, "cap_set_flag(%s, flag=%d, onoff=%d)", "PERMITTED", *flag, CAP_SET);
 	}
-	// set them (taken permitted), clear others
+	// set them and clear others
 	if (cap_set_proc(caps) < 0)
 		err(errno, "%s", "cap_set_proc()");
 	// clean
 	cap_free(caps);
 	cap_free(curr);
-	// set state
+}
+
+static inline void keep_cap_state(void) {
 	uid_t uid = getuid();
 	if (prctl(PR_SET_KEEPCAPS, 1) < 0)
 		err(errno, "prctl(%s, %s)", "CAPS", "set");
@@ -44,6 +45,11 @@ void limit_cap(const cap_value_t *limit, int ncap) {
 		err(errno, "prctl(%s, %s)", "CAPS", "clear");
 	if (seteuid(uid))
 		err(errno, "seteuid(%d)", uid);
+}
+
+void limit_caps(const cap_value_t flag[]) { // NONNULL(1)
+	set_caps(flag);
+	keep_cap_state();
 }
 
 void drop_priv(void) {

@@ -616,22 +616,6 @@ msgid "=> missing capability"
 msgstr "=> відсутність властивості"
 
 #
-msgid "Bad value for flowinfo"
-msgstr "Неправильне значення flowinfo"
-
-#
-msgid "Flow value is greater than 20 bits"
-msgstr "Значення потоку перевищує 20 біт"
-
-#
-msgid "Bad TOS value"
-msgstr "Неправильне значення TOS"
-
-#
-msgid "Decimal value of TOS bits must be in range 0-255"
-msgstr "Значення TOS має бути в діапазоні 0-255"
-
-#
 msgid "Invalid timestamp type"
 msgstr "Некоректний тип часової позначки"
 

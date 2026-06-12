@@ -497,22 +497,6 @@ msgid "=> missing capability"
 msgstr ""
 
 #
-msgid "Bad value for flowinfo"
-msgstr "はフロー情報値として正しくありません"
-
-#, fuzzy
-msgid "Flow value is greater than 20 bits"
-msgstr "フロー値 は20ビットより大きいです"
-
-#
-msgid "Bad TOS value"
-msgstr "不適切なTOS値です"
-
-#, fuzzy
-msgid "Decimal value of TOS bits must be in range 0-255"
-msgstr "TOSビット は10進値で0-255でなければいけません"
-
-#
 msgid "Invalid timestamp type"
 msgstr "無効なタイムスタンプ種別です"
 

@@ -496,22 +496,6 @@ msgid "=> missing capability"
 msgstr ""
 
 #
-msgid "Bad value for flowinfo"
-msgstr "흐름정보에 잘못된 값"
-
-#
-msgid "Flow value is greater than 20 bits"
-msgstr "흐름 값은 20 비트보다 커야 합니다"
-
-#
-msgid "Bad TOS value"
-msgstr "잘못된 TOS 값"
-
-#
-msgid "Decimal value of TOS bits must be in range 0-255"
-msgstr "TOS 비트의 십진수 값은 범위가 0-255 이어야 합니다"
-
-#
 msgid "Invalid timestamp type"
 msgstr "부적절한 타임스탬프 형식"
 

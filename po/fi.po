@@ -540,22 +540,6 @@ msgid "=> missing capability"
 msgstr "=> ominaisuuden puute"
 
 #
-msgid "Bad value for flowinfo"
-msgstr "Huono arvo virtaustiedolle"
-
-#
-msgid "Flow value is greater than 20 bits"
-msgstr "Virtausarvo on suurempi kuin 20 bittiä"
-
-#
-msgid "Bad TOS value"
-msgstr "Virheellinen TOS-arvo"
-
-#
-msgid "Decimal value of TOS bits must be in range 0-255"
-msgstr "TOS-bittien desimaaliarvon on oltava välillä 0–255"
-
-#
 msgid "Invalid timestamp type"
 msgstr "Virheellinen aikaleimatyyppi"
 

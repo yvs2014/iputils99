@@ -458,8 +458,7 @@ static inline void set_nice(void) {
 int main(int argc, char **argv) {
 #ifdef HAVE_LIBCAP
 	// limit capabilities
-	{ cap_value_t caps[] = {CAP_NET_RAW, CAP_SYS_NICE};
-	  limit_cap(caps, ARRAY_LEN(caps)); }
+	limit_caps((cap_value_t[]){CAP_NET_RAW, CAP_SYS_NICE, -1});
 	NET_RAW_OFF;
 	SYS_NICE_OFF;
 #else

@@ -551,22 +551,6 @@ msgid "=> missing capability"
 msgstr "=> faltando a capacidade"
 
 #
-msgid "Bad value for flowinfo"
-msgstr "Valor inválido para flowinfo"
-
-#
-msgid "Flow value is greater than 20 bits"
-msgstr "Valor de fluxo é maior que 20 bits"
-
-#
-msgid "Bad TOS value"
-msgstr "Valor de TOS inválido"
-
-#
-msgid "Decimal value of TOS bits must be in range 0-255"
-msgstr "Valor em decimal de bits TOS deve estar no intervalo 0-255"
-
-#
 msgid "Invalid timestamp type"
 msgstr "Tipo de marca de tempo inválido"
 

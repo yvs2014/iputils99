@@ -39,11 +39,10 @@
 #include <signal.h>
 #include <setjmp.h>
 #include <sched.h>
-#include <sys/ioctl.h>
 #include <poll.h>
+#include <sys/ioctl.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/icmp6.h>
-#include <sys/socket.h>
 #ifndef SIOCGSTAMP
 #include <linux/sockios.h>
 #endif
@@ -52,6 +51,7 @@
 
 #include "iputils.h"
 #include "stats.h"
+#include "setsock.h"
 #ifdef HAVE_LIBCAP
 #include "caps.h"
 #else
@@ -392,31 +392,6 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 	return SCHINT(rts->interval);
 }
 
-#ifdef SO_MARK
-void sock_setmark(state_t *rts, int fd) {
-	if (!rts->mark)
-		return;
-	NET_RAW_ON;  // linux4.x: NET_ADMIN
-	int rc = setsockopt(fd, SOL_SOCKET, SO_MARK, &rts->mark, sizeof(rts->mark));
-	int keep = errno;
-	NET_RAW_OFF; // linux4.x: NET_ADMIN
-	if (rc < 0) {
-		errno = keep;
-		warn("%s: %s: %u", _WARN, _("failed to set mark"), rts->mark);
-		errno = keep;
-		if (errno == EPERM)
-			warn("%s: %s", _("=> missing capability"), "cap_net_raw+p");
-		rts->mark = 0;
-	}
-}
-#endif
-
-inline void sock_settos(int fd, int qos, bool ip6) {
-	if (qos && (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
-	    ip6 ? IPV6_TCLASS : IP_TOS, &qos, sizeof(qos)) < 0))
-		err(errno, "setsockopt(%s)", "QoS");
-}
-
 /* Protocol independent setup and parameter checks */
 static void ping_setup(state_t *rts, const sock_t *sock) {
 	if (rts->opt.flood && !rts->opt.interval)
@@ -433,21 +408,29 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 	// socket options
 	if (rts->opt.so_debug) {
 		int opt = 1;
-		setsockopt(sock->fd, SOL_SOCKET, SO_DEBUG, &opt, sizeof(opt));
+		NET_ADMIN_ON;
+		int rc = setsockopt(sock->fd, SOL_SOCKET, SO_DEBUG, &opt, sizeof(opt));
+		int keep = errno;
+		NET_ADMIN_OFF;
+		errno = keep;
+		if (rc < 0)
+			warn("setsockopt(%s)", "DEBUG");
 	}
 	if (rts->opt.so_dontroute) {
 		int opt = 1;
-		setsockopt(sock->fd, SOL_SOCKET, SO_DONTROUTE, &opt, sizeof(opt));
+		if (setsockopt(sock->fd, SOL_SOCKET, SO_DONTROUTE, &opt, sizeof(opt)) < 0)
+			warn("setsockopt(%s)", "DONTROUTE");
 	}
 #ifdef SO_TIMESTAMP
 	if (!rts->opt.latency) {
 		int opt = 1;
 		if (setsockopt(sock->fd, SOL_SOCKET, SO_TIMESTAMP, &opt, sizeof(opt)) < 0)
-			warnx("%s: %s", _WARN, _("no SO_TIMESTAMP support, falling back to SIOCGSTAMP"));
+			warnx("%s", _("no SO_TIMESTAMP support, falling back to SIOCGSTAMP"));
 	}
 #endif
 #ifdef SO_MARK
-	sock_setmark(rts, sock->fd); // privileged action if (SO_MARK & mark)
+	if (rts->mark >= 0)
+		setsock_mark(sock->fd, rts->mark); // privileged action
 #endif
 
 	/* Set some SNDTIMEO to prevent blocking forever
@@ -725,5 +708,10 @@ inline void acknowledge(state_t *rts, uint16_t seq) {
 		    (uint16_t)rts->ntransmitted - rts->acked > INT16_MAX)
 			rts->acked = seq;
 	}
+}
+
+size_t estimate_packlen(size_t ip, size_t icmp, size_t data) {
+	// "alloc" is an estimate of memory taken by single packet
+	return ((icmp + data + 511) / 512) * (ip + 2 * icmp + DEFIPPAYLOAD + 160);
 }
 

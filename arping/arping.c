@@ -609,8 +609,7 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 int main(int argc, char **argv) {
 #ifdef HAVE_LIBCAP
 	// limit capabilities
-	{ cap_value_t caps[] = {CAP_NET_RAW};
-	  limit_cap(caps, ARRAY_LEN(caps)); }
+	limit_caps((cap_value_t[]){CAP_NET_RAW, -1});
 	NET_RAW_OFF;
 #else
 	keep_euid();

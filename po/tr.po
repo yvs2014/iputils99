@@ -539,22 +539,6 @@ msgid "=> missing capability"
 msgstr "=> eksik özelliği"
 
 #
-msgid "Bad value for flowinfo"
-msgstr "Akış bilgisi için hatalı değer"
-
-#
-msgid "Flow value is greater than 20 bits"
-msgstr "Akış değeri 20 bitten büyük"
-
-#
-msgid "Bad TOS value"
-msgstr "Hatalı TOS değeri"
-
-#
-msgid "Decimal value of TOS bits must be in range 0-255"
-msgstr "TOS bitlerinin ondalık değeri 0-255 aralığında olmalıdır"
-
-#
 msgid "Invalid timestamp type"
 msgstr "Geçersiz zaman damgası türü"
 

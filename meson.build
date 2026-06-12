@@ -4,7 +4,7 @@
 
 project('iputils99', 'c',
 	default_options: [
-		'c_std=c99',
+		'c_std=c23,c17,c11,c99',
 		'warning_level=3',
 #		'b_sanitize=address,undefined', # use for testing
 	],
@@ -181,12 +181,13 @@ if set_caps and libcap
 endif
 if get_option('NEED_NET_RAW')
 	linux_caps = {
-		'ping':      'cap_net_raw+p',
+		'ping':      'cap_net_raw,cap_net_admin+p',
 		'arping':    'cap_net_raw+p',
 		'clockdiff': 'cap_net_raw,cap_sys_nice+p',
 	}
 else
 	linux_caps = {
+		'ping':      'cap_net_admin+p',
 		'clockdiff': 'cap_sys_nice+p',
 	}
 endif
@@ -277,6 +278,7 @@ sections = {
 	'APPLICATIONS' : sect_app,
 	'CONFIGURATION': sect_cnf,
 	'DIRECTORIES'  : sect_dir,
+	'BUILD'        : {'standard': get_option('c_std')},
 }
 
 foreach section, elems: sections

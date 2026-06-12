@@ -61,15 +61,14 @@
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <sys/types.h>
-#include <linux/in6.h>
 
 #include "ping_aux.h"
-
 #include "iputils.h"
 #include "common.h"
 #include "stats.h"
 #include "ping4_aux.h"
 #include "ping6_aux.h"
+#include "setsock.h"
 
 // common IPv4/IPv6 ICMP header
 typedef struct icmp46h {
@@ -79,78 +78,6 @@ typedef struct icmp46h {
 	uint16_t id;
 	uint16_t seq;
 } icmp46h_t;
-
-#define DX_SHIFT(str) (((str)[0] == '0') && (((str)[1] == 'x') || ((str)[1] == 'X')) ? 2 : 0)
-unsigned parse_flow(const char *str) {
-	/* handle both hex and decimal values */
-	char *ep = NULL;
-	int dx = DX_SHIFT(str);
-	unsigned val = strtoul(str + dx, &ep, dx ? 16 : 10);
-	/* doesn't look like decimal or hex, eh? */
-	if (ep && *ep)
-		errx(EINVAL, "%s: %s", _("Bad value for flowinfo"), str);
-	if (val & ~IPV6_FLOWINFO_FLOWLABEL)
-		errx(EINVAL, "%s: %s", _("Flow value is greater than 20 bits"), str);
-	return val;
-}
-
-/* Set Type of Service (TOS) and other QOS relating bits */
-unsigned char parse_tos(const char *str) {
-	/* handle both hex and decimal values */
-	char *ep = NULL;
-	int dx = DX_SHIFT(str);
-	unsigned long tos = strtoul(str + dx, &ep, dx ? 16 : 10);
-	/* doesn't look like decimal or hex, eh? */
-	if (ep && *ep)
-		errx(EINVAL, "%s: %s", _("Bad TOS value"), str);
-	if (tos > UCHAR_MAX)
-		errx(EINVAL, "%s: %lu",
-			_("Decimal value of TOS bits must be in range 0-255"),
-			tos);
-	return tos;
-}
-#undef DX_SHIFT
-
-void setsock_bpf(const state_t *rts,
-	const sock_t *sock, const struct sock_fprog *prog)
-{
-	if (rts->opt.verbose)
-		warnx("bpf%c socket=%d ident=0x%04x",
-			rts->ip6 ? '6' : '4', sock->fd, rts->ident16);
-	if (setsockopt(sock->fd, SOL_SOCKET, SO_ATTACH_FILTER, prog, sizeof(*prog)) < 0)
-		err(errno, "setsockopt(%s)", "SO_ATTACH_FILTER");
-#ifdef SO_LOCK_FILTER
-	int on = 1;
-	if (setsockopt(sock->fd, SOL_SOCKET, SO_LOCK_FILTER, &on, sizeof(on)) < 0)
-		warn("setsockopt(%s)", "SO_LOCK_FILTER");
-#endif
-}
-
-inline void setsock_recverr(int fd, bool ip6) {
-	int on = 1;
-	if (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
-		ip6 ? IPV6_RECVERR : IP_RECVERR, &on, sizeof(on)) < 0)
-			warn("%s: setsockopt(%s)", _WARN,
-		ip6 ? "IPV6_RECVERR" : "IP_RECVERR");
-}
-
-inline void setsock_noloop(int fd, bool ip6) {
-	int off = 0;
-	if (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
-		ip6 ? IPV6_MULTICAST_LOOP : IP_MULTICAST_LOOP,
-		&off, sizeof(off)) < 0)
-			err(errno, "%s", _("Cannot disable multicast loopback"));
-}
-
-void setsock_ttl(int fd, bool ip6, int ttl) {
-	int level = ip6 ? IPPROTO_IPV6 : IPPROTO_IP;
-	if (setsockopt(fd, level, ip6 ? IPV6_MULTICAST_HOPS : IP_MULTICAST_TTL,
-		&ttl, sizeof(ttl)) < 0)
-			err(errno, "setsockopt(%s)", "MULTICAST_TTL");
-	if (setsockopt(fd, level, ip6 ? IPV6_UNICAST_HOPS : IP_TTL,
-		&ttl, sizeof(ttl)) < 0)
-			err(errno, "setsockopt(%s)", "UNICAST_TTL");
-}
 
 void pmtu_interval(state_t *rts) {
 	rts->multicast = true;
@@ -167,25 +94,20 @@ void pmtu_interval(state_t *rts) {
 				"Minimal user interval for broadcast ping must be >="),
 				MIN_MCAST_MS, _("ms"), _("see -i option for details"));
 		}
-		if ((rts->pmtudisc >= 0) && (rts->pmtudisc != PMTUDISCDO))
+		if ((rts->mtudisc >= 0) && (rts->mtudisc != PMTUDISCDO))
 			errx(EINVAL, "%s %s", _(rts->ip6 ?
 				"Multicast ping" : "Broadcast ping"),
 				_("does not fragment"));
 	}
-	if (rts->pmtudisc < 0)
-		rts->pmtudisc = PMTUDISCDO;
+	if (rts->mtudisc < 0)
+		rts->mtudisc = PMTUDISCDO;
 }
 #undef PMTUDISCDO
 
+// Called once at setup
 void mtudisc_n_bind(state_t *rts, const sock_t *sock) {
-	// called once at setup
-	if (rts->pmtudisc >= 0) {
-		int level = rts->ip6 ? IPPROTO_IPV6      : IPPROTO_IP;
-		int name  = rts->ip6 ? IPV6_MTU_DISCOVER : IP_MTU_DISCOVER;
-		if (setsockopt(sock->fd, level, name,
-				&rts->pmtudisc, sizeof(rts->pmtudisc)) < 0)
-			err(errno, "setsockopt(%s)", "MTU_DISCOVER");
-	}
+	if (rts->mtudisc >= 0)
+		setsock_mtudisc(sock->fd, rts->ip6, &rts->mtudisc);
 	bool set_ident = (rts->custom_ident > 0) && !sock->raw;
 	if (set_ident) {
 		if (rts->ip6)
@@ -199,31 +121,6 @@ void mtudisc_n_bind(state_t *rts, const sock_t *sock) {
 			err(errno, "bind(%s)", "icmp-socket");
 	}
 }
-
-/* Estimate memory eaten by single packet. It is rough estimate.
- * Actually, for small datalen's it depends on kernel side a lot. */
-void set_estimate_buf(state_t *rts, int fd, size_t iphlen, size_t icmphlen) {
-	if (!rts->sndbuf)
-/* Set socket buffers, "alloc" is an estimate of memory taken by single packet */
-		rts->sndbuf = ((icmphlen + rts->datalen + 511) / 512) *
-			(iphlen + 2 * icmphlen + DEFIPPAYLOAD + 160);
-	if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &rts->sndbuf, sizeof(rts->sndbuf)) < 0)
-		warn("setsockopt(%s)", "SO_SNDBUF");
-	//
-	int hold = rts->sndbuf * rts->preload;
-	socklen_t size = sizeof(hold);
-	if (hold < (IP_MAXPACKET + 1))
-		hold = (IP_MAXPACKET + 1);
-	if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &hold, size) < 0)
-		warn("setsockopt(%s)", "SO_RCVBUF");
-	//
-	int rcvbuf = hold;
-	if (!getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &hold, &size))
-		if (hold < rcvbuf)
-			warnx("%s: %s", _WARN,
-				_("Probably, rcvbuf is not enough to hold preload"));
-}
-
 
 // func_set:receive_error:print_local_ee
 inline void print_local_ee(const state_t *rts, const struct sock_extended_err *ee) {

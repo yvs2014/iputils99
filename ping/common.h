@@ -67,7 +67,6 @@ typedef struct bool_opt {
 	bool audible;
 	bool flood;
 	bool flood_poll;
-	bool flowinfo;
 	bool interval;
 	bool latency;
 	bool noloop;
@@ -103,43 +102,36 @@ typedef struct ping_state {
 	size_t datalen;
 	const char *hostname;
 	uid_t uid;
-	uint16_t ident16;		/* id to identify our packets */
-	int custom_ident;		/* -e option */
-	bool ip6;			/* true for IPv6 pings */
+	uint16_t ident16;	/* id to identify our packets */
+	int custom_ident;	/* -e option */
+	bool ip6;		/* true for IPv6 pings */
 	//
 	bitmap_t bitmap[MAX_DUP_CHK / (sizeof(bitmap_t) * 8)];
 	unsigned char *outpack;
 	int sndbuf;
 	//
-	long npackets;			/* max packets to transmit */
-	long nreceived;			/* # of packets we got back */
-	long nrepeats;			/* number of duplicates */
-	long ntransmitted;		/* sequence # for outbound packets = #sent */
-	long nchecksum;			/* replies with bad checksum */
-	long nerrors;			/* icmp errors */
-	unsigned unidentified;		/* counter of unidentified packets */
-	int interval;			/* interval between packets (msec) */
+	long npackets;		/* max packets to transmit */
+	long nreceived;		/* # of packets we got back */
+	long nrepeats;		/* number of duplicates */
+	long ntransmitted;	/* sequence # for outbound packets = #sent */
+	long nchecksum;		/* replies with bad checksum */
+	long nerrors;		/* icmp errors */
+	unsigned unidentified;	/* counter of unidentified packets */
+	int interval;		/* interval between packets (msec) */
 	int preload;
-	int deadline;			/* time to die */
+	int deadline;		/* time to die */
 	int lingertime;
 	struct timespec start_time, cur_time;
 	int confirm;
 	int confirm_flag;
 	const char *device;
-	bool unreldev;			/* true if netdevice is not found */
-	int pmtudisc;
-#ifdef SO_MARK
-	uint32_t mark;
-#endif
-	// ttl related
-	int ttl;
-	int min_away;
-	int max_away;
+	bool unreldev;		/* true if netdevice is not found */
+	int mtudisc;		/* MTU_DISCOVER */
 	// timing
-	bool timing;			/* flag to do timing */
-	long tmin;			/* minimum round trip time */
-	long tmax;			/* maximum round trip time */
-	double tsum;			/* sum of all times, for doing average */
+	bool timing;		/* flag to do timing */
+	long tmin;		/* minimum round trip time */
+	long tmax;		/* maximum round trip time */
+	double tsum;		/* sum of all times, for doing average */
 	double tsum2;
 	int rtt;
 	int rtt_addend;
@@ -149,13 +141,22 @@ typedef struct ping_state {
 	struct sockaddr_storage source;
 	struct sockaddr_storage whereto;	/* who to ping */
 	struct sockaddr_storage firsthop;
-	uint8_t qos;				/* TOS/TCLASS */
+	// socket options
+	int tos;		/* TOS/TCLASS */
+#ifdef SO_MARK
+	int mark;
+#endif
+	int flow; // ip6
+	int ttl;
+	// ttl related
+	int min_away;
+	int max_away;
+	//
 	bool multicast;
 	// ping4 only
 	int8_t ts_opt;		/* IP option timestamp kind (TSONLY TSANDADDR PRESPEC, otherwise -1) */
 	ipopt_space_t ipopt;	/* allocated in ping4: IPv4 option space (size MAX_IPOPTLEN) */
 	// ping6 only
-	uint32_t flowlabel;
 	bool subnet_router_anycast;
 	cmsg_t *cmsg;		/* allocated in ping6 */
 #ifdef ENABLE_RFC4620
@@ -191,15 +192,11 @@ typedef struct fnset_t {
 const char *sprint_addr(const void *sa, socklen_t salen, bool resolve);
 const char *sprint_addr4(in_addr_t addr, bool resolve);
 void acknowledge(state_t *rts, uint16_t seq);
+size_t estimate_packlen(size_t ip, size_t icmp, size_t data);
 
 #define IS_OURS(rts, rawsock, rcvd_id) (!(rawsock) || ((rcvd_id) == (rts)->ident16))
 
-#ifdef SO_MARK
-void sock_setmark(state_t *rts, int fd);
-#endif
-void sock_settos(int fd, int qos, bool ip6);
-int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
-	 const fnset_t* fnset);
+int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock, const fnset_t* fnset);
 int get_interval(const state_t *rts);
 int in_flight(const state_t *rts);
 void fill_payload(int quiet, const char *str, unsigned char *payload, size_t len);

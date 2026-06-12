@@ -68,18 +68,15 @@
 #include <err.h>
 #include <netinet/ip6.h>
 #include <netinet/icmp6.h>
-//
 #include <linux/in6.h>
-#include <linux/errqueue.h>
-#include <linux/filter.h>
 
 #include "ping6.h"
-
 #include "iputils.h"
 #include "common.h"
 #include "stats.h"
 #include "ping_aux.h"
 #include "ping6_aux.h"
+#include "setsock.h"
 #include "nbind.h"
 #include "nlink.h"
 #ifdef ENABLE_RFC4620
@@ -301,7 +298,7 @@ static void ping6_bpf_filter(const state_t *rts, const sock_t *sock) {
 		.len    = ARRAY_LEN(filter),
 		.filter = filter,
 	};
-	setsock_bpf(rts, sock, &fprog);
+	setsock_filter(sock->fd, &fprog, rts->opt.verbose, '6', rts->ident16);
 }
 
 static int probe_dst6(state_t *rts, struct sockaddr_in6 *dst, int sock_fd, bool next) { // NONNUL(1, 2)
@@ -329,9 +326,11 @@ static int probe_dst6(state_t *rts, struct sockaddr_in6 *dst, int sock_fd, bool 
 	}
 	if (!scoped)
 		dst->sin6_family = AF_INET6;
-	sock_settos(fd, rts->qos, rts->ip6);
+	if (rts->tos)
+		setsock_tos(fd, rts->tos, rts->ip6);
 #ifdef SO_MARK
-	sock_setmark(rts, fd); // privileged action if (SO_MARK & mark)
+	if (rts->mark >= 0)
+		setsock_mark(fd, rts->mark); // privileged action
 #endif
 	//
 	dst->sin6_port = htons(1025);
@@ -473,10 +472,10 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		ICMP6_FILTER_SETBLOCKALL(&filter);
 #ifdef ENABLE_RFC4620
 		if (rts->ni && niquery_is_enabled(rts->ni))
-			ICMP6_FILTER_SETPASS(IPUTILS_NI_ICMP6_REPLY, &filter);
+		{ ICMP6_FILTER_SETPASS(IPUTILS_NI_ICMP6_REPLY, &filter); }
 		else
 #endif
-			ICMP6_FILTER_SETPASS(ICMP6_ECHO_REPLY, &filter);
+		{ ICMP6_FILTER_SETPASS(ICMP6_ECHO_REPLY, &filter); }
 		if (setsockopt(sock->fd, IPPROTO_ICMPV6, ICMP6_FILTER, &filter, sizeof(filter)) < 0)
 			err(errno, "setsockopt(%s)", "ICMP6_FILTER");
 	}
@@ -497,18 +496,18 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	  ) err(errno, "setsockopt(%s)", "IPV6_RECVHOPLIMIT, enable");
 	}
 
-	if (rts->opt.flowinfo) {
+	if (rts->flow >= 0) {
 		char buf[CMSG_ALIGN(sizeof(struct in6_flowlabel_req)) + rts->cmsg->len];
 		memset(buf, 0, sizeof(buf));
 		struct in6_flowlabel_req *freq = (struct in6_flowlabel_req *)buf;
-		freq->flr_label  = htonl(rts->flowlabel & IPV6_FLOWINFO_FLOWLABEL);
+		freq->flr_label  = htonl(rts->flow);
 		freq->flr_action = IPV6_FL_A_GET;
 		freq->flr_flags  = IPV6_FL_F_CREATE;
 		freq->flr_share  = IPV6_FL_S_EXCL;
 		memcpy(&freq->flr_dst, &SA6_IN(&rts->whereto), sizeof(struct in6_addr));
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWLABEL_MGR, freq, sizeof(*freq)) < 0)
 			err(errno, "setsockopt(%s)", "IPV6_FLOWLABEL");
-		SA6(&rts->whereto)->sin6_flowinfo = rts->flowlabel = freq->flr_label;
+		SA6(&rts->whereto)->sin6_flowinfo = rts->flow = freq->flr_label;
 		int on = 1;
 		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND, &on, sizeof(on)) < 0)
 			err(errno, "setsockopt(%s)", "IPV6_FLOWINFO");
@@ -517,7 +516,11 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	rts->subnet_router_anycast = get_subnet_anycast(SA6(&rts->whereto));
 	mtudisc_n_bind(rts, sock);
 	setsock_recverr(sock->fd, rts->ip6);
-	set_estimate_buf(rts, sock->fd, sizeof(struct ip6_hdr), sizeof(struct icmp6_hdr));
+
+	if (!rts->sndbuf)
+		rts->sndbuf = estimate_packlen(sizeof(struct ip6_hdr),
+			sizeof(struct icmp6_hdr), rts->datalen);
+	setsock_buffer(sock->fd, rts->sndbuf, rts->preload);
 
 	size_t hlen = sizeof(struct ip6_hdr) + sizeof(struct icmp6_hdr);
 	headline(rts, hlen);

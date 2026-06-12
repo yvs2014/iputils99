@@ -495,22 +495,6 @@ msgid "=> missing capability"
 msgstr ""
 
 #
-msgid "Bad value for flowinfo"
-msgstr "Nilai buruk untuk flowinfo"
-
-#
-msgid "Flow value is greater than 20 bits"
-msgstr "Nilai flow lebih besar dari 20 bit"
-
-#
-msgid "Bad TOS value"
-msgstr "Nilai TOS buruk"
-
-#
-msgid "Decimal value of TOS bits must be in range 0-255"
-msgstr "Nilai desimal dari bit TOS harus dalam kisaran 0-255"
-
-#
 msgid "Invalid timestamp type"
 msgstr "Tipe timestamp tidak valid"
 
