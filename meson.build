@@ -4,7 +4,7 @@
 
 project('iputils99', 'c',
 	default_options: [
-		'c_std=c23,c17,c11,c99',
+		'c_std=c99',
 		'warning_level=3',
 #		'b_sanitize=address,undefined', # use for testing
 	],
