@@ -596,10 +596,6 @@ msgid "Pinging broadcast address"
 msgstr "Ping de l’adresse de diffusion"
 
 #
-msgid "Cannot set broadcasting"
-msgstr "Impossible de définir la multidiffusion"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "Impossible de désactiver la boucle de retour pour la multidiffusion"
 

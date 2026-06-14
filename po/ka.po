@@ -590,10 +590,6 @@ msgid "Pinging broadcast address"
 msgstr "პინგავთ ტრანსლირების მისამართს"
 
 #
-msgid "Cannot set broadcasting"
-msgstr "გადაცემის დაყენების შეცდომა"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "გადაცემის მარყუჟის გათიშვის შეცდომა"
 

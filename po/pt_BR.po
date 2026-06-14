@@ -595,10 +595,6 @@ msgid "Pinging broadcast address"
 msgstr "Pingando endereço de broadcast"
 
 #
-msgid "Cannot set broadcasting"
-msgstr "Não foi possível definir uso de broadcast"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "Não foi possível desabilitar loopback em multicast"
 

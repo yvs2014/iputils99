@@ -50,13 +50,15 @@
  */
 
 // local changes by yvs@
-// ping.c setsock option functions
+// ping setsock-option functions
 
 #include <err.h>
 #include <errno.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/ip.h>
+#include <netinet/ip_icmp.h>
+#include <netinet/icmp6.h>
+#include <linux/in6.h>
 
 #include "iputils.h"
 #include "setsock.h"
@@ -64,6 +66,19 @@
 #include "caps.h"
 #else
 #include "perm.h"
+#endif
+
+#ifndef IPPROTO46
+#define	IPPROTO46 (ip6 ? IPPROTO_IPV6 : IPPROTO_IP)
+#endif
+
+// ICMP_FILTER is defined in <linux/icmp.h>,
+// and <linux/icmp.h> has conflicts with <netinet/ip_icmp.h>
+#ifndef ICMP_FILTER
+#define ICMP_FILTER 1
+struct icmp_filter {
+	uint32_t data;
+};
 #endif
 
 #ifdef SO_MARK
@@ -84,45 +99,18 @@ void setsock_mark(int fd, int mark) {
 #endif
 
 void setsock_tos(int fd, int tos, bool ip6) {
-	if (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
-	    ip6 ? IPV6_TCLASS : IP_TOS, &tos, sizeof(tos)) < 0)
+	if (setsockopt(fd, IPPROTO46, ip6 ? IPV6_TCLASS : IP_TOS, &tos, sizeof(tos)) < 0)
 		err(errno, "setsockopt(%s)", ip6 ? "TCLASS" : "TOS");
-}
-
-void setsock_ttl(int fd, bool ip6, int ttl) {
-	int level = ip6 ? IPPROTO_IPV6 : IPPROTO_IP;
-	if (setsockopt(fd, level, ip6 ? IPV6_MULTICAST_HOPS : IP_MULTICAST_TTL,
-		&ttl, sizeof(ttl)) < 0)
-			err(errno, "setsockopt(%s)", ip6 ? "MULTICAST_HOPS" : "MULTICAST_TTL");
-	if (setsockopt(fd, level, ip6 ? IPV6_UNICAST_HOPS : IP_TTL,
-		&ttl, sizeof(ttl)) < 0)
-			err(errno, "setsockopt(%s)", ip6 ? "UNICAST_HOPS" : "TTL");
-}
-
-// TODO: common setsock_onoff(fd, level, name, bool onoff)
-void setsock_recverr(int fd, bool ip6) {
-	int on = 1;
-	if (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
-	    ip6 ? IPV6_RECVERR : IP_RECVERR, &on, sizeof(on)) < 0)
-		err(errno, "%s: setsockopt(%s)", _WARN, "RECVERR");
 }
 
 void setsock_noloop(int fd, bool ip6) {
 	int off = 0;
-	if (setsockopt(fd, ip6 ? IPPROTO_IPV6 : IPPROTO_IP,
-	    ip6 ? IPV6_MULTICAST_LOOP : IP_MULTICAST_LOOP, &off, sizeof(off)) < 0)
+	if (setsockopt(fd, IPPROTO46, ip6 ? IPV6_MULTICAST_LOOP : IP_MULTICAST_LOOP,
+	    &off, sizeof(off)) < 0)
 		err(errno, "%s", _("Cannot disable multicast loopback"));
 }
 
-void setsock_mtudisc(int fd, bool ip6, int *mtudisc) { // NONNULL(3)
-	int level = ip6 ? IPPROTO_IPV6      : IPPROTO_IP;
-	int name  = ip6 ? IPV6_MTU_DISCOVER : IP_MTU_DISCOVER;
-	if (setsockopt(fd, level, name,
-	    mtudisc, sizeof(*mtudisc)) < 0)
-		err(errno, "setsockopt(%s)", "MTU_DISCOVER");
-}
-
-void setsock_filter(int fd, const struct sock_fprog *prog, // NONNUL(2)
+void setsock_filter(int fd, const struct sock_fprog *prog, // NONNULL(2)
 	bool verbose, char ip46, uint16_t id)
 {
 	if (verbose)
@@ -134,6 +122,36 @@ void setsock_filter(int fd, const struct sock_fprog *prog, // NONNUL(2)
 	if (setsockopt(fd, SOL_SOCKET, SO_LOCK_FILTER, &on, sizeof(on)) < 0)
 		warn("setsockopt(%s)", "LOCK_FILTER");
 #endif
+}
+
+void setsock_icmp4_filter(int fd, const int32_t flag[]) { // NONNULL(2)
+	uint32_t u = 0;
+	for (; *flag >= 0; flag++)
+		u |= (1 << *flag);
+	struct icmp_filter filt = {.data = ~u};
+	if (setsockopt(fd, SOL_RAW, ICMP_FILTER, &filt, sizeof(filt)) < 0)
+		err(errno, "setsockopt(%s: %04X)", "ICMP_FILTER", filt.data);
+}
+
+void setsock_icmp6_filter(int fd) {
+	/* select icmp echo reply as icmp type to receive */
+	struct icmp6_filter filter = {0};
+	ICMP6_FILTER_SETBLOCKALL(&filter);
+#ifdef ENABLE_RFC4620
+	if (rts->ni && niquery_is_enabled(rts->ni))
+	{	ICMP6_FILTER_SETPASS(IPUTILS_NI_ICMP6_REPLY, &filter); }
+	else
+#endif
+	{	ICMP6_FILTER_SETPASS(ICMP6_ECHO_REPLY, &filter); }
+	if (setsockopt(fd, IPPROTO_ICMPV6, ICMP6_FILTER, &filter, sizeof(filter)) < 0)
+		err(errno, "setsockopt(%s)", "ICMP6_FILTER");
+}
+
+void setsock_cksum6(int fd) {
+	int csum_offset = 2;
+	if (setsockopt(fd, SOL_RAW, IPV6_CHECKSUM, &csum_offset, sizeof(csum_offset)) < 0)
+	/* checksum should be enabled by default and setting this option might fail anyway */
+		warn("setsockopt(%s)", "RAW_CHECKSUM");
 }
 
 // Estimate memory eaten by single packet. It is rough estimate.
@@ -154,5 +172,118 @@ void setsock_buffer(int fd, int sndbuf, int preload) {
 	if (!getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &hold, &size))
 		if (hold < rcvbuf)
 			warnx("%s: %s", _WARN, SMALL_RCV_BUF);
+}
+
+void setsock_debug(int fd) {
+	int on = 1;
+	NET_ADMIN_ON;
+	int rc = setsockopt(fd, SOL_SOCKET, SO_DEBUG, &on, sizeof(on));
+	int keep = errno;
+	NET_ADMIN_OFF;
+	errno = keep;
+	if (rc < 0)
+		warn("setsockopt(%s)", "DEBUG");
+}
+
+#ifdef SO_TIMESTAMP
+void setsock_timestamp(int fd) {
+	int on = 1;
+	if (setsockopt(fd, SOL_SOCKET, SO_TIMESTAMP, &on, sizeof(on)) < 0)
+		warnx("%s", _("no SO_TIMESTAMP support, falling back to SIOCGSTAMP"));
+}
+#endif
+
+void setsock_sndtime(int fd, int interval) {
+	/* Set some SNDTIMEO to prevent blocking forever
+	 * on sends, when device is too slow or stalls. Just put limit
+	 * of one second, or "interval", if it is less.
+	 */
+	bool ge_ms = interval >= 1000;
+	struct timeval tv = {
+		.tv_sec  = ge_ms ? 1 : 0,
+		.tv_usec = ge_ms ? 0 : 1000 * SCHINT(interval),
+	};
+	if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) < 0)
+		warn("setsockopt(%s)", "SNDTIMEO");
+}
+
+bool setsock_rcvtime(int fd, int interval) {
+	/* Set RCVTIMEO to "interval"
+	 * Note, it is just an optimization allowing to avoid redundant poll() */
+	struct timeval tv = {
+		.tv_sec  = SCHINT(interval) / 1000,
+		.tv_usec = 1000 * (SCHINT(interval) % 1000),
+	  };
+	int rc = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+	if (rc < 0)
+		warn("setsockopt(%s)", "SNDTIMEO");
+	// for setting `flood_poll'
+	return !!rc;
+}
+
+void setsock_ipopt_rr(int fd, ipopt_noped_t *opt) {
+	opt->nop = IPOPT_NOP;
+	opt->val = IPOPT_RR;
+	opt->len = sizeof(ipopt_noped_t) - sizeof(((ipopt_noped_t*)0)->nop); /*39*/
+	opt->off = IPOPT_MINOFF;
+	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, sizeof(*opt)) < 0)
+		err(errno, _("record route"));
+}
+
+void setsock_ipopt_xrr(int fd, ipopt_noped_t *opt, uint8_t val, uint8_t len) {
+	opt->nop = IPOPT_NOP;
+	opt->val = val;
+	opt->len = len;
+	opt->off = IPOPT_MINOFF;
+	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, len + 1) < 0)
+		err(errno, "%s: %s(%d)", _("record route"),
+			val == IPOPT_SSRR ? "IPOPT_SSRR" :
+			val == IPOPT_LSRR ? "IPOPT_LSRR" :
+			"?", val);
+}
+
+void setsock_retopts(int fd) {
+	int on = 1;
+	if (setsockopt(fd, IPPROTO_IP, IP_RETOPTS, &on, sizeof(on)) < 0)
+		warn("setsockopt(%s)", "RETOPTS");
+}
+
+void setsock_broadcast(int fd) {
+	int on = 1;
+	if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &on, sizeof(on)) < 0)
+		err(errno, "setsockopt(%s)", "BROADCAST");
+}
+
+/*
+void setsock_pktinfo(int fd, uint iface, const char *device, bool ip6) {
+	union {
+		struct in_pktinfo  ipi4;
+		struct in6_pktinfo ipi6;
+	} ipi = {0};
+	if (ip6)
+		ipi.ipi6.ipi6_ifindex = iface;
+	else
+		ipi.ipi4.ipi_ifindex  = iface;
+	socklen_t len = ip6 ? sizeof(struct in6_pktinfo) : sizeof(struct in_pktinfo);
+	if (setsockopt(fd1, IPPROTO_IP, IP_PKTINFO, &ipi, len) < 0)
+		err(errno, "setsockopt(%s, %s)", "PKTINFO", device);
+}
+*/
+
+void setsock_flow6(int fd, int flow, size_t clen, struct sockaddr_in6 *sa) { // NONNULL(4)
+	char buf[CMSG_ALIGN(sizeof(struct in6_flowlabel_req)) + clen];
+	memset(buf, 0, sizeof(buf));
+	struct in6_flowlabel_req *freq = (struct in6_flowlabel_req *)buf;
+	freq->flr_label  = htonl(flow);
+	freq->flr_action = IPV6_FL_A_GET;
+	freq->flr_flags  = IPV6_FL_F_CREATE;
+	freq->flr_share  = IPV6_FL_S_EXCL;
+	memcpy(&freq->flr_dst, &sa->sin6_addr, sizeof(sa->sin6_addr));
+	if (setsockopt(fd, IPPROTO_IPV6, IPV6_FLOWLABEL_MGR, freq, sizeof(*freq)) < 0)
+		err(errno, "setsockopt(%s)", "IPV6_FLOWLABEL");
+	sa->sin6_flowinfo = flow = freq->flr_label;
+	int on = 1;
+	if (setsockopt(fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND, &on, sizeof(on)) < 0)
+		err(errno, "setsockopt(%s)", "IPV6_FLOWINFO");
 }
 

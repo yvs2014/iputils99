@@ -540,10 +540,6 @@ msgid "Pinging broadcast address"
 msgstr "핑하는 광역전송 주소"
 
 #
-msgid "Cannot set broadcasting"
-msgstr "광역전송 중에 설정 할 수 없습니다"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "광역전송 루프백을 비활성화 할 수 없습니다"
 

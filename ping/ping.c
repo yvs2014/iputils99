@@ -63,14 +63,12 @@
 #include <netinet/ip_icmp.h>
 #include <ifaddrs.h>
 #include <arpa/inet.h>
-#include <sys/socket.h>
 #include <linux/in6.h>
 
 #include "iputils.h"
 #include "str2num.h"
 #include "common.h"
 #include "setsock.h"
-#include "ping_aux.h"
 #include "ping4.h"
 #include "ping6.h"
 #include "extra.h"
@@ -247,8 +245,8 @@ static inline void opt_s(state_t *rts) {
 		errx(EXIT_FAILURE, "%s: %s", _WARN,
 			_("NodeInfo packet can only have a header"));
 #endif
-	unsigned len = VALID_INTSTR(0, MAXPAYLOAD);
-	unsigned char *pack = calloc(1, PACKHDRLEN + len);
+	uint len = VALID_INTSTR(0, MAXPAYLOAD);
+	uint8_t *pack = calloc(1, PACKHDRLEN + len);
 	if (!pack)
 		err(errno, "calloc(%zu)", PACKHDRLEN + len);
 	if (rts->outpack)
@@ -318,8 +316,8 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 		RTS_DATA->opt.ptimeofday = true;
 		break;
 	case 'e':
-		RTS_DATA->ident16 = htons(VALID_INTSTR(0, USHRT_MAX));
-		RTS_DATA->custom_ident = RTS_DATA->ident16;
+		RTS_DATA->ident16   = htons(VALID_INTSTR(0, USHRT_MAX));
+		RTS_DATA->opt.ident = true;
 		break;
 	case 'f':
 		RTS_DATA->opt.flood   = true;
@@ -458,7 +456,6 @@ int main(int argc, char **argv) {
 	//
 	state_t rts = {
 		.datalen      = DEFDATALEN,
-		.custom_ident = -1,
 		.interval     = 1000,		/* in ms */
 		.preload      =  1,
 		.lingertime   = MAXWAIT * 1000,	/* in ms */
@@ -518,13 +515,13 @@ int main(int argc, char **argv) {
 	const char *target = argv[argc - 1];
 	validate_hostlen(target, true);
 
-	if (rts.custom_ident < 0) {
+	if (!rts.opt.ident) {
 #ifdef HAVE_ARC4RANDOM_UNIFORM
 		rts.ident16 = arc4random_uniform(USHRT_MAX) + 1;
 #else
 		rts.ident16 = htons(getpid() & USHRT_MAX);
 #endif
-	} else if (rts.custom_ident == 0) {
+	} else if (!rts.ident16) {
 		/* Current Linux kernel 6.0 doesn't support on SOCK_DGRAM setting ident == 0 */
 		if (rts.opt.verbose)
 			warnx("%s", _("ident 0 => forcing raw socket"));

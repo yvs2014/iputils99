@@ -580,10 +580,6 @@ msgid "Pinging broadcast address"
 msgstr "正在 ping 广播地址"
 
 #
-msgid "Cannot set broadcasting"
-msgstr "不能设置广播"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "无法禁用组播环回"
 

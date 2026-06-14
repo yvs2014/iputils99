@@ -2,10 +2,12 @@ arping.c
 aux/caps.c
 aux/iputils.c
 aux/iputils.h
-aux/nbind.c
-aux/nlink.c
-aux/perm.c
 aux/str2num.c
+aux/perm.c
+aux/sock_pa.c
+aux/sock_pc.c
+aux/sock_pt.c
+aux/nlink.c
 clockdiff.c
 gai.c
 ping/common.c

@@ -28,12 +28,12 @@
 #include <netinet/icmp6.h>
 #include <arpa/inet.h>
 #include <resolv.h>
-#include <sys/socket.h>
 #include <sys/uio.h>
 #include <linux/errqueue.h> // SO_EE_ORIGIN_xxx
 
 #include "iputils.h"
 #include "str2num.h"
+#include "sock_pt.h"
 
 #ifndef UNKN
 #define UNKN	"???"
@@ -141,24 +141,18 @@ do { // was 'restart:'
 
 	progress = rts->pktsize;
 
-	int slot = -rts->port;
-	switch (rts->af) {
-	case AF_INET6:
-		slot += ntohs(SA6(&addr)->sin6_port);
-		break;
-	case AF_INET:
-		slot += ntohs(SA4(&addr)->sin_port);
-		break;
-	default:
-		assert("Unknown IP address family");
-	}
-
 	int sndhops = -1;
 	struct timespec *retts = NULL;
-	if ((slot >= 0) && (slot < (HIS_ELEMS - 1)) && rts->his[slot].hops) {
+
+	{ int port = (rts->af == AF_INET6) ?
+		ntohs(SA6(&addr)->sin6_port) :
+		ntohs(SA4(&addr)->sin_port);
+	  int slot = port - rts->port;
+	  if ((slot >= 0) && (slot < (HIS_ELEMS - 1)) && rts->his[slot].hops) {
 		sndhops = rts->his[slot].hops;
 		retts  = &rts->his[slot].sendtime;
 		rts->his[slot].hops = 0;
+	  }
 	}
 
 	bool broken_router = false;
@@ -237,7 +231,7 @@ do { // was 'restart:'
 	}
 
 	if (retts) {
-		struct timespec res;
+		struct timespec res = {0};
 		timespecsub(&ts, retts, &res);
 		printf(TMMS " ", res.tv_sec * 1000 + res.tv_nsec / 1000000., _("ms"));
 		if (broken_router)
@@ -303,61 +297,19 @@ do { // was 'restart:'
 	return 0;
 }
 
-static inline void setsock4_opts(int sock, bool verbose) {
+static inline void setsock_opts(int sock, bool ip6, bool verbose) {
 	if (verbose)
-		warnx("set socket%c options: %s", '4',
-			"MTU_DISCOVER, RECVERR, RECVTTL");
-	// PMTU
-	int opt = IP_PMTUDISC_PROBE;
-	if (setsockopt(sock, IPPROTO_IP, IP_MTU_DISCOVER, &opt, sizeof(opt)) < 0)
-		err(errno, "setsockopt(%s)", "IP_MTU_DISCOVER");
-	// receive errors
-	opt = 1;
-	if (setsockopt(sock, IPPROTO_IP, IP_RECVERR, &opt, sizeof(opt)) < 0)
-		err(errno, "setsockopt(%s)", "IP_RECVERR");
-	// receive TTL
-	opt = 1;
-	if (setsockopt(sock, IPPROTO_IP, IP_RECVTTL, &opt, sizeof(opt)) < 0)
-		err(errno, "setsockopt(%s)", "IP_RECVTTL");
-}
-
-static inline void setsock6_opts(int sock, bool verbose) {
-	if (verbose)
-		warnx("set sock%c options: %s", '6', "MTU_DISCOVER, RECVERR"
+		warnx("set sock%c options: %s, %s", '4', "MTU_DISCOVER, RECVERR",
+			ip6 ?
 #ifdef IPV6_RECVHOPLIMIT
-			", RECVHOPLIMIT, 2292HOPLIMIT"
+			"RECVHOPLIMIT, 2292HOPLIMIT"
 #else
-			", HOPLIMIT"
+			"HOPLIMIT"
 #endif
-		);
-	// PMTU
-	int opt = IPV6_PMTUDISC_PROBE;
-	if (setsockopt(sock, IPPROTO_IPV6, IPV6_MTU_DISCOVER, &opt, sizeof(opt)) < 0) {
-		opt = IPV6_PMTUDISC_DO;
-		if (setsockopt(sock, IPPROTO_IPV6, IPV6_MTU_DISCOVER, &opt, sizeof(opt)) < 0)
-			err(errno, "setsockopt(%s)", "IPV6_MTU_DISCOVER");
-	}
-	// receive errors
-	opt = 1;
-	if (setsockopt(sock, IPPROTO_IPV6, IPV6_RECVERR, &opt, sizeof(opt)) < 0)
-		err(errno, "setsockopt(%s)", "IPV6_RECVERR");
-	// receive TTL
-	opt = 1;
-	if (
-#ifdef IPV6_RECVHOPLIMIT
-	(setsockopt(sock, IPPROTO_IPV6, IPV6_RECVHOPLIMIT, &opt, sizeof(opt)) < 0) &&
-	(setsockopt(sock, IPPROTO_IPV6, IPV6_2292HOPLIMIT, &opt, sizeof(opt)) < 0)
-#else
-	 setsockopt(sock, IPPROTO_IPV6, IPV6_HOPLIMIT, &opt, sizeof(opt)) < 0
-#endif
-	)
-		err(errno, "setsockopt(%s)", "IPV6_RECVHOPLIMIT, enable");
-}
-
-static void setsock_ttl(int sock, int level, int name, uint8_t ttl) {
-	int opt = ttl;
-	if (setsockopt(sock, level, name, &opt, sizeof(opt)) < 0)
-		err(errno, "setsockopt(ttl=%d)", opt);
+			: "RECVTTL");
+	setsock_mtudisc_probedo(sock, ip6);
+	setsock_recverr(sock, ip6);
+	setsock_recvttl(sock, ip6);
 }
 
 // return codes: <0 (-1) | 0 | >0 (mtu)
@@ -599,22 +551,15 @@ int main(int argc, char **argv) {
 	if ((rts.sock < 0) || !rts.af)
 		errx(EXIT_FAILURE, "resolve(%s)", argv[0]);
 
-	switch (rts.af) {
-	case AF_INET6:
-		setsock6_opts(rts.sock, rts.verbose);
-		rts.hdrsize = DEFAULT_IPH6;
-		if (!rts.pktsize)
-			rts.pktsize = DEFAULT_MTU;
-		break;
-	case AF_INET:
-		setsock4_opts(rts.sock, rts.verbose);
-		rts.hdrsize = DEFAULT_IPH4;
-		if (!rts.pktsize)
-			rts.pktsize = DEFAULT_MTU;
-		break;
-	default:
+	if ((rts.af != AF_INET) && (rts.af != AF_INET6)) {
 		errno = EAFNOSUPPORT;
 		err(errno, "%d", rts.af);
+	}
+	{ bool ip6 = rts.af == AF_INET6;
+	  setsock_opts(rts.sock, ip6, rts.verbose);
+	  rts.hdrsize = ip6 ? DEFAULT_IPH6 : DEFAULT_IPH4;
+	  if (!rts.pktsize)
+		rts.pktsize = DEFAULT_MTU;
 	}
 
 	if (rts.pktsize <= rts.hdrsize) {
@@ -631,17 +576,7 @@ int main(int argc, char **argv) {
 		warnx("run upto %u hops", rts.max_hops);
 	for (int ttl = 1; ttl <= rts.max_hops; ttl++) {
 		rts.ttl = ttl;
-		// set socket TTL
-		switch (rts.af) {
-		case AF_INET6:
-			setsock_ttl(rts.sock, IPPROTO_IPV6, IPV6_UNICAST_HOPS, ttl);
-			break;
-		case AF_INET:
-			setsock_ttl(rts.sock, IPPROTO_IP, IP_TTL, ttl);
-			break;
-		default:
-			continue;
-		}
+		setsock_ttl(rts.sock, ttl, !MULTICAST_TOO, rts.af == AF_INET6);
 		int rc = -1;
 		bool again;
 		do {

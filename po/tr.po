@@ -583,10 +583,6 @@ msgid "Pinging broadcast address"
 msgstr "Genel yayın adresine ping atılıyor"
 
 #
-msgid "Cannot set broadcasting"
-msgstr "Genel yayın ayarlanamıyor"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "Çok noktaya yayın geri dönüşü devre dışı bırakılamıyor"
 

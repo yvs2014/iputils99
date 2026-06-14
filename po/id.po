@@ -539,10 +539,6 @@ msgid "Pinging broadcast address"
 msgstr "Ping alamat broadcast"
 
 #
-msgid "Cannot set broadcasting"
-msgstr "Tidak bisa mengatur broadcast"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "tidak bisa menonaktifkan loopback multicast"
 

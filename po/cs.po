@@ -594,10 +594,6 @@ msgid "Pinging broadcast address"
 msgstr "Jedná se o ping na adresu všesměrového vysílání"
 
 #
-msgid "Cannot set broadcasting"
-msgstr "Všesměr nelze nastavit"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "Příjem vlastních multicastových dotazů nelze zakázat"
 

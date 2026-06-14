@@ -66,13 +66,12 @@
 #include <poll.h>
 #include <fcntl.h>
 #include <sys/param.h>
-#include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/timex.h>
 #include <sys/types.h>
 
 #include "iputils.h"
-
+#include "sock_pc.h"
 #ifdef HAVE_LIBCAP
 #include "caps.h"
 #else
@@ -161,20 +160,20 @@ static inline int addcarry(int sum) {
 	return sum;
 }
 
-static int clockdiff_in_cksum(const unsigned short *addr, int len) {
+static int clockdiff_in_cksum(const uint16_t *addr, int len) {
 	union word {
-		char c[2];
-		unsigned short s;
+		uint8_t c[2];
+		uint16_t s;
 	} u;
 	int sum = 0;
 
 	while (len > 0) {
 		/* add by words */
 		while ((len -= 2) >= 0) {
-			if ((unsigned long)addr & 0x1) {
+			if ((uint64_t)addr & 0x1) {
 				/* word is not aligned */
-				u.c[0] = *(char *)addr;
-				u.c[1] = *((char *)addr + 1);
+				u.c[0] = *(uint8_t *)addr;
+				u.c[1] = *((uint8_t *)addr + 1);
 				sum += u.s;
 				addr++;
 			} else
@@ -183,7 +182,7 @@ static int clockdiff_in_cksum(const unsigned short *addr, int len) {
 		}
 		if (len == -1)
 			/* odd number of bytes */
-			u.c[0] = *(unsigned char *)addr;
+			u.c[0] = *(uint8_t *)addr;
 	}
 	if (len == -1) {
 		/*
@@ -371,7 +370,7 @@ static timediff_e measure(state_t *rts, const struct sockaddr *sa, socklen_t sal
 		//
 		clock_gettime(CLOCK_REALTIME, &m.ts);
 		*(uint32_t *)(icmp + 1) = htonl(TODAY_MSEC(m.ts));
-		icmp->checksum = clockdiff_in_cksum((unsigned short *)icmp, sizeof(*icmp) + 12);
+		icmp->checksum = clockdiff_in_cksum((uint16_t *)icmp, sizeof(*icmp) + 12);
 		//
 		if (sendto(rts->sock, opacket, sizeof(*icmp) + 12, 0, sa, salen) < 0) {
 			errno = EHOSTUNREACH;
@@ -530,23 +529,17 @@ int main(int argc, char **argv) {
 	if (rts.optlen) {
 		struct sockaddr_in from = {0};
 		GETSOCKNAME(rts.sock, SA(&from), SA4_LEN);
-		struct ip_timestamp ipt = {
-			.ipt_code = IPOPT_TIMESTAMP,
-			.ipt_len  = rts.optlen,
-			.ipt_ptr  = 5,
-			.ipt_flg  = IPOPT_TS_PRESPEC,
-			.data = {
-				from.sin_addr.s_addr,
-				0,
-				to.sin_addr.s_addr,
-				0,
-				rts.optlen == OPTLEN_2 ? to.sin_addr.s_addr : from.sin_addr.s_addr,
-				0,
-				rts.optlen == OPTLEN_2 ? from.sin_addr.s_addr : 0,
-				0,
-			},
-		};
-		if (setsockopt(rts.sock, IPPROTO_IP, IP_OPTIONS, &ipt, ipt.ipt_len) < 0) {
+		struct ip_timestamp ipt = {.data = {
+			from.sin_addr.s_addr,
+			0,
+			to.sin_addr.s_addr,
+			0,
+			rts.optlen == OPTLEN_2 ? to.sin_addr.s_addr : from.sin_addr.s_addr,
+			0,
+			rts.optlen == OPTLEN_2 ? from.sin_addr.s_addr : 0,
+			0,
+		}};
+		if (setsock_ipopt_ts(rts.sock, &ipt, IPOPT_TS_PRESPEC, rts.optlen) < 0) {
 			warn("IP_OPTIONS: fallback to ICMP timestamp");
 			rts.optlen = 0;
 		}

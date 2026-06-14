@@ -9,6 +9,8 @@
 #include <time.h>
 #include <sys/time.h>
 
+#include "cc_attr.h"
+
 #ifdef ENABLE_RFC4620
 #include "node_info.h"
 #endif
@@ -83,19 +85,8 @@ typedef struct bool_opt {
 	bool verbose;
 	bool connect_sk;
 	bool broadcast;
+	bool ident;
 } bool_opt_t;
-
-typedef struct pre_noped_ipopt {
-	uint8_t nop;
-	uint8_t val, len, off;
-	uint32_t data[9];
-} pre_noped_ipopt_t;
-
-typedef union ipopt_space {
-	uint8_t *u8;
-	struct ip_timestamp *ipt;
-	struct pre_noped_ipopt *ipo;
-} ipopt_space_t;
 
 // ping runtime state
 typedef struct ping_state {
@@ -103,11 +94,10 @@ typedef struct ping_state {
 	const char *hostname;
 	uid_t uid;
 	uint16_t ident16;	/* id to identify our packets */
-	int custom_ident;	/* -e option */
 	bool ip6;		/* true for IPv6 pings */
 	//
 	bitmap_t bitmap[MAX_DUP_CHK / (sizeof(bitmap_t) * 8)];
-	unsigned char *outpack;
+	uint8_t *outpack;
 	int sndbuf;
 	//
 	long npackets;		/* max packets to transmit */
@@ -116,7 +106,7 @@ typedef struct ping_state {
 	long ntransmitted;	/* sequence # for outbound packets = #sent */
 	long nchecksum;		/* replies with bad checksum */
 	long nerrors;		/* icmp errors */
-	unsigned unidentified;	/* counter of unidentified packets */
+	uint unidentified;	/* counter of unidentified packets */
 	int interval;		/* interval between packets (msec) */
 	int preload;
 	int deadline;		/* time to die */
@@ -141,23 +131,8 @@ typedef struct ping_state {
 	struct sockaddr_storage source;
 	struct sockaddr_storage whereto;	/* who to ping */
 	struct sockaddr_storage firsthop;
-	// socket options
-	int tos;		/* TOS/TCLASS */
-#ifdef SO_MARK
-	int mark;
-#endif
-	int flow; // ip6
-	int ttl;
-	// ttl related
-	int min_away;
-	int max_away;
-	//
 	bool multicast;
-	// ping4 only
-	int8_t ts_opt;		/* IP option timestamp kind (TSONLY TSANDADDR PRESPEC, otherwise -1) */
-	ipopt_space_t ipopt;	/* allocated in ping4: IPv4 option space (size MAX_IPOPTLEN) */
-	// ping6 only
-	bool subnet_router_anycast;
+	bool subnet_router_anycast; // ip6
 	cmsg_t *cmsg;		/* allocated in ping6 */
 #ifdef ENABLE_RFC4620
 	struct ping_ni *ni;	/* allocated with -N option */
@@ -175,8 +150,21 @@ typedef struct ping_state {
 	unsigned short screen_width;
 	// colored option -aa+
 	uint8_t red, yellow;
+	//
 	// boolean options
 	bool_opt_t opt;
+	// socket options
+	int tos;		/* TOS/TCLASS */
+#ifdef SO_MARK
+	int mark;
+#endif
+	int flow;      // ip6
+	int8_t ts_opt; // ip4: TSONLY TSANDADDR PRESPEC
+	int ttl;
+	// ttl related
+	int min_away;
+	int max_away;
+	//
 	//
 	void *auxdata;
 } state_t;
@@ -199,23 +187,12 @@ size_t estimate_packlen(size_t ip, size_t icmp, size_t data);
 int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock, const fnset_t* fnset);
 int get_interval(const state_t *rts);
 int in_flight(const state_t *rts);
-void fill_payload(int quiet, const char *str, unsigned char *payload, size_t len);
+void fill_payload(int quiet, const char *str, uint8_t *payload, size_t len);
 
 bitmap_t rcvd_test (uint16_t seq, const bitmap_t *map);
 void     rcvd_set  (uint16_t seq, bitmap_t *map);
 void     rcvd_clear(uint16_t seq, bitmap_t *map);
 
-// wrapper: __has_attribute
-#ifndef __has_attribute
-#define __has_attribute(attr) 0
-#endif
-// attribute: noreturn
-#if __has_attribute(__noreturn__)
-#define NORETURN __attribute__((__noreturn__))
-#else
-#define NORETURN
-#endif
-
-void usage(int rc) NORETURN;
+NORETURN void usage(int rc);
 
 #endif

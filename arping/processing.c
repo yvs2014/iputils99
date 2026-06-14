@@ -129,9 +129,10 @@ continue_t checkin_print(const struct arphdr *got,
 	memcpy(&got_dst, p, sizeof(struct in_addr));
 	//
 	if (GOT_IP_OK(opt->dad ? sent_src.s_addr : true)) {
-		int okay = SLL_ADDR_OK(opt->dad ? data : data + got->ar_hln + 4,
-				my->sll_addr,
-				opt->dad ? my->sll_halen : got->ar_hln);
+		int okay = SLL_ADDR_OK(
+			opt->dad ? data : data + got->ar_hln + sizeof(struct in_addr),
+			my->sll_addr,
+			opt->dad ? my->sll_halen : got->ar_hln);
 		if (opt->dad)
 			okay = !okay;
 		if (okay) {

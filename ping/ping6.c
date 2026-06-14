@@ -64,11 +64,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <errno.h>
 #include <err.h>
 #include <netinet/ip6.h>
 #include <netinet/icmp6.h>
-#include <linux/in6.h>
 
 #include "ping6.h"
 #include "iputils.h"
@@ -77,7 +77,8 @@
 #include "ping_aux.h"
 #include "ping6_aux.h"
 #include "setsock.h"
-#include "nbind.h"
+#include "sock_pa.h"
+#include "sock_pt.h"
 #include "nlink.h"
 #ifdef ENABLE_RFC4620
 #include "node_info.h"
@@ -301,7 +302,7 @@ static void ping6_bpf_filter(const state_t *rts, const sock_t *sock) {
 	setsock_filter(sock->fd, &fprog, rts->opt.verbose, '6', rts->ident16);
 }
 
-static int probe_dst6(state_t *rts, struct sockaddr_in6 *dst, int sock_fd, bool next) { // NONNUL(1, 2)
+static int probe_dst6(state_t *rts, struct sockaddr_in6 *dst, int sock_fd, bool next) { // NONNULL(1, 2)
 	int fd = socket(AF_INET6, SOCK_DGRAM, 0);
 	if (fd < 0)
 		err(errno, "socket");
@@ -309,25 +310,20 @@ static int probe_dst6(state_t *rts, struct sockaddr_in6 *dst, int sock_fd, bool 
 	bool scoped = IN6_IS_ADDR_LINKLOCAL(&SA6_IN(dst)) ||
 		      IN6_IS_ADDR_MC_LINKLOCAL(&SA6_IN(dst));
 	if (rts->device) {
-		unsigned iface = nl_name2ndx(rts->device);
-		if (!iface) {
-			if (!errno) errno = ENODEV;
-				err(errno, NETDEV_FMT, rts->device);
-		}
-//		struct in6_pktinfo ipi = { .ipi6_ifindex = iface };
-//		if ((setsockopt(fd,      IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
-//		    (setsockopt(sock_fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0))
-//			err(errno, "setsockopt(%s, %s)", "IPV6_PKTINFO", rts->device);
-		if ((bindtodev(fd, rts->device) < 0) ||
-		    (bindtodev(sock_fd, rts->device) < 0))
-			err(errno, "%s", rts->device);
+		uint iface = nl_name2ndx(rts->device);
+		if (!iface)
+			err_nodev(rts->device);
+//		setsock_pktinfo(fd,      iface, rts->device, IP6);
+//		setsock_pktinfo(sock_fd, iface, rts->device, IP6);
+		setsock_binddev(fd,      rts->device); // privileged action
+		setsock_binddev(sock_fd, rts->device); // privileged action
 		if (scoped)
 			dst->sin6_scope_id = iface;
 	}
 	if (!scoped)
 		dst->sin6_family = AF_INET6;
 	if (rts->tos)
-		setsock_tos(fd, rts->tos, rts->ip6);
+		setsock_tos(fd, rts->tos, IP6);
 #ifdef SO_MARK
 	if (rts->mark >= 0)
 		setsock_mark(fd, rts->mark); // privileged action
@@ -366,7 +362,7 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	};
 	cmsg_t cmsg6 = {0};
 	rts->cmsg = &cmsg6;
-	rts->ip6 = true;
+	rts->ip6 = IP6;
 
 #ifdef ENABLE_RFC4620
 	if (rts->ni && niquery_is_enabled(rts->ni)) {
@@ -427,11 +423,8 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	} else if (rts->device && (IN6_IS_ADDR_LINKLOCAL(&SA6_IN(&rts->source)) ||
 			      IN6_IS_ADDR_MC_LINKLOCAL(&SA6_IN(&rts->source)))) {
 		SA6(&rts->source)->sin6_scope_id = nl_name2ndx(rts->device);
-		if (!SA6(&rts->source)->sin6_scope_id) {
-			if (!errno)
-				errno = ENODEV;
-			err(errno, NETDEV_FMT, rts->device);
-		}
+		if (!SA6(&rts->source)->sin6_scope_id)
+			err_nodev(rts->device);
 	}
 
 	if (rts->device && rts->cmsg) {
@@ -444,18 +437,15 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		struct in6_pktinfo *ipi = (struct in6_pktinfo *)CMSG_DATA(cmsg);
 		memset(ipi, 0, sizeof(*ipi));
 		ipi->ipi6_ifindex = nl_name2ndx(rts->device);
-		if (!ipi->ipi6_ifindex) {
-			if (!errno) errno = ENODEV;
-			err(errno, NETDEV_FMT, rts->device);
-		}
+		if (!ipi->ipi6_ifindex)
+			err_nodev(rts->device);
 
 		if (rts->opt.strictsource) {
-//			unsigned iface = if_name2index(rts->device);
-//			struct in6_pktinfo ipi = { .ipi6_ifindex = iface };
-//			if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_PKTINFO, &ipi, sizeof(ipi)) < 0)
-//				err(errno, "setsockopt(%s, %s)", "IPV6_PKTINFO", rts->device);
-			if (bindtodev(sock->fd, rts->device) < 0)
-				err(errno, "%s", rts->device);
+//			uint iface = nl_name2ndx(rts->device);
+//			if (!iface)
+//				err_nodev(rts->device);
+//			setsock_pktinfo(sock->fd, iface, rts->device, IP6);
+			setsock_binddev(sock->fd, rts->device); // privileged action
 		}
 	}
 
@@ -463,59 +453,20 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		pmtu_interval(rts);
 
 	if (sock->raw) {
-		int csum_offset = 2;
-		if (setsockopt(sock->fd, SOL_RAW, IPV6_CHECKSUM, &csum_offset, sizeof(csum_offset)) < 0)
-		/* checksum should be enabled by default and setting this option might fail anyway */
-			warn("setsockopt(%s)", "RAW_CHECKSUM");
-		/* select icmp echo reply as icmp type to receive */
-		struct icmp6_filter filter = {0};
-		ICMP6_FILTER_SETBLOCKALL(&filter);
-#ifdef ENABLE_RFC4620
-		if (rts->ni && niquery_is_enabled(rts->ni))
-		{ ICMP6_FILTER_SETPASS(IPUTILS_NI_ICMP6_REPLY, &filter); }
-		else
-#endif
-		{ ICMP6_FILTER_SETPASS(ICMP6_ECHO_REPLY, &filter); }
-		if (setsockopt(sock->fd, IPPROTO_ICMPV6, ICMP6_FILTER, &filter, sizeof(filter)) < 0)
-			err(errno, "setsockopt(%s)", "ICMP6_FILTER");
+		setsock_cksum6(sock->fd);
+		setsock_icmp6_filter(sock->fd);
 	}
-
 	if (rts->opt.noloop)
-		setsock_noloop(sock->fd, rts->ip6);
+		setsock_noloop(sock->fd, IP6);
 	if (rts->ttl >= 0)
-		setsock_ttl(sock->fd, rts->ip6, rts->ttl);
-
-	{ int on = 1;
-	  if (
-#ifdef IPV6_RECVHOPLIMIT
-	(setsockopt(sock->fd, IPPROTO_IPV6, IPV6_RECVHOPLIMIT, &on, sizeof(on)) < 0) &&
-	(setsockopt(sock->fd, IPPROTO_IPV6, IPV6_2292HOPLIMIT, &on, sizeof(on)) < 0)
-#else
-	(setsockopt(sock->fd, IPPROTO_IPV6, IPV6_HOPLIMIT,     &on, sizeof(on)) < 0)
-#endif
-	  ) err(errno, "setsockopt(%s)", "IPV6_RECVHOPLIMIT, enable");
-	}
-
-	if (rts->flow >= 0) {
-		char buf[CMSG_ALIGN(sizeof(struct in6_flowlabel_req)) + rts->cmsg->len];
-		memset(buf, 0, sizeof(buf));
-		struct in6_flowlabel_req *freq = (struct in6_flowlabel_req *)buf;
-		freq->flr_label  = htonl(rts->flow);
-		freq->flr_action = IPV6_FL_A_GET;
-		freq->flr_flags  = IPV6_FL_F_CREATE;
-		freq->flr_share  = IPV6_FL_S_EXCL;
-		memcpy(&freq->flr_dst, &SA6_IN(&rts->whereto), sizeof(struct in6_addr));
-		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWLABEL_MGR, freq, sizeof(*freq)) < 0)
-			err(errno, "setsockopt(%s)", "IPV6_FLOWLABEL");
-		SA6(&rts->whereto)->sin6_flowinfo = rts->flow = freq->flr_label;
-		int on = 1;
-		if (setsockopt(sock->fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND, &on, sizeof(on)) < 0)
-			err(errno, "setsockopt(%s)", "IPV6_FLOWINFO");
-	}
+		setsock_ttl(sock->fd, rts->ttl, MULTICAST_TOO, IP6);
+	setsock_recvttl(sock->fd, IP6);
+	if (rts->flow >= 0)
+		setsock_flow6(sock->fd, rts->flow, rts->cmsg->len, SA6(&rts->whereto));
 
 	rts->subnet_router_anycast = get_subnet_anycast(SA6(&rts->whereto));
-	mtudisc_n_bind(rts, sock);
-	setsock_recverr(sock->fd, rts->ip6);
+	MTUDISC_N_BIND;
+	setsock_recverr(sock->fd, IP6);
 
 	if (!rts->sndbuf)
 		rts->sndbuf = estimate_packlen(sizeof(struct ip6_hdr),

@@ -31,7 +31,7 @@
 #include "processing.h"
 #include "iputils.h"
 #include "str2num.h"
-#include "nbind.h"
+#include "sock_pa.h"
 #include "nlink.h"
 #ifdef HAVE_LIBCAP
 #include "caps.h"
@@ -60,7 +60,7 @@ typedef struct run_state {
 	struct in_addr src, dst;
 	struct sockaddr_storage from, to;
 	struct timespec start, last;
-	unsigned interval;
+	uint interval;
 	counter_t stat;
 	arpopt_t opt;
 } state_t;
@@ -161,7 +161,7 @@ static void guess_device(int af, struct in_addr dst, arpdev_t *dev) {
 }
 
 // common checks for `ifa_flags'
-static bool valid_flags(unsigned flags, const char *name, bool quiet, bool dad) {
+static bool valid_flags(uint flags, const char *name, bool quiet, bool dad) {
 	if (!(flags & IFF_UP)) {
 		if (name && name[0]) {
 			if (!quiet)
@@ -233,7 +233,7 @@ static int check_device(state_t *rts) {
 #ifdef USE_ALTNAMES
 	// could be 'altname' too
 	if (!rts->dev.ifa) {
-		unsigned ndx = nl_nametoindex(rts->dev.name, rts->dev.ifa_list);
+		uint ndx = nl_nametoindex(rts->dev.name, rts->dev.ifa_list);
 		if ((ndx > 0) && if_indextoname(ndx, rts->dev.name))
 			rts->dev.ifa = ifa_by_name(rts->dev.ifa_list, &rts->dev, &rts->opt);
 	}
@@ -339,7 +339,7 @@ static int main_loop(state_t *rts) {
 
 	send_n_stat(rts);
 
-	unsigned char packet[4096];
+	uint8_t packet[4096] = {0};
 	uint64_t total_expires = 1;
 	int rc = 0;
 	for (continue_t run = CONTINUE; run;) {
@@ -496,7 +496,7 @@ static inline void arping_setup(state_t *rts) {
 
 	// address family: to be sure
 	if (rts->af != AF_INET)
-		errx(EAFNOSUPPORT, NETDEV_FMT ": %s", rts->target,
+		errx(EAFNOSUPPORT, TARGET_FMT ": %s", rts->target,
 			strerror(rts->af ? ENODEV : ENXIO));
 
 	// only target: guess device
@@ -510,7 +510,7 @@ static inline void arping_setup(state_t *rts) {
 	if (!rts->dev.ndx) { // no suitable device?
 		errno = ENODEV;
 		if (rts->dev.name[0])
-			err(errno, NETDEV_FMT, rts->dev.req ? rts->dev.req : rts->dev.name);
+			err_nodev(rts->dev.req ? rts->dev.req : rts->dev.name);
 		warn("%s", rts->target);
 	}
 
@@ -526,9 +526,9 @@ static inline void arping_setup(state_t *rts) {
 		int probe_fd = socket(AF_INET, SOCK_DGRAM, 0);
 		if (probe_fd < 0)
 			err(errno, "socket(%s, %s)", "INET", "DGRAM");
-		if (rts->dev.name[0] && (bindtodev(probe_fd, rts->dev.name) < 0))
-			warn("%s: %s: %s", _WARN, rts->dev.name,
-				_("Interface is ignored"));
+		if (rts->dev.name[0] &&
+		    (bindtodev(probe_fd, rts->dev.name)/*privileged action*/ < 0))
+			warn("%s: %s: %s", _WARN, rts->dev.name, _("Interface is ignored"));
 		//
 		struct sockaddr_in addr = {.sin_family = AF_INET};
 		if (rts->source || rts->src.s_addr) {
@@ -539,9 +539,7 @@ static inline void arping_setup(state_t *rts) {
 			addr.sin_port = htons(1025);
 			addr.sin_addr = rts->dst;
 			if (!rts->opt.unsolicited) {
-				int on = 1;
-				if (setsockopt(probe_fd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof(on)) < 0)
-					warn("%s: setsockopt(%s)", _WARN, "SO_DONTROUTE");
+				setsock_dontroute(probe_fd);
 				if (connect(probe_fd, SA(&addr), SA4_LEN) < 0)
 					err(errno, "%s", "connect()");
 				GETSOCKNAME(probe_fd, SA(&addr), SA4_LEN);

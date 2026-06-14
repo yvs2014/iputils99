@@ -584,10 +584,6 @@ msgid "Pinging broadcast address"
 msgstr "Laaja-lähetysosoitteen pingaaminen"
 
 #
-msgid "Cannot set broadcasting"
-msgstr "Laaja-lähetystä ei voi asettaa"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "Ei voi poistaa monilähetyksen takaisin-silmukkaa käytöstä"
 

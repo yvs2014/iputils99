@@ -63,8 +63,6 @@
 #endif
 
 #define MIN_USER_MS	10	// Minimal interval for non-root users, in milliseconds
-#define MIN_GAP_MS	10	// Minimal interpacket gap, in milliseconds
-#define SCHINT(a)	(((a) < MIN_GAP_MS) ? MIN_GAP_MS : (a))
 
 #ifndef NI_MAXADDR
 #define NI_MAXADDR	40	// Enough for the longest ip6addr in chars (39 + \0)
@@ -79,16 +77,16 @@
 #define BITMAP_BIT(bit)	(((bitmap_t)1) << ((bit) & ((1 << BITMAP_SHIFT) - 1)))
 
 inline bitmap_t rcvd_test(uint16_t seq, const bitmap_t *map) {
-	unsigned bit = seq % MAX_DUP_CHK;
+	uint bit = seq % MAX_DUP_CHK;
 	return BITMAP_ARR(bit) & BITMAP_BIT(bit);
 }
 inline void rcvd_set(uint16_t seq, bitmap_t *map) {
-	unsigned bit = seq % MAX_DUP_CHK;
+	uint bit = seq % MAX_DUP_CHK;
 	BITMAP_ARR(bit) |= BITMAP_BIT(bit);
 }
 
 inline void rcvd_clear(uint16_t seq, bitmap_t *map) {
-	unsigned bit = seq % MAX_DUP_CHK;
+	uint bit = seq % MAX_DUP_CHK;
 	BITMAP_ARR(bit) &= ~BITMAP_BIT(bit);
 }
 
@@ -111,7 +109,7 @@ static const char *usestr =
 "  -i <interval>      seconds between sending each packet\n"
 "  -L                 suppress loopback of multicast packets\n"
 "  -l <preload>       send <preload> number of packages while waiting replies\n"
-#ifdef SO_MARK // TODO: split `usestr' .po into parts
+#ifdef SO_MARK
 "  -m <mark>          tag the packets going out\n"
 #endif
 "  -M <pmtud opt>     define path MTU discovery, can be one of <do|dont|want|probe>\n"
@@ -159,7 +157,7 @@ void fill_payload(int quiet, const char *str, uint8_t *payload, size_t len) {
 		if (!isxdigit(*cp))
 			errx(EINVAL, "%s: %s", _("Pattern must be specified as hex digits"), cp);
 #define PAD_BYTES	16
-	unsigned pad[PAD_BYTES];
+	uint pad[PAD_BYTES];
 	errno = 0;
 	int items = sscanf(str,
 		"%2x%2x%2x%2x"
@@ -213,36 +211,35 @@ static void sig_handler(int signo) {
 	}
 }
 
-static int schedule_exit(const state_t *rts, int next) {
-	static unsigned long long waittime;
-	if (waittime)
-		return next;
-	if (rts->nreceived) {
-		waittime = 2 * rts->tmax;
-		unsigned long long minwait = rts->interval * 1000ull;
-		if (waittime < minwait)
-			waittime = minwait;
-	} else {
-		waittime = rts->lingertime * 1000ull;
+static inline int schedule_exit(int next, long nreceived, long tmax, int interval, int lingertime) {
+	static uint64_t waittime;
+	if (!waittime) {
+		if (nreceived) {
+			waittime = 2 * tmax;
+			uint64_t minwait = interval * (uint64_t)1000;
+			if (waittime < minwait)
+				waittime = minwait;
+		} else
+			waittime = lingertime * (uint64_t)1000;
+		time_t msec = waittime / 1000;
+		if ((next < 0) || (next < msec))
+			next = msec;
+		struct itimerval it = { .it_value = {
+			.tv_sec  = waittime / MLN,
+			.tv_usec = waittime % MLN,
+		}};
+		setitimer(ITIMER_REAL, &it, NULL);
 	}
-	time_t msec = waittime / 1000;
-	if ((next < 0) || (next < msec))
-		next = msec;
-	struct itimerval it = { .it_value = {
-		.tv_sec  = waittime / MLN,
-		.tv_usec = waittime % MLN,
-	}};
-	setitimer(ITIMER_REAL, &it, NULL);
 	return next;
 }
 
 int get_interval(const state_t *rts) {
-	int interval = rts->interval;
-	int est = rts->rtt ? (rts->rtt / 8) : (interval * 1000);
-	interval = (est + rts->rtt_addend + 500) / 1000;
-	if (rts->uid && (interval < MIN_USER_MS))
-		interval = MIN_USER_MS;
-	return interval;
+	int dt = rts->interval;
+	int est = rts->rtt ? (rts->rtt / 8) : (dt * 1000);
+	dt = (est + rts->rtt_addend + 500) / 1000;
+	if (rts->uid && (dt < MIN_USER_MS))
+		dt = MIN_USER_MS;
+	return dt;
 }
 
 inline int in_flight(const state_t *rts) {
@@ -404,59 +401,24 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 			_("see -i option for details"));
 	if (rts->interval >= (INT_MAX / rts->preload))
 		errx(EINVAL, "%s: %d", _("Illegal preload and/or interval"), rts->interval);
-
 	// socket options
-	if (rts->opt.so_debug) {
-		int opt = 1;
-		NET_ADMIN_ON;
-		int rc = setsockopt(sock->fd, SOL_SOCKET, SO_DEBUG, &opt, sizeof(opt));
-		int keep = errno;
-		NET_ADMIN_OFF;
-		errno = keep;
-		if (rc < 0)
-			warn("setsockopt(%s)", "DEBUG");
-	}
-	if (rts->opt.so_dontroute) {
-		int opt = 1;
-		if (setsockopt(sock->fd, SOL_SOCKET, SO_DONTROUTE, &opt, sizeof(opt)) < 0)
-			warn("setsockopt(%s)", "DONTROUTE");
-	}
+	if (rts->opt.so_debug)
+		setsock_debug(sock->fd);
+	if (rts->opt.so_dontroute)
+		setsock_dontroute(sock->fd);
 #ifdef SO_TIMESTAMP
-	if (!rts->opt.latency) {
-		int opt = 1;
-		if (setsockopt(sock->fd, SOL_SOCKET, SO_TIMESTAMP, &opt, sizeof(opt)) < 0)
-			warnx("%s", _("no SO_TIMESTAMP support, falling back to SIOCGSTAMP"));
-	}
+	if (!rts->opt.latency)
+		setsock_timestamp(sock->fd);
 #endif
 #ifdef SO_MARK
 	if (rts->mark >= 0)
 		setsock_mark(sock->fd, rts->mark); // privileged action
 #endif
-
-	/* Set some SNDTIMEO to prevent blocking forever
-	 * on sends, when device is too slow or stalls. Just put limit
-	 * of one second, or "interval", if it is less.
-	 */
-	{ struct timeval tv = { .tv_sec = 1, .tv_usec = 0 };
-	  if (rts->interval < 1000) {
-		tv.tv_sec  = 0;
-		tv.tv_usec = 1000 * SCHINT(rts->interval);
-	  }
-	  setsockopt(sock->fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
-	}
-
-	/* Set RCVTIMEO to "interval"
-	 * Note, it is just an optimization allowing to avoid redundant poll() */
-	{ struct timeval tv = {
-		.tv_sec  = SCHINT(rts->interval) / 1000,
-		.tv_usec = 1000 * (SCHINT(rts->interval) % 1000),
-	  };
-	  if (setsockopt(sock->fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)))
+	setsock_sndtime(sock->fd, rts->interval);
+	if (setsock_rcvtime(sock->fd, rts->interval))
 		rts->opt.flood_poll = true;
-	}
-
 	if (!rts->opt.pingfilled) {
-		unsigned char *p = rts->outpack + sizeof(struct icmphdr);
+		uint8_t *p = rts->outpack + sizeof(struct icmphdr);
 		/* Do not forget about case of small datalen, fill timestamp area too! */
 		for (size_t i = 0; i < rts->datalen; ++i)
 			*p++ = i;
@@ -499,12 +461,10 @@ static inline struct timeval *msghdr_timeval(struct msghdr *msg) {
 }
 #endif
 
-static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
-		uint8_t *packet, size_t packlen)
-{
+static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock, uint8_t *packet, size_t packlen) {
 	struct iovec iov = { .iov_base = packet };
-	char addrbuf[128];
-	char ans_data[4096];
+	uint8_t addrbuf[128] = {0};
+	uint8_t ans_data[4096] = {0};
 
 	for (;;) {
 		if (exiting) // SIGINT, SIGALRM
@@ -524,7 +484,7 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock,
 		do {
 			next = pinger(rts, fnset, sock);
 			if (rts->npackets && (rts->ntransmitted >= rts->npackets) && !rts->deadline)
-				next = schedule_exit(rts, next);
+				next = schedule_exit(next, rts->nreceived, rts->tmax, rts->interval, rts->lingertime);
 		} while (next <= 0);
 
 		/* "next" is time to send next probe, if positive.

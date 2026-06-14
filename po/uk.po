@@ -688,10 +688,6 @@ msgid "Pinging broadcast address"
 msgstr "Пінгування всієї підмережі"
 
 #
-msgid "Cannot set broadcasting"
-msgstr "Не вдалося встановити пінгування всієї підмережі"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "Неможливо вимкнути петльовий інтерфейс групової розсилки"
 

@@ -591,10 +591,6 @@ msgid "Pinging broadcast address"
 msgstr ""
 
 #
-msgid "Cannot set broadcasting"
-msgstr ""
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr ""
 

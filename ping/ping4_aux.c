@@ -61,11 +61,11 @@
 #include "common.h"
 
 #if BYTE_ORDER == LITTLE_ENDIAN
-# define ODDBYTE(v)	(v)
+#define ODDBYTE(v)	(v)
 #elif BYTE_ORDER == BIG_ENDIAN
-# define ODDBYTE(v)	((unsigned short)(v) << 8)
+#define ODDBYTE(v)	((uint16_t)(v) << 8)
 #else
-# define ODDBYTE(v)	htons((unsigned short)(v) << 8)
+#define ODDBYTE(v)	htons((uint16_t)(v) << 8)
 #endif
 
 

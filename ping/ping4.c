@@ -62,7 +62,6 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-//#include <linux/icmp.h> /* conflicted with <netinet/ip_icmp.h> */
 
 #include "ping4.h"
 #include "iputils.h"
@@ -72,16 +71,16 @@
 #include "ping4_aux.h"
 #include "ping4_opt.h"
 #include "setsock.h"
-#include "nbind.h"
+#include "sock_pa.h"
+#include "sock_pc.h"
+#include "sock_pt.h"
 #include "nlink.h"
 
-// ICMP_FILTER is defined in <linux/icmp.h>
-#ifndef ICMP_FILTER
-#define ICMP_FILTER	1
-struct icmp_filter {
-	uint32_t data;
-};
-#endif
+typedef union ipopt_space {
+	uint8_t *u8;
+	struct ip_timestamp *ipt;
+	struct ipopt_noped *ipn;
+} ipopt_space_t;
 
 /*
  * 	Compose and transmit an ICMP ECHO REQUEST packet.  The IP packet
@@ -125,29 +124,23 @@ static ssize_t ping4_send_probe(state_t *rts, int fd, uint8_t *packet) {
 	return (rc == len) ? 0 : rc;
 }
 
-
-// func_set:receive_error:...
-static inline void setsock4_icmp_filter(int fd) {
-	struct icmp_filter filt = { .data = ~(
-		(1 << ICMP_SOURCE_QUENCH) |
-		(1 << ICMP_REDIRECT)      |
-		(1 << ICMP_ECHOREPLY)
-	)};
-	if (setsockopt(fd, SOL_RAW, ICMP_FILTER, &filt, sizeof(filt)) < 0)
-		err(errno, "setsockopt(%s)", "ICMP_FILTER");
-}
-
 // aux_fn:addr_equal
 static bool addr4equal(const struct sockaddr *a, const struct sockaddr_storage *b) {
 	return !memcmp(&SA4_IN(a), &SA4_IN(b), sizeof(struct in_addr));
 }
+
 // aux_fn:eerr_extra
 static void icmp4_ee_extra(state_t *rts, const sock_t *sock, uint16_t seq) {
 	acknowledge(rts, seq);
 	static bool icmp4_filter_applied;
 	if (sock->raw && !icmp4_filter_applied) {
 		/* Set additional filter */
-		setsock4_icmp_filter(sock->fd);
+		setsock_icmp4_filter(sock->fd, (int32_t[]) {
+			ICMP_SOURCE_QUENCH,
+			ICMP_REDIRECT,
+			ICMP_ECHOREPLY,
+			-1
+		});
 		icmp4_filter_applied = true;
 	}
 }
@@ -184,7 +177,7 @@ static inline bool ping4_icmp_extra_type(state_t *rts,
 {
 	const struct iphdr *iph = (struct iphdr *)(icmp + 1);
 	uint8_t ihl = iph->ihl * 4;
-	const struct icmphdr *orig = (struct icmphdr *)((unsigned char *)iph + ihl);
+	const struct icmphdr *orig = (struct icmphdr *)((uint8_t *)iph + ihl);
 	if ((received < (sizeof(struct iphdr) + 2 * sizeof(struct icmphdr))) ||
 	    (received < (ihl                  + 2 * sizeof(struct icmphdr))))
 			return true;
@@ -327,41 +320,6 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 	return false;
 }
 
-static inline void set_opt_ts(int fd, struct ip_timestamp *opt, uint8_t flg, uint8_t len) {
-	if (len % 4)
-		err(EINVAL, _("timestamp length is not a multiple of 4"));
-	opt->ipt_code = IPOPT_TIMESTAMP,
-	opt->ipt_len  = len;
-	opt->ipt_ptr  = 5;
-	opt->ipt_flg  = flg;
-	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, opt->ipt_len) < 0) {
-//		opt->ipt_flg = 2; // ???
-//		if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, opt->ipt_len) < 0)
-		err(errno, _("timestamp option"));
-	}
-}
-
-static inline void set_opt_rr(int fd, pre_noped_ipopt_t *opt) {
-	opt->nop = IPOPT_NOP;
-	opt->val = IPOPT_RR;
-	opt->len = sizeof(pre_noped_ipopt_t) - sizeof(((pre_noped_ipopt_t*)0)->nop); /*39*/
-	opt->off = IPOPT_MINOFF;
-	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, sizeof(*opt)) < 0)
-		err(errno, _("record route"));
-}
-
-static inline void set_opt_xrr(int fd, pre_noped_ipopt_t *opt, uint8_t val, uint8_t len) {
-	opt->nop = IPOPT_NOP;
-	opt->val = val;
-	opt->len = len;
-	opt->off = IPOPT_MINOFF;
-	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, len + 1) < 0)
-		err(errno, "%s: %s(%d)", _("record route"),
-			val == IPOPT_SSRR ? "IPOPT_SSRR" :
-			val == IPOPT_LSRR ? "IPOPT_LSRR" :
-			"?", val);
-}
-
 static void ping4_bpf_filter(const state_t *rts, const sock_t *sock) {
 	struct sock_filter filter[] = { // no need to be static?
 		BPF_STMT(BPF_LDX | BPF_B   | BPF_MSH, 0),	/* Skip IP header due BSD */
@@ -430,27 +388,30 @@ static inline const char *ping4_run_args(const char *target, bool hops, struct a
 	return hostname;
 }
 
-static int probe_dst4(state_t *rts, struct sockaddr_in dst, int sock_fd, bool next) {
+static int probe_dst4(state_t *rts, struct ip_timestamp *ipt, // NONNULL(1, 2)
+	struct sockaddr_in dst, int sock_fd, bool next)
+{
 	int fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (fd < 0)
 		err(errno, "socket");
 	if (rts->device) {
-//		struct in_pktinfo ipi = { .ipi_ifindex = if_name2index(rts->device) };
-//		if ((setsockopt(fd,      IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0) ||
-//		    (setsockopt(sock_fd, IPPROTO_IP, IP_PKTINFO, &ipi, sizeof(ipi)) < 0))
-//			err(errno, "setsockopt(%s, %s)", "IP_PKTINFO", rts->device);
-		if ((bindtodev(fd, rts->device) < 0) || (bindtodev(sock_fd, rts->device) < 0))
-			err(errno, "%s", rts->device);
+		uint iface = nl_name2ndx(rts->device);
+		if (!iface)
+			err_nodev(rts->device);
+//		setsock_pktinfo(fd,      iface, rts->device, !IP6);
+//		setsock_pktinfo(sock_fd, iface, rts->device, !IP6);
+		setsock_binddev(fd,      rts->device); // privileged action
+		setsock_binddev(sock_fd, rts->device); // privileged action
 	}
 	if (rts->tos)
-		setsock_tos(fd, rts->tos, rts->ip6);
+		setsock_tos(fd, rts->tos, !IP6);
 #ifdef SO_MARK
 	if (rts->mark >= 0)
 		setsock_mark(fd, rts->mark); // privileged action
 #endif
 	dst.sin_port = htons(1025);
-	if (rts->ipopt.ipt && rts->ipopt.ipt->ipt_len)
-		dst.sin_addr.s_addr = rts->ipopt.ipt->data[0]; // note: `dst' is a copy
+	if (ipt->ipt_len)
+		dst.sin_addr.s_addr = ipt->data[0]; // note: `dst' is a copy
 	if (connect(fd, SA(&dst), SA4_LEN) >= 0)
 		return fd;
 	//
@@ -460,9 +421,7 @@ static int probe_dst4(state_t *rts, struct sockaddr_in dst, int sock_fd, bool ne
 		if (!rts->opt.broadcast)
 			errx(EINVAL, WANT_BRD);
 		warnx("%s: %s", _WARN, _("Pinging broadcast address"));
-		int opt = rts->opt.broadcast;
-		if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
-			err(errno, "%s", _("Cannot set broadcasting"));
+		setsock_broadcast(fd);
 		if (connect(fd, SA(&dst), SA4_LEN) >= 0)
 			return fd;
 	}	break;
@@ -495,8 +454,8 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		.eerr_extra  = icmp4_ee_extra,
 	};
 	uint8_t ipopt_space[MAX_IPOPTLEN] = {0};
-	rts->ipopt.u8 = ipopt_space;
-	rts->ip6 = false;
+	ipopt_space_t ipopt = {.u8 = ipopt_space};
+	rts->ip6 = !IP6;
 	SA4(&rts->source)->sin_family = AF_INET;
 	//
 	char hnamebuf[NI_MAXHOST] = {0};
@@ -505,8 +464,8 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		if (validate_hostlen(*argv, false))
 			errno = 0;
 		else {
-			const char *target = ping4_run_args(*argv, argc > 1, ai, hnamebuf, sizeof(hnamebuf),
-				(struct sockaddr_in *)&rts->whereto, rts->ipopt.ipt);
+			const char *target = ping4_run_args(*argv, argc > 1, ai,
+				hnamebuf, sizeof(hnamebuf), SA4(&rts->whereto), ipopt.ipt);
 			if (target)
 				rts->hostname = target;
 			if ((argc == 1) && (target == *argv))
@@ -514,9 +473,9 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 			arg_cnt++;
 		}
 	}
-	if (rts->ipopt.ipt->ipt_len) { // counter -> size (header + data)
-		rts->ipopt.ipt->ipt_len *= 2 * sizeof(rts->ipopt.ipt->data[0]); // *= 8
-		rts->ipopt.ipt->ipt_len += 4;
+	if (ipopt.ipt->ipt_len) { // counter -> size (header + data)
+		ipopt.ipt->ipt_len *= 2 * sizeof(ipopt.ipt->data[0]); // *= 8
+		ipopt.ipt->ipt_len += 4;
 	}
 	if (arg_cnt > 1) {
 		if (rts->opt.rroute)
@@ -532,7 +491,7 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		errx(EINVAL, "%s", _("No intermediate hops for TSPRESPEC"));
 
 	if (!SA4ADDR(&rts->source)) {
-		int fd = probe_dst4(rts, *SA4(&rts->whereto), sock->fd, ai->ai_next);
+		int fd = probe_dst4(rts, ipopt.ipt, *SA4(&rts->whereto), sock->fd, ai->ai_next);
 		if (fd < 0)
 			return -1;
 		GETSOCKNAME(fd, SA(&rts->source), SA4_LEN);
@@ -542,10 +501,8 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 			warnx("%s: %s: %s", _WARN, rts->device, WARN_NOSRCDEV);
 			rts->unreldev = true;
 		}
-	} else if (rts->device && (bindtodev(sock->fd, rts->device) < 0)) {
-		if (!errno) errno = ENODEV;
-			err(errno, NETDEV_FMT, rts->device);
-	}
+	} else if (rts->device)
+		setsock_binddev(sock->fd, rts->device); // privileged action
 
 	if (!SA4ADDR(&rts->whereto))
 		SA4ADDR(&rts->whereto) = SA4ADDR(&rts->source);
@@ -553,56 +510,53 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	if (rts->opt.broadcast || IN_MULTICAST(ntohl(SA4ADDR(&rts->whereto))))
 		pmtu_interval(rts);
 
-	if (sock->raw) {
-		struct icmp_filter filt = { .data = ~(
-			(1 << ICMP_SOURCE_QUENCH) |
-			(1 << ICMP_DEST_UNREACH)  |
-			(1 << ICMP_TIME_EXCEEDED) |
-			(1 << ICMP_PARAMETERPROB) |
-			(1 << ICMP_REDIRECT)      |
-			(1 << ICMP_ECHOREPLY)
-		)};
-		if (setsockopt(sock->fd, SOL_RAW, ICMP_FILTER, &filt, sizeof(filt)) < 0)
-			warn("%s: setsockopt(%s)", _WARN, "ICMP_FILTER");
-	} else {
-		int on = 1;
-		if (setsockopt(sock->fd, IPPROTO_IP, IP_RECVTTL, &on, sizeof(on)) < 0)
-			warn("%s: setsockopt(%s)", _WARN, "IP_RECVTTL");
-		if (setsockopt(sock->fd, IPPROTO_IP, IP_RETOPTS, &on, sizeof(on)) < 0)
-			warn("%s: setsockopt(%s)", _WARN, "IP_RETOPTS");
+	if (sock->raw)
+		setsock_icmp4_filter(sock->fd, (int32_t[]) {
+			ICMP_SOURCE_QUENCH,
+			ICMP_DEST_UNREACH,
+			ICMP_TIME_EXCEEDED,
+			ICMP_PARAMETERPROB,
+			ICMP_REDIRECT,
+			ICMP_ECHOREPLY,
+			-1,
+		});
+	else {
+		setsock_recvttl(sock->fd, !IP6);
+		setsock_retopts(sock->fd);
 	}
 
-	if (rts->opt.broadcast) {
-		int opt = 1;
-		if (setsockopt(sock->fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
-			err(errno, "%s", _("Cannot set broadcasting"));
-	}
-
+	if (rts->opt.broadcast)
+		setsock_broadcast(sock->fd);
 	if (rts->opt.noloop)
-		setsock_noloop(sock->fd, rts->ip6);
+		setsock_noloop(sock->fd, !IP6);
 	if (rts->ttl >= 0)
-		setsock_ttl(sock->fd, rts->ip6, rts->ttl);
+		setsock_ttl(sock->fd, rts->ttl, MULTICAST_TOO, !IP6);
 	if (rts->opt.connect_sk)
 		if (connect(sock->fd, SA(&rts->whereto), SA4_LEN) < 0)
 			err(errno, "%s", "connect()");
 
-	mtudisc_n_bind(rts, sock);
-	setsock_recverr(sock->fd, rts->ip6);
+	MTUDISC_N_BIND;
+	setsock_recverr(sock->fd, !IP6);
 	//
 	int optlen = ((rts->ts_opt >= 0) || rts->opt.rroute || rts->opt.sourceroute) ?
 		MAX_IPOPTLEN : 0;
-	if (optlen) { // rr, ts, etc. - exclusive?
-		if (rts->ts_opt >= 0)
-			set_opt_ts(sock->fd, rts->ipopt.ipt, rts->ts_opt,
-				(rts->ts_opt == IPOPT_TS_PRESPEC) ? rts->ipopt.ipt->ipt_len :
-				(rts->ts_opt == IPOPT_TS_TSONLY)  ? MAX_IPOPTLEN            :
-				(MAX_IPOPTLEN - 4));
-		else if (rts->opt.rroute)
-			set_opt_rr(sock->fd, rts->ipopt.ipo);
+	if (optlen) { // IP options: ts, rr, etc.
+		if (rts->ts_opt >= 0) {
+			uint8_t flg = rts->ts_opt;
+			uint8_t len =
+				(flg == IPOPT_TS_PRESPEC) ? ipopt.ipt->ipt_len :
+				(flg == IPOPT_TS_TSONLY)  ? MAX_IPOPTLEN       :
+				(MAX_IPOPTLEN - 4);
+			if (setsock_ipopt_ts(sock->fd, ipopt.ipt, flg, len) < 0) {
+//				try fallback with undocumented `flg = 2'?
+				err(errno, _("timestamp option"));
+			}
+		} else if (rts->opt.rroute)
+			setsock_ipopt_rr(sock->fd, ipopt.ipn);
 		else if (rts->opt.sourceroute)
-			set_opt_xrr(sock->fd, rts->ipopt.ipo,
+			setsock_ipopt_xrr(sock->fd, ipopt.ipn,
 				rts->opt.so_dontroute ? IPOPT_SSRR : IPOPT_LSRR,
-				rts->ipopt.ipt->ipt_len - 4 - 1);
+				ipopt.ipt->ipt_len - 4 - 1);
 	}
 	//
 	if (!rts->sndbuf)

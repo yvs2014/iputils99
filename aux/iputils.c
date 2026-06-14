@@ -211,7 +211,7 @@ int validate_hostlen(const char *host, bool fail) {
 	return re;
 }
 
-void common_getopt(int argc, char **argv, const char *optstr, int features, // NONNUL(2, 3)
+void common_getopt(int argc, char **argv, const char *optstr, int features, // NONNULL(2, 3)
 	void (*usage_fn)(int), void (*switch_fn)(char, void*), void *data)
 {
 	opterr = 0;

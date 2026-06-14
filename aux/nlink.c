@@ -22,13 +22,13 @@
 #define NL_TOO_SHORT	"%s: message too short (len=%u, expected=%zu)"
 
 #ifdef USE_ALTNAMES
-static int cmp_raname(const struct rtattr *ra, const char *name) {
+static int cmp_raname(const struct rtattr *ra, const char name[]) {
 	int len = RTA_PAYLOAD(ra);
 	char *data = ra ? (char*)RTA_DATA(ra) : NULL;
 	return (data && (len > 0) && (len <= NL_ALTSIZE)) ? NL_STREQ(name, data) : 0;
 }
 
-static int is_altname(const struct nlmsghdr *nh, const char *name) {
+static int is_altname(const struct nlmsghdr *nh, const char name[]) {
 	const struct ifinfomsg *ifi = NLMSG_DATA(nh);
 	int len = IFLA_PAYLOAD(nh);
 	int found = 0;
@@ -55,7 +55,7 @@ static int is_altname(const struct nlmsghdr *nh, const char *name) {
 	return found;
 }
 
-static bool nl_altname(unsigned ndx, const char *name) {
+static bool nl_altname(uint ndx, const char name[]) {
 	struct {
 		struct ifinfomsg ifi;
 		struct rtattr attr_mask;
@@ -79,7 +79,7 @@ static bool nl_altname(unsigned ndx, const char *name) {
 // pub
 
 #ifdef USE_ALTNAMES
-unsigned nl_nametoindex(const char *name, struct ifaddrs *ifas) {
+uint nl_nametoindex(const char name[], struct ifaddrs *ifas) {
 	if (!(name || name[0]))
 		return 0;
 	struct ifaddrs *list = ifas;
@@ -88,7 +88,7 @@ unsigned nl_nametoindex(const char *name, struct ifaddrs *ifas) {
 		return 0;
 	}
 	//
-	unsigned ndx = 0;
+	uint ndx = 0;
 	if (list) {
 		for (const struct ifaddrs *ifa = list; ifa;
 		     ifa = ifa->ifa_next, ndx = 0)
@@ -107,8 +107,8 @@ unsigned nl_nametoindex(const char *name, struct ifaddrs *ifas) {
 }
 #endif
 
-unsigned nl_name2ndx(const char *name) {
-	unsigned ndx = 0;
+uint nl_name2ndx(const char name[]) { // char[ALTIFNAMSIZ]
+	uint ndx = 0;
 	if (name && name[0]) {
 		ndx = if_nametoindex(name);
 #ifdef USE_ALTNAMES
@@ -123,7 +123,7 @@ unsigned nl_name2ndx(const char *name) {
 //   <0: failed
 //    0: not done
 //   >0: done/data
-int nl_query(const char *name, int flags, int type,
+int nl_query(const char name[], int flags, int type,
 	const void *data, size_t len, int expected, size_t minlen,
 	int (*handler)(const struct nlmsghdr *nh, const char *userdata))
 {

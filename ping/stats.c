@@ -179,8 +179,7 @@ void print_status(const state_t *rts) {
 void print_timestamp(void) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
-	printf("[%lu.%06lu] ",
-	       (unsigned long)tv.tv_sec, (unsigned long)tv.tv_usec);
+	printf("[%lu.%06lu] ", (unsigned long)tv.tv_sec, (unsigned long)tv.tv_usec);
 }
 
 // Called once at ping setup

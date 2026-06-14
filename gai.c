@@ -13,7 +13,6 @@
 #include <err.h>
 #include <errno.h>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <netdb.h>
 
 #include "iputils.h"
@@ -65,7 +64,7 @@ NORETURN static void usage(int rc) {
 
 #define IF_AI_MACRO(macro) { if (STREQ((arg), (#macro))) return (macro); }
 
-static inline unsigned ai_macro2value(char opt, const char *arg) {
+static inline uint ai_macro2value(char opt, const char *arg) {
 #ifdef AI_PASSIVE
 	IF_AI_MACRO(AI_PASSIVE);
 #endif

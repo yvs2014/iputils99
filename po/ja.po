@@ -541,10 +541,6 @@ msgid "Pinging broadcast address"
 msgstr "ブロードキャストアドレスにpingしています"
 
 #
-msgid "Cannot set broadcasting"
-msgstr "ブロードキャストを設定できません"
-
-#
 msgid "Cannot disable multicast loopback"
 msgstr "マルチキャスト・ループバックを無効にできません"
 

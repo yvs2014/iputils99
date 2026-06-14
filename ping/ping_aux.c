@@ -68,7 +68,7 @@
 #include "stats.h"
 #include "ping4_aux.h"
 #include "ping6_aux.h"
-#include "setsock.h"
+#include "sock_pt.h"
 
 // common IPv4/IPv6 ICMP header
 typedef struct icmp46h {
@@ -105,21 +105,20 @@ void pmtu_interval(state_t *rts) {
 #undef PMTUDISCDO
 
 // Called once at setup
-void mtudisc_n_bind(state_t *rts, const sock_t *sock) {
-	if (rts->mtudisc >= 0)
-		setsock_mtudisc(sock->fd, rts->ip6, &rts->mtudisc);
-	bool set_ident = (rts->custom_ident > 0) && !sock->raw;
-	if (set_ident) {
-		if (rts->ip6)
-			SA6(&rts->source)->sin6_port = rts->ident16;
+void mtudisc_n_bind(int fd, uint16_t port, bool strictsource,
+	struct sockaddr *src, int mtudisc, bool ip6) // NONNULL(4)
+{
+	if (mtudisc >= 0)
+		setsock_mtudisc(fd, mtudisc, ip6);
+	if (port) {
+		if (ip6)
+			SA6(src)->sin6_port = port;
 		else
-			SA4(&rts->source)->sin_port  = rts->ident16;
+			SA4(src)->sin_port  = port;
 	}
-	if (rts->opt.strictsource || set_ident) {
-		socklen_t socklen = rts->ip6 ? SA6_LEN : SA4_LEN;
-		if (bind(sock->fd, SA(&rts->source), socklen) < 0)
+	if (strictsource || port)
+		if (bind(fd, src, ip6 ? SA6_LEN : SA4_LEN) < 0)
 			err(errno, "bind(%s)", "icmp-socket");
-	}
 }
 
 // func_set:receive_error:print_local_ee

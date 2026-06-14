@@ -6,7 +6,7 @@ project('iputils99', 'c',
 	default_options: [
 		'c_std=c99',
 		'warning_level=3',
-#		'b_sanitize=address,undefined', # use for testing
+		'b_sanitize=address,undefined', # use for testing
 	],
 	meson_version: '>=0.55',
 	version: find_program('git', required: false).found() ? run_command(
@@ -197,11 +197,16 @@ endif
 #
 aux = 'aux'
 aux_src     = []
+aux_subsrc = {}
 perm_src    = []
-iface_src   = []
-subdir(aux) # add sources to aux_src, perm_src, and iface_src
+subdir(aux) # add sources to aux_src and aux_subsrc
 subfoldered = ['ping', 'arping']
-iface_tools = ['ping', 'arping']
+aux_subtool = {
+	'iface'  : ['ping', 'arping'],
+	'sock_pa': ['ping', 'arping'],
+	'sock_pc': ['ping', 'clockdiff'],
+	'sock_pt': ['ping', 'tracepath'],
+}
 
 app = {}
 foreach tool: iputils
@@ -222,10 +227,12 @@ foreach tool: iputils
 			endif
 		endif
 		sub_src = []
-		if tool in iface_tools
-			src     += iface_src
-			sub_src += iface_src
-		endif
+		foreach st, st_src: aux_subtool
+			if tool in st_src
+				src     += aux_subsrc[st]
+				sub_src += aux_subsrc[st]
+			endif
+		endforeach
 		if tool in subfoldered
 			subdir(tool)
 		else
@@ -278,7 +285,6 @@ sections = {
 	'APPLICATIONS' : sect_app,
 	'CONFIGURATION': sect_cnf,
 	'DIRECTORIES'  : sect_dir,
-	'BUILD'        : {'standard': get_option('c_std')},
 }
 
 foreach section, elems: sections
