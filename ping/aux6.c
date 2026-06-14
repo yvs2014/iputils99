@@ -61,7 +61,7 @@
 #include <netinet/icmp6.h>
 #include <resolv.h>
 
-#include "ping6_aux.h"
+#include "aux6.h"
 
 #include "iputils.h"
 #include "common.h"

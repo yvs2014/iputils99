@@ -62,19 +62,20 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <linux/errqueue.h> // SO_EE_xxx
 
 #include "ping4.h"
 #include "iputils.h"
 #include "common.h"
 #include "stats.h"
-#include "ping_aux.h"
-#include "ping4_aux.h"
-#include "ping4_opt.h"
+#include "exterr.h"
 #include "setsock.h"
 #include "sock_pa.h"
 #include "sock_pc.h"
 #include "sock_pt.h"
 #include "nlink.h"
+#include "aux4.h"
+#include "opt4.h"
 
 typedef union ipopt_space {
 	uint8_t *u8;

@@ -1,5 +1,5 @@
-#ifndef PING4_AUX_H
-#define PING4_AUX_H
+#ifndef AUX4_H
+#define AUX4_H
 
 #include <stdbool.h>
 #include <netinet/ip_icmp.h>

@@ -53,6 +53,27 @@ typedef uint32_t	bitmap_t;
 # error Please MAX_DUP_CHK and/or BITMAP_SHIFT
 #endif
 
+#define MTUDISC_N_BIND mtudisc_n_bind(sock->fd,                    \
+  (rts->opt.ident && !sock->raw) ? rts->ident16 : 0,               \
+  rts->opt.strictsource, SA(&rts->source), rts->mtudisc, rts->ip6) \
+
+#define IS_OURS(rts, rawsock, rcvd_id) (!(rawsock) || ((rcvd_id) == (rts)->ident16))
+
+#define RETURN_IF_TOO_SHORT(received, minimum) do {		\
+	if ((received) < (minimum)) {				\
+		if (rts->opt.verbose)				\
+			warnx("%s: %zd %s (%s: %zd)",		\
+_("Packet too short"), (size_t)(received), BYTES(received),	\
+_("minimal"), (size_t)(minimum));				\
+		return true;					\
+	}							\
+} while (0)
+
+#define CMSG_INT(cmsg, to) do {                              \
+	if ((cmsg)->cmsg_len >= CMSG_LEN(sizeof(int)))       \
+		memcpy((to), CMSG_DATA(cmsg), sizeof(int));  \
+} while (0)
+
 typedef struct ping_sock {
 	int fd;
 	bool raw;
@@ -182,12 +203,13 @@ const char *sprint_addr4(in_addr_t addr, bool resolve);
 void acknowledge(state_t *rts, uint16_t seq);
 size_t estimate_packlen(size_t ip, size_t icmp, size_t data);
 
-#define IS_OURS(rts, rawsock, rcvd_id) (!(rawsock) || ((rcvd_id) == (rts)->ident16))
-
 int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock, const fnset_t* fnset);
 int get_interval(const state_t *rts);
 int in_flight(const state_t *rts);
 void fill_payload(int quiet, const char *str, uint8_t *payload, size_t len);
+void mtudisc_n_bind(int fd, uint16_t port, bool strictsource,
+	struct sockaddr *src, int mtudisc, bool ip6); // NONNULL(4)
+void pmtu_interval(state_t *rts); // NONNULL(1)
 
 bitmap_t rcvd_test (uint16_t seq, const bitmap_t *map);
 void     rcvd_set  (uint16_t seq, bitmap_t *map);

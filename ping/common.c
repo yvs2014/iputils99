@@ -52,6 +52,7 @@
 #include "iputils.h"
 #include "stats.h"
 #include "setsock.h"
+#include "sock_pt.h"
 #ifdef HAVE_LIBCAP
 #include "caps.h"
 #else
@@ -674,4 +675,45 @@ size_t estimate_packlen(size_t ip, size_t icmp, size_t data) {
 	// "alloc" is an estimate of memory taken by single packet
 	return ((icmp + data + 511) / 512) * (ip + 2 * icmp + DEFIPPAYLOAD + 160);
 }
+
+// Called once at setup
+void mtudisc_n_bind(int fd, uint16_t port, bool strictsource,
+	struct sockaddr *src, int mtudisc, bool ip6) // NONNULL(4)
+{
+	if (mtudisc >= 0)
+		setsock_mtudisc(fd, mtudisc, ip6);
+	if (port) {
+		if (ip6)
+			SA6(src)->sin6_port = port;
+		else
+			SA4(src)->sin_port  = port;
+	}
+	if (strictsource || port)
+		if (bind(fd, src, ip6 ? SA6_LEN : SA4_LEN) < 0)
+			err(errno, "bind(%s)", "icmp-socket");
+}
+
+void pmtu_interval(state_t *rts) { // NONNULL(1)
+	rts->multicast = true;
+#if IPV6_PMTUDISC_DO == IPV6_PMTUDISC_DO
+#define	PMTUDISCDO IP_PMTUDISC_DO
+#else
+	int pmtudo = rts->ip6 ? IPV6_PMTUDISC_DO : IP_PMTUDISC_DO;
+#define	PMTUDISCDO pmtudo
+#endif
+	if (rts->uid) {
+		if (rts->interval < MIN_MCAST_MS) {
+			errx(EINVAL, "%s %u %s, %s", _(rts->ip6 ?
+				"Minimal user interval for multicast ping must be >=" :
+				"Minimal user interval for broadcast ping must be >="),
+				MIN_MCAST_MS, _("ms"), _("see -i option for details"));
+		}
+		if ((rts->mtudisc >= 0) && (rts->mtudisc != PMTUDISCDO))
+			errx(EINVAL, "%s %s", _(rts->ip6 ?
+				"Multicast ping" : "Broadcast ping"), _("does not fragment"));
+	}
+	if (rts->mtudisc < 0)
+		rts->mtudisc = PMTUDISCDO;
+}
+#undef PMTUDISCDO
 

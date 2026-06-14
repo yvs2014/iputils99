@@ -6,7 +6,7 @@ project('iputils99', 'c',
 	default_options: [
 		'c_std=c99',
 		'warning_level=3',
-		'b_sanitize=address,undefined', # use for testing
+#		'b_sanitize=address,undefined', # use for testing
 	],
 	meson_version: '>=0.55',
 	version: find_program('git', required: false).found() ? run_command(

@@ -1,5 +1,5 @@
-#ifndef PING6_AUX_H
-#define PING6_AUX_H
+#ifndef AUX6_H
+#define AUX6_H
 
 #include <stdint.h>
 #include "common.h"

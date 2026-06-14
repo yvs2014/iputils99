@@ -69,17 +69,18 @@
 #include <err.h>
 #include <netinet/ip6.h>
 #include <netinet/icmp6.h>
+#include <linux/errqueue.h> // SO_EE_xxx
 
 #include "ping6.h"
 #include "iputils.h"
 #include "common.h"
 #include "stats.h"
-#include "ping_aux.h"
-#include "ping6_aux.h"
+#include "exterr.h"
 #include "setsock.h"
 #include "sock_pa.h"
 #include "sock_pt.h"
 #include "nlink.h"
+#include "aux6.h"
 #ifdef ENABLE_RFC4620
 #include "node_info.h"
 #include "ni_defs.h"

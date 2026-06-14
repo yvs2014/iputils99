@@ -55,8 +55,8 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 
-#include "ping4_aux.h"
-#include "ping4_opt.h"
+#include "aux4.h"
+#include "opt4.h"
 #include "iputils.h"
 #include "common.h"
 

@@ -58,17 +58,16 @@
 #include <string.h>
 #include <errno.h>
 #include <err.h>
+#include <sys/types.h>
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
-#include <sys/types.h>
+#include <linux/errqueue.h>
 
-#include "ping_aux.h"
+#include "exterr.h"
 #include "iputils.h"
-#include "common.h"
 #include "stats.h"
-#include "ping4_aux.h"
-#include "ping6_aux.h"
-#include "sock_pt.h"
+#include "aux4.h"
+#include "aux6.h"
 
 // common IPv4/IPv6 ICMP header
 typedef struct icmp46h {
@@ -78,58 +77,6 @@ typedef struct icmp46h {
 	uint16_t id;
 	uint16_t seq;
 } icmp46h_t;
-
-void pmtu_interval(state_t *rts) {
-	rts->multicast = true;
-#if IPV6_PMTUDISC_DO == IPV6_PMTUDISC_DO
-#define	PMTUDISCDO IP_PMTUDISC_DO
-#else
-	int pmtudo = rts->ip6 ? IPV6_PMTUDISC_DO : IP_PMTUDISC_DO;
-#define	PMTUDISCDO pmtudo
-#endif
-	if (rts->uid) {
-		if (rts->interval < MIN_MCAST_MS) {
-			errx(EINVAL, "%s %u %s, %s", _(rts->ip6 ?
-				"Minimal user interval for multicast ping must be >=" :
-				"Minimal user interval for broadcast ping must be >="),
-				MIN_MCAST_MS, _("ms"), _("see -i option for details"));
-		}
-		if ((rts->mtudisc >= 0) && (rts->mtudisc != PMTUDISCDO))
-			errx(EINVAL, "%s %s", _(rts->ip6 ?
-				"Multicast ping" : "Broadcast ping"),
-				_("does not fragment"));
-	}
-	if (rts->mtudisc < 0)
-		rts->mtudisc = PMTUDISCDO;
-}
-#undef PMTUDISCDO
-
-// Called once at setup
-void mtudisc_n_bind(int fd, uint16_t port, bool strictsource,
-	struct sockaddr *src, int mtudisc, bool ip6) // NONNULL(4)
-{
-	if (mtudisc >= 0)
-		setsock_mtudisc(fd, mtudisc, ip6);
-	if (port) {
-		if (ip6)
-			SA6(src)->sin6_port = port;
-		else
-			SA4(src)->sin_port  = port;
-	}
-	if (strictsource || port)
-		if (bind(fd, src, ip6 ? SA6_LEN : SA4_LEN) < 0)
-			err(errno, "bind(%s)", "icmp-socket");
-}
-
-// func_set:receive_error:print_local_ee
-inline void print_local_ee(const state_t *rts, const struct sock_extended_err *ee) {
-	if (rts->opt.flood) {
-		if (write(STDOUT_FILENO, "E", 1)) {};
-	} else if (ee->ee_errno != EMSGSIZE)
-		warnx("%s", _("Local error"));
-	else
-		warnx("%s: %s: mtu=%u", _("Local error"), _("Message too long"), ee->ee_info);
-}
 
 
 // extended error functions
@@ -145,39 +92,51 @@ static inline const struct sock_extended_err *cmsg_sock_ext_err(struct msghdr *m
 	abort();
 }
 
-static bool print_ee_reply(state_t *rts, size_t n,
-	const sock_t *sock, const struct sock_extended_err *ee,
-	const icmp46h_t *icmp, size_t icmplen,
-	const struct sockaddr *sa, socklen_t salen)
+// returns seq<0 if not-our
+static int ee_our_seq(state_t *rts, size_t n, const sock_t *sock, // NONNULL(1, 3, 4, 6)
+	const icmp46h_t *icmp, size_t icmplen, const struct sockaddr *sa)
 {
+	int seq = -1;
 	bool our = (n >= icmplen) &&
 		rts->ee_aux.addr_equal(sa, &rts->whereto) &&
-		(rts->ee_aux.echo_value = icmp->type) &&
+		(rts->ee_aux.echo_value == icmp->type) &&
 		IS_OURS(rts, sock->raw, icmp->id);
 	if (our) {
 		rts->nerrors++;
-		uint16_t seq = ntohs(icmp->seq);
+		seq = ntohs(icmp->seq);
 		if (rts->ee_aux.eerr_extra)
 			rts->ee_aux.eerr_extra(rts, sock, seq);
-		if (!rts->opt.quiet) {
-			if (rts->opt.flood)
-				write(STDOUT_FILENO, "\bE", 2);
-			else {
-				PRINT_TIMESTAMP;
-				printf("%s %s: %s=%u ",
-					_("From"), sprint_addr(ee + 1, salen, rts->opt.resolve),
-					_("icmp_seq"), seq);
-				if (rts->ip6)
-					print_icmp6msg(ee->ee_type, ee->ee_code, ee->ee_info, rts->red);
-				else
-					print_icmp4msg(ee->ee_type, ee->ee_code, ee->ee_info, 0,
-						rts->opt.resolve, rts->red);
-				putchar('\n');
-				fflush(stdout);
-			}
-		}
 	}
-	return our;
+	return seq;
+}
+
+static void print_ee_reply(const state_t *rts, uint16_t seq,
+	const struct sock_extended_err *ee, socklen_t salen) // NONNULL(1, 3)
+{
+	if (rts->opt.flood)
+		write(STDOUT_FILENO, "\bE", 2);
+	else {
+		PRINT_TIMESTAMP;
+		printf("%s %s: %s=%u ",
+			_("From"), sprint_addr(ee + 1, salen, rts->opt.resolve),
+			_("icmp_seq"), seq);
+		if (rts->ip6)
+			print_icmp6msg(ee->ee_type, ee->ee_code, ee->ee_info, rts->red);
+		else
+			print_icmp4msg(ee->ee_type, ee->ee_code, ee->ee_info, 0,
+				rts->opt.resolve, rts->red);
+		putchar('\n');
+		fflush(stdout);
+	}
+}
+
+static inline void print_local_ee(bool flood, uint32_t ee_errno, uint32_t ee_info) {
+	if (flood)
+		write(STDOUT_FILENO, "E", 1);
+	else if (ee_errno != EMSGSIZE)
+		warnx("%s", _("Local error"));
+	else
+		warnx("%s: %s: mtu=%u", _("Local error"), _("Message too long"), ee_info);
 }
 
 int get_errmsg(state_t *rts, const sock_t *sock, struct msghdr *msg) {
@@ -192,13 +151,15 @@ int get_errmsg(state_t *rts, const sock_t *sock, struct msghdr *msg) {
 			local_errors++;
 			rts->nerrors++;
 			if (!rts->opt.quiet)
-				print_local_ee(rts, ee);
+				print_local_ee(rts->opt.flood, ee->ee_errno, ee->ee_info);
 		} else if (ee->ee_origin == rts->ee_aux.ee_origin) {
-			if (print_ee_reply(rts, n, sock, ee,
-			  msg->msg_iov->iov_base, msg->msg_iov->iov_len,
-			  msg->msg_name, msg->msg_namelen))
+			int seq = ee_our_seq(rts, n, sock,
+				msg->msg_iov->iov_base, msg->msg_iov->iov_len, msg->msg_name);
+			if (seq >= 0) { // our error
+				if (!rts->opt.quiet)
+					print_ee_reply(rts, seq, ee, msg->msg_namelen);
 				net_errors++;
-			else // not our error, clear
+			} else // otherwise clear errno
 				keep_errno = 0;
 		}
 	}

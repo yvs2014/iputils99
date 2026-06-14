@@ -1,5 +1,5 @@
-#ifndef PING4_OPT_H
-#define PING4_OPT_H
+#ifndef OPT4_H
+#define OPT4_H
 
 #include <stdint.h>
 #include <stdbool.h>

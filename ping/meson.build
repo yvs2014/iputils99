@@ -4,16 +4,16 @@
 
 ping_src  = aux_src + perm_src + sub_src
 ping_src += 'ping.c'
-ping_src += 'ping_aux.c'
-ping_src += 'ping4_opt.c'
-ping_src += 'ping4.c'
-ping_src += 'ping4_aux.c'
-ping_src += 'ping6.c'
-ping_src += 'ping6_aux.c'
-ping_src += 'setsock.c'
 ping_src += 'common.c'
-ping_src += 'stats.c'
+ping_src += 'exterr.c'
+ping_src += 'setsock.c'
 ping_src += 'extra.c'
+ping_src += 'stats.c'
+ping_src += 'ping4.c'
+ping_src += 'aux4.c'
+ping_src += 'opt4.c'
+ping_src += 'ping6.c'
+ping_src += 'aux6.c'
 
 ping_inc = ['..' / aux]
 

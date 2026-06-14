@@ -59,6 +59,7 @@
 
 #include "iputils.h"
 #include "common.h"
+#include "opt4.h"
 
 
 static inline void puts_addr(in_addr_t addr, bool resolve) {
@@ -175,5 +176,4 @@ void print4_ip_opts(const uint8_t *opt, int len, bool resolve, bool flood) {
 		}
 	}
 }
-
 
