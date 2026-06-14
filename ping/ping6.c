@@ -86,13 +86,6 @@
 #include "ni_defs.h"
 #endif
 
-#ifndef IPV6_FLOWLABEL_MGR
-# define IPV6_FLOWLABEL_MGR 32
-#endif
-#ifndef IPV6_FLOWINFO_SEND
-# define IPV6_FLOWINFO_SEND 33
-#endif
-
 // func_set:send_probe
 static ssize_t ping6_send_probe(state_t *rts, int fd, uint8_t *packet) {
 	ssize_t len =

@@ -58,7 +58,6 @@
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/icmp6.h>
-#include <linux/in6.h>
 
 #include "iputils.h"
 #include "setsock.h"
@@ -67,6 +66,12 @@
 #else
 #include "perm.h"
 #endif
+
+#if !defined(__GLIBC__) && !defined(__UCLIBC__)
+// workaround for musl: IPV6_FLOWLABEL_MGR, IPV6_FLOWINFO_SEND
+#define __UAPI_DEF_IPV6_OPTIONS 1
+#endif
+#include <linux/in6.h>
 
 #ifndef IPPROTO46
 #define	IPPROTO46 (ip6 ? IPPROTO_IPV6 : IPPROTO_IP)
