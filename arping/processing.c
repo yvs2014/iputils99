@@ -43,13 +43,8 @@
 #define	HLN_SLL_OK(hln, sll) ((hln) == (sll))
 #define ARP_LEN_OK(hln, len) ((len) >= ((ssize_t)sizeof(struct arphdr) + 2 * (4 + (hln))))
 
-#define GOT_DATA ((const uint8_t *)(got + 1))
-#define GOT_SRC_IP (*(struct in_addr*)(GOT_DATA + got->ar_hln))
-#define GOT_DST_IP (*(struct in_addr*)(GOT_DATA + got->ar_hln + 4 + got->ar_hln))
-#define GOT_SENT_THE_SAME(got_from, got_to, sent_from, sent_to, orig) (\
-	((got_from).s_addr == (sent_to).s_addr) && \
-	((!orig) || ((sent_from).s_addr == (got_to).s_addr)))
-#define GOT_IP_OK(orig) GOT_SENT_THE_SAME(GOT_SRC_IP, GOT_DST_IP, src, dst, (orig))
+#define GOT_IP_OK(orig) ((got_src.s_addr == sent_dst.s_addr) && \
+	(!(orig) || (sent_src.s_addr == got_dst.s_addr)))
 
 #define SLL_ADDR_OK(got, addr, len) (!memcmp((got), (addr), (len)))
 
@@ -99,7 +94,9 @@ static inline bool arp_pro_okay(const struct arphdr *ar) {
 	return ARP_PRO_OK(ar->ar_pro, ax25nr ? AX25_P_IP : ETH_P_IP);
 }
 
-static inline bool arp_attr_okay(const struct arphdr *ar, ssize_t len, uint16_t type, uint8_t halen) {
+bool arp_attr_okay(const struct arphdr *ar, // NONNULL(1)
+	ssize_t len, uint16_t type, uint8_t halen)
+{
 	bool okay = ARP_OP_OK(ar) && ARP_HRD_OK(ar->ar_hrd, type) && arp_pro_okay(ar);
 	if (okay)
 		okay = ARP_PLN_OK(ar->ar_pln) && HLN_SLL_OK(ar->ar_hln, halen) && ARP_LEN_OK(ar->ar_hln, len);
@@ -118,29 +115,34 @@ static inline continue_t gather_stats(counter_t *stat, bool broadcasted, bool re
 }
 
 // return true to continue
-continue_t checkin_print(const struct arphdr *got, ssize_t len,
-	struct in_addr src, struct in_addr dst,
-	const struct sockaddr_ll *my, uint8_t sll_addr[8],
-	arpopt_t *opt, counter_t *stat,
-	bool broadcasted, uint16_t type, const struct timespec *last)
+continue_t checkin_print(const struct arphdr *got,
+	struct in_addr sent_src, struct in_addr sent_dst,
+	const struct sockaddr_ll *my, uint8_t slladdr_to[8],
+	arpopt_t *opt, counter_t *stat, bool broadcasted, const struct timespec *last)
 {
 	continue_t next = CONTINUE;
-	if (arp_attr_okay(got, len, type, my->sll_halen)) {
-		if (GOT_IP_OK(opt->dad ? src.s_addr : true)) {
-			int okay = SLL_ADDR_OK(opt->dad ? GOT_DATA : GOT_DATA + got->ar_hln + 4,
-					my->sll_addr,
-					opt->dad ? my->sll_halen : got->ar_hln);
-			if (opt->dad) okay = !okay;
-			if (okay) {
-				if (!opt->quiet)
-					print_packet_info(got, GOT_DATA, src,
-						GOT_SRC_IP, GOT_DST_IP, my, last, broadcasted);
-				next = gather_stats(stat, broadcasted,
-					got->ar_op == htons(ARPOP_REQUEST), opt->quit);
-				if ((next != QUIT) && !opt->broadcast) {
-					memcpy(sll_addr, GOT_DATA, my->sll_halen);
-					opt->unicast = true;
-				}
+	const uint8_t *data = (const uint8_t *)(got + 1);
+	const uint8_t *p = data + got->ar_hln;
+	struct in_addr got_src = {0}, got_dst = {0};
+	memcpy(&got_src, p, sizeof(struct in_addr));
+	p += sizeof(struct in_addr) + got->ar_hln;
+	memcpy(&got_dst, p, sizeof(struct in_addr));
+	//
+	if (GOT_IP_OK(opt->dad ? sent_src.s_addr : true)) {
+		int okay = SLL_ADDR_OK(opt->dad ? data : data + got->ar_hln + 4,
+				my->sll_addr,
+				opt->dad ? my->sll_halen : got->ar_hln);
+		if (opt->dad)
+			okay = !okay;
+		if (okay) {
+			if (!opt->quiet)
+				print_packet_info(got, data, sent_src,
+					got_src, got_dst, my, last, broadcasted);
+			next = gather_stats(stat, broadcasted,
+				got->ar_op == htons(ARPOP_REQUEST), opt->quit);
+			if ((next != QUIT) && !opt->broadcast) {
+				memcpy(slladdr_to, data, my->sll_halen);
+				opt->unicast = true;
 			}
 		}
 	}

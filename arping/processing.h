@@ -32,11 +32,12 @@ typedef struct arpopt {
 
 typedef enum {QUIT = 0, CONTINUE} continue_t;
 
-continue_t checkin_print(const struct arphdr *got, ssize_t len,
-	struct in_addr src, struct in_addr dst,
-	const struct sockaddr_ll *my, uint8_t sll_addr[8],
-	arpopt_t *opt, counter_t *stat,
-	bool broadcasted, uint16_t type, const struct timespec *last);
+bool arp_attr_okay(const struct arphdr *ar, ssize_t len, uint16_t type, uint8_t halen); // NONNUL(1)
+
+continue_t checkin_print(const struct arphdr *got,
+	struct in_addr sent_src, struct in_addr sent_dst,
+	const struct sockaddr_ll *my, uint8_t slladdr_to[8],
+	arpopt_t *opt, counter_t *stat, bool broadcasted, const struct timespec *last);
 
 bool send_pack(const struct sockaddr_ll *from, const struct sockaddr_ll *to,
 	struct in_addr src, struct in_addr dst, int sock, bool advert);

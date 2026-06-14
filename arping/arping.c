@@ -413,11 +413,12 @@ static int main_loop(state_t *rts) {
 					default: // Filter out wild packets
 						continue; // internal loop
 				}
-				run = checkin_print((struct arphdr *)packet, size,
-					rts->src, rts->dst,
+				const struct arphdr *ar = (struct arphdr *)packet;
+				bool ok2in = arp_attr_okay(ar, size, SLL(&got)->sll_hatype, SLL(&rts->from)->sll_halen);
+				run = ok2in ? checkin_print(ar, rts->src, rts->dst,
 					SLL(&rts->from), SLL(&rts->to)->sll_addr,
-					&rts->opt, &rts->stat,
-					broadcasted, SLL(&got)->sll_hatype, &rts->last);
+					&rts->opt, &rts->stat, broadcasted, &rts->last)
+					: CONTINUE;
 			}	break;
 			default:
 				abort();
