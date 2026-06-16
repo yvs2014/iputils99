@@ -300,27 +300,26 @@ static int probe_dst6(state_t *rts, struct sockaddr_in6 *dst, int sock_fd, bool 
 	int fd = socket(AF_INET6, SOCK_DGRAM, 0);
 	if (fd < 0)
 		err(errno, "socket");
-	//
 	bool scoped = IN6_IS_ADDR_LINKLOCAL(&SA6_IN(dst)) ||
 		      IN6_IS_ADDR_MC_LINKLOCAL(&SA6_IN(dst));
-	if (rts->device) {
-		uint iface = nl_name2ndx(rts->device);
+	if (rts->so.device) {
+		uint iface = nl_name2ndx(rts->so.device);
 		if (!iface)
-			err_nodev(rts->device);
-//		setsock_pktinfo(fd,      iface, rts->device, IP6);
-//		setsock_pktinfo(sock_fd, iface, rts->device, IP6);
-		setsock_binddev(fd,      rts->device); // privileged action
-		setsock_binddev(sock_fd, rts->device); // privileged action
+			err_nodev(rts->so.device);
+//		setsock_pktinfo(fd,      iface, rts->so.device, IP6);
+//		setsock_pktinfo(sock_fd, iface, rts->so.device, IP6);
+		setsock_binddev(fd,      rts->so.device); // privileged action
+		setsock_binddev(sock_fd, rts->so.device); // privileged action
 		if (scoped)
 			dst->sin6_scope_id = iface;
 	}
 	if (!scoped)
 		dst->sin6_family = AF_INET6;
-	if (rts->tos)
-		setsock_tos(fd, rts->tos, IP6);
+	if (rts->so.tos >= 0)
+		setsock_tos(fd, rts->so.tos, IP6);
 #ifdef SO_MARK
-	if (rts->mark >= 0)
-		setsock_mark(fd, rts->mark); // privileged action
+	if (rts->so.mark >= 0)
+		setsock_mark(fd, rts->so.mark); // privileged action
 #endif
 	//
 	dst->sin6_port = htons(1025);
@@ -340,7 +339,7 @@ static int probe_dst6(state_t *rts, struct sockaddr_in6 *dst, int sock_fd, bool 
 }
 
 /* Return >= 0: exit with this code, < 0: go on to next addrinfo result */
-int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const sock_t *sock) {
+int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const sock_t *sock) { // NONNULL(1, 4, 5)
 	fnset_t ping6_func_set = {
 		.bpf_filter	= ping6_bpf_filter,
 		.send_probe     = ping6_send_probe,
@@ -357,7 +356,6 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	cmsg_t cmsg6 = {0};
 	rts->cmsg = &cmsg6;
 	rts->ip6 = IP6;
-
 #ifdef ENABLE_RFC4620
 	if (rts->ni && niquery_is_enabled(rts->ni)) {
 		niquery_init_nonce(rts->ni);
@@ -368,7 +366,7 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		}
 	}
 #endif
-
+	//
 	char *target = NULL;
 	if (argc > 1)
 		usage(EINVAL);
@@ -404,45 +402,46 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	rts->hostname = target;
 
 	if (IN6_IS_ADDR_UNSPECIFIED(&SA6_IN(&rts->source))) {
+		// part for ip46 merging
 		int fd = probe_dst6(rts, SA6(&rts->firsthop), sock->fd, ai->ai_next);
 		if (fd < 0)
 			return -1;
 		GETSOCKNAME(fd, SA(&rts->source), SA6_LEN);
 		SA6(&rts->source)->sin6_port = 0;
 		close(fd);
-		if (rts->device && !nl_name2ndx(rts->device)) {
-			warnx("%s: %s: %s", _WARN, rts->device, WARN_NOSRCDEV);
+		if (rts->so.device && !nl_name2ndx(rts->so.device)) {
+			warnx("%s: %s: %s", _WARN, rts->so.device, WARN_NOSRCDEV);
 			rts->unreldev = true;
 		}
-	} else if (rts->device && (IN6_IS_ADDR_LINKLOCAL(&SA6_IN(&rts->source)) ||
+	} else if (rts->so.device && (IN6_IS_ADDR_LINKLOCAL(&SA6_IN(&rts->source)) ||
 			      IN6_IS_ADDR_MC_LINKLOCAL(&SA6_IN(&rts->source)))) {
-		SA6(&rts->source)->sin6_scope_id = nl_name2ndx(rts->device);
+		SA6(&rts->source)->sin6_scope_id = nl_name2ndx(rts->so.device);
 		if (!SA6(&rts->source)->sin6_scope_id)
-			err_nodev(rts->device);
+			err_nodev(rts->so.device);
 	}
-
-	if (rts->device && rts->cmsg) {
+	//
+	if (rts->so.device && rts->cmsg) {
 		struct cmsghdr *cmsg = (struct cmsghdr *)(rts->cmsg->data + rts->cmsg->len);
 		cmsg->cmsg_len   = CMSG_LEN(sizeof(struct in6_pktinfo));
 		cmsg->cmsg_level = IPPROTO_IPV6;
 		cmsg->cmsg_type  = IPV6_PKTINFO;
 		rts->cmsg->len  += CMSG_SPACE(sizeof(struct in6_pktinfo));
-
+		//
 		struct in6_pktinfo *ipi = (struct in6_pktinfo *)CMSG_DATA(cmsg);
 		memset(ipi, 0, sizeof(*ipi));
-		ipi->ipi6_ifindex = nl_name2ndx(rts->device);
+		ipi->ipi6_ifindex = nl_name2ndx(rts->so.device);
 		if (!ipi->ipi6_ifindex)
-			err_nodev(rts->device);
+			err_nodev(rts->so.device);
 
 		if (rts->opt.strictsource) {
-//			uint iface = nl_name2ndx(rts->device);
+//			uint iface = nl_name2ndx(rts->so.device);
 //			if (!iface)
-//				err_nodev(rts->device);
-//			setsock_pktinfo(sock->fd, iface, rts->device, IP6);
-			setsock_binddev(sock->fd, rts->device); // privileged action
+//				err_nodev(rts->so.device);
+//			setsock_pktinfo(sock->fd, iface, rts->so.device, IP6);
+			setsock_binddev(sock->fd, rts->so.device); // privileged action
 		}
 	}
-
+	//
 	if (IN6_IS_ADDR_MULTICAST(&SA6_IN(&rts->whereto)))
 		pmtu_interval(rts);
 
@@ -450,26 +449,19 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		setsock_cksum6(sock->fd);
 		setsock_icmp6_filter(sock->fd);
 	}
-	if (rts->opt.noloop)
-		setsock_noloop(sock->fd, IP6);
-	if (rts->ttl >= 0)
-		setsock_ttl(sock->fd, rts->ttl, MULTICAST_TOO, IP6);
+	//
+	setsock_set46(sock->fd, &rts->so, IP6);
+	bind_by_need(sock->fd,
+		(rts->opt.ident && !sock->raw) ? rts->ident16 : 0,
+		rts->opt.strictsource, SA(&rts->source), IP6);
+	//
 	setsock_recvttl(sock->fd, IP6);
-	if (rts->flow >= 0)
-		setsock_flow6(sock->fd, rts->flow, rts->cmsg->len, SA6(&rts->whereto));
+	if (rts->so.flow >= 0)
+		setsock_flow6(sock->fd, rts->so.flow, rts->cmsg->len, SA6(&rts->whereto));
 
 	rts->subnet_router_anycast = get_subnet_anycast(SA6(&rts->whereto));
-	MTUDISC_N_BIND;
-	setsock_recverr(sock->fd, IP6);
-
-	if (!rts->sndbuf)
-		rts->sndbuf = estimate_packlen(sizeof(struct ip6_hdr),
-			sizeof(struct icmp6_hdr), rts->datalen);
-	setsock_buffer(sock->fd, rts->sndbuf, rts->preload);
-
-	size_t hlen = sizeof(struct ip6_hdr) + sizeof(struct icmp6_hdr);
-	headline(rts, hlen);
-	hlen += MAX_CMSG_SIZE + sizeof(struct icmp6_hdr); // ip + cmsg + icmp*2
-	return setup_n_loop(rts, hlen, sock, &ping6_func_set);
+	//
+	return setup_n_loop(rts, sizeof(struct ip6_hdr), sizeof(struct icmp6_hdr), 0, MAX_CMSG_SIZE,
+		sock, &ping6_func_set);
 }
 

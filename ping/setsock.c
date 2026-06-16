@@ -61,6 +61,7 @@
 
 #include "iputils.h"
 #include "setsock.h"
+#include "sock_pa.h"
 #ifdef HAVE_LIBCAP
 #include "caps.h"
 #else
@@ -190,6 +191,11 @@ void setsock_debug(int fd) {
 		warn("setsockopt(%s)", "DEBUG");
 }
 
+inline void setsock_binddev(int fd, const char dev[]) { // NONNULL(2)
+	if (bindtodev(fd, dev) < 0) // privileged action
+		err_nodev(dev);
+}
+
 #ifdef SO_TIMESTAMP
 void setsock_timestamp(int fd) {
 	int on = 1;
@@ -260,7 +266,7 @@ void setsock_broadcast(int fd) {
 }
 
 /*
-void setsock_pktinfo(int fd, uint iface, const char *device, bool ip6) {
+void setsock_pktinfo(int fd, uint iface, const char dev[], bool ip6) { // NONNULL(3)
 	union {
 		struct in_pktinfo  ipi4;
 		struct in6_pktinfo ipi6;
@@ -271,7 +277,7 @@ void setsock_pktinfo(int fd, uint iface, const char *device, bool ip6) {
 		ipi.ipi4.ipi_ifindex  = iface;
 	socklen_t len = ip6 ? sizeof(struct in6_pktinfo) : sizeof(struct in_pktinfo);
 	if (setsockopt(fd1, IPPROTO_IP, IP_PKTINFO, &ipi, len) < 0)
-		err(errno, "setsockopt(%s, %s)", "PKTINFO", device);
+		err(errno, "setsockopt(%s, %s)", "PKTINFO", dev);
 }
 */
 

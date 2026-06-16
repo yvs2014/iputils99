@@ -187,13 +187,13 @@ void headline(const state_t *rts, size_t nodatalen) {
 	socklen_t len = rts->ip6 ? SA6_LEN : SA4_LEN;
 	printf("%s %s (%s)", _("PING"), rts->hostname,
 		sprint_addr(&rts->whereto, len, false));
-	if (rts->ip6 && (rts->flow >= 0))
-		printf(", %s 0x%05x", _("flow"), ntohl(rts->flow));
-	if (rts->device || rts->opt.strictsource) {
+	if (rts->ip6 && (rts->so.flow >= 0))
+		printf(", %s 0x%05x", _("flow"), ntohl(rts->so.flow));
+	if (rts->so.device || rts->opt.strictsource) {
 		const char *from = sprint_addr(&rts->source, len, false);
 		printf(" %s %s", _("from"), from);
-		if (rts->device && rts->device[0] && !rts->unreldev)
-			printf("%%%s", rts->device);
+		if (rts->so.device && !rts->unreldev)
+			printf("%%%s", rts->so.device);
 		putchar(':');
 	}
 	printf(" %zu(%zu) %s\n",

@@ -54,10 +54,6 @@ typedef uint32_t	bitmap_t;
 # error Please MAX_DUP_CHK and/or BITMAP_SHIFT
 #endif
 
-#define MTUDISC_N_BIND mtudisc_n_bind(sock->fd,                    \
-  (rts->opt.ident && !sock->raw) ? rts->ident16 : 0,               \
-  rts->opt.strictsource, SA(&rts->source), rts->mtudisc, rts->ip6) \
-
 #define IS_OURS(rts, rawsock, rcvd_id) (!(rawsock) || ((rcvd_id) == (rts)->ident16))
 
 #define RETURN_IF_TOO_SHORT(received, minimum) do {		\
@@ -93,7 +89,6 @@ typedef struct bool_opt {
 	bool flood_poll;
 	bool interval;
 	bool latency;
-	bool noloop;
 	bool outstanding;
 	bool pingfilled;
 	bool ptimeofday;
@@ -109,6 +104,20 @@ typedef struct bool_opt {
 	bool broadcast;
 	bool ident;
 } bool_opt_t;
+
+// socket options
+typedef struct sockopt {
+	int ttl;
+	int tos;       // TOS/TCLASS
+	int mtudisc;   // MTU_DISCOVER
+#ifdef SO_MARK
+	int mark;
+#endif
+	int8_t ts_opt; // ip4: TSONLY TSANDADDR PRESPEC
+	int flow;      // ip6
+	bool noloop;
+	const char *device;
+} sockopt_t;
 
 // ping runtime state
 typedef struct ping_state {
@@ -136,9 +145,7 @@ typedef struct ping_state {
 	struct timespec start_time, cur_time;
 	int confirm;
 	int confirm_flag;
-	const char *device;
 	bool unreldev;		/* true if netdevice is not found */
-	int mtudisc;		/* MTU_DISCOVER */
 	// timing
 	bool timing;		/* flag to do timing */
 	long tmin;		/* minimum round trip time */
@@ -172,20 +179,13 @@ typedef struct ping_state {
 	unsigned short screen_width;
 	// colored option -aa+
 	uint8_t red, yellow;
-	//
-	// boolean options
-	bool_opt_t opt;
-	// socket options
-	int tos;		/* TOS/TCLASS */
-#ifdef SO_MARK
-	int mark;
-#endif
-	int flow;      // ip6
-	int8_t ts_opt; // ip4: TSONLY TSANDADDR PRESPEC
-	int ttl;
 	// ttl related
 	int min_away;
 	int max_away;
+	//
+	// options
+	sockopt_t so;
+	bool_opt_t opt;
 	//
 	//
 	void *auxdata;
@@ -204,12 +204,13 @@ const char *sprint_addr4(in_addr_t addr, bool resolve);
 void acknowledge(state_t *rts, uint16_t seq);
 size_t estimate_packlen(size_t ip, size_t icmp, size_t data);
 
-int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock, const fnset_t* fnset);
+void setsock_set46(int fd, sockopt_t *so, bool ip6); // NONNULL(2)
+int setup_n_loop(state_t *rts, size_t iph_len, size_t icmph_len, size_t opt_len, size_t extra,
+	const sock_t *sock, const fnset_t* fnset); // NONNULL((1, 5, 6)
 int get_interval(const state_t *rts);
 int in_flight(const state_t *rts);
 void fill_payload(int quiet, const char *str, uint8_t *payload, size_t len);
-void mtudisc_n_bind(int fd, uint16_t port, bool strictsource,
-	struct sockaddr *src, int mtudisc, bool ip6); // NONNULL(4)
+void bind_by_need(int fd, uint16_t port, bool strict, struct sockaddr *src, bool ip6); // NONNULL(4)
 void pmtu_interval(state_t *rts); // NONNULL(1)
 
 bitmap_t rcvd_test (uint16_t seq, const bitmap_t *map);

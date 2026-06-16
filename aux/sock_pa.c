@@ -36,11 +36,6 @@ NORETURN void err_nodev(const char dev[]) { // NONNULL(1)
 	err(errno, "%.*s", MAXDEVNAME, dev);
 }
 
-void setsock_binddev(int fd, const char dev[]) { // NONNULL(2)
-	if (bindtodev(fd, dev) < 0)
-		err_nodev(dev);
-}
-
 void setsock_dontroute(int fd) {
 	int on = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof(on)) < 0)

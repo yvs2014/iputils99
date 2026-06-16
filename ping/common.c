@@ -52,6 +52,7 @@
 #include "iputils.h"
 #include "stats.h"
 #include "setsock.h"
+#include "sock_pa.h"
 #include "sock_pt.h"
 #ifdef HAVE_LIBCAP
 #include "caps.h"
@@ -404,7 +405,7 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 		errx(EINVAL, "%s: %d", _("Illegal preload and/or interval"), rts->interval);
 	// socket options
 	if (rts->opt.so_debug)
-		setsock_debug(sock->fd);
+		setsock_debug(sock->fd); // privileged action
 	if (rts->opt.so_dontroute)
 		setsock_dontroute(sock->fd);
 #ifdef SO_TIMESTAMP
@@ -412,8 +413,8 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 		setsock_timestamp(sock->fd);
 #endif
 #ifdef SO_MARK
-	if (rts->mark >= 0)
-		setsock_mark(sock->fd, rts->mark); // privileged action
+	if (rts->so.mark >= 0)
+		setsock_mark(sock->fd, rts->so.mark); // privileged action
 #endif
 	setsock_sndtime(sock->fd, rts->interval);
 	if (setsock_rcvtime(sock->fd, rts->interval))
@@ -600,30 +601,36 @@ warnx("id=0x%04x: %s: %u", rts->ident16, _("non-filtered out"), rts->unidentifie
 	return resume(rts);
 }
 
-
-int setup_n_loop(state_t *rts, size_t hlen, const sock_t *sock,
-		const fnset_t* fnset)
+int setup_n_loop(state_t *rts, size_t iph_len, size_t icmph_len, size_t opt_len, size_t extra,
+	const sock_t *sock, const fnset_t* fnset) // NONNULL((1, 5, 6)
 {
-	/* can we time transfer */
-	rts->timing = (rts->datalen >= sizeof(struct timeval));
+	if (!rts->sndbuf)
+		rts->sndbuf = estimate_packlen(iph_len + opt_len, icmph_len, rts->datalen);
+	setsock_buffer(sock->fd, rts->sndbuf, rts->preload);
+	headline(rts, iph_len + opt_len + icmph_len);
+	//
+	size_t hlen = iph_len + icmph_len + extra;
+	if (rts->ip6)
+		hlen += icmph_len;
+	else
+		hlen *= 2;
+	//
+	rts->timing = (rts->datalen >= sizeof(struct timeval)); // can we transfer timestamp
 #ifdef ENABLE_RFC4620
 	if (rts->ip6 && rts->ni && rts->timing)
 		rts->timing = (rts->ni->query < 0);
 #endif
 	//
 	size_t packlen = hlen + rts->datalen;
-	uint8_t *packet = malloc(packlen);
-	if (packet) {
-		ping_setup(rts, sock);
-		errno = 0; // postsetup cleanup
-		drop_priv();
-		int rc = main_loop(rts, fnset, sock, packet, packlen);
-		free(packet);
-		return rc;
-	}
-	if (errno)
-		err(errno, "malloc(%zu)", packlen);
-	errx(EXIT_FAILURE, "malloc(%zu)", packlen);
+	uint8_t *packet = calloc(1, packlen);
+	if (!packet)
+		err(errno, "calloc(%zu)", packlen);
+	ping_setup(rts, sock);
+	errno = 0; // postsetup cleanup
+	drop_priv();
+	int rc = main_loop(rts, fnset, sock, packet, packlen);
+	free(packet);
+	return rc;
 }
 
 /* Return hostaddr and hostname (optionally), note: last request is cached */
@@ -676,19 +683,14 @@ size_t estimate_packlen(size_t ip, size_t icmp, size_t data) {
 	return ((icmp + data + 511) / 512) * (ip + 2 * icmp + DEFIPPAYLOAD + 160);
 }
 
-// Called once at setup
-void mtudisc_n_bind(int fd, uint16_t port, bool strictsource,
-	struct sockaddr *src, int mtudisc, bool ip6) // NONNULL(4)
-{
-	if (mtudisc >= 0)
-		setsock_mtudisc(fd, mtudisc, ip6);
+void bind_by_need(int fd, uint16_t port, bool strict, struct sockaddr *src, bool ip6)  { // NONNULL(4)
 	if (port) {
 		if (ip6)
 			SA6(src)->sin6_port = port;
 		else
 			SA4(src)->sin_port  = port;
 	}
-	if (strictsource || port)
+	if (strict || port)
 		if (bind(fd, src, ip6 ? SA6_LEN : SA4_LEN) < 0)
 			err(errno, "bind(%s)", "icmp-socket");
 }
@@ -708,12 +710,27 @@ void pmtu_interval(state_t *rts) { // NONNULL(1)
 				"Minimal user interval for broadcast ping must be >="),
 				MIN_MCAST_MS, _("ms"), _("see -i option for details"));
 		}
-		if ((rts->mtudisc >= 0) && (rts->mtudisc != PMTUDISCDO))
+		if ((rts->so.mtudisc >= 0) && (rts->so.mtudisc != PMTUDISCDO))
 			errx(EINVAL, "%s %s", _(rts->ip6 ?
 				"Multicast ping" : "Broadcast ping"), _("does not fragment"));
 	}
-	if (rts->mtudisc < 0)
-		rts->mtudisc = PMTUDISCDO;
+	if (rts->so.mtudisc < 0)
+		rts->so.mtudisc = PMTUDISCDO;
 }
 #undef PMTUDISCDO
+
+
+//
+// Common setsock_xxx call sets
+void setsock_set46(int fd, sockopt_t *so, bool ip6) { // NONNULL(2)
+	if (so->noloop)
+		setsock_noloop(fd, ip6);
+	if (so->tos >= 0)
+		setsock_tos(fd, so->tos, ip6);
+	if (so->ttl >= 0)
+		setsock_ttl(fd, so->ttl, MULTICAST_TOO, ip6);
+	if (so->mtudisc >= 0)
+		setsock_mtudisc(fd, so->mtudisc, ip6);
+	setsock_recverr(fd, ip6);
+}
 

@@ -10,13 +10,13 @@ void modify_euid(bool on);
 #define SUID_ON  modify_euid(true)
 #define SUID_OFF modify_euid(false)
 
-#define NET_RAW_ON   SUID_ON
-#define NET_RAW_OFF  SUID_OFF
-#define SYS_NICE_ON  SUID_ON
-#define SYS_NICE_OFF SUID_OFF
+#define NET_RAW_ON    SUID_ON
+#define NET_RAW_OFF   SUID_OFF
+#define NET_ADMIN_ON  SUID_ON
+#define NET_ADMIN_OFF SUID_OFF
+#define SYS_NICE_ON   SUID_ON
+#define SYS_NICE_OFF  SUID_OFF
 // not used in code:
-//#define NET_ADMIN_ON  SUID_ON
-//#define NET_ADMIN_OFF SUID_OFF
 //#define NET_BPF_ON    SUID_ON
 //#define NET_BPF_OFF   SUID_OFF
 

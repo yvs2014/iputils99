@@ -25,7 +25,7 @@ void setsock_icmp6_filter(int fd);
 void setsock_cksum6(int fd);
 void setsock_buffer(int fd, int sndbuf, int preload);
 void setsock_debug(int fd);
-void setsock_dontroute(int fd);
+void setsock_binddev(int fd, const char dev[]); // NONNULL(2)
 #ifdef SO_TIMESTAMP
 void setsock_timestamp(int fd);
 #endif
@@ -37,7 +37,7 @@ void setsock_ipopt_xrr(int fd, ipopt_noped_t *opt, uint8_t val, uint8_t len);
 
 void setsock_retopts(int fd);
 void setsock_broadcast(int fd);
-//void setsock_pktinfo(int fd, uint iface, const char *device, bool ip6);
+//void setsock_pktinfo(int fd, uint iface, const char dev[], bool ip6); // NONNULL(3)
 void setsock_flow6(int fd, int flow, size_t clen, struct sockaddr_in6 *sa); // NONNULL(4)
 
 #endif

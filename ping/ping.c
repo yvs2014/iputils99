@@ -68,7 +68,6 @@
 #include "iputils.h"
 #include "str2num.h"
 #include "common.h"
-#include "setsock.h"
 #include "ping4.h"
 #include "ping6.h"
 #include "extra.h"
@@ -199,7 +198,7 @@ static inline void opt_I(state_t *rts, const char *str) {
 		char *scope = strchr(addr, SCOPE_DELIMITER);
 		if (scope) {
 			*scope++ = 0;
-			rts->device = str + (scope - addr);
+			rts->so.device = str + (scope - addr);
 		}
 		if (inet_pton(AF_INET6, addr, &SA6_IN(&rts->source)) <= 0)
 			errx(EINVAL, "%s: %s", _("Invalid source address"), str);
@@ -212,7 +211,11 @@ static inline void opt_I(state_t *rts, const char *str) {
 		if (rc)
 			rts->opt.strictsource = true;
 		else
-			rts->device = str;
+			rts->so.device = str;
+	}
+	if (rts->so.device && !rts->so.device[0]) { // add trim?
+		errno = ENODATA;
+		err(errno, "%s", _("Invalid source"));
 	}
 }
 
@@ -325,7 +328,7 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 		setvbuf(stdout, NULL, _IONBF, 0); // turn off buffers
 		break;
 	case 'F':
-		RTS_DATA->flow = VALID_INTSTR(0, IPV6_FLOWINFO_FLOWLABEL);
+		RTS_DATA->so.flow = VALID_INTSTR(0, IPV6_FLOWINFO_FLOWLABEL);
 		break;
 	case 'H':
 		if (RTS_DATA->opt.flood)
@@ -348,22 +351,22 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 _("Cannot set preload to value greater than 3"), RTS_DATA->preload);
 		break;
 	case 'L':
-		RTS_DATA->opt.noloop = true;
+		RTS_DATA->so.noloop = true;
 		break;
 #ifdef SO_MARK
 	case 'm':
-		RTS_DATA->mark = VALID_INTSTR(0, UINT_MAX);
+		RTS_DATA->so.mark = VALID_INTSTR(0, UINT_MAX);
 		break;
 #endif
 	case 'M':
 		if (strcmp(optarg, "do") == 0)
-			RTS_DATA->mtudisc = IP_PMTUDISC_DO;
+			RTS_DATA->so.mtudisc = IP_PMTUDISC_DO;
 		else if (strcmp(optarg, "dont") == 0)
-			RTS_DATA->mtudisc = IP_PMTUDISC_DONT;
+			RTS_DATA->so.mtudisc = IP_PMTUDISC_DONT;
 		else if (strcmp(optarg, "want") == 0)
-			RTS_DATA->mtudisc = IP_PMTUDISC_WANT;
+			RTS_DATA->so.mtudisc = IP_PMTUDISC_WANT;
 		else if (strcmp(optarg, "probe") == 0)
-			RTS_DATA->mtudisc = IP_PMTUDISC_PROBE;
+			RTS_DATA->so.mtudisc = IP_PMTUDISC_PROBE;
 		else {
 			errno = EINVAL;
 			err(errno, "-%c %s", c, optarg);
@@ -395,13 +398,13 @@ _("Cannot set preload to value greater than 3"), RTS_DATA->preload);
 		RTS_DATA->opt.quiet = true;
 		break;
 	case 'Q':
-		RTS_DATA->tos = VALID_INTSTR(0, UINT8_MAX);
+		RTS_DATA->so.tos = VALID_INTSTR(0, UINT8_MAX);
 		break;
 	case 'r':
 		RTS_DATA->opt.so_dontroute = true;
 		break;
 	case 'R':
-		if (RTS_DATA->ts_opt >= 0)
+		if (RTS_DATA->so.ts_opt >= 0)
 			OPTEXCL('T', 'R');
 		RTS_DATA->opt.rroute = true;
 		break;
@@ -412,21 +415,21 @@ _("Cannot set preload to value greater than 3"), RTS_DATA->preload);
 		RTS_DATA->sndbuf = VALID_INTSTR(1, INT_MAX);
 		break;
 	case 't':
-		RTS_DATA->ttl = VALID_INTSTR(0, UCHAR_MAX);
+		RTS_DATA->so.ttl = VALID_INTSTR(0, UCHAR_MAX);
 		break;
 	case 'T':
 #define TSSTREQ(lit) (!strncasecmp(optarg, lit, sizeof(lit)))
 		if (RTS_DATA->opt.rroute)
 			OPTEXCL('R', 'T');
 		if      TSSTREQ("tsonly")
-			RTS_DATA->ts_opt = IPOPT_TS_TSONLY;
+			RTS_DATA->so.ts_opt = IPOPT_TS_TSONLY;
 		else if TSSTREQ("tsandaddr")
-			RTS_DATA->ts_opt = IPOPT_TS_TSANDADDR;
+			RTS_DATA->so.ts_opt = IPOPT_TS_TSANDADDR;
 		else if (TSSTREQ("tsprespec") || TSSTREQ("prespec"))
-			RTS_DATA->ts_opt = IPOPT_TS_PRESPEC;
+			RTS_DATA->so.ts_opt = IPOPT_TS_PRESPEC;
 		else { // 0(TSONLY) 1(TSANDADDR) 3(PRESPEC)
-			RTS_DATA->ts_opt = str2ll(optarg, 0, 3, _("Invalid timestamp type"));
-			if (RTS_DATA->ts_opt == 2) // 2: reserved
+			RTS_DATA->so.ts_opt = str2ll(optarg, 0, 3, _("Invalid timestamp type"));
+			if (RTS_DATA->so.ts_opt == 2) // 2: reserved
 				errx(EINVAL, "%s: %s", _("Invalid timestamp type"), optarg);
 		}
 #undef TSSTREQ
@@ -460,17 +463,20 @@ int main(int argc, char **argv) {
 		.preload      =  1,
 		.lingertime   = MAXWAIT * 1000,	/* in ms */
 		.confirm_flag = MSG_CONFIRM,
-		.mtudisc      = -1,
-		.mark         = -1,
-		.flow         = -1,
-		.ttl          = -1,
 		.min_away     = -1,
 		.max_away     = -1,
 		.tmin         = LONG_MAX,
 		.pipesize     = -1,
-		.ts_opt       = -1,
 		.screen_width = USHRT_MAX,
 		.opt.resolve  = true,
+		.so = {
+			.ttl     = -1,
+			.tos     = -1,
+			.mtudisc = -1,
+			.mark    = -1,
+			.ts_opt  = -1,
+			.flow    = -1,
+		},
 	};
 
 #ifdef HAVE_LIBCAP
@@ -573,10 +579,8 @@ int main(int argc, char **argv) {
 			open_socket(&sock, rts.ip6 ? AF_INET6 : AF_INET,
 				rts.ip6 ? IPPROTO_ICMPV6 : IPPROTO_ICMP, rts.opt.verbose);
 			if (rts.ip6) // be sure in pathmtu disc6 constants
-				MTUDISC6(rts.mtudisc);
+				MTUDISC6(rts.so.mtudisc);
 			if (sock.fd >= 0) {
-				if (rts.tos)
-					setsock_tos(sock.fd, rts.tos, rts.ip6);
 				rcode = ping_run[rts.ip6](&rts, argc, argv, ai, &sock);
 				close(sock.fd);
 			}

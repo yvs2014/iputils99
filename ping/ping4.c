@@ -395,20 +395,20 @@ static int probe_dst4(state_t *rts, struct ip_timestamp *ipt, // NONNULL(1, 2)
 	int fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (fd < 0)
 		err(errno, "socket");
-	if (rts->device) {
-		uint iface = nl_name2ndx(rts->device);
+	if (rts->so.device) {
+		uint iface = nl_name2ndx(rts->so.device);
 		if (!iface)
-			err_nodev(rts->device);
-//		setsock_pktinfo(fd,      iface, rts->device, !IP6);
-//		setsock_pktinfo(sock_fd, iface, rts->device, !IP6);
-		setsock_binddev(fd,      rts->device); // privileged action
-		setsock_binddev(sock_fd, rts->device); // privileged action
+			err_nodev(rts->so.device);
+//		setsock_pktinfo(fd,      iface, rts->so.device, !IP6);
+//		setsock_pktinfo(sock_fd, iface, rts->so.device, !IP6);
+		setsock_binddev(fd,      rts->so.device); // privileged action
+		setsock_binddev(sock_fd, rts->so.device); // privileged action
 	}
-	if (rts->tos)
-		setsock_tos(fd, rts->tos, !IP6);
+	if (rts->so.tos >= 0)
+		setsock_tos(fd, rts->so.tos, !IP6);
 #ifdef SO_MARK
-	if (rts->mark >= 0)
-		setsock_mark(fd, rts->mark); // privileged action
+	if (rts->so.mark >= 0)
+		setsock_mark(fd, rts->so.mark); // privileged action
 #endif
 	dst.sin_port = htons(1025);
 	if (ipt->ipt_len)
@@ -439,7 +439,7 @@ static int probe_dst4(state_t *rts, struct ip_timestamp *ipt, // NONNULL(1, 2)
 }
 
 // take next addrinfo if `rc' < 0, otherwise exit with `rc'
-int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const sock_t *sock) {
+int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const sock_t *sock) { // NONNULL(1, 4, 5)
 	fnset_t ping4_func_set = {
 		.bpf_filter     = ping4_bpf_filter,
 		.send_probe     = ping4_send_probe,
@@ -481,29 +481,30 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	if (arg_cnt > 1) {
 		if (rts->opt.rroute)
 			usage(EINVAL);
-		else if (rts->ts_opt < 0)
+		else if (rts->so.ts_opt < 0)
 			rts->opt.sourceroute = true;
-		else if (rts->ts_opt != IPOPT_TS_PRESPEC)
+		else if (rts->so.ts_opt != IPOPT_TS_PRESPEC)
 			errx(EINVAL, "%s", _("Only TSPRESPEC is allowed with intermediate hops"));
 		else if ((size_t)argc > ARRAY_LEN(((struct ip_timestamp *)0)->data))
 			errx(EINVAL, "%s: %d (%s=%zd)", _("Too many intermediate TS hops"), argc,
 				_("max"), ARRAY_LEN(((struct ip_timestamp *)0)->data) - 1);
-	} else if (rts->ts_opt == IPOPT_TS_PRESPEC)
+	} else if (rts->so.ts_opt == IPOPT_TS_PRESPEC)
 		errx(EINVAL, "%s", _("No intermediate hops for TSPRESPEC"));
 
 	if (!SA4ADDR(&rts->source)) {
+		// part for ip46 merging
 		int fd = probe_dst4(rts, ipopt.ipt, *SA4(&rts->whereto), sock->fd, ai->ai_next);
 		if (fd < 0)
 			return -1;
 		GETSOCKNAME(fd, SA(&rts->source), SA4_LEN);
 		SA4(&rts->source)->sin_port = 0;
 		close(fd);
-		if (rts->device && !nl_name2ndx(rts->device)) {
-			warnx("%s: %s: %s", _WARN, rts->device, WARN_NOSRCDEV);
+		if (rts->so.device && !nl_name2ndx(rts->so.device)) {
+			warnx("%s: %s: %s", _WARN, rts->so.device, WARN_NOSRCDEV);
 			rts->unreldev = true;
 		}
-	} else if (rts->device)
-		setsock_binddev(sock->fd, rts->device); // privileged action
+	} else if (rts->so.device)
+		setsock_binddev(sock->fd, rts->so.device); // privileged action
 
 	if (!SA4ADDR(&rts->whereto))
 		SA4ADDR(&rts->whereto) = SA4ADDR(&rts->source);
@@ -528,22 +529,21 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 
 	if (rts->opt.broadcast)
 		setsock_broadcast(sock->fd);
-	if (rts->opt.noloop)
-		setsock_noloop(sock->fd, !IP6);
-	if (rts->ttl >= 0)
-		setsock_ttl(sock->fd, rts->ttl, MULTICAST_TOO, !IP6);
+
+	setsock_set46(sock->fd, &rts->so, !IP6);
+	bind_by_need(sock->fd,
+		(rts->opt.ident && !sock->raw) ? rts->ident16 : 0,
+		rts->opt.strictsource, SA(&rts->source), !IP6);
+
 	if (rts->opt.connect_sk)
 		if (connect(sock->fd, SA(&rts->whereto), SA4_LEN) < 0)
 			err(errno, "%s", "connect()");
-
-	MTUDISC_N_BIND;
-	setsock_recverr(sock->fd, !IP6);
 	//
-	int optlen = ((rts->ts_opt >= 0) || rts->opt.rroute || rts->opt.sourceroute) ?
+	size_t optlen = ((rts->so.ts_opt >= 0) || rts->opt.rroute || rts->opt.sourceroute) ?
 		MAX_IPOPTLEN : 0;
 	if (optlen) { // IP options: ts, rr, etc.
-		if (rts->ts_opt >= 0) {
-			uint8_t flg = rts->ts_opt;
+		if (rts->so.ts_opt >= 0) {
+			uint8_t flg = rts->so.ts_opt;
 			uint8_t len =
 				(flg == IPOPT_TS_PRESPEC) ? ipopt.ipt->ipt_len :
 				(flg == IPOPT_TS_TSONLY)  ? MAX_IPOPTLEN       :
@@ -560,14 +560,7 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 				ipopt.ipt->ipt_len - 4 - 1);
 	}
 	//
-	if (!rts->sndbuf)
-		rts->sndbuf = estimate_packlen(sizeof(struct iphdr) + optlen,
-			sizeof(struct icmphdr), rts->datalen);
-	setsock_buffer(sock->fd, rts->sndbuf, rts->preload);
-
-	size_t hlen = sizeof(struct iphdr) + sizeof(struct icmphdr);
-	headline(rts, hlen + optlen);
-	hlen = (hlen + MAX_IPOPTLEN) * 2; // (ip+optlen+icmp)*2
-	return setup_n_loop(rts, hlen, sock, &ping4_func_set);
+	return setup_n_loop(rts, sizeof(struct iphdr), sizeof(struct icmphdr), optlen, MAX_IPOPTLEN,
+		sock, &ping4_func_set);
 }
 
