@@ -554,13 +554,17 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 			}
 		} else if (rts->opt.rroute)
 			setsock_ipopt_rr(sock->fd, ipopt.ipn);
-		else if (rts->opt.sourceroute)
-			setsock_ipopt_xrr(sock->fd, ipopt.ipn,
-				rts->opt.so_dontroute ? IPOPT_SSRR : IPOPT_LSRR,
-				ipopt.ipt->ipt_len - 4 - 1);
+		else if (rts->opt.sourceroute) {
+			ssize_t len = ipopt.ipt->ipt_len - 4;
+			if ((len > 0) && (len <= MAX_IPOPTLEN)) {
+				optlen = (size_t)len;
+				uint8_t val = rts->opt.so_dontroute ? IPOPT_SSRR : IPOPT_LSRR;
+				setsock_ipopt_xrr(sock->fd, ipopt.ipn, val, len - 1);
+			}
+		}
 	}
 	//
-	return setup_n_loop(rts, sizeof(struct iphdr), sizeof(struct icmphdr), optlen, MAX_IPOPTLEN,
-		sock, &ping4_func_set);
+	return setup_n_loop(rts, sizeof(struct iphdr), sizeof(struct icmphdr),
+		optlen, MAX_IPOPTLEN, sock, &ping4_func_set);
 }
 
