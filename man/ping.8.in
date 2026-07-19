@@ -326,8 +326,7 @@ Set socket sndbuf\&. If not specified, it is selected to buffer not more than on
 .PP
 \fB\-t\fR \fIttl\fR
 .RS 4
-\fBping\fR
-only\&. Set the IP Time to Live\&.
+Set IP Time-to-Live\&.
 .RE
 .PP
 \fB\-T\fR \fItimestamp_option\fR

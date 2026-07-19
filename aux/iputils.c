@@ -6,11 +6,15 @@
 #include <time.h>
 #include <err.h>
 #include <errno.h>
+
 #if defined(USE_IDN) && !defined(USE_NLS)
 #include <locale.h>
 #endif
 #ifdef USE_LIBIDN2
 #include <idn2.h>
+#endif
+#ifdef HAVE_LIBCAP
+#include <sys/capability.h>
 #endif
 
 #include "iputils.h"
@@ -238,4 +242,20 @@ void common_getopt(int argc, char **argv, const char *optstr, int features, // N
 		break;
 	}
 }
+
+#ifdef HAVE_LIBCAP
+void warn_if_missing_cap(int cap) {
+	if ((errno == EPERM) || (errno == EACCES)) {
+		const char *capname =
+			cap == CAP_NET_RAW   ? _STR(CAP_NET_RAW)   :
+			cap == CAP_NET_ADMIN ? _STR(CAP_NET_ADMIN) :
+			cap == CAP_SYS_NICE  ? _STR(CAP_SYS_NICE)  :
+			NULL;
+		if (capname)
+			warnx("%s: %s", _("=> missing capability"), capname);
+		else
+			warnx("%s: %d", _("=> missing capability"), cap);
+	}
+}
+#endif
 

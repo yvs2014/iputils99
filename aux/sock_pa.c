@@ -14,6 +14,7 @@
 #define MAXDEVNAME IF_NAMESIZE
 #endif
 
+#include "iputils.h"
 #include "sock_pa.h"
 #ifdef HAVE_LIBCAP
 #include "caps.h"
@@ -27,6 +28,7 @@ int bindtodev(int fd, const char dev[]) { // NONNULL(2)
 	int keep = errno;
 	NET_RAW_OFF;
 	errno = keep;
+	warn_if_missing_cap(CAP_NET_RAW);
 	return rc;
 }
 
@@ -39,6 +41,6 @@ NORETURN void err_nodev(const char dev[]) { // NONNULL(1)
 void setsock_dontroute(int fd) {
 	int on = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof(on)) < 0)
-		warn("setsockopt(%s)", "DONTROUTE");
+		warn("setsockopt(%s)", _STR(SO_DONTROUTE));
 }
 

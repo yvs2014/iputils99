@@ -466,6 +466,7 @@ static inline int arping_sock(void) {
 	NET_RAW_OFF;
 	if (sock < 0) {
 		errno = keep;
+		warn_if_missing_cap(CAP_NET_RAW);
 		err(errno, "socket(%s, %s)", "PACKET", "DGRAM");
 	}
 	return sock;

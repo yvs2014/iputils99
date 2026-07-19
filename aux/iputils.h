@@ -62,6 +62,10 @@
 # define NI_FLAGS 0
 #endif /* NI_IDN */
 
+//
+
+#define _STR(macro) (#macro)
+
 #ifndef ARRAY_LEN
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof((arr)[0]))
 #endif
@@ -123,5 +127,11 @@ void timersub(const struct timeval *a, const struct timeval *b, struct timeval *
 #endif
 
 int validate_hostlen(const char *host, bool fail);
+
+#ifdef HAVE_LIBCAP
+void warn_if_missing_cap(int cap);
+#else
+#define warn_if_missing_cap(cap) NOOP
+#endif
 
 #endif

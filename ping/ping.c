@@ -163,31 +163,27 @@ static void open_socket(sock_t *sock, int af, int proto, bool verbose) {
 		default: break;
 		}
 	}
-	errno = 0; // cleanup errno
+	if (verbose)
+		warnx("%s %s socket", PINGTYPE(sock->raw), AFTYPE(af));
+	//
+	errno = 0;
 	if (sock->raw) {
 		NET_RAW_ON;
 		sock->fd = socket(af, SOCK_RAW, proto);
 		num = errno;
 		NET_RAW_OFF;
 	}
-	if (verbose)
-		warnx("%s %s socket", PINGTYPE(sock->raw), AFTYPE(af));
-	errno = 0; // cleanup errno
-	if (sock->fd >= 0)
-		return;
-	// failed
-	if (sock->raw && geteuid()) {
+	//
+	errno = 0;
+	if (sock->fd < 0) { // failed
 		errno = num;
+		if (sock->raw && geteuid())
+			warn_if_missing_cap(CAP_NET_RAW);
 		if (errno)
-			warn("%s: %s", _("=> missing capability"), "cap_net_raw+p");
+			err(errno, "%s", __func__);
 		else
-			warnx("%s: %s", _("=> missing capability"), "cap_net_raw+p");
+			errx(EXIT_FAILURE, "%s", __func__);
 	}
-	errno = num;
-	if (errno)
-		err(errno, "%s", __func__);
-	else
-		errx(EXIT_FAILURE, "%s", __func__);
 }
 
 static inline void opt_I(state_t *rts, const char *str) {

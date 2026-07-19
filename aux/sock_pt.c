@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <netinet/ip6.h>
 
+#include "iputils.h"
 #include "sock_pt.h"
 
 #ifndef IPPROTO46
@@ -18,26 +19,32 @@
 #else
 #define PMTUDISCDO (ip6 ? IPV6_PMTUDISC_DO : IP_PMTUDISC_DO)
 #endif
-#define IPMTU46 (ip6 ? IPV6_MTU_DISCOVER : IP_MTU_DISCOVER)
+
+#define IPMTU46_VAL   (ip6 ?      IPV6_MTU_DISCOVER    :      IP_MTU_DISCOVER)
+#define IPMTU46_STR   (ip6 ? _STR(IPV6_MTU_DISCOVER)   : _STR(IP_MTU_DISCOVER))
+#define IPTTL46_VAL   (ip6 ?      IPV6_UNICAST_HOPS    :      IP_TTL)
+#define IPTTL46_STR   (ip6 ? _STR(IPV6_UNICAST_HOPS)   : _STR(IP_TTL))
+#define MCTTL46_VAL   (ip6 ?      IPV6_MULTICAST_HOPS  :      IP_MULTICAST_TTL)
+#define MCTTL46_STR   (ip6 ? _STR(IPV6_MULTICAST_HOPS) : _STR(IP_MULTICAST_TTL))
+#define RECVERR46_VAL (ip6 ?      IPV6_RECVERR         :      IP_RECVERR)
+#define RECVERR46_STR (ip6 ? _STR(IPV6_RECVERR)        : _STR(IP_RECVERR))
 
 void setsock_mtudisc(int fd, int mtu, bool ip6) {
-	if (setsockopt(fd, IPPROTO_IPV6, IPMTU46, &mtu, sizeof(mtu)) < 0)
-		err(errno, "setsockopt(%s)", "MTU_DISCOVER");
+	if (setsockopt(fd, IPPROTO_IPV6, IPMTU46_VAL, &mtu, sizeof(mtu)) < 0)
+		err(errno, "setsockopt(%s)", IPMTU46_STR);
 }
 
 void setsock_mtudisc_probedo(int fd, bool ip6) {
 	int mtu = ip6 ? IPV6_PMTUDISC_PROBE : IP_PMTUDISC_PROBE;
-	if (setsockopt(fd, IPPROTO46, IPMTU46, &mtu, sizeof(mtu)) < 0)
+	if (setsockopt(fd, IPPROTO46, IPMTU46_VAL, &mtu, sizeof(mtu)) < 0)
 		setsock_mtudisc(fd, PMTUDISCDO, ip6); // fallback
 }
 
 void setsock_ttl(int fd, int ttl, bool multicast_too, bool ip6) {
-	if (setsockopt(fd, IPPROTO46, ip6 ? IPV6_UNICAST_HOPS : IP_TTL,
-		&ttl, sizeof(ttl)) < 0)
-			err(errno, "setsockopt(%s)", ip6 ? "UNICAST_HOPS" : "TTL");
-	if (multicast_too && setsockopt(fd, IPPROTO46, ip6 ? IPV6_MULTICAST_HOPS : IP_MULTICAST_TTL,
-		&ttl, sizeof(ttl)) < 0)
-			err(errno, "setsockopt(%s)", ip6 ? "MULTICAST_HOPS" : "MULTICAST_TTL");
+	if (setsockopt(fd, IPPROTO46, IPTTL46_VAL, &ttl, sizeof(ttl)) < 0)
+		err(errno, "setsockopt(%s)", IPTTL46_STR);
+	if (multicast_too && setsockopt(fd, IPPROTO46, MCTTL46_VAL, &ttl, sizeof(ttl)) < 0)
+		err(errno, "setsockopt(%s)", MCTTL46_STR);
 }
 
 void setsock_recvttl(int fd, bool ip6) {
@@ -51,16 +58,15 @@ void setsock_recvttl(int fd, bool ip6) {
 (setsockopt(fd, IPPROTO_IPV6, IPV6_HOPLIMIT,     &on, sizeof(on)) < 0)
 #endif
 	)
-			err(errno, "setsockopt(%s)", "HOPLIMIT6");
+			err(errno, "setsockopt(%s)", "IPV6_*HOPLIMIT");
 	} else
 		if (setsockopt(fd, IPPROTO_IP, IP_RECVTTL, &on, sizeof(on)) < 0)
-			err(errno, "setsockopt(%s)", "RECVTTL");
+			err(errno, "setsockopt(%s)", _STR(IP_RECVTTL));
 }
 
 void setsock_recverr(int fd, bool ip6) {
 	int on = 1;
-	if (setsockopt(fd, IPPROTO46, ip6 ? IPV6_RECVERR : IP_RECVERR,
-		&on, sizeof(on)) < 0)
-			err(errno, "setsockopt(%s)", "RECVERR");
+	if (setsockopt(fd, IPPROTO46, RECVERR46_VAL, &on, sizeof(on)) < 0)
+		err(errno, "setsockopt(%s)", RECVERR46_STR);
 }
 

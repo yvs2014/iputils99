@@ -436,6 +436,7 @@ static inline int get_raw_socket(void) {
 	NET_RAW_OFF;
 	if (sock < 0) {
 		errno = keep;
+		warn_if_missing_cap(CAP_NET_RAW);
 		err(errno, "socket(%s, %s)", "AF_INET", "SOCK_RAW");
 	}
 	return sock;
@@ -450,6 +451,7 @@ static inline void set_nice(void) {
 	SYS_NICE_OFF;
 	if (errno) {
 		errno = keep;
+		warn_if_missing_cap(CAP_SYS_NICE);
 		err(errno, "nice(%d)", inc);
 	}
 }
