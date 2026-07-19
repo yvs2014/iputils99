@@ -246,11 +246,21 @@ void setsock_ipopt_xrr(int fd, ipopt_noped_t *opt, uint8_t val, uint8_t len) {
 	opt->val = val;
 	opt->len = len;
 	opt->off = IPOPT_MINOFF;
-	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, len + 1) < 0)
-		err(errno, "%s: %s(%d)", _("record route"),
-			val == IPOPT_SSRR ? "IPOPT_SSRR" :
-			val == IPOPT_LSRR ? "IPOPT_LSRR" :
-			"?", val);
+	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, len + 1) < 0) {
+		// restricted since 2026-06, so try fallback with 'cap_net_raw'
+		NET_RAW_ON;
+		int rc = setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, len + 1);
+		int keep = errno;
+		NET_RAW_OFF;
+		errno = keep;
+		if (rc < 0) {
+			const char *valstr = IPOPT_SSRR ? "IPOPT_SSRR" :
+			                     IPOPT_LSRR ? "IPOPT_LSRR" : "?";
+			if (errno == EPERM)
+				warnx("%s: %s", _("=> missing capability"), "cap_net_raw+p");
+			err(errno, "%s: %s(%d)", _("record route"), valstr, val);
+		}
+	}
 }
 
 void setsock_retopts(int fd) {
