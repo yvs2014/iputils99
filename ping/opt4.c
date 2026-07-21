@@ -74,10 +74,12 @@ static inline void puts_addrln(in_addr_t addr, bool resolve) {
 
 //
 // NOTE: ipopt_xxx() functions: data behind TYPE-LENGTH
+
 static void ipopt_sr(const uint8_t *data, int len, bool resolve, char kind) {
 	if (len > IPOPT_MINOFF) {
+		data++; len--; // skip POINTER
 		printf("\n%cSRR: ", kind);
-		for (; len > IPOPT_MINOFF; len -= 4, data += 4)
+		for (; len >= IPOPT_MINOFF; len -= 4, data += 4)
 			puts_addrln(*(in_addr_t*)data, resolve);
 	}
 }
