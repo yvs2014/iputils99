@@ -62,7 +62,8 @@ NORETURN static void usage(int rc) {
 
 #define STREQ(a, b) (!strncmp((a), (b), AI_FMTLEN * 2))
 
-#define IF_AI_MACRO(macro) { if (STREQ((arg), (#macro))) return (macro); }
+#define IF_AI_MACRO(macro) { if (STREQ(arg, (#macro))) return (macro); }
+#define IF_AI_MACRONAME(macro, name) { if (STREQ(arg, (name))) return (macro); }
 
 static inline uint ai_macro2value(char opt, const char *arg) {
 #ifdef AI_PASSIVE
@@ -89,20 +90,14 @@ static inline uint ai_macro2value(char opt, const char *arg) {
 #ifdef AI_CANONIDN
 	IF_AI_MACRO(AI_CANONIDN);
 #endif
-	// deprecated
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-W#pragma-messages"
-#ifdef AI_IDN_ALLOW_UNASSIGNED
-	IF_AI_MACRO(AI_IDN_ALLOW_UNASSIGNED);
+        // optional: deprecated AI flags
+#ifdef _AI_IDN_ALLOW_UNASSIGNED
+	IF_AI_MACRONAME(_AI_IDN_ALLOW_UNASSIGNED, "AI_IDN_ALLOW_UNASSIGNED")
 #endif
-#ifdef AI_IDN_USE_STD3_ASCII_RULES
-	IF_AI_MACRO(AI_IDN_USE_STD3_ASCII_RULES);
+#ifdef _AI_IDN_USE_STD3_ASCII_RULES
+	IF_AI_MACRONAME(_AI_IDN_USE_STD3_ASCII_RULES, "AI_IDN_USE_STD3_ASCII_RULES");
 #endif
-#pragma clang diagnostic pop
-#pragma GCC diagnostic pop
-	//
+	// end-of-optional
 #ifdef AI_NUMERICSERV
 	IF_AI_MACRO(AI_NUMERICSERV);
 #endif
@@ -112,65 +107,55 @@ static inline uint ai_macro2value(char opt, const char *arg) {
 }
 
 
-#define VALSTR_M(macro, desc) {.val = (macro), .str = #macro, .dsc = (desc)}
+#define AIF_VALSTR(macro, desc) {.val = (macro), .str = #macro, .dsc = (desc)}
+#define AIF_DEPRECATED_VALSTR(macro, name, desc) {.val = (macro), .str = (name), .dsc = (desc)}
 
 NORETURN static inline void list_ai_consts(void) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-W#pragma-messages"
-#ifdef AI_IDN_ALLOW_UNASSIGNED
-	valstr_s ai0100 = VALSTR_M(AI_IDN_ALLOW_UNASSIGNED, _("deprecated"));
-#endif
-#ifdef AI_IDN_USE_STD3_ASCII_RULES
-	valstr_s ai0200 = VALSTR_M(AI_IDN_USE_STD3_ASCII_RULES, _("deprecated"));
-#endif
-#pragma clang diagnostic pop
-#pragma GCC diagnostic pop
-	//
 	valstr_s ai[] = {
 #ifdef AI_PASSIVE
-		VALSTR_M(AI_PASSIVE,
+		AIF_VALSTR(AI_PASSIVE,
 	_("Socket address for bind()")),
 #endif
 #ifdef AI_CANONNAME
-		VALSTR_M(AI_CANONNAME,
+		AIF_VALSTR(AI_CANONNAME,
 	_("Request for canonical name")),
 #endif
 #ifdef AI_NUMERICHOST
-		VALSTR_M(AI_NUMERICHOST,
+		AIF_VALSTR(AI_NUMERICHOST,
 	_("Don't use host resolution")),
 #endif
 #ifdef AI_V4MAPPED
-		VALSTR_M(AI_V4MAPPED,
+		AIF_VALSTR(AI_V4MAPPED,
 	_("IPv4 mapped addresses are acceptable")),
 #endif
 #ifdef AI_ALL
-		VALSTR_M(AI_ALL,
+		AIF_VALSTR(AI_ALL,
 	_("IPv4 mapped and IPv6 addresses")),
 #endif
 #ifdef AI_ADDRCONFIG
-		VALSTR_M(AI_ADDRCONFIG,
+		AIF_VALSTR(AI_ADDRCONFIG,
 	_("Use host configuration to choose address type")),
 #endif
 #ifdef AI_IDN
-		VALSTR_M(AI_IDN,
+		AIF_VALSTR(AI_IDN,
 	_("Convert to IDN format if necessary")),
 #endif
 #ifdef AI_CANONIDN
-		VALSTR_M(AI_CANONIDN,
+		AIF_VALSTR(AI_CANONIDN,
 	_("Translate canonical name from IDN format")),
 #endif
-	// deprecated
-#ifdef AI_IDN_ALLOW_UNASSIGNED
-		ai0100,
+	// optional: deprecated AI flags
+#ifdef _AI_IDN_ALLOW_UNASSIGNED
+		AIF_DEPRECATED_VALSTR(_AI_IDN_ALLOW_UNASSIGNED,
+	"AI_IDN_ALLOW_UNASSIGNED", _("deprecated")),
 #endif
-#ifdef AI_IDN_USE_STD3_ASCII_RULES
-		ai0200,
+#ifdef _AI_IDN_USE_STD3_ASCII_RULES
+		AIF_DEPRECATED_VALSTR(_AI_IDN_USE_STD3_ASCII_RULES,
+	"AI_IDN_USE_STD3_ASCII_RULES", _("deprecated")),
 #endif
-	//
+	// end-of-optional
 #ifdef AI_NUMERICSERV
-		VALSTR_M(AI_NUMERICSERV,
+		AIF_VALSTR(AI_NUMERICSERV,
 	_("Don't use service resolution")),
 #endif
 	};

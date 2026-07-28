@@ -123,11 +123,21 @@ if idn	# If available: use AI_IDN for getaddrinfo() queries
 		deps += dependency('libidn2', required: true)
 		conf.set('USE_LIBIDN2', 1, description: 'Use libidn2 conversion')
 		idn_via = '(libidn2)'
+        else # known deprecated macros without deprecation message
+		depr_macros = ['AI_IDN_ALLOW_UNASSIGNED', 'AI_IDN_USE_STD3_ASCII_RULES']
+		foreach macro: depr_macros
+			value = cc.get_define(macro, args: GNUSRC, prefix: '#include <netdb.h>')
+			if value != ''
+				conf.set('_' + macro, value)
+			endif
+		endforeach
 	endif
-	conf.set('USE_IDN', 1, description: 'libc IDN support')
+        # add aux libc IDN function for 'nodeinfo'
 	if rfc4620	# idna_to_dns_encoding() for nodeinfo IDN
 		extra_funcs += {'__idna_to_dns_encoding': {}}
 	endif
+        #
+	conf.set('USE_IDN', 1, description: 'IDN support')
 endif
 
 nls = get_option('NLS')
