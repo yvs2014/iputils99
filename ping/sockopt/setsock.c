@@ -55,8 +55,7 @@
 #include <err.h>
 #include <errno.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/ip_icmp.h>
+#include <netinet/ip.h>
 #include <netinet/icmp6.h>
 
 #include "iputils.h"
@@ -68,24 +67,20 @@
 #include "perm.h"
 #endif
 
-#if !defined(__GLIBC__) && !defined(__UCLIBC__)
-// workaround for musl: IPV6_FLOWLABEL_MGR, IPV6_FLOWINFO_SEND
-#define __UAPI_DEF_IPV6_OPTIONS 1
-#endif
-#include <linux/in6.h>
-
 #ifndef IPPROTO46
 #define	IPPROTO46 (ip6 ? IPPROTO_IPV6 : IPPROTO_IP)
 #endif
 
-// ICMP_FILTER is defined in <linux/icmp.h>,
-// and <linux/icmp.h> has conflicts with <netinet/ip_icmp.h>
-#ifndef ICMP_FILTER
-#define ICMP_FILTER 1
-struct icmp_filter {
-	uint32_t data;
-};
-#endif
+void setsock_tos(int fd, int tos, bool ip6) {
+	if (setsockopt(fd, IPPROTO46, ip6 ? IPV6_TCLASS : IP_TOS, &tos, sizeof(tos)) < 0)
+		err(errno, "setsockopt(%s)", ip6 ? _STR(IPV6_TCLASS) : _STR(IP_TOS));
+}
+
+void setsock_noloop(int fd, bool ip6) {
+	int off = 0;
+	if (setsockopt(fd, IPPROTO46, ip6 ? IPV6_MULTICAST_LOOP : IP_MULTICAST_LOOP, &off, sizeof(off)) < 0)
+		err(errno, "%s", _("Cannot disable multicast loopback"));
+}
 
 #ifdef SO_MARK
 void setsock_mark(int fd, int mark) {
@@ -102,42 +97,8 @@ void setsock_mark(int fd, int mark) {
 }
 #endif
 
-void setsock_tos(int fd, int tos, bool ip6) {
-	if (setsockopt(fd, IPPROTO46, ip6 ? IPV6_TCLASS : IP_TOS, &tos, sizeof(tos)) < 0)
-		err(errno, "setsockopt(%s)", ip6 ? _STR(IPV6_TCLASS) : _STR(IP_TOS));
-}
-
-void setsock_noloop(int fd, bool ip6) {
-	int off = 0;
-	if (setsockopt(fd, IPPROTO46, ip6 ? IPV6_MULTICAST_LOOP : IP_MULTICAST_LOOP, &off, sizeof(off)) < 0)
-		err(errno, "%s", _("Cannot disable multicast loopback"));
-}
-
-void setsock_filter(int fd, const struct sock_fprog *prog, // NONNULL(2)
-	bool verbose, char ip46, uint16_t id)
-{
-	if (verbose)
-		warnx("bpf%c socket=%d ident=0x%04x", ip46, fd, id);
-	if (setsockopt(fd, SOL_SOCKET, SO_ATTACH_FILTER, prog, sizeof(*prog)) < 0)
-		err(errno, "setsockopt(%s)", _STR(SO_ATTACH_FILTER));
-#ifdef SO_LOCK_FILTER
-	int on = 1;
-	if (setsockopt(fd, SOL_SOCKET, SO_LOCK_FILTER, &on, sizeof(on)) < 0)
-		warn("setsockopt(%s)", _STR(SO_LOCK_FILTER));
-#endif
-}
-
-void setsock_icmp4_filter(int fd, const int32_t flag[]) { // NONNULL(2)
-	uint32_t u = 0;
-	for (; *flag >= 0; flag++)
-		u |= (1 << *flag);
-	struct icmp_filter filt = {.data = ~u};
-	if (setsockopt(fd, SOL_RAW, ICMP_FILTER, &filt, sizeof(filt)) < 0)
-		err(errno, "setsockopt(%s: %04X)", _STR(ICMP_FILTER), filt.data);
-}
-
 void setsock_icmp6_filter(int fd) {
-	/* select icmp echo reply as icmp type to receive */
+	// select icmp echo reply as icmp type to receive
 	struct icmp6_filter filter = {0};
 	ICMP6_FILTER_SETBLOCKALL(&filter);
 #ifdef ENABLE_RFC4620
@@ -289,21 +250,4 @@ void setsock_pktinfo(int fd, uint iface, const char dev[], bool ip6) { // NONNUL
 		err(errno, "setsockopt(%s, %s)", _STR(IP_PKTINFO), dev);
 }
 */
-
-void setsock_flow6(int fd, int flow, size_t clen, struct sockaddr_in6 *sa) { // NONNULL(4)
-	char buf[CMSG_ALIGN(sizeof(struct in6_flowlabel_req)) + clen];
-	memset(buf, 0, sizeof(buf));
-	struct in6_flowlabel_req *freq = (struct in6_flowlabel_req *)buf;
-	freq->flr_label  = htonl(flow);
-	freq->flr_action = IPV6_FL_A_GET;
-	freq->flr_flags  = IPV6_FL_F_CREATE;
-	freq->flr_share  = IPV6_FL_S_EXCL;
-	memcpy(&freq->flr_dst, &sa->sin6_addr, sizeof(sa->sin6_addr));
-	if (setsockopt(fd, IPPROTO_IPV6, IPV6_FLOWLABEL_MGR, freq, sizeof(*freq)) < 0)
-		err(errno, "setsockopt(%s)", _STR(IPV6_FLOWLABEL_MGR));
-	sa->sin6_flowinfo = flow = freq->flr_label;
-	int on = 1;
-	if (setsockopt(fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND, &on, sizeof(on)) < 0)
-		err(errno, "setsockopt(%s)", _STR(IPV6_FLOWINFO_SEND));
-}
 

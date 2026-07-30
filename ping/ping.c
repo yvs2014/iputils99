@@ -80,11 +80,6 @@
 #include "node_info.h"
 #endif
 
-#ifndef MSG_CONFIRM
-/* defined via netinet/in.h */
-#define MSG_CONFIRM 0
-#endif
-
 #define PACKHDRLEN	(sizeof(struct icmphdr) + sizeof(struct timeval))
 #define	DEFDATALEN	(DEFIPPAYLOAD - sizeof(struct icmphdr))	// default data length
 #define MAXPAYLOAD	(USHRT_MAX - PACKHDRLEN)		// largest payload
@@ -458,7 +453,9 @@ int main(int argc, char **argv) {
 		.interval     = 1000,		/* in ms */
 		.preload      =  1,
 		.lingertime   = MAXWAIT * 1000,	/* in ms */
+#ifdef MSG_CONFIRM
 		.confirm_flag = MSG_CONFIRM,
+#endif
 		.min_away     = -1,
 		.max_away     = -1,
 		.tmin         = LONG_MAX,

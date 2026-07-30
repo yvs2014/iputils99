@@ -114,7 +114,7 @@ static void print_ee_reply(const state_t *rts, uint16_t seq,
 	const struct sock_extended_err *ee, socklen_t salen) // NONNULL(1, 3)
 {
 	if (rts->opt.flood)
-		write(STDOUT_FILENO, "\bE", 2);
+		(void)write(STDOUT_FILENO, "\bE", 2);
 	else {
 		PRINT_TIMESTAMP;
 		printf("%s %s: %s=%u ",
@@ -132,7 +132,7 @@ static void print_ee_reply(const state_t *rts, uint16_t seq,
 
 static inline void print_local_ee(bool flood, uint32_t ee_errno, uint32_t ee_info) {
 	if (flood)
-		write(STDOUT_FILENO, "E", 1);
+		(void)write(STDOUT_FILENO, "E", 1);
 	else if (ee_errno != EMSGSIZE)
 		warnx("%s", _("Local error"));
 	else

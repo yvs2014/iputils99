@@ -77,6 +77,8 @@
 #include "stats.h"
 #include "exterr.h"
 #include "setsock.h"
+#include "sockopt_sys_bpf.h"
+#include "sockopt_sys_flow6.h"
 #include "sock_pa.h"
 #include "sock_pt.h"
 #include "nlink.h"
@@ -289,11 +291,7 @@ static void ping6_bpf_filter(const state_t *rts, const sock_t *sock) {
 		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Okay, pass it down */
 		BPF_STMT(BPF_RET | BPF_K, 0), 			/* Reject not our echo replies */
 	};
-	const struct sock_fprog fprog = {
-		.len    = ARRAY_LEN(filter),
-		.filter = filter,
-	};
-	setsock_filter(sock->fd, &fprog, rts->opt.verbose, '6', rts->ident16);
+	setsock_bpf(sock->fd, ARRAY_LEN(filter), filter, rts->opt.verbose, '6', rts->ident16);
 }
 
 static int probe_dst6(state_t *rts, struct sockaddr_in6 *dst, int sock_fd, bool next) { // NONNULL(1, 2)
@@ -457,7 +455,7 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	//
 	setsock_recvttl(sock->fd, IP6);
 	if (rts->so.flow >= 0)
-		setsock_flow6(sock->fd, rts->so.flow, rts->cmsg->len, SA6(&rts->whereto));
+		setsock_flow6(sock->fd, rts->so.flow, rts->cmsg->len, SA(&rts->whereto), sizeof(struct sockaddr_in6));
 
 	rts->subnet_router_anycast = get_subnet_anycast(SA6(&rts->whereto));
 	//

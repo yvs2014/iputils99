@@ -70,6 +70,8 @@
 #include "stats.h"
 #include "exterr.h"
 #include "setsock.h"
+#include "sockopt_sys_bpf.h"
+#include "sockopt_sys_icmp4.h"
 #include "sock_pa.h"
 #include "sock_pc.h"
 #include "sock_pt.h"
@@ -322,7 +324,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 }
 
 static void ping4_bpf_filter(const state_t *rts, const sock_t *sock) {
-	struct sock_filter filter[] = { // no need to be static?
+	struct sock_filter filter[] = {
 		BPF_STMT(BPF_LDX | BPF_B   | BPF_MSH, 0),	/* Skip IP header due BSD */
 		BPF_STMT(BPF_LD  | BPF_H   | BPF_IND, 4),	/* Load ident */
 		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K,
@@ -336,11 +338,7 @@ static void ping4_bpf_filter(const state_t *rts, const sock_t *sock) {
 		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Okay, pass it down */
 		BPF_STMT(BPF_RET | BPF_K, 0),			/* Reject not our echo replies */
 	};
-	const struct sock_fprog fprog = {
-		.len    = ARRAY_LEN(filter),
-		.filter = filter,
-	};
-	setsock_filter(sock->fd, &fprog, rts->opt.verbose, '4', rts->ident16);
+	setsock_bpf(sock->fd, ARRAY_LEN(filter), filter, rts->opt.verbose, '4', rts->ident16);
 }
 
 static inline const char *ping4_run_args(const char *target, bool hops, struct addrinfo *ai,
