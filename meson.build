@@ -11,7 +11,7 @@ project('iputils99', 'c',
 	meson_version: '>=0.55',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
-			check: false).stdout().strip() : '20260730',
+			check: false).stdout().strip() : '20260731',
 )
 
 GNUSRC = '-D_GNU_SOURCE'
@@ -126,7 +126,7 @@ if idn	# If available: use AI_IDN for getaddrinfo() queries
         else # known deprecated macros without deprecation message
 		depr_macros = ['AI_IDN_ALLOW_UNASSIGNED', 'AI_IDN_USE_STD3_ASCII_RULES']
 		foreach macro: depr_macros
-			value = cc.get_define(macro, args: GNUSRC, prefix: '#include <netdb.h>')
+			value = cc.get_define(macro, args: GNUSRC, prefix: '#include <netdb.h>').strip()
 			if value != ''
 				conf.set('_' + macro, value)
 			endif
