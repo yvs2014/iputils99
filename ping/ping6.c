@@ -278,7 +278,8 @@ static inline bool get_subnet_anycast(const struct sockaddr_in6 *to) {
 }
 
 static void ping6_bpf_filter(const state_t *rts, const sock_t *sock) {
-	struct sock_filter filter[] = { // no need to be static?
+	SOCK_BPF_INFO(rts->opt.verbose, '6', sock->fd, rts->ident16);
+	struct sock_filter filter[] = {
 		BPF_STMT(BPF_LD	 | BPF_H   | BPF_ABS, 4),	/* Load ident */
 		BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K,
 			htons(rts->ident16), 			/* Compare ident */
@@ -291,7 +292,8 @@ static void ping6_bpf_filter(const state_t *rts, const sock_t *sock) {
 		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Okay, pass it down */
 		BPF_STMT(BPF_RET | BPF_K, 0), 			/* Reject not our echo replies */
 	};
-	setsock_bpf(sock->fd, ARRAY_LEN(filter), filter, rts->opt.verbose, '6', rts->ident16);
+	setsock_bpf(sock->fd, (struct sock_fprog)
+		{.len = ARRAY_LEN(filter), .filter = filter});
 }
 
 static int probe_dst6(state_t *rts, struct sockaddr_in6 *dst, int sock_fd, bool next) { // NONNULL(1, 2)

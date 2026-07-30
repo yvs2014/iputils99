@@ -324,6 +324,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 }
 
 static void ping4_bpf_filter(const state_t *rts, const sock_t *sock) {
+	SOCK_BPF_INFO(rts->opt.verbose, '4', sock->fd, rts->ident16);
 	struct sock_filter filter[] = {
 		BPF_STMT(BPF_LDX | BPF_B   | BPF_MSH, 0),	/* Skip IP header due BSD */
 		BPF_STMT(BPF_LD  | BPF_H   | BPF_IND, 4),	/* Load ident */
@@ -338,7 +339,8 @@ static void ping4_bpf_filter(const state_t *rts, const sock_t *sock) {
 		BPF_STMT(BPF_RET | BPF_K, ~0U),			/* Okay, pass it down */
 		BPF_STMT(BPF_RET | BPF_K, 0),			/* Reject not our echo replies */
 	};
-	setsock_bpf(sock->fd, ARRAY_LEN(filter), filter, rts->opt.verbose, '4', rts->ident16);
+	setsock_bpf(sock->fd, (struct sock_fprog)
+		{.len = ARRAY_LEN(filter), .filter = filter});
 }
 
 static inline const char *ping4_run_args(const char *target, bool hops, struct addrinfo *ai,

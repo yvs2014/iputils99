@@ -58,12 +58,7 @@
 
 #include "sockopt_sys_bpf.h"
 
-void setsock_bpf(int fd, uint16_t len, struct sock_filter filter[len], // NONNULL(2)
-	bool verbose, char version, uint16_t ident)
-{
-	if (verbose)
-		warnx("bpf%c socket=%d ident=0x%04x", version, fd, ident);
-	struct sock_fprog prog = {.len = len * sizeof(filter[0]), .filter = filter};
+void setsock_bpf(int fd, struct sock_fprog prog) {
 	if (setsockopt(fd, SOL_SOCKET, SO_ATTACH_FILTER, &prog, sizeof(prog)) < 0)
 		err(errno, "setsockopt(%s)", "SO_ATTACH_FILTER");
 #ifdef SO_LOCK_FILTER
