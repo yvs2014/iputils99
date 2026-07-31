@@ -183,7 +183,7 @@ void print_timestamp(void) {
 }
 
 // Called once at ping setup
-void headline(const state_t *rts, size_t nodatalen) {
+void headline(const state_t *rts, size_t nodatalen, size_t datalen) { // NONNULL(1)
 	socklen_t len = rts->ip6 ? SA6_LEN : SA4_LEN;
 	printf("%s %s (%s)", _("PING"), rts->hostname,
 		sprint_addr(&rts->whereto, len, false));
@@ -196,8 +196,7 @@ void headline(const state_t *rts, size_t nodatalen) {
 			printf("%%%s", rts->so.device);
 		putchar(':');
 	}
-	printf(" %zu(%zu) %s\n",
-		rts->datalen, rts->datalen + nodatalen, _("data bytes"));
+	printf(" %zu(%zu) %s\n", datalen, datalen + nodatalen, _("data bytes"));
 }
 
 static inline bool print_stats(const state_t *rts, const stat_aux_t *stat) {

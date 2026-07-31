@@ -211,13 +211,13 @@ static inline void opt_I(state_t *rts, const char *str) {
 }
 
 #ifdef ENABLE_RFC4620
-static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) {
+static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) { // NONNULL(1, 3)
 	if (rts->datalen != DEFDATALEN) // '-s' indication
 		errx(EINVAL, "%s: %s", _WARN,
-			_("NodeInfo packet can only have a header"));
+			_("Nodeinfo packet can only have a header"));
 	if (hints->ai_family == AF_INET) // '-4' indiacation
 		errx(EINVAL, "%s: %s", _WARN,
-			_("NodeInfo client is for IPv6 only"));
+			_("Nodeinfo query cannot be sent over IPv4"));
 	if (!rts->ni) {
 		rts->ni = calloc(1, sizeof(struct ping_ni));
 		if (!rts->ni)
@@ -225,8 +225,7 @@ static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) 
 		rts->ni->query        = -1;
 		rts->ni->subject_type = -1;
 		if (niquery_option_handler(rts->ni, str) < 0)
-			errx(EINVAL, "%s: %s",
-				_("Cannot set NodeInfo option"), str);
+			errx(EINVAL, "%s: %s", _("Cannot set nodeinfo option"), str);
 		hints->ai_socktype = SOCK_RAW;
 		rts->datalen = 0;
 	}
@@ -237,7 +236,7 @@ static inline void opt_s(state_t *rts) {
 #ifdef ENABLE_RFC4620
 	if (rts->ni)
 		errx(EXIT_FAILURE, "%s: %s", _WARN,
-			_("NodeInfo packet can only have a header"));
+			_("Nodeinfo packet can only have a header"));
 #endif
 	uint len = VALID_INTSTR(0, MAXPAYLOAD);
 	uint8_t *pack = calloc(1, PACKHDRLEN + len);
@@ -260,7 +259,7 @@ static char *optstr =
 #endif
 	"Op:qQ:rRs:S:t:T:UvVw:W:46";
 
-static void switch_opt(char c, void *data) { // NONNULL(1, 2)
+static void switch_opt(char c, void *data) { // NONNULL(2)
 #define RTS_DATA ((state_t *)data)
 #define RTS_HINT ((struct addrinfo *)(RTS_DATA->auxdata))
 	switch (c) {
@@ -270,7 +269,7 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 #ifdef ENABLE_RFC4620
 		if (RTS_DATA->ni && ip4) // '-N' indication
 			errx(EINVAL, "%s: %s", _WARN,
-				_("NodeInfo client is for IPv6 only"));
+				_("Nodeinfo query cannot be sent over IPv4"));
 #endif
 		int incompat = ip4 ? AF_INET6 : AF_INET;
 		if (RTS_HINT->ai_family == incompat)

@@ -447,7 +447,11 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 
 	if (sock->raw) {
 		setsock_cksum6(sock->fd);
-		setsock_icmp6_filter(sock->fd);
+		setsock_icmp6_filter(sock->fd,
+#ifdef ENABLE_RFC4620
+			rts->ni && niquery_is_enabled(rts->ni) ? IPUTILS_NI_ICMP6_REPLY :
+#endif
+			ICMP6_ECHO_REPLY);
 	}
 	//
 	setsock_set46(sock->fd, &rts->so, IP6);

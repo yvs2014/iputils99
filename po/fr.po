@@ -584,6 +584,10 @@ msgid "ident 0 => forcing raw socket"
 msgstr "ident 0 => raw socket forcé"
 
 #
+msgid "Nodeinfo query cannot be sent over IPv4"
+msgstr "Requête nodeinfo ne peut pas être envoyée via IPv4"
+
+#
 msgid ""
 "Do you want to ping broadcast? Then -b. If not, check your local firewall "
 "rules"

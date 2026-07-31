@@ -569,15 +569,15 @@ msgid "max"
 msgstr ""
 
 #
-msgid "NodeInfo client is for IPv6 only"
+msgid "Cannot set nodeinfo option"
 msgstr ""
 
 #
-msgid "Cannot set NodeInfo option"
+msgid "Nodeinfo packet can only have a header"
 msgstr ""
 
 #
-msgid "NodeInfo packet can only have a header"
+msgid "Nodeinfo query cannot be sent over IPv4"
 msgstr ""
 
 #

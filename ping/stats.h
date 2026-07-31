@@ -18,7 +18,7 @@ typedef struct stat_aux_s {
 
 bool statistics(state_t *rts, stat_aux_t *stat);
 
-void headline(const state_t *rts, size_t nodatalen);
+void headline(const state_t *rts, size_t nodatalen, size_t datalen); // NONNULL(1)
 bool resume(const state_t *rts);
 
 void print_status(const state_t *rts);

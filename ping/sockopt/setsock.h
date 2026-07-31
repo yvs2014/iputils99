@@ -16,7 +16,7 @@ typedef struct ipopt_noped {
 void setsock_mark(int fd, int mark);
 void setsock_tos(int fd, int tos, bool ip6);
 void setsock_noloop(int fd, bool ip6);
-void setsock_icmp6_filter(int fd);
+void setsock_icmp6_filter(int fd, uint8_t pass);
 void setsock_cksum6(int fd);
 void setsock_buffer(int fd, int sndbuf, int preload);
 void setsock_debug(int fd);

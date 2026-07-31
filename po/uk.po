@@ -664,16 +664,16 @@ msgid "max"
 msgstr "макс"
 
 #
-msgid "NodeInfo client is for IPv6 only"
-msgstr "Клієнт NodeInfo тільки для IPv6"
+msgid "Cannot set nodeinfo option"
+msgstr "Неможливо встановити параметр для nodeinfo"
 
 #
-msgid "Cannot set NodeInfo option"
-msgstr "Неможливо встановити параметр для NodeInfo"
+msgid "Nodeinfo packet can only have a header"
+msgstr "Пакет nodeinfo може мати лише заголовок"
 
 #
-msgid "NodeInfo packet can only have a header"
-msgstr "Пакет NodeInfo може мати лише заголовок"
+msgid "Nodeinfo query cannot be sent over IPv4"
+msgstr "Запит nodeinfo неможливо надіслати з IPv4"
 
 #
 msgid ""

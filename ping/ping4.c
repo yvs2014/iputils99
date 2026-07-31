@@ -440,6 +440,10 @@ static int probe_dst4(state_t *rts, struct ip_timestamp *ipt, // NONNULL(1, 2)
 
 // take next addrinfo if `rc' < 0, otherwise exit with `rc'
 int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const sock_t *sock) { // NONNULL(1, 4, 5)
+#ifdef ENABLE_RFC4620
+	if (rts->ni && niquery_is_enabled(rts->ni))
+		errx(EINVAL, "%s", _("Nodeinfo query cannot be sent over IPv4"));
+#endif
 	fnset_t ping4_func_set = {
 		.bpf_filter     = ping4_bpf_filter,
 		.send_probe     = ping4_send_probe,

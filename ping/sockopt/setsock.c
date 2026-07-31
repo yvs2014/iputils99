@@ -97,16 +97,12 @@ void setsock_mark(int fd, int mark) {
 }
 #endif
 
-void setsock_icmp6_filter(int fd) {
+void setsock_icmp6_filter(int fd, uint8_t pass) {
 	// select icmp echo reply as icmp type to receive
 	struct icmp6_filter filter = {0};
 	ICMP6_FILTER_SETBLOCKALL(&filter);
-#ifdef ENABLE_RFC4620
-	if (rts->ni && niquery_is_enabled(rts->ni))
-	{	ICMP6_FILTER_SETPASS(IPUTILS_NI_ICMP6_REPLY, &filter); }
-	else
-#endif
-	{	ICMP6_FILTER_SETPASS(ICMP6_ECHO_REPLY, &filter); }
+	if (pass)
+		ICMP6_FILTER_SETPASS(pass, &filter);
 	if (setsockopt(fd, IPPROTO_ICMPV6, ICMP6_FILTER, &filter, sizeof(filter)) < 0)
 		err(errno, "setsockopt(%s)", _STR(ICMP6_FILTER));
 }

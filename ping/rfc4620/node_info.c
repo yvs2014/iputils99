@@ -37,7 +37,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <err.h>
-#include <errno.h>
+#include <errno.h> // IWYU pragma: keep
 #include <resolv.h>
 #include <net/if.h>
 
@@ -465,3 +465,4 @@ int niquery_option_handler(struct ping_ni *ni, const char *opt_arg)
 		ret = niquery_option_help_handler(ni, 0, NULL);
 	return ret;
 }
+

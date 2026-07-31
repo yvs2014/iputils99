@@ -606,8 +606,14 @@ int setup_n_loop(state_t *rts, size_t iph_len, size_t icmph_len, size_t opt_len,
 {
 	if (!rts->sndbuf)
 		rts->sndbuf = estimate_packlen(iph_len + opt_len, icmph_len, rts->datalen);
+	size_t dlen = rts->datalen;
+#ifdef ENABLE_RFC4620
+	ssize_t l = (rts->ni && niquery_is_enabled(rts->ni)) ?
+		sizeof(struct ni_hdr) + rts->ni->subject_len - sizeof(struct icmp6_hdr) : 0;
+	dlen = (l > 0) ? l : 0;
+#endif
 	setsock_buffer(sock->fd, rts->sndbuf, rts->preload);
-	headline(rts, iph_len + opt_len + icmph_len);
+	headline(rts, iph_len + opt_len + icmph_len, dlen);
 	//
 	size_t hlen = iph_len + icmph_len + extra;
 	if (rts->ip6)

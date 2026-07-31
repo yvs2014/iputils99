@@ -3,7 +3,7 @@
 // setsockopt() stuff: ping, clockdiff
 
 #include <err.h>
-#include <errno.h>
+#include <errno.h> // IWYU pragma: keep
 #include <sys/socket.h>
 #include <net/if.h>
 #ifdef USE_ALTNAMES
