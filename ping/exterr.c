@@ -68,6 +68,7 @@
 #include "stats.h"
 #include "aux4.h"
 #include "aux6.h"
+#include "cc_attr.h"
 
 // common IPv4/IPv6 ICMP header
 typedef struct icmp46h {
@@ -113,9 +114,9 @@ static int ee_our_seq(state_t *rts, size_t n, const sock_t *sock, // NONNULL(1, 
 static void print_ee_reply(const state_t *rts, uint16_t seq,
 	const struct sock_extended_err *ee, socklen_t salen) // NONNULL(1, 3)
 {
-	if (rts->opt.flood) {
-		if (write(STDOUT_FILENO, "\bE", 2)) {}; // suppress unused-result-warn
-	} else {
+	if (rts->opt.flood)
+		SUPPRESS_UNUSED_RESULT_WARN(write(STDOUT_FILENO, "\bE", 2));
+	else {
 		PRINT_TIMESTAMP;
 		printf("%s %s: %s=%u ",
 			_("From"), sprint_addr(ee + 1, salen, rts->opt.resolve),
@@ -131,9 +132,9 @@ static void print_ee_reply(const state_t *rts, uint16_t seq,
 }
 
 static inline void print_local_ee(bool flood, uint32_t ee_errno, uint32_t ee_info) {
-	if (flood) {
-		if (write(STDOUT_FILENO, "E", 1)) {}; // suppress unused-result-warn
-	} else if (ee_errno != EMSGSIZE)
+	if (flood)
+		SUPPRESS_UNUSED_RESULT_WARN(write(STDOUT_FILENO, "E", 1));
+	else if (ee_errno != EMSGSIZE)
 		warnx("%s", _("Local error"));
 	else
 		warnx("%s: %s: mtu=%u", _("Local error"), _("Message too long"), ee_info);

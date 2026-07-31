@@ -446,7 +446,7 @@ static inline void set_nice(void) {
 	int inc = -16;
 	SYS_NICE_ON;
 	errno = 0;
-	if (nice(inc)) {}; // suppress unused-result-warn
+	SUPPRESS_UNUSED_RESULT_WARN(nice(inc));
 	int keep = errno;
 	SYS_NICE_OFF;
 	if (errno) {

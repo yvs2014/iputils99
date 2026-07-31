@@ -322,7 +322,7 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 #define PIPESIZE_OKAY (rts->pipesize  < rts->screen_width)
 #define INFLIGHT_OKAY (in_flight(rts) < rts->screen_width)
 				if ((PRELOAD_OKAY && PIPESIZE_OKAY) || INFLIGHT_OKAY)
-					if (write(STDOUT_FILENO, ".", 1)) {};
+					SUPPRESS_UNUSED_RESULT_WARN(write(STDOUT_FILENO, ".", 1));
 			}
 			return (rts->interval - tokens);
 		}
@@ -382,9 +382,9 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 	/* Pretend we sent packet */
 	advance_ntransmitted(rts);
 	if (!rc && !rts->opt.quiet) {
-		if (rts->opt.flood) {
-			if (write(STDOUT_FILENO, "E", 1)) {};
-		} else
+		if (rts->opt.flood)
+			SUPPRESS_UNUSED_RESULT_WARN(write(STDOUT_FILENO, "E", 1));
+		else
 			warn("sendmsg");
 	}
 	tokens = 0;

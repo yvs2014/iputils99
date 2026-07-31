@@ -289,8 +289,8 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 			break;
 		}
 		if (rts->opt.flood && !(rts->opt.verbose || rts->opt.quiet)) {
-			if (write(STDOUT_FILENO, "!EC", bad ? 3 : 2)) {};
-//			otherwise: (void)!write
+			SUPPRESS_UNUSED_RESULT_WARN(write(STDOUT_FILENO, "!EC", bad ? 3 : 2));
+//			other-suppression-ways: '(void)!write', 'if (write()) {}'
 			return false;
 		}
 		if (!rts->opt.verbose || rts->uid)

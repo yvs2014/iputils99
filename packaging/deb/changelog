@@ -1,4 +1,4 @@
-iputils99 (1:99-20260731-rc1) trixie; urgency=low
+iputils99 (1:99-20260801-rc1) trixie; urgency=low
 
   * iputils in C99 way for _testing_
     iputils99: https://github.com/yvs2014/iputils99/

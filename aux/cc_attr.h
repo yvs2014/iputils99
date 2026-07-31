@@ -20,4 +20,21 @@
 #define UNUSED
 #endif
 
+#if   defined(__GNUC__)
+#define SUPPRESS_UNUSED_RESULT_WARN(something) do {     \
+  _Pragma("GCC diagnostic push")                        \
+  _Pragma("GCC diagnostic ignored \"-Wunused-result\"") \
+  (something);                                          \
+  _Pragma("GCC diagnostic pop")                         \
+} while (0)
+#elif defined(__clang__)
+#define SUPPRESS_UNUSED_RESULT_WARN(something) do {       \
+  _Pragma("clang diagnostic push")                        \
+  _Pragma("clang diagnostic ignored \"-Wunused-result\"") \
+  (something);                                            \
+  _Pragma("clang diagnostic pop")                         \
+#else
+#define SUPPRESS_UNUSED_RESULT_WARN
+#endif
+
 #endif

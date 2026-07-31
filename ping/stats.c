@@ -201,11 +201,10 @@ void headline(const state_t *rts, size_t nodatalen, size_t datalen) { // NONNULL
 
 static inline bool print_stats(const state_t *rts, const stat_aux_t *stat) {
 	if (rts->opt.flood) {
-		if (stat->ack) {
-			if (write(STDOUT_FILENO, "\b \b", 3)) {};
-		} else {
-			if (write(STDOUT_FILENO, "\bC", 2)) {};
-		}
+		if (stat->ack)
+			SUPPRESS_UNUSED_RESULT_WARN(write(STDOUT_FILENO, "\b \b", 3));
+		else
+			SUPPRESS_UNUSED_RESULT_WARN(write(STDOUT_FILENO, "\bC", 2));
 		return true;
 	}
 	//

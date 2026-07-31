@@ -73,8 +73,8 @@ struct niquery_option {
 		.handler = (_handler)				\
 	}
 
-static int niquery_option_name_handler(struct ping_ni *ni, int index __attribute__((__unused__)), const char *arg __attribute__((__unused__)));
-static int niquery_option_ipv6_handler(struct ping_ni *ni, int index __attribute__((__unused__)), const char *arg __attribute__((__unused__)));
+static int niquery_option_name_handler(struct ping_ni *ni, int index UNUSED, const char *arg UNUSED);
+static int niquery_option_ipv6_handler(struct ping_ni *ni, int index UNUSED, const char *arg UNUSED);
 static int niquery_option_ipv6_flag_handler(struct ping_ni *ni, int index, const char *arg);
 static int niquery_option_ipv4_handler(struct ping_ni *ni, int index, const char *arg);
 static int niquery_option_ipv4_flag_handler(struct ping_ni *ni, int index, const char *arg);
@@ -191,21 +191,21 @@ static int niquery_set_qtype(struct ping_ni *ni, int type)
 	return 0;
 }
 
-static int niquery_option_name_handler(struct ping_ni *ni, int index __attribute__((__unused__)), const char *arg __attribute__((__unused__)))
+static int niquery_option_name_handler(struct ping_ni *ni, int index UNUSED, const char *arg UNUSED)
 {
 	if (niquery_set_qtype(ni, IPUTILS_NI_QTYPE_DNSNAME) < 0)
 		return -1;
 	return 0;
 }
 
-static int niquery_option_ipv6_handler(struct ping_ni *ni, int index __attribute__((__unused__)), const char *arg __attribute__((__unused__)))
+static int niquery_option_ipv6_handler(struct ping_ni *ni, int index UNUSED, const char *arg UNUSED)
 {
 	if (niquery_set_qtype(ni, IPUTILS_NI_QTYPE_IPV6ADDR) < 0)
 		return -1;
 	return 0;
 }
 
-static int niquery_option_ipv6_flag_handler(struct ping_ni *ni, int index, const char *arg __attribute__((__unused__)))
+static int niquery_option_ipv6_flag_handler(struct ping_ni *ni, int index, const char *arg UNUSED)
 {
 	if (niquery_set_qtype(ni, IPUTILS_NI_QTYPE_IPV6ADDR) < 0)
 		return -1;
@@ -213,14 +213,14 @@ static int niquery_option_ipv6_flag_handler(struct ping_ni *ni, int index, const
 	return 0;
 }
 
-static int niquery_option_ipv4_handler(struct ping_ni *ni, int index __attribute__((__unused__)), const char *arg __attribute__((__unused__)))
+static int niquery_option_ipv4_handler(struct ping_ni *ni, int index UNUSED, const char *arg UNUSED)
 {
 	if (niquery_set_qtype(ni, IPUTILS_NI_QTYPE_IPV4ADDR) < 0)
 		return -1;
 	return 0;
 }
 
-static int niquery_option_ipv4_flag_handler(struct ping_ni *ni, int index, const char *arg __attribute__((__unused__)))
+static int niquery_option_ipv4_flag_handler(struct ping_ni *ni, int index, const char *arg UNUSED)
 {
 	if (niquery_set_qtype(ni, IPUTILS_NI_QTYPE_IPV4ADDR) < 0)
 		return -1;
@@ -410,8 +410,7 @@ errexit:
 	exit(EXIT_FAILURE);
 }
 
-int niquery_option_help_handler(struct ping_ni *ni __attribute__((__unused__)),
-	int index, const char *arg __attribute__((__unused__)))
+int niquery_option_help_handler(struct ping_ni *ni UNUSED, int index, const char *arg UNUSED)
 {
 	fprintf(index ? stdout : stderr,
 "Nodeinfo options\n"
