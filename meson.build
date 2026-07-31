@@ -126,8 +126,8 @@ if idn	# If available: use AI_IDN for getaddrinfo() queries
         else # known deprecated macros without deprecation message
 		depr_macros = ['AI_IDN_ALLOW_UNASSIGNED', 'AI_IDN_USE_STD3_ASCII_RULES']
 		foreach macro: depr_macros
-			value = cc.get_define(macro, args: GNUSRC, prefix: '#include <netdb.h>').strip()
-			if value != ''
+			value = cc.compute_int(macro, args: GNUSRC, prefix: '#include <netdb.h>')
+			if value > 0
 				conf.set('_' + macro, value)
 			endif
 		endforeach
