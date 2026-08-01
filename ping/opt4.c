@@ -56,6 +56,7 @@
 #include <string.h>
 #include <netinet/ip.h>
 #include <byteswap.h>
+#include <inttypes.h>
 
 #include "iputils.h"
 #include "common.h"
@@ -112,7 +113,7 @@ static void ipopt_rr(const uint8_t *data, int len, bool resolve, bool flood) {
 static void print_ipopt_ts(uint32_t ts, uint32_t* xtime, const char *rel, const char *abs) {
 	uint32_t x = *xtime;
 	*xtime = ts;
-	printf("\t%ld", x ? ((int64_t)ts - x) : ts);
+	printf("\t%" PRId64, x ? ((int64_t)ts - x) : ts);
 	const char *comment = x ? rel : abs;
 	if (comment)
 		printf(" %s", comment);

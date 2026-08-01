@@ -170,7 +170,7 @@ static int clockdiff_in_cksum(const uint16_t *addr, int len) {
 	while (len > 0) {
 		/* add by words */
 		while ((len -= 2) >= 0) {
-			if ((uint64_t)addr & 0x1) {
+			if ((uintptr_t)addr & 0x1) {
 				/* word is not aligned */
 				u.c[0] = *(uint8_t *)addr;
 				u.c[1] = *((uint8_t *)addr + 1);
