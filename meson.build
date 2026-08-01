@@ -11,8 +11,10 @@ project('iputils99', 'c',
 	meson_version: '>=0.55',
 	version: find_program('git', required: false).found() ? run_command(
 		'git', 'log', '-1', '--date=format:%Y%m%d', '--format=%cd',
-			check: false).stdout().strip() : '20260801',
+			check: false).stdout().strip() : '',
 )
+
+updated_at = '20260801'
 
 GNUSRC = '-D_GNU_SOURCE'
 add_project_arguments(GNUSRC, language: 'c')
@@ -24,6 +26,9 @@ cc      = meson.get_compiler('c')
 deps    = []
 manpage = []
 manexcl = {}
+if version == ''
+	version = updated_at
+endif
 
 conf = configuration_data()
 conf.set_quoted('PACKAGE_NAME',    name)
