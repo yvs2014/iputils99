@@ -37,6 +37,4 @@ option('INSTALL_WITH_SUID',     type: 'boolean', value: false,
 	description: 'Set suid bit at installation')
 option('NONCE_MEMORY',          type: 'boolean', value: false,
 	description: 'PING6 NodeInfo nonce memory')
-option('ARPING_DEFAULT_DEVICE', type: 'string',  value: '',
-	description: 'Default device for arping')
 

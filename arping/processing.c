@@ -41,7 +41,7 @@
 
 #define ARP_PLN_OK(pln) ((pln) == 4)
 #define	HLN_SLL_OK(hln, sll) ((hln) == (sll))
-#define ARP_LEN_OK(hln, len) ((len) >= ((ssize_t)sizeof(struct arphdr) + 2 * (4 + (hln))))
+#define ARP_LEN_OK(hln, len) ((len) >= ((ssize_t)sizeof(struct arphdr) + (ssize_t)2 * (4 + (hln))))
 
 #define GOT_IP_OK(orig) ((got_src.s_addr == sent_dst.s_addr) && \
 	(!(orig) || (sent_src.s_addr == got_dst.s_addr)))

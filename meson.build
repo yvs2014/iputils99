@@ -14,7 +14,7 @@ project('iputils99', 'c',
 			check: false).stdout().strip() : '',
 )
 
-updated_at = '20260801'
+updated_at = '20260912'
 
 GNUSRC = '-D_GNU_SOURCE'
 add_project_arguments(GNUSRC, language: 'c')
@@ -64,11 +64,6 @@ extra_funcs += {'clock_gettime': {'hdr': ['time.h'], 'lib': ['rt'], 'req': true}
 
 if host_machine.endian() == 'big'
 	conf.set('WORDS_BIGENDIAN', '1')
-endif
-
-arping_device = get_option('ARPING_DEFAULT_DEVICE')
-if arping_device != ''
-	conf.set_quoted('DEFAULT_DEVICE', arping_device, description: 'arping default device')
 endif
 
 if build['ping']
