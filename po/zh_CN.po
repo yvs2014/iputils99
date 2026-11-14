@@ -386,7 +386,7 @@ msgid "flow"
 msgstr "流量"
 
 #
-msgid "Destination unreachable"
+msgid "Destination Unreachable"
 msgstr "目标不可达"
 
 #
@@ -402,11 +402,11 @@ msgid "Beyond scope of source address"
 msgstr "超出源的地址范围外"
 
 #
-msgid "Address unreachable"
+msgid "Address Unreachable"
 msgstr "地址不可达"
 
 #
-msgid "Port unreachable"
+msgid "Port Unreachable"
 msgstr "端口不可达"
 
 #
@@ -458,14 +458,6 @@ msgid "info"
 msgstr "信息"
 
 #
-msgid "Echo request"
-msgstr "Echo 请求"
-
-#
-msgid "Echo reply"
-msgstr "Echo 应答"
-
-#
 msgid "MLD Query"
 msgstr "组播组查询"
 
@@ -478,7 +470,7 @@ msgid "MLD Reduction"
 msgstr "组播组退出"
 
 #
-msgid "Unknown icmp type"
+msgid "Unknown ICMP type"
 msgstr "未知的 ICMP 类型"
 
 #
@@ -492,10 +484,6 @@ msgstr "消息太长"
 #
 msgid "parse error"
 msgstr "解析错误"
-
-#
-msgid "too short"
-msgstr "太短"
 
 #
 msgid "truncated"
@@ -588,8 +576,8 @@ msgid "data bytes"
 msgstr "字节的数据"
 
 #
-msgid "(same route)"
-msgstr "(同一路由)"
+msgid "same route"
+msgstr "同一路由"
 
 #
 msgid "absolute not-standard"
@@ -612,20 +600,12 @@ msgid "Echo Reply"
 msgstr "回声应答"
 
 #
-msgid "Destination Net Unreachable"
-msgstr "目标网络不可达"
+msgid "Net Unreachable"
+msgstr "网络不可达"
 
 #
-msgid "Destination Host Unreachable"
-msgstr "目标主机不可达"
-
-#
-msgid "Destination Protocol Unreachable"
-msgstr "目标协议不可达"
-
-#
-msgid "Destination Port Unreachable"
-msgstr "目标端口不可达"
+msgid "Protocol Unreachable"
+msgstr "协议不可达"
 
 #
 msgid "Frag needed and DF set"
@@ -636,32 +616,32 @@ msgid "Source Route Failed"
 msgstr "源路由失败"
 
 #
-msgid "Destination Net Unknown"
-msgstr "目标网络未知"
+msgid "Net Unknown"
+msgstr "网络未知"
 
 #
-msgid "Destination Host Unknown"
-msgstr "目标主机未知"
+msgid "Host Unknown"
+msgstr "主机未知"
 
 #
 msgid "Source Host Isolated"
 msgstr "源主机隔离"
 
 #
-msgid "Destination Net Prohibited"
-msgstr "目标网络被禁止"
+msgid "Net Prohibited"
+msgstr "网络被禁止"
 
 #
-msgid "Destination Host Prohibited"
-msgstr "目标主机被禁止"
+msgid "Host Prohibited"
+msgstr "主机被禁止"
 
 #
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "对于此 ToS 而言目标网络不可达"
+msgid "Net Unreachable for ToS"
+msgstr "对于此 ToS 而言网络不可达"
 
 #
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "对于此 ToS 而言目标主机不可达"
+msgid "Host Unreachable for ToS"
+msgstr "对于此 ToS 而言主机不可达"
 
 #
 msgid "Packet filtered"
@@ -676,36 +656,28 @@ msgid "Precedence Cutoff"
 msgstr "优先级冲突"
 
 #
-msgid "Dest Unreachable"
-msgstr "目标不可达"
-
-#
-msgid "Bad Code"
-msgstr "错误代码"
-
-#
 msgid "Source Quench"
 msgstr "源淬火"
 
 #
-msgid "Redirect Network"
-msgstr "重定向网络"
-
-#
-msgid "Redirect Host"
-msgstr "重定向主机"
-
-#
-msgid "Redirect Type of Service and Network"
-msgstr "重定向服务和网络类型"
-
-#
-msgid "Redirect Type of Service and Host"
-msgstr "重定向服务和主机类型"
-
-#
 msgid "Redirect"
 msgstr "重定向"
+
+#
+msgid "Network"
+msgstr "网络"
+
+#
+msgid "Host"
+msgstr "主机"
+
+#
+msgid "ToS and Network"
+msgstr "服务和网络类型"
+
+#
+msgid "ToS and Host"
+msgstr "服务和主机类型"
 
 #
 msgid "New nexthop"
@@ -716,12 +688,12 @@ msgid "Echo Request"
 msgstr "Echo 请求"
 
 #
-msgid "Time to live exceeded"
-msgstr "超过生存时间"
+msgid "extension"
+msgstr "擴大"
 
 #
-msgid "Frag reassembly time exceeded"
-msgstr "分段重建时间超时"
+msgid "TTL"
+msgstr "TTL"
 
 #
 msgid "Timestamp"
@@ -746,10 +718,6 @@ msgstr "地址掩码请求"
 #
 msgid "Address Mask Reply"
 msgstr "地址掩码应答"
-
-#
-msgid "Bad ICMP type"
-msgstr "错误的 ICMP 类型"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -809,11 +777,11 @@ msgid_plural "bytes"
 msgstr[0] "字节"
 
 #
-msgid "icmp_seq"
+msgid "seq"
 msgstr ""
 
 #
-msgid "ident"
+msgid "id"
 msgstr "标识"
 
 #
@@ -861,8 +829,8 @@ msgid "got 0x"
 msgstr "实际接收到 0x"
 
 # hostname ping statistics
-msgid " ping statistics"
-msgstr " ping 统计"
+msgid "ping statistics"
+msgstr "ping 统计"
 
 # %ld packets transmitted
 msgid "packet transmitted"
@@ -930,7 +898,7 @@ msgid "LOCALHOST"
 msgstr "本地主机"
 
 #
-msgid "(corrupted payload)"
+msgid "corrupted payload"
 msgstr "(错误的数据)"
 
 #
@@ -946,7 +914,7 @@ msgid "asymm"
 msgstr "不对称"
 
 #
-msgid "NET ERROR"
+msgid "Net error"
 msgstr "网络错误"
 
 #

@@ -394,7 +394,7 @@ msgid "flow"
 msgstr "დინება"
 
 #
-msgid "Destination unreachable"
+msgid "Destination Unreachable"
 msgstr "სამიზნე მიუწვდომელია"
 
 #
@@ -410,11 +410,11 @@ msgid "Beyond scope of source address"
 msgstr "საწყისი მისამართის რეგიონის გარეთ"
 
 #
-msgid "Address unreachable"
+msgid "Address Unreachable"
 msgstr "მისამართი მიუწვდომელია"
 
 #
-msgid "Port unreachable"
+msgid "Port Unreachable"
 msgstr "პორტი მიუწვდომელია"
 
 #
@@ -466,14 +466,6 @@ msgid "info"
 msgstr "ინფორმაცია"
 
 #
-msgid "Echo request"
-msgstr "ექოს მოთხოვნა"
-
-#
-msgid "Echo reply"
-msgstr "ექოს პასუხი"
-
-#
 msgid "MLD Query"
 msgstr "MLD მოთხოვნა"
 
@@ -486,8 +478,8 @@ msgid "MLD Reduction"
 msgstr "MLD შემცირება"
 
 #
-msgid "Unknown icmp type"
-msgstr "icmp-ის უცნობი ტიპი"
+msgid "Unknown ICMP type"
+msgstr "ICMP-ის უცნობი ტიპი"
 
 #
 msgid "Local error"
@@ -500,10 +492,6 @@ msgstr "შეტყობინება ძალიან გრძელი�
 #
 msgid "parse error"
 msgstr "დამუშავების შეცდომა"
-
-#
-msgid "too short"
-msgstr "ძალიან მოკლეა"
 
 #
 msgid "truncated"
@@ -598,8 +586,8 @@ msgid "data bytes"
 msgstr "ბაიტი მონაცემები"
 
 #
-msgid "(same route)"
-msgstr "(იგივე გზა)"
+msgid "same route"
+msgstr "იგივე გზა"
 
 #
 msgid "absolute not-standard"
@@ -622,20 +610,12 @@ msgid "Echo Reply"
 msgstr "პასუხი ექოზე"
 
 #
-msgid "Destination Net Unreachable"
-msgstr "სამიზნე ქსელი მიუწვდომელია"
+msgid "Net Unreachable"
+msgstr "ქსელი მიუწვდომელია"
 
 #
-msgid "Destination Host Unreachable"
-msgstr "სამიზნე ჰოსტი ხელმიუწვდომელია"
-
-#
-msgid "Destination Protocol Unreachable"
-msgstr "სამიზნე პროტოკოლი ხელმიუწვდომელია"
-
-#
-msgid "Destination Port Unreachable"
-msgstr "სამიზნე პორტი ხელმიუწვდომელია"
+msgid "Protocol Unreachable"
+msgstr "პროტოკოლი ხელმიუწვდომელია"
 
 #
 msgid "Frag needed and DF set"
@@ -646,32 +626,32 @@ msgid "Source Route Failed"
 msgstr "საწყისი რაუტის შეცდომა"
 
 #
-msgid "Destination Net Unknown"
-msgstr "სამიზნე ქსელი უცნობია"
+msgid "Net Unknown"
+msgstr "ქსელი უცნობია"
 
 #
-msgid "Destination Host Unknown"
-msgstr "სამიზნე ჰოსტი უცნობია"
+msgid "Host Unknown"
+msgstr "ჰოსტი უცნობია"
 
 #
 msgid "Source Host Isolated"
 msgstr "საწყისი ჰოსტი იზოლირებულია"
 
 #
-msgid "Destination Net Prohibited"
-msgstr "სამიზნე ქსელი აკრძალულია"
+msgid "Net Prohibited"
+msgstr "ქსელი აკრძალულია"
 
 #
-msgid "Destination Host Prohibited"
-msgstr "სამიზნე ჰოსტი აკრძალულია"
+msgid "Host Prohibited"
+msgstr "ჰოსტი აკრძალულია"
 
 #
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "TOS-ის სამიზნე ქსელი მიუწვდომელია"
+msgid "Net Unreachable for ToS"
+msgstr "TOS-ის ქსელი მიუწვდომელია"
 
 #
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "ToS-ისთვის სამიზნე ჰოსტი მიუწვდომელია"
+msgid "Host Unreachable for ToS"
+msgstr "ToS-ისთვის ჰოსტი მიუწვდომელია"
 
 #
 msgid "Packet filtered"
@@ -686,36 +666,28 @@ msgid "Precedence Cutoff"
 msgstr "თანამიმდევრობის ამოჭრა"
 
 #
-msgid "Dest Unreachable"
-msgstr "სამიზნე მიუწვდომელია"
-
-#
-msgid "Bad Code"
-msgstr "ცუდი კოდი"
-
-#
 msgid "Source Quench"
 msgstr "წყაროს შეწყვეტა"
 
 #
-msgid "Redirect Network"
-msgstr "ქსელის გადამისამართება"
-
-#
-msgid "Redirect Host"
-msgstr "ჰოსტის გადამისამართება"
-
-#
-msgid "Redirect Type of Service and Network"
-msgstr "გადამისამართების ToS და ქსელი"
-
-#
-msgid "Redirect Type of Service and Host"
-msgstr "გადამისამართების ToS და ჰოსტი"
-
-#
 msgid "Redirect"
 msgstr "გადამისამართება"
+
+#
+msgid "Network"
+msgstr "ქსელის"
+
+#
+msgid "Host"
+msgstr "ჰოსტის"
+
+#
+msgid "ToS and Network"
+msgstr "ToS და ქსელი"
+
+#
+msgid "ToS and Host"
+msgstr "ToS და ჰოსტი"
 
 #
 msgid "New nexthop"
@@ -726,12 +698,12 @@ msgid "Echo Request"
 msgstr "ექოს მოთხოვნა"
 
 #
-msgid "Time to live exceeded"
-msgstr "TTL გადაჭარბებულია"
+msgid "extension"
+msgstr "გაფართოება"
 
 #
-msgid "Frag reassembly time exceeded"
-msgstr "დანახლეჩის აწყობის დრო გავიდა"
+msgid "TTL"
+msgstr "TTL"
 
 #
 msgid "Timestamp"
@@ -756,10 +728,6 @@ msgstr "მისამართის ნიღბის მოთხოვნ�
 #
 msgid "Address Mask Reply"
 msgstr "მისამართის ნიღბის პასუხი"
-
-#
-msgid "Bad ICMP type"
-msgstr "ICMP-ის არასწორი ტიპი"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -819,11 +787,11 @@ msgid_plural "bytes"
 msgstr[0] "ბაიტი"
 
 #
-msgid "icmp_seq"
+msgid "seq"
 msgstr ""
 
 #
-msgid "ident"
+msgid "id"
 msgstr ""
 
 #
@@ -871,7 +839,7 @@ msgid "got 0x"
 msgstr "მიიღო: 0x"
 
 # hostname ping statistics
-msgid " ping statistics"
+msgid "ping statistics"
 msgstr "-ის პინგის სტატისტიკა"
 
 # %ld packets transmitted
@@ -940,7 +908,7 @@ msgid "LOCALHOST"
 msgstr ""
 
 #
-msgid "(corrupted payload)"
+msgid "corrupted payload"
 msgstr "(არასწორი პაკეტი)"
 
 #
@@ -956,7 +924,7 @@ msgid "asymm"
 msgstr "ასიმ"
 
 #
-msgid "NET ERROR"
+msgid "Net error"
 msgstr "ქსელის შეცდომა"
 
 #

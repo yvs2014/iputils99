@@ -62,36 +62,35 @@ static inline void print_hops_away(uint8_t min, uint8_t max) {
 		UINT8_MAX;		// - Cisco like
 	int away = peer_maxttl - max;
 	if (away) { // skip ttl=0(1)
-		printf(", %s ", _("probably"));
+		printf(", %s ", _PROBLY);
 		if (min == max)
-			printf("%d %s", away, _n("hop away", "hops away", away));
+			printf("%d %s", away, _N_HOP_AWAY(away));
 		else
-			printf("%d-%d %s", away, peer_maxttl - min, _("hops away"));
+			printf("%d-%d %s", away, peer_maxttl - min, _HOPS_AWAY);
 	}
 }
 
 // Called once at resume
 static inline void stat_header(const state_t *rts) {
-	printf("--- %s%s ---\n", rts->hostname, _(" ping statistics"));
-	printf("%ld %s", rts->ntransmitted,
-_n("packet transmitted", "packets transmitted", rts->ntransmitted));
-	printf(", %ld %s",  rts->nreceived, _("received"));
+	printf("--- %s %s ---\n", rts->hostname, _PINGSTAT);
+	printf("%ld %s", rts->ntransmitted, _N_PKT_TRANSMIT(rts->ntransmitted));
+	printf(", %ld %s",  rts->nreceived, _RECV);
 	if (rts->nrepeats)
-		printf(", +%ld %s", rts->nrepeats,  _("duplicates"));
+		printf(", +%ld %s", rts->nrepeats,  _DUPLICAT);
 	if (rts->nchecksum)
-		printf(", +%ld %s", rts->nchecksum, _("corrupted"));
+		printf(", +%ld %s", rts->nchecksum, _CORRUPT);
 	if (rts->nerrors)
-		printf(", +%ld %s", rts->nerrors,   _("errors"));
+		printf(", +%ld %s", rts->nerrors,   _ERRORS);
 	{ long gone = rts->ntransmitted;
 	  if (gone) {
 		int inflight = in_flight(rts);
 		if (inflight > 0)
 			gone -= inflight;
 		if (gone > 0)
-			printf(", %g%% %s", (gone - rts->nreceived) * 100. / gone, _("lost"));
+			printf(", %g%% %s", (gone - rts->nreceived) * 100. / gone, _LOST);
 	}}
 	if (rts->opt.verbose && rts->unidentified)
-		printf(", %u %s", rts->unidentified, _("unidentified"));
+		printf(", %u %s", rts->unidentified, _UNINDENT);
 	if (!rts->opt.broadcast && (rts->min_away >= 0))
 		print_hops_away(rts->min_away, rts->max_away);
 	putchar('\n');
@@ -108,17 +107,17 @@ static inline void stat_timing(const state_t *rts) {
 			 * integer rounding errors for small ping times */
 			(rts->tsum2 - ((rts->tsum * rts->tsum) / total)) / total :
 			(rts->tsum2 / total) - tmavg * tmavg;
-		printf(TIMING_MS, _("rtt min/avg/max/mdev"),
+		printf(TIMING_MS, _TIMESTAT,
 			rts->tmin / 1000., tmavg / 1000., rts->tmax / 1000.,
 			sqrt((tmvar < 0) ? -tmvar : tmvar) / 1000.,
-			_("ms"));
+			_MSEC);
 		comma = ',';
 	}
 	//
 	if (rts->pipesize > 1) {
 		if (comma)
 			printf("%c ", comma);
-		printf("%s %d", _("pipe"), rts->pipesize);
+		printf("%s %d", _PIPE, rts->pipesize);
 		comma = ',';
 	}
 	//
@@ -126,7 +125,7 @@ static inline void stat_timing(const state_t *rts) {
 	  if (inflight > 0) {
 		if (comma)
 			printf("%c ", comma);
-		printf("%s %d", _("in-flight"), inflight);
+		printf("%s %d", _INFLIGHT, inflight);
 		comma = ',';
 	}}
 	//
@@ -138,7 +137,7 @@ static inline void stat_timing(const state_t *rts) {
 		timespecsub(&rts->cur_time, &rts->start_time, &tv);
 		double ipg = (tv.tv_sec * 1000 + tv.tv_nsec / 1000000.)
 			/ (rts->ntransmitted - 1);
-		printf(ADAPTIVE_MS, _("ipg/ewma"), ipg, rts->rtt / 8000., _("ms"));
+		printf(ADAPTIVE_MS, _ADAPTSTAT, ipg, rts->rtt / 8000., _MSEC);
 		comma = ',';
 	}
 	//
@@ -163,14 +162,14 @@ void print_status(const state_t *rts) {
 		(100ll * (rts->ntransmitted - rts->nreceived)) / rts->ntransmitted
 		: 0;
 	// stderr due to signals
-	fprintf(stderr, "%ld/%ld %s", rts->nreceived, rts->ntransmitted, _("packets"));
-	fprintf(stderr, ", %d%% %s", lost, _("lost"));
+	fprintf(stderr, "%ld/%ld %s", rts->nreceived, rts->ntransmitted, _PACKETS);
+	fprintf(stderr, ", %d%% %s", lost, _LOST);
 	if (rts->nreceived && rts->timing) {
 		long tavg = rts->tsum / (rts->nreceived + rts->nrepeats);
-		fprintf(stderr, ", " TIMING_MS, _("min/avg/ewma/max"),
+		fprintf(stderr, ", " TIMING_MS, _PING_STATUS,
 			rts->tmin / 1000., tavg / 1000.,
 			rts->rtt / 8000., rts->tmax / 1000.,
-			_("ms"));
+			_MSEC);
 	}
 	putc('\n', stderr);
 	in_print_status = false;
@@ -185,18 +184,18 @@ void print_timestamp(void) {
 // Called once at ping setup
 void headline(const state_t *rts, size_t nodatalen, size_t datalen) { // NONNULL(1)
 	socklen_t len = rts->ip6 ? SA6_LEN : SA4_LEN;
-	printf("%s %s (%s)", _("PING"), rts->hostname,
+	printf("%s %s (%s)", _PING, rts->hostname,
 		sprint_addr(&rts->whereto, len, false));
 	if (rts->ip6 && (rts->so.flow >= 0))
-		printf(", %s 0x%05x", _("flow"), ntohl(rts->so.flow));
+		printf(", %s 0x%05x", _FLOW, ntohl(rts->so.flow));
 	if (rts->so.device || rts->opt.strictsource) {
 		const char *from = sprint_addr(&rts->source, len, false);
-		printf(" %s %s", _("from"), from);
+		printf(" %s %s", _FROM, from);
 		if (rts->so.device && !rts->unreldev)
 			printf("%%%s", rts->so.device);
 		putchar(':');
 	}
-	printf(" %zu(%zu) %s\n", datalen, datalen + nodatalen, _("data bytes"));
+	printf(" %zu(%zu) %s\n", datalen, datalen + nodatalen, _DATABYTES);
 }
 
 static inline bool print_stats(const state_t *rts, const stat_aux_t *stat) {
@@ -210,41 +209,38 @@ static inline bool print_stats(const state_t *rts, const stat_aux_t *stat) {
 	//
 	PRINT_TIMESTAMP;
 	printf("%zd %s %s %s: ",
-		stat->rcvd, BYTES(stat->rcvd), _("from"), stat->from);
+		stat->rcvd, _N_BYTES(stat->rcvd), _FROM, stat->from);
 	if (stat->print) /* seq */
 		stat->print(rts->ip6, stat->icmp, stat->rcvd);
 	else
-		printf("%s=%u", _("icmp_seq"), stat->seq);
+		printf("%s=%u", _SEQ, stat->seq);
 	if (rts->opt.verbose)
-		printf(" %s=%u", _("ident"), ntohs(rts->ident16));
+		printf(" %s=%u", _ID, ntohs(rts->ident16));
 	if (stat->away >= 0)
-		printf(" %s=%d", _("ttl"), stat->away);
+		printf(" %s=%d", _TTL, stat->away);
 	if (stat->rcvd < (sizeof(struct icmphdr) + rts->datalen)) {
-		printf(" (%s)\n", _("truncated"));
+		printf(" (%s)\n", _TRUNCATED);
 		return true;
 	}
 	//
 	if (rts->timing)
-		printf(" %s=" TM_MS, _("time"), stat->triptime / 1000., _("ms"));
-	char* exclame[3] = {
-		(stat->dup && (!rts->multicast || rts->opt.verbose)) ? "DUP" : NULL,
-		stat->ack  ? NULL : "BAD CHECKSUM",
-		stat->okay ? NULL : "DIFFERENT ADDRESS",
+		printf(" %s=" TM_MS, _TIME, stat->triptime / 1000., _MSEC);
+	const char* exclame[3] = {
+		(stat->dup && (!rts->multicast || rts->opt.verbose)) ? _DUP : NULL,
+		stat->ack  ? NULL : _BAD_CSUM,
+		stat->okay ? NULL : _DIFF_ADDR,
 	};
-	for (int i = 0; i < 3; i++)
-		if (exclame[i])
-			printf(" (%s!)", exclame[i]);
+	for (int i = 0; i < 3; i++) if (exclame[i]) {
+		putchar(' ');
+		EXCLAM_PR(exclame[i]);
+	}
 	// received data test out
 	const uint8_t *in  = stat->data + sizeof(struct timeval);
 	const uint8_t *out = &rts->outpack[sizeof(struct icmphdr) + sizeof(struct timeval)];
 	for (size_t i = sizeof(struct timeval); i < rts->datalen; i++, in++, out++) {
 		if (*in == *out)
 			continue;
-		putchar('\n');
-		printf("\n%s %zu (%s%02x, %s%02x) ",
-			_("wrong byte #"), i,
-			_("expected 0x"), *out,
-			_("got 0x"),      *in);
+		printf("\n\n%s %zu (%s%02x, %s%02x) ", _WRONG_BYTE, i, _EXP_0X, *out, _GOT_0X, *in);
 		in = stat->data;
 		for (i = sizeof(struct timeval); i < rts->datalen; i++, in++) {
 			if ((i % 32) == sizeof(struct timeval))
@@ -273,21 +269,20 @@ static inline void calculator(state_t *rts, stat_aux_t *stat) {
 				diff.tv_usec = MLN - 1;
 				if (tv.tv_usec < 0) diff.tv_usec = -diff.tv_usec;
 				warnx("%s: %s: .%06ld: %s",
-					_WARN, _("rtt"), tv.tv_usec, strerror(EDOM));
+					_WARN, _RTT, tv.tv_usec, strerror(EDOM));
 			}
 			bool wrong_sec = llabs(tv.tv_sec) >= RTT_MAX;
 			if (wrong_sec) {
 				diff.tv_sec = RTT_MAX; diff.tv_usec = 0;
 				if (tv.tv_sec < 0) diff.tv_sec = -diff.tv_sec;
 				warnx("%s: %s: %ld: %s",
-					_WARN, _("rtt"), tv.tv_sec, strerror(EDOM));
+					_WARN, _RTT, tv.tv_sec, strerror(EDOM));
 			}
 			stat->triptime = diff.tv_sec * MLN + diff.tv_usec;
 			if (!(wrong_sec || wrong_usec || (stat->triptime < 0)))
 				break;
 			if (stat->triptime < 0)
-				warnx("%s: %s: %ld.%06ld",
-					_WARN, _("Time runs backwards"), tv.tv_sec, tv.tv_usec);
+				warnx("%s: %s: %ld.%06ld", _WARN, _TIME_BACK, tv.tv_sec, tv.tv_usec);
 			if (rts->opt.latency) {
 				stat->triptime = 0;
 				break;

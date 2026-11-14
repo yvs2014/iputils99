@@ -388,7 +388,7 @@ msgid "flow"
 msgstr "virtaus"
 
 #
-msgid "Destination unreachable"
+msgid "Destination Unreachable"
 msgstr "Kohde tavoittamaton"
 
 #
@@ -404,11 +404,11 @@ msgid "Beyond scope of source address"
 msgstr "Lähdeosoitteen laajuuden ulkopuolella"
 
 #
-msgid "Address unreachable"
+msgid "Address Unreachable"
 msgstr "Tavoittamaton osoite"
 
 #
-msgid "Port unreachable"
+msgid "Port Unreachable"
 msgstr "Tavoittamaton portti"
 
 #
@@ -460,14 +460,6 @@ msgid "info"
 msgstr "tieto"
 
 #
-msgid "Echo request"
-msgstr "Kaikupyyntö"
-
-#
-msgid "Echo reply"
-msgstr "Kaikuvastaus"
-
-#
 msgid "MLD Query"
 msgstr "MLD-kysely"
 
@@ -480,8 +472,8 @@ msgid "MLD Reduction"
 msgstr "MLD-vähennys"
 
 #
-msgid "Unknown icmp type"
-msgstr "Tuntematon icmp-tyyppi"
+msgid "Unknown ICMP type"
+msgstr "Tuntematon ICMP-tyyppi"
 
 #
 msgid "Local error"
@@ -494,10 +486,6 @@ msgstr "Viesti liian pitkä"
 #
 msgid "parse error"
 msgstr "jäsennysvirhe"
-
-#
-msgid "too short"
-msgstr "liian lyhyt"
 
 #
 msgid "truncated"
@@ -592,8 +580,8 @@ msgid "data bytes"
 msgstr "tavua dataa"
 
 #
-msgid "(same route)"
-msgstr "(sama reitti)"
+msgid "same route"
+msgstr "sama reitti"
 
 #
 msgid "absolute not-standard"
@@ -616,20 +604,12 @@ msgid "Echo Reply"
 msgstr "Kaiun vastaus"
 
 #
-msgid "Destination Net Unreachable"
-msgstr "Tavoittamaton kohdeverkko"
+msgid "Net Unreachable"
+msgstr "Tavoittamaton verkko"
 
 #
-msgid "Destination Host Unreachable"
-msgstr "Tavoittamaton kohdeisäntä"
-
-#
-msgid "Destination Protocol Unreachable"
-msgstr "Tavoittamaton kohdeprotokolla"
-
-#
-msgid "Destination Port Unreachable"
-msgstr "Tavoittamaton kohdeportti"
+msgid "Protocol Unreachable"
+msgstr "Tavoittamaton protokolla"
 
 #
 msgid "Frag needed and DF set"
@@ -640,32 +620,32 @@ msgid "Source Route Failed"
 msgstr "Lähteen reitti epäonnistui"
 
 #
-msgid "Destination Net Unknown"
-msgstr "Tuntematon kohdeverkko"
+msgid "Net Unknown"
+msgstr "Tuntematon verkko"
 
 #
-msgid "Destination Host Unknown"
-msgstr "Tuntematon kohdeisäntä"
+msgid "Host Unknown"
+msgstr "Tuntematon isäntä"
 
 #
 msgid "Source Host Isolated"
 msgstr "Lähdeisäntä eristettynä"
 
 #
-msgid "Destination Net Prohibited"
-msgstr "Kielletty kohdeverkko"
+msgid "Net Prohibited"
+msgstr "Kielletty verkko"
 
 #
-msgid "Destination Host Prohibited"
-msgstr "Kielletty kohdeisäntä"
+msgid "Host Prohibited"
+msgstr "Kielletty isäntä"
 
 #
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "Tavoittamaton kohdeverkko palvelutyypille"
+msgid "Net Unreachable for ToS"
+msgstr "Tavoittamaton verkko palvelutyypille"
 
 #
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "Tavoittamaton kohdeisäntä palvelutyypille"
+msgid "Host Unreachable for ToS"
+msgstr "Tavoittamaton isäntä palvelutyypille"
 
 #
 msgid "Packet filtered"
@@ -680,36 +660,28 @@ msgid "Precedence Cutoff"
 msgstr "Ensisijaisuuden raja"
 
 #
-msgid "Dest Unreachable"
-msgstr "Kohde tavoittamaton"
-
-#
-msgid "Bad Code"
-msgstr "Kelvoton koodi"
-
-#
 msgid "Source Quench"
 msgstr "Lähde-Quench"
 
 #
-msgid "Redirect Network"
-msgstr "Ohjaa uudelleen verkko"
-
-#
-msgid "Redirect Host"
-msgstr "Ohjaa uudelleen isäntä"
-
-#
-msgid "Redirect Type of Service and Network"
-msgstr "Ohjaa uudelleen palvelun tyyppi ja verkko"
-
-#
-msgid "Redirect Type of Service and Host"
-msgstr "Ohjaa uudelleen palvelun tyyppi ja isäntä"
-
-#
 msgid "Redirect"
 msgstr "Ohjaa uudelleen"
+
+#
+msgid "Network"
+msgstr "verkko"
+
+#
+msgid "Host"
+msgstr "isäntä"
+
+#
+msgid "ToS and Network"
+msgstr "ToS ja verkko"
+
+#
+msgid "ToS and Host"
+msgstr "ToS ja isäntä"
 
 #
 msgid "New nexthop"
@@ -720,12 +692,12 @@ msgid "Echo Request"
 msgstr "Kaikupyyntö"
 
 #
-msgid "Time to live exceeded"
-msgstr "Elinaika (TTL) ylitetty"
+msgid "extension"
+msgstr "laajennus"
 
 #
-msgid "Frag reassembly time exceeded"
-msgstr "Frag:n uudelleenkokoamisaika ylitetty"
+msgid "TTL"
+msgstr "TTL"
 
 #
 msgid "Timestamp"
@@ -750,10 +722,6 @@ msgstr "Osoitepeitepyyntö"
 #
 msgid "Address Mask Reply"
 msgstr "Osoitepeitevastaus"
-
-#
-msgid "Bad ICMP type"
-msgstr "Kelvoton ICMP-tyyppi"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -814,11 +782,11 @@ msgstr[0] "tavu"
 msgstr[1] "tavua"
 
 #
-msgid "icmp_seq"
+msgid "seq"
 msgstr ""
 
 #
-msgid "ident"
+msgid "id"
 msgstr ""
 
 #
@@ -865,8 +833,8 @@ msgid "got 0x"
 msgstr "mutta oli 0x"
 
 # hostname ping statistics
-msgid " ping statistics"
-msgstr " ping-tilastot"
+msgid "ping statistics"
+msgstr "ping-tilastot"
 
 # %ld packets transmitted
 msgid "packet transmitted"
@@ -935,7 +903,7 @@ msgid "LOCALHOST"
 msgstr "Paikallinen isäntä"
 
 #
-msgid "(corrupted payload)"
+msgid "corrupted payload"
 msgstr "(vioittuneen hyötykuorman)"
 
 #
@@ -951,7 +919,7 @@ msgid "asymm"
 msgstr ""
 
 #
-msgid "NET ERROR"
+msgid "Net error"
 msgstr "Verkkovirhe"
 
 #

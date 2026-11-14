@@ -65,15 +65,17 @@ static void print_packet_info(const struct arphdr *ar, const uint8_t *data,
 	struct in_addr sent_from, struct in_addr got_from, struct in_addr got_to,
 	const struct sockaddr_ll *my, const struct timespec *last, bool broadcasted)
 {
-	printf("%s %s %s", broadcasted ? _("Broadcast") : _("Unicast"), _("from"), inet_ntoa(got_from));
+	printf("%s %s %s", broadcasted ? _BRDCAST : _UNICAST, _FROM, inet_ntoa(got_from));
 	PRINT_ARP_ADDR(data, ar->ar_hln);
 	bool printed = (got_to.s_addr != sent_from.s_addr);
 	if (printed)
-		printf(" %s %s", _("for"), inet_ntoa(got_to));
+		printf(" %s %s", _FOR, inet_ntoa(got_to));
 	const uint8_t *got_for = data + ar->ar_hln + 4;
 	if (memcmp(got_for, &my, ar->ar_hln)) {
-		if (!printed)
-			printf(" %s", _("for"));
+		if (!printed) {
+			putchar(' ');
+			fputs(_FOR, stdout);
+		}
 		PRINT_ARP_ADDR(got_for, ar->ar_hln);
 	}
 	if (last->tv_sec) {
@@ -81,10 +83,10 @@ static void print_packet_info(const struct arphdr *ar, const uint8_t *data,
 		if (!clock_gettime(CLOCK_MONOTONIC, &ts)) {
 			timespecsub(&ts, last, &sub);
 			double ms = sub.tv_sec * 1000 + sub.tv_nsec / 1000000.;
-			printf(" " TMMS, ms, _("ms"));
+			printf(" " TMMS, ms, _MSEC);
 		}
 	} else
-		printf(" %s?", _("UNSOLICITED"));
+		printf(" %s?", _UNSOLICITED);
 	putchar('\n');
 	fflush(stdout);
 }

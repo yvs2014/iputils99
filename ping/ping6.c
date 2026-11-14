@@ -179,7 +179,7 @@ static inline int ping6_icmp_extra_type(state_t *rts,
 	if (!rts->opt.verbose || rts->uid)
 		return true;
 	PRINT_TIMESTAMP;
-	printf("%s %s: ", _("From"), sprint_addr(from, sizeof(*from), rts->opt.resolve));
+	printf("%s %s: ", _FROM_H, sprint_addr(from, sizeof(*from), rts->opt.resolve));
 	print_icmp6msg(icmp->icmp6_type, icmp->icmp6_code, ntohl(icmp->icmp6_mtu), color);
 	return -1;
 }
@@ -394,9 +394,9 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		static uint32_t scope_id;
 		if (!scope_id)
 			scope_id = SA6(&rts->firsthop)->sin6_scope_id;
-		else if (SA6(&rts->firsthop)->sin6_scope_id &&
+		else if ( SA6(&rts->firsthop)->sin6_scope_id &&
 			 (SA6(&rts->firsthop)->sin6_scope_id != scope_id))
-			errx(EINVAL, "%s", _("Scope discrepancy among the nodes"));
+			errx(EINVAL, "%s", _SCOPE_DISCR);
 	}
 
 	rts->hostname = target;

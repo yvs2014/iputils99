@@ -387,7 +387,7 @@ msgid "flow"
 msgstr "akış"
 
 #
-msgid "Destination unreachable"
+msgid "Destination Unreachable"
 msgstr "Ulaşılamayan hedef"
 
 #
@@ -403,11 +403,11 @@ msgid "Beyond scope of source address"
 msgstr "Kaynak adres kapsamının dışında"
 
 #
-msgid "Address unreachable"
+msgid "Address Unreachable"
 msgstr "Ulaşılamayan adres"
 
 #
-msgid "Port unreachable"
+msgid "Port Unreachable"
 msgstr "Ulaşılamayan bağlantı noktası"
 
 #
@@ -459,14 +459,6 @@ msgid "info"
 msgstr "bilgi"
 
 #
-msgid "Echo request"
-msgstr "Yankı isteği"
-
-#
-msgid "Echo reply"
-msgstr "Yankı yanıtı"
-
-#
 msgid "MLD Query"
 msgstr "MLD Sorgusu"
 
@@ -479,8 +471,8 @@ msgid "MLD Reduction"
 msgstr "MLD Azaltma"
 
 #
-msgid "Unknown icmp type"
-msgstr "Bilinmeyen icmp türü"
+msgid "Unknown ICMP type"
+msgstr "Bilinmeyen ICMP türü"
 
 #
 msgid "Local error"
@@ -591,8 +583,8 @@ msgid "data bytes"
 msgstr "bayt veri"
 
 #
-msgid "(same route)"
-msgstr "(aynı rota)"
+msgid "same route"
+msgstr "aynı rota"
 
 #
 msgid "absolute not-standard"
@@ -615,20 +607,12 @@ msgid "Echo Reply"
 msgstr "Yankı Yanıtı"
 
 #
-msgid "Destination Net Unreachable"
-msgstr "Ulaşılamayan Hedef Ağ"
+msgid "Net Unreachable"
+msgstr "Ulaşılamayan Ağ"
 
 #
-msgid "Destination Host Unreachable"
-msgstr "Ulaşılamayan Hedef Ana Makine"
-
-#
-msgid "Destination Protocol Unreachable"
-msgstr "Ulaşılamayan Hedef Protokolü"
-
-#
-msgid "Destination Port Unreachable"
-msgstr "Ulaşılamayan Hedef Bağlantı Noktası"
+msgid "Protocol Unreachable"
+msgstr "Ulaşılamayan Protokolü"
 
 #
 msgid "Frag needed and DF set"
@@ -639,32 +623,32 @@ msgid "Source Route Failed"
 msgstr "Kaynak Rota Başarısız"
 
 #
-msgid "Destination Net Unknown"
-msgstr "Bilinmeyen Hedef Ağ"
+msgid "Net Unknown"
+msgstr "Bilinmeyen Ağ"
 
 #
-msgid "Destination Host Unknown"
-msgstr "Bilinmeyen Hedef Ana Makine"
+msgid "Host Unknown"
+msgstr "Bilinmeyen Ana Makine"
 
 #
 msgid "Source Host Isolated"
 msgstr "Yalıtılmış Kaynak Ana Makine"
 
 #
-msgid "Destination Net Prohibited"
-msgstr "Yasak Hedef Ağ"
+msgid "Net Prohibited"
+msgstr "Yasak Ağ"
 
 #
-msgid "Destination Host Prohibited"
-msgstr "Yasak Hedef Ana Makine"
+msgid "Host Prohibited"
+msgstr "Yasak Ana Makine"
 
 #
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "Hizmet Türü için Ulaşılamayan Hedef Ağ"
+msgid "Net Unreachable for ToS"
+msgstr "Hizmet Türü için Ulaşılamayan Ağ"
 
 #
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "Hizmet Türü için Ulaşılamayan Hedef Ana Makine"
+msgid "Host Unreachable for ToS"
+msgstr "Hizmet Türü için Ulaşılamayan Ana Makine"
 
 #
 msgid "Packet filtered"
@@ -679,36 +663,28 @@ msgid "Precedence Cutoff"
 msgstr "Öncelik Kesintisi"
 
 #
-msgid "Dest Unreachable"
-msgstr "Ulaşılamayan Hedef"
-
-#
-msgid "Bad Code"
-msgstr "Hata Kodu"
-
-#
 msgid "Source Quench"
 msgstr "Yavaşlatılmış Kaynak"
 
 #
-msgid "Redirect Network"
-msgstr "Ağ Yeniden Yönlendirme"
-
-#
-msgid "Redirect Host"
-msgstr "Ana Makine Yeniden Yönlendirme"
-
-#
-msgid "Redirect Type of Service and Network"
-msgstr "Hizmet Türü ve Ağ Yeniden Yönlendirme"
-
-#
-msgid "Redirect Type of Service and Host"
-msgstr "Hizmet Türü ve Ana Makine Yeniden Yönlendirme"
-
-#
 msgid "Redirect"
 msgstr "Yeniden Yönlendirme"
+
+#
+msgid "Network"
+msgstr "Ağ"
+
+#
+msgid "Host"
+msgstr "Ana Makine"
+
+#
+msgid "ToS and Network"
+msgstr "ToS ve Ağ"
+
+#
+msgid "ToS and Host"
+msgstr "ToS ve Ana Makine"
 
 #
 msgid "New nexthop"
@@ -719,12 +695,12 @@ msgid "Echo Request"
 msgstr "Yankı İsteği"
 
 #
-msgid "Time to live exceeded"
-msgstr "Yaşam süresi aşıldı"
+msgid "extension"
+msgstr "eklenti"
 
 #
-msgid "Frag reassembly time exceeded"
-msgstr "Parçalanma yeniden birleştirme zamanı aşıldı"
+msgid "TTL"
+msgstr "TTL"
 
 #
 msgid "Timestamp"
@@ -749,10 +725,6 @@ msgstr "Adres Maskesi İsteği"
 #
 msgid "Address Mask Reply"
 msgstr "Adres Maskesi Yanıtı"
-
-#
-msgid "Bad ICMP type"
-msgstr "Hatalı ICMP türü"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -812,11 +784,11 @@ msgid_plural "bytes"
 msgstr[0] "bayt"
 
 #
-msgid "icmp_seq"
+msgid "seq"
 msgstr ""
 
 #
-msgid "ident"
+msgid "id"
 msgstr ""
 
 #
@@ -864,8 +836,8 @@ msgid "got 0x"
 msgstr "alındı: 0x"
 
 # hostname ping statistics
-msgid " ping statistics"
-msgstr " ping istatistikleri"
+msgid "ping statistics"
+msgstr "ping istatistikleri"
 
 # %ld packets transmitted
 msgid "packet transmitted"
@@ -933,7 +905,7 @@ msgid "LOCALHOST"
 msgstr ""
 
 #
-msgid "(corrupted payload)"
+msgid "corrupted payload"
 msgstr "(bozuk yük)"
 
 #
@@ -949,8 +921,8 @@ msgid "asymm"
 msgstr ""
 
 #
-msgid "NET ERROR"
-msgstr "AĞ HATASI"
+msgid "Net error"
+msgstr "Ağ hatasi"
 
 #
 msgid "reply received"

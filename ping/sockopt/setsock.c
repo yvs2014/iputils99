@@ -79,7 +79,7 @@ void setsock_tos(int fd, int tos, bool ip6) {
 void setsock_noloop(int fd, bool ip6) {
 	int off = 0;
 	if (setsockopt(fd, IPPROTO46, ip6 ? IPV6_MULTICAST_LOOP : IP_MULTICAST_LOOP, &off, sizeof(off)) < 0)
-		err(errno, "%s", _("Cannot disable multicast loopback"));
+		err(errno, "%s", _NODIS_MC_LO);
 }
 
 #ifdef SO_MARK
@@ -90,7 +90,7 @@ void setsock_mark(int fd, int mark) {
 	NET_RAW_OFF;
 	errno = keep;
 	if (rc < 0) {
-		warn("%s: %s: %d", _WARN, _("failed to set mark"), mark);
+		warn("%s: %s: %d", _WARN, _SETMARK_FAIL, mark);
 		warn_if_missing_cap(CAP_NET_RAW);
 		err(errno, "setsockopt(%s)", _STR(SO_MARK));
 	}
@@ -128,10 +128,9 @@ void setsock_buffer(int fd, int sndbuf, int preload) {
 		warn("setsockopt(%s)", _STR(SO_RCVBUF));
 	//
 	int rcvbuf = hold;
-#define SMALL_RCV_BUF _("Probably, rcvbuf is not enough to hold preload")
 	if (!getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &hold, &size))
 		if (hold < rcvbuf)
-			warnx("%s: %s", _WARN, SMALL_RCV_BUF);
+			warnx("%s: %s", _WARN, _SMALL_RCVBUF);
 }
 
 void setsock_debug(int fd) {
@@ -156,7 +155,7 @@ inline void setsock_binddev(int fd, const char dev[]) { // NONNULL(2)
 void setsock_timestamp(int fd) {
 	int on = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_TIMESTAMP, &on, sizeof(on)) < 0)
-		warnx("%s", _("no SO_TIMESTAMP support, falling back to SIOCGSTAMP"));
+		warnx("%s", _SO_TS2IOCG);
 }
 #endif
 
@@ -194,7 +193,7 @@ void setsock_ipopt_rr(int fd, ipopt_noped_t *opt) {
 	opt->len = sizeof(ipopt_noped_t) - sizeof(((ipopt_noped_t*)0)->nop); /*39*/
 	opt->off = IPOPT_MINOFF;
 	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, sizeof(*opt)) < 0)
-		err(errno, _("record route"));
+		err(errno, _RECORD_ROUTE);
 }
 
 void setsock_ipopt_xrr(int fd, ipopt_noped_t *opt, uint8_t val, uint8_t len) {
@@ -211,10 +210,10 @@ void setsock_ipopt_xrr(int fd, ipopt_noped_t *opt, uint8_t val, uint8_t len) {
 		errno = keep;
 		if (rc < 0) {
 			warn_if_missing_cap(CAP_NET_RAW);
-			err(errno, "%s: %s(%d)", _("record route"),
+			err(errno, "%s: %s(%d)", _RECORD_ROUTE,
 				IPOPT_SSRR ? _STR(IPOPT_SSRR) :
-				IPOPT_LSRR ? _STR(IPOPT_LSRR) :
-				"?", val);
+				IPOPT_LSRR ? _STR(IPOPT_LSRR) : "?",
+				val);
 		}
 	}
 }

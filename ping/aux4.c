@@ -57,8 +57,8 @@
 
 #include "aux4.h"
 #include "opt4.h"
-#include "iputils.h"
 #include "common.h"
+#include "po.h"
 
 #if BYTE_ORDER == LITTLE_ENDIAN
 #define ODDBYTE(v)	(v)
@@ -118,146 +118,156 @@ bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info, uint32_t gateway,
 		printf(ESC_STRING "%um", color);
 	switch (type) {
 	case ICMP_ECHOREPLY:
-		fputs(_("Echo Reply"), stdout);
+		fputs(_ECHO_REPLY, stdout);
 		/* XXX ID + Seq + Data */
 		break;
 	case ICMP_DEST_UNREACH:
-		switch (code) {
+		printf("%s: ", _UNREACH_DEST);
+		switch (code) { // TODO: map[code]=mesg
 		case ICMP_NET_UNREACH:
-			fputs(_("Destination Net Unreachable"), stdout);
+			fputs(_UNREACH_NET, stdout);
 			break;
 		case ICMP_HOST_UNREACH:
-			fputs(_("Destination Host Unreachable"), stdout);
+			fputs(_UNREACH_ADDR, stdout);
 			break;
 		case ICMP_PROT_UNREACH:
-			fputs(_("Destination Protocol Unreachable"), stdout);
+			fputs(_UNREACH_PROTO, stdout);
 			break;
 		case ICMP_PORT_UNREACH:
-			fputs(_("Destination Port Unreachable"), stdout);
+			fputs(_UNREACH_PORT, stdout);
 			break;
 		case ICMP_FRAG_NEEDED:
-			printf("%s (mtu = %u)", _("Frag needed and DF set"), info);
+			printf("%s (mtu = %u)", _NEED_FRAG, info);
 			break;
 		case ICMP_SR_FAILED:
-			fputs(_("Source Route Failed"), stdout);
+			fputs(_SRC_ROUTE_FAIL, stdout);
 			break;
 		case ICMP_NET_UNKNOWN:
-			fputs(_("Destination Net Unknown"), stdout);
+			fputs(_UNKN_NET, stdout);
 			break;
 		case ICMP_HOST_UNKNOWN:
-			fputs(_("Destination Host Unknown"), stdout);
+			fputs(_UNKN_HOST, stdout);
 			break;
 		case ICMP_HOST_ISOLATED:
-			fputs(_("Source Host Isolated"), stdout);
+			fputs(_SRC_HOST_ISOL, stdout);
 			break;
 		case ICMP_NET_ANO:
-			fputs(_("Destination Net Prohibited"), stdout);
+			fputs(_PROH_NET, stdout);
 			break;
 		case ICMP_HOST_ANO:
-			fputs(_("Destination Host Prohibited"), stdout);
+			fputs(_PROH_HOST, stdout);
 			break;
 		case ICMP_NET_UNR_TOS:
-			fputs(_("Destination Net Unreachable for Type of Service"), stdout);
+			fputs(_UNREACH_TOS_NET, stdout);
 			break;
 		case ICMP_HOST_UNR_TOS:
-			fputs(_("Destination Host Unreachable for Type of Service"), stdout);
+			fputs(_UNREACH_TOS_HOST, stdout);
 			break;
 		case ICMP_PKT_FILTERED:
-			fputs(_("Packet filtered"), stdout);
+			fputs(_PKT_FILTERED, stdout);
 			break;
 		case ICMP_PREC_VIOLATION:
-			fputs(_("Precedence Violation"), stdout);
+			fputs(_PREC_VIOLATED, stdout);
 			break;
 		case ICMP_PREC_CUTOFF:
-			fputs(_("Precedence Cutoff"), stdout);
+			fputs(_PREC_CUTOFF, stdout);
 			break;
 		default:
-			printf("%s, %s: %d", _("Dest Unreachable"), _("Bad Code"), code);
+			printf("%s %u", _UNKN_CODE, code);
 			break;
 		}
 		print_ip_hdr_too = true;
 		break;
 	case ICMP_SOURCE_QUENCH:
-		fputs(_("Source Quench"), stdout);
+		fputs(_SRC_QUENCH, stdout);
 		print_ip_hdr_too = true;
 		break;
 	case ICMP_REDIRECT:
+		printf("%s: ", _REDIRECT);
 		switch (code) {
 		case ICMP_REDIR_NET:
-			fputs(_("Redirect Network"), stdout);
+			fputs(_NET, stdout);
 			break;
 		case ICMP_REDIR_HOST:
-			fputs(_("Redirect Host"), stdout);
+			fputs(_HOST_H, stdout);
 			break;
 		case ICMP_REDIR_NETTOS:
-			fputs(_("Redirect Type of Service and Network"), stdout);
+			fputs(_TOS_NET, stdout);
 			break;
 		case ICMP_REDIR_HOSTTOS:
-			fputs(_("Redirect Type of Service and Host"), stdout);
+			fputs(_TOS_HOST, stdout);
 			break;
 		default:
-			printf("%s, %s: %d", _("Redirect"), _("Bad Code"), code);
+			printf("%s %u", _UNKN_CODE, code);
 			break;
 		}
 		{ struct sockaddr_in sin = {
 			.sin_family = AF_INET,
 			.sin_addr.s_addr = gateway ? gateway : info,
 		  };
-		  printf("(%s: %s)", _("New nexthop"),
-			sprint_addr(&sin, sizeof(sin), resolve));
+		  printf(", %s %s", _NEW_NEXTHOP, sprint_addr(&sin, sizeof(sin), resolve));
 		}
 		print_ip_hdr_too = true;
 		break;
 	case ICMP_ECHO:
-		fputs(_("Echo Request"), stdout);
+		fputs(_ECHO_REQUEST, stdout);
 		/* XXX ID + Seq + Data */
 		break;
 	case ICMP_TIME_EXCEEDED:
+		printf("%s: ", _TIME_EXCEED);
 		switch(code) {
 		case ICMP_EXC_TTL:
-			fputs(_("Time to live exceeded"), stdout);
+			fputs(_TTL_U, stdout);
 			break;
 		case ICMP_EXC_FRAGTIME:
-			fputs(_("Frag reassembly time exceeded"), stdout);
+			fputs(_DEFRAG_FAIL, stdout);
 			break;
 		default:
-			printf("%s, %s: %d", _("Time exceeded"), _("Bad Code"), code);
+			printf("%s %u", _UNKN_CODE, code);
 			break;
 		}
 		print_ip_hdr_too = true;
 		break;
 	case ICMP_PARAMETERPROB:
-		printf("%s: %u", _("Parameter problem"), gateway ? (gateway >> 24) : info);
+		printf("%s: %u", _PARAM_PROBLEM, gateway ? (gateway >> 24) : info);
 		print_ip_hdr_too = true;
 		break;
 	case ICMP_TIMESTAMP:
-		fputs(_("Timestamp"), stdout);
+		fputs(_TIMESTAMP, stdout);
 		/* XXX ID + Seq + 3 timestamps */
 		break;
 	case ICMP_TIMESTAMPREPLY:
-		fputs(_("Timestamp Reply"), stdout);
+		fputs(_TS_REPLY, stdout);
 		/* XXX ID + Seq + 3 timestamps */
 		break;
 	case ICMP_INFO_REQUEST:
-		fputs(_("Information Request"), stdout);
+		fputs(_INFO_QUERY, stdout);
 		/* XXX ID + Seq */
 		break;
 	case ICMP_INFO_REPLY:
-		fputs(_("Information Reply"), stdout);
+		fputs(_INFO_REPLY, stdout);
 		/* XXX ID + Seq */
 		break;
+#if defined(ICMP_MASKREQ) || defined(ICMP_ADDRESS)
 #ifdef ICMP_MASKREQ
 	case ICMP_MASKREQ:
-		fputs(_("Address Mask Request"), stdout);
+#else
+	case ICMP_ADDRESS:
+#endif
+		fputs(_ADDRMASK_QUERY, stdout);
 		break;
 #endif
+#if defined(ICMP_MASKREPLY) || defined(ICMP_ADDRESSREPLY)
 #ifdef ICMP_MASKREPLY
 	case ICMP_MASKREPLY:
-		fputs(_("Address Mask Reply"), stdout);
+#else
+	case ICMP_ADDRESSREPLY:
+#endif
+		fputs(_ADDRMASK_REPLY, stdout);
 		break;
 #endif
 	default:
-		printf("%s: %d", _("Bad ICMP type"), type);
+		printf("%s: %d", _UNKN_ICMP_TYPE, type);
 	}
 	if (color)
 		fputs(ESC_STRING "0m", stdout);

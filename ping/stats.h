@@ -25,5 +25,6 @@ void print_status(const state_t *rts);
 void print_timestamp(void);
 #define PRINT_TIMESTAMP do { if (rts->opt.ptimeofday) print_timestamp(); } while(0)
 
+#define EXCLAM_PR(exclam) printf("(%s!)", (exclam))
 
 #endif

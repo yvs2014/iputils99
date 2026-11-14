@@ -47,9 +47,8 @@
 #include <linux/sockios.h>
 #endif
 
-#include "common.h"
-
 #include "iputils.h"
+#include "common.h"
 #include "stats.h"
 #include "setsock.h"
 #include "sock_pa.h"
@@ -116,6 +115,9 @@ static const char *usestr =
 #endif
 "  -M <pmtud opt>     define path MTU discovery, can be one of <do|dont|want|probe>\n"
 "  -n                 no reverse DNS name resolution, override -H\n"
+#ifdef ENABLE_RFC4620
+"  -N <nodeinfo>      send IPv6 Node Information Queries (RFC4620), for details see ping(8)\n"
+#endif
 "  -O                 report outstanding replies\n"
 "  -p <pattern>       contents of padding byte\n"
 "  -q                 quiet output\n"
@@ -146,8 +148,8 @@ static const char *usestr =
 NORETURN void usage(int rc) {
 	drop_priv();
 	usage_data_t use = {
-		.usestr = usestr,
-		.target = "TARGET",
+		.usestr = _(usestr),
+		.target = _TARGET,
 		.more   = !MORE,
 	};
 	usage_common(rc, &use);
@@ -157,7 +159,7 @@ NORETURN void usage(int rc) {
 void fill_payload(int quiet, const char *str, uint8_t *payload, size_t len) {
 	for (const char *cp = str; *cp; cp++)
 		if (!isxdigit(*cp))
-			errx(EINVAL, "%s: %s", _("Pattern must be specified as hex digits"), cp);
+			errx(EINVAL, "%s: %s", _WRONG_PATT, cp);
 #define PAD_BYTES	16
 	uint pad[PAD_BYTES];
 	errno = 0;
@@ -173,20 +175,20 @@ void fill_payload(int quiet, const char *str, uint8_t *payload, size_t len) {
 	if (errno)
 		errx(errno, "sscanf()");
 	if (items <= 0)
-		errx(EINVAL, "%s", _("Blank pattern"));
+		errx(EINVAL, "%s", _BLANK_PATT);
 	size_t max = (items > PAD_BYTES) ? PAD_BYTES : items;
 	for (size_t i = 0; i <= len; i++)
 		payload[i] = pad[i % max];
 	if (!quiet) {
-		printf("%s: 0x", _("PATTERN"));
+		printf("%s: 0x", _PATTERN);
 		for (size_t i = 0; i < max; i++)
 			printf("%02x", pad[i]);
 		if (max > len) { // if it's known already (-s before -p)
-			printf(", %s: 0x", _("PAYLOAD"));
+			printf(", %s: 0x", _PAYLOAD);
 			for (size_t i = 0; i < len; i++)
 				printf("%02x", payload[i]);
 		}
-		printf("\n");
+		putchar('\n');
 	}
 }
 
@@ -302,7 +304,7 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 	if (rts->opt.outstanding && (rts->ntransmitted > 0)) {
 		if(!rcvd_test(rts->ntransmitted, rts->bitmap)) {
 			PRINT_TIMESTAMP;
-			printf("%s: %s=%lu\n", _("No answer yet"), _("icmp_seq"), rts->ntransmitted % MAX_DUP_CHK);
+			printf("%s: %s=%lu\n", _NO_ANSWER, _SEQ, rts->ntransmitted % MAX_DUP_CHK);
 			fflush(stdout);
 		}
 	}
@@ -398,11 +400,9 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 
 	// interval restrictions
 	if (rts->uid && (rts->interval < MIN_USER_MS))
-		errx(EINVAL, "%s: %s %u %s, %s", _("Cannot flood"),
-			_("Minimal user interval must be >="), MIN_USER_MS, _("ms"),
-			_("see -i option for details"));
+		errx(EINVAL, "%s: %s %u %s, %s", _CANNOT_FLOOD, _MIN_OPT_I, MIN_USER_MS, _MSEC, _SEE_OPT_I);
 	if (rts->interval >= (INT_MAX / rts->preload))
-		errx(EINVAL, "%s: %d", _("Illegal preload and/or interval"), rts->interval);
+		errx(EINVAL, "%s: %d", _ILL_PREINT, rts->interval);
 	// socket options
 	if (rts->opt.so_debug)
 		setsock_debug(sock->fd); // privileged action
@@ -580,7 +580,7 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock, ui
 			if (not_ours && sock->raw) {
 				if (rts->unidentified) {
 					if (rts->opt.verbose)
-warnx("id=0x%04x: %s: %u", rts->ident16, _("non-filtered out"), rts->unidentified);
+warnx("id=0x%04x: %s: %u", rts->ident16, _UNFILTERED, rts->unidentified);
 				} else if (fnset->bpf_filter)
 					fnset->bpf_filter(rts, sock);
 				rts->unidentified++;
@@ -710,15 +710,10 @@ void pmtu_interval(state_t *rts) { // NONNULL(1)
 #define	PMTUDISCDO pmtudo
 #endif
 	if (rts->uid) {
-		if (rts->interval < MIN_MCAST_MS) {
-			errx(EINVAL, "%s %u %s, %s", _(rts->ip6 ?
-				"Minimal user interval for multicast ping must be >=" :
-				"Minimal user interval for broadcast ping must be >="),
-				MIN_MCAST_MS, _("ms"), _("see -i option for details"));
-		}
+		if (rts->interval < MIN_MCAST_MS)
+			errx(EINVAL, "%s %u %s, %s", rts->ip6 ? _MIN_MC : _MIN_BRD, MIN_MCAST_MS, _MSEC, _SEE_OPT_I);
 		if ((rts->so.mtudisc >= 0) && (rts->so.mtudisc != PMTUDISCDO))
-			errx(EINVAL, "%s %s", _(rts->ip6 ?
-				"Multicast ping" : "Broadcast ping"), _("does not fragment"));
+			errx(EINVAL, "%s %s", rts->ip6 ? _PING_MC : _PING_BRD, _NOT_FRAGM);
 	}
 	if (rts->so.mtudisc < 0)
 		rts->so.mtudisc = PMTUDISCDO;

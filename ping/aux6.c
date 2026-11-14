@@ -62,9 +62,8 @@
 #include <resolv.h>
 
 #include "aux6.h"
-
-#include "iputils.h"
 #include "common.h"
+#include "po.h"
 #ifdef ENABLE_RFC4620
 #include "node_info.h"
 #include "ni_defs.h"
@@ -105,88 +104,98 @@ void print_icmp6msg(uint8_t type, uint8_t code, uint32_t info, uint8_t color) {
 		printf(ESC_STRING "%um", color);
 	switch (type) {
 	case ICMP6_DST_UNREACH:
-		printf("%s: ", _("Destination unreachable"));
+		printf("%s: ", _UNREACH_DEST);
 		switch (code) {
 		case ICMP6_DST_UNREACH_NOROUTE:
-			fputs(_("No route"), stdout);
+			fputs(_NO_ROUTE, stdout);
 			break;
 		case ICMP6_DST_UNREACH_ADMIN:
-			fputs(_("Administratively prohibited"), stdout);
+			fputs(_PROH_ADMIN, stdout);
 			break;
 		case ICMP6_DST_UNREACH_BEYONDSCOPE:
-			fputs(_("Beyond scope of source address"), stdout);
+			fputs(_SRC_BEYOND, stdout);
 			break;
 		case ICMP6_DST_UNREACH_ADDR:
-			fputs(_("Address unreachable"), stdout);
+			fputs(_UNREACH_ADDR, stdout);
 			break;
 		case ICMP6_DST_UNREACH_NOPORT:
-			fputs(_("Port unreachable"), stdout);
+			fputs(_UNREACH_PORT, stdout);
 			break;
 		case ICMP6_DST_UNREACH_POLICYFAIL:
-			fputs(_("Source address failed ingress/egress policy"), stdout);
+			fputs(_SRC_ADDR_POLICY, stdout);
 			break;
 		case ICMP6_DST_UNREACH_REJECTROUTE:
-			fputs(_("Reject route to destination"), stdout);
+			fputs(_REJECT_ROUTE, stdout);
 			break;
 		default:
-			printf("%s %d", _("unknown code"), code);
+			printf("%s %u", _UNKN_CODE, code);
 			break;
 		}
 		break;
 	case ICMP6_PACKET_TOO_BIG:
-		printf("%s: mtu=%u", _("Packet too big"), info);
+		printf("%s: mtu %u", _PKT_TOO_BIG, info);
 		if (code)
-			printf(", %s=%u", _("code"), code);
+			printf(", %s %u", _CODE, code);
 		break;
 	case ICMP6_TIME_EXCEEDED:
-		printf("%s: ", _("Time exceeded"));
+		printf("%s: ", _TIME_EXCEED);
 		switch (code) {
 		case ICMP6_TIME_EXCEED_TRANSIT:
-			fputs(_("Hop limit"), stdout);
+			fputs(_TTL_U, stdout);
 			break;
 		case ICMP6_TIME_EXCEED_REASSEMBLY:
-			fputs(_("Defragmentation failure"), stdout);
+			fputs(_DEFRAG_FAIL, stdout);
 			break;
 		default:
-			printf("%s=%u", _("code"), code);
+			printf("%s %u", _UNKN_CODE, code);
 			break;
 		}
 		break;
 	case ICMP6_PARAM_PROB:
-		printf("%s: ", _("Parameter problem"));
+		printf("%s: ", _PARAM_PROBLEM);
 		switch (code) {
 		case ICMP6_PARAMPROB_HEADER:
-			fputs(_("Wrong header field"), stdout);
+			fputs(_WRONG_HDR_FLD, stdout);
 			break;
 		case ICMP6_PARAMPROB_NEXTHEADER:
-			fputs(_("Unknown header"), stdout);
+			fputs(_UNKN_HDR, stdout);
 			break;
 		case ICMP6_PARAMPROB_OPTION:
-			fputs(_("Unknown option"), stdout);
+			fputs(_UNKN_OPT, stdout);
 			break;
 		default:
-			printf("%s=%u", _("code"), code);
+			printf("%s %u", _UNKN_CODE, code);
 			break;
 		}
-		printf("%s=%u", _("info"), info);
+		printf(", %s %u", _INFO, info);
 		break;
 	case ICMP6_ECHO_REQUEST:
-		fputs(_("Echo request"), stdout);
+		fputs(_ECHO_REQUEST, stdout);
 		break;
 	case ICMP6_ECHO_REPLY:
-		fputs(_("Echo reply"), stdout);
+		fputs(_ECHO_REPLY, stdout);
 		break;
 	case MLD_LISTENER_QUERY:
-		fputs(_("MLD Query"), stdout);
+		fputs(_MLQ_QUERY, stdout);
 		break;
 	case MLD_LISTENER_REPORT:
-		fputs(_("MLD Report"), stdout);
+		fputs(_MLQ_REPORT, stdout);
 		break;
 	case MLD_LISTENER_REDUCTION:
-		fputs(_("MLD Reduction"), stdout);
+		fputs(_MLQ_REDUCT, stdout);
 		break;
+#ifdef ICMPV6_EXT_ECHO_REQUEST
+	case ICMPV6_EXT_ECHO_REQUEST:
+		printf("%s (%s)", _ECHO_REQUEST, _EXTENSION);
+		break;
+#endif
+#ifdef ICMPV6_EXT_ECHO_REPLY
+	case ICMPV6_EXT_ECHO_REPLY:
+		printf("%s (%s)", _ECHO_REPLY, _EXTENSION);
+		break;
+#endif
 	default:
-		printf("%s: %u", _("Unknown icmp type"), type);
+		printf("%s: %u", _UNKN_ICMP_TYPE, type);
 	}
 	if (color)
 		fputs(ESC_STRING "0m", stdout);
@@ -212,7 +221,7 @@ static inline void putchar_safe(char c) {
 
 static void print_ni_name(const struct ni_hdr *hdr, size_t len) {
 	if (len < (sizeof(struct ni_hdr) + 4)) {
-		printf("%s (%s)", _("parse error"), _("too short"));
+		printf("%s (%s)", _PARSE_ERR, _PKT_SHORT);
 		return;
 	}
 	//
@@ -228,7 +237,7 @@ static void print_ni_name(const struct ni_hdr *hdr, size_t len) {
 		//
 		int rc = dn_expand(h, end, p, buf, sizeof(buf));
 		if (rc < 0) {
-			printf("%s (%s)", _("parse error"), _("truncated"));
+			printf("%s (%s)", _PARSE_ERR, _TRUNCATED);
 			break;
 		}
 		putchar(' ');
@@ -265,7 +274,7 @@ static void print_ni_addr(const struct ni_hdr *nih, size_t len) {
 	//
 	size_t afaddr_len = sizeof(uint32_t) + addrlen;
 	if (len < afaddr_len) {
-		printf("%s (%s)", _("parse error"), _("too short"));
+		printf("%s (%s)", _PARSE_ERR, _PKT_SHORT);
 		return;
 	}
 	//
@@ -276,13 +285,13 @@ static void print_ni_addr(const struct ni_hdr *nih, size_t len) {
 			p < end; p += afaddr_len)
 	{
 		if ((p + afaddr_len) > end) {
-			printf("%s (%s)", _("parse error"), _("truncated"));
+			printf("%s (%s)", _PARSE_ERR, _TRUNCATED);
 			break;
 		}
 		if (comma)
 			putchar(comma);
 		if (!inet_ntop(af, p + sizeof(uint32_t), buf, sizeof(buf)))
-			printf("[%s (inet_ntop: %s)]", _("unexpected error"), strerror(errno));
+			printf("[%s (inet_ntop: %s)]", _UNEXP_ERR, strerror(errno));
 		else {
 			putchar(' ');
 			fputs(buf, stdout);
@@ -291,7 +300,7 @@ static void print_ni_addr(const struct ni_hdr *nih, size_t len) {
 			comma = ',';
 	}
 	if (truncated)
-		printf("(%s)", _("truncated"));
+		printf("(%s)", _TRUNCATED);
 }
 
 void print6_ni_reply(bool ip6, const uint8_t *hdr, size_t len) {
@@ -309,19 +318,19 @@ void print6_ni_reply(bool ip6, const uint8_t *hdr, size_t len) {
 			print_ni_addr(nih, len);
 			break;
 		default:
-			printf("%s (0x%02x)", _("unknown qtype"), ntohs(nih->ni_qtype));
+			printf("%s (0x%02x)", _UNKN_QTYP, ntohs(nih->ni_qtype));
 		}
 		break;
 	case IPUTILS_NI_ICMP6_REFUSED:
-		fputs(_("refused"), stdout);
+		fputs(_REFUSED, stdout);
 		break;
 	case IPUTILS_NI_ICMP6_UNKNOWN:
-		fputs(_("unknown"), stdout);
+		fputs(_UNKNOWN, stdout);
 		break;
 	default:
-		printf("%s (%02x)", _("unknown code"), ntohs(nih->ni_code));
+		printf("%s (%02x)", _UNKN_CODE, ntohs(nih->ni_code));
 	}
-	printf("; %s=%u;", _("icmp_seq"), ntohs(*(uint16_t *)nih->ni_nonce));
+	printf("; %s=%u;", _SEQ, ntohs(*(uint16_t *)nih->ni_nonce));
 }
 #endif /* ENABLE_RFC4620 */
 

@@ -384,7 +384,7 @@ msgstr "Нестандартний формат часу"
 
 #
 msgid "host"
-msgstr "вузол"
+msgstr "хост"
 
 #
 msgid "rtt"
@@ -464,7 +464,7 @@ msgid "flow"
 msgstr "потік"
 
 #
-msgid "Destination unreachable"
+msgid "Destination Unreachable"
 msgstr "Пункт призначення недоступний"
 
 #
@@ -480,12 +480,12 @@ msgid "Beyond scope of source address"
 msgstr "Поза зоною адреси джерела"
 
 #
-msgid "Address unreachable"
+msgid "Address Unreachable"
 msgstr "Недосяжна адреса"
 
 #
-msgid "Port unreachable"
-msgstr "Недосяжний порт"
+msgid "Port Unreachable"
+msgstr "Порт призначення недоступний"
 
 #
 msgid "Source address failed ingress/egress policy"
@@ -536,14 +536,6 @@ msgid "info"
 msgstr "інфо"
 
 #
-msgid "Echo request"
-msgstr "Луна-запит"
-
-#
-msgid "Echo reply"
-msgstr "Луна-відповідь"
-
-#
 msgid "MLD Query"
 msgstr "Запит MLD"
 
@@ -556,8 +548,8 @@ msgid "MLD Reduction"
 msgstr "Спрощення MLD"
 
 #
-msgid "Unknown icmp type"
-msgstr "Невідомий тип icmp"
+msgid "Unknown ICMP type"
+msgstr "Невідомий ICMP тип"
 
 #
 msgid "Local error"
@@ -570,10 +562,6 @@ msgstr "Завелике повідомлення"
 #
 msgid "parse error"
 msgstr "помилка обробки"
-
-#
-msgid "too short"
-msgstr "замало"
 
 #
 msgid "truncated"
@@ -696,8 +684,8 @@ msgid "data bytes"
 msgstr "байт даних"
 
 #
-msgid "(same route)"
-msgstr "(такий самий маршрут)"
+msgid "same route"
+msgstr "тей самий маршрут"
 
 #
 msgid "absolute not-standard"
@@ -720,20 +708,12 @@ msgid "Echo Reply"
 msgstr "Луна-відповідь"
 
 #
-msgid "Destination Net Unreachable"
-msgstr "Мережа призначення недоступна"
+msgid "Net Unreachable"
+msgstr "Мережа недоступна"
 
 #
-msgid "Destination Host Unreachable"
-msgstr "Вузол призначення недоступний"
-
-#
-msgid "Destination Protocol Unreachable"
-msgstr "Протокол призначення недоступний"
-
-#
-msgid "Destination Port Unreachable"
-msgstr "Порт призначення недоступний"
+msgid "Protocol Unreachable"
+msgstr "Протокол недоступний"
 
 #
 msgid "Frag needed and DF set"
@@ -744,32 +724,32 @@ msgid "Source Route Failed"
 msgstr "Помилка маршрутизації залежної від джерела"
 
 #
-msgid "Destination Net Unknown"
-msgstr "Невідома мережа призначення"
+msgid "Net Unknown"
+msgstr "Невідома мережа"
 
 #
-msgid "Destination Host Unknown"
-msgstr "Невідомий вузол призначення"
+msgid "Host Unknown"
+msgstr "Невідомий хост"
 
 #
 msgid "Source Host Isolated"
-msgstr "Ізольований вузол джерела"
+msgstr "Ізольований вихідний хост"
 
 #
-msgid "Destination Net Prohibited"
-msgstr "Заборонена мережа призначення"
+msgid "Net Prohibited"
+msgstr "Заборонена мережа"
 
 #
-msgid "Destination Host Prohibited"
-msgstr "Заборонений вузол призначення"
+msgid "Host Prohibited"
+msgstr "Заборонений хост"
 
 #
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "Мережа недоступна для ToS пакетів"
+msgid "Net Unreachable for ToS"
+msgstr "Мережа недоступна для ToS"
 
 #
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "Пункт призначення недоступний для ToS пакетів"
+msgid "Host Unreachable for ToS"
+msgstr "Хост недоступний для ToS"
 
 #
 msgid "Packet filtered"
@@ -784,36 +764,28 @@ msgid "Precedence Cutoff"
 msgstr "Обрізання першості"
 
 #
-msgid "Dest Unreachable"
-msgstr "Недоступний пункт призначення"
-
-#
-msgid "Bad Code"
-msgstr "Хибний код"
-
-#
 msgid "Source Quench"
 msgstr "Обрив зв'язку з джерелом"
 
 #
-msgid "Redirect Network"
-msgstr "Мережева переадресація"
-
-#
-msgid "Redirect Host"
-msgstr "Переадресація вузла"
-
-#
-msgid "Redirect Type of Service and Network"
-msgstr "Мережева переадресація служби ToS"
-
-#
-msgid "Redirect Type of Service and Host"
-msgstr "Переадресація вузла і служби ToS"
-
-#
 msgid "Redirect"
-msgstr "Переадресація"
+msgstr "Перенаправлення"
+
+#
+msgid "Network"
+msgstr "Мережа"
+
+#
+msgid "Host"
+msgstr "Хост"
+
+#
+msgid "ToS and Network"
+msgstr "ToS і мережа"
+
+#
+msgid "ToS and Host"
+msgstr "ToS і хост"
 
 #
 msgid "New nexthop"
@@ -824,12 +796,12 @@ msgid "Echo Request"
 msgstr "Луна-запит"
 
 #
-msgid "Time to live exceeded"
-msgstr "Перевищено TTL"
+msgid "extension"
+msgstr "розширення"
 
 #
-msgid "Frag reassembly time exceeded"
-msgstr "Перевищено час перезбирання фрагментів"
+msgid "TTL"
+msgstr "TTL"
 
 #
 msgid "Timestamp"
@@ -854,10 +826,6 @@ msgstr "Запит маски адреси"
 #
 msgid "Address Mask Reply"
 msgstr "Відповідь з маскою адреси"
-
-#
-msgid "Bad ICMP type"
-msgstr "Неправильний тип ICMP"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -919,12 +887,12 @@ msgstr[1] "байта"
 msgstr[2] "байт"
 
 #
-msgid "icmp_seq"
-msgstr "номер"
+msgid "seq"
+msgstr "ном"
 
 #
-msgid "ident"
-msgstr "ідент"
+msgid "id"
+msgstr "ід"
 
 #
 msgid "ttl"
@@ -932,7 +900,7 @@ msgstr "ттл"
 
 #
 msgid "DUP"
-msgstr "ДУБЛЬ"
+msgstr "ДУБЛ"
 
 #
 msgid "BAD CHECKSUM"
@@ -971,8 +939,8 @@ msgid "got 0x"
 msgstr "отримано 0x"
 
 # hostname ping statistics
-msgid " ping statistics"
-msgstr " пінг статистика"
+msgid "ping statistics"
+msgstr "пінг статистика"
 
 # %ld packets transmitted
 msgid "packet transmitted"
@@ -1057,7 +1025,7 @@ msgid "LOCALHOST"
 msgstr "ЛОКАЛЬНИЙ-КОМП"
 
 #
-msgid "(corrupted payload)"
+msgid "corrupted payload"
 msgstr "(пошкоджені дані)"
 
 #
@@ -1073,8 +1041,8 @@ msgid "asymm"
 msgstr "асим"
 
 #
-msgid "NET ERROR"
-msgstr "ПОМИЛКА МЕРЕЖІ"
+msgid "Net error"
+msgstr "Мережева помилка"
 
 #
 msgid "reply received"

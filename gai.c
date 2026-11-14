@@ -53,8 +53,8 @@ static const char *usestr =
 
 NORETURN static void usage(int rc) {
 	usage_data_t use = {
-		.usestr = usestr,
-		.target = "HOST",
+		.usestr = _(usestr),
+		.target = _HOST,
 		.more   = MORE,
 	};
 	usage_common(rc, &use);
@@ -113,50 +113,41 @@ static inline uint ai_macro2value(char opt, const char *arg) {
 NORETURN static inline void list_ai_consts(void) {
 	valstr_s ai[] = {
 #ifdef AI_PASSIVE
-		AIF_VALSTR(AI_PASSIVE,
-	_("Socket address for bind()")),
+		AIF_VALSTR(AI_PASSIVE, _BIND_SOCKADDR),
 #endif
 #ifdef AI_CANONNAME
-		AIF_VALSTR(AI_CANONNAME,
-	_("Request for canonical name")),
+		AIF_VALSTR(AI_CANONNAME, _CANONNAME_Q),
 #endif
 #ifdef AI_NUMERICHOST
-		AIF_VALSTR(AI_NUMERICHOST,
-	_("Don't use host resolution")),
+		AIF_VALSTR(AI_NUMERICHOST, _DONT_USE_RRES),
 #endif
 #ifdef AI_V4MAPPED
-		AIF_VALSTR(AI_V4MAPPED,
-	_("IPv4 mapped addresses are acceptable")),
+		AIF_VALSTR(AI_V4MAPPED, _IP4MAP_ACCEPT),
 #endif
 #ifdef AI_ALL
-		AIF_VALSTR(AI_ALL,
-	_("IPv4 mapped and IPv6 addresses")),
+		AIF_VALSTR(AI_ALL, _IP46MAP),
 #endif
 #ifdef AI_ADDRCONFIG
-		AIF_VALSTR(AI_ADDRCONFIG,
-	_("Use host configuration to choose address type")),
+		AIF_VALSTR(AI_ADDRCONFIG, _USE_HOSTCONF),
 #endif
 #ifdef AI_IDN
-		AIF_VALSTR(AI_IDN,
-	_("Convert to IDN format if necessary")),
+		AIF_VALSTR(AI_IDN, _IDN_IF_NEEDED),
 #endif
 #ifdef AI_CANONIDN
-		AIF_VALSTR(AI_CANONIDN,
-	_("Translate canonical name from IDN format")),
+		AIF_VALSTR(AI_CANONIDN, _IDN2CANON),
 #endif
 	// optional: deprecated AI flags
 #ifdef _AI_IDN_ALLOW_UNASSIGNED
 		AIF_DEPRECATED_VALSTR(_AI_IDN_ALLOW_UNASSIGNED,
-	"AI_IDN_ALLOW_UNASSIGNED", _("deprecated")),
+	"AI_IDN_ALLOW_UNASSIGNED", _DEPRECATED),
 #endif
 #ifdef _AI_IDN_USE_STD3_ASCII_RULES
 		AIF_DEPRECATED_VALSTR(_AI_IDN_USE_STD3_ASCII_RULES,
-	"AI_IDN_USE_STD3_ASCII_RULES", _("deprecated")),
+	"AI_IDN_USE_STD3_ASCII_RULES", _DEPRECATED),
 #endif
 	// end-of-optional
 #ifdef AI_NUMERICSERV
-		AIF_VALSTR(AI_NUMERICSERV,
-	_("Don't use service resolution")),
+		AIF_VALSTR(AI_NUMERICSERV, _DONT_USE_SRES),
 #endif
 	};
 	for (uint i = 0; i < ARRAY_LEN(ai); i++)
@@ -192,7 +183,7 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 		if (!GAI_OPT->idn2)
 			GAI_OPT->idn2 = true;
 #else
-		warnx(_("no need in -i, IDN is transparently supported"));
+		warnx(_NO_NEED_OPT_I);
 #endif
 		break;
 	case 'l':

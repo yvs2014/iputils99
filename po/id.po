@@ -343,7 +343,7 @@ msgid "flow"
 msgstr ""
 
 #
-msgid "Destination unreachable"
+msgid "Destination Unreachable"
 msgstr "Tujuan tidak dapat dijangkau"
 
 #
@@ -359,11 +359,11 @@ msgid "Beyond scope of source address"
 msgstr "Diluar cakupan alamat asal"
 
 #
-msgid "Address unreachable"
+msgid "Address Unreachable"
 msgstr "Alamat tidak dapat dijangkau"
 
 #
-msgid "Port unreachable"
+msgid "Port Unreachable"
 msgstr "Port tidak dapat dijangkau"
 
 #
@@ -415,14 +415,6 @@ msgid "info"
 msgstr "info"
 
 #
-msgid "Echo request"
-msgstr "Echo permintaan"
-
-#
-msgid "Echo reply"
-msgstr "Echo balasan"
-
-#
 msgid "MLD Query"
 msgstr "Query MLD"
 
@@ -435,8 +427,8 @@ msgid "MLD Reduction"
 msgstr "Reduksi MLD"
 
 #
-msgid "Unknown icmp type"
-msgstr "Tipe icmp tidak diketahui"
+msgid "Unknown ICMP type"
+msgstr "Tipe ICMP tidak diketahui"
 
 #
 msgid "Local error"
@@ -449,10 +441,6 @@ msgstr "Pesan terlalu panjang"
 #
 msgid "parse error"
 msgstr "kesalahan parse"
-
-#
-msgid "too short"
-msgstr "terlalu pendek"
 
 #
 msgid "truncated"
@@ -548,8 +536,8 @@ msgid_plural "bytes"
 msgstr[0] "byte data"
 
 #
-msgid "(same route)"
-msgstr "(route yang sama)"
+msgid "same route"
+msgstr "route yang sama"
 
 #
 msgid "absolute not-standard"
@@ -572,20 +560,12 @@ msgid "Echo Reply"
 msgstr "Echo Balasan"
 
 #
-msgid "Destination Net Unreachable"
-msgstr "Jaringan Tujuan Tidak Terjangkau"
+msgid "Net Unreachable"
+msgstr "Jaringan Tidak Terjangkau"
 
 #
-msgid "Destination Host Unreachable"
-msgstr "Host Tujuan Tidak Terjangkau"
-
-#
-msgid "Destination Protocol Unreachable"
-msgstr "Protokol Tujuan Tidak Terjangkau"
-
-#
-msgid "Destination Port Unreachable"
-msgstr "Port Tujuan Tidak Terjangkau"
+msgid "Protocol Unreachable"
+msgstr "Protokol Tidak Terjangkau"
 
 #
 msgid "Frag needed and DF set"
@@ -596,32 +576,32 @@ msgid "Source Route Failed"
 msgstr "Rute Asal Gagal"
 
 #
-msgid "Destination Net Unknown"
-msgstr "Jaringan Tujuan Tidak Diketahui"
+msgid "Net Unknown"
+msgstr "Jaringan Tidak Diketahui"
 
 #
-msgid "Destination Host Unknown"
-msgstr "Host Tujuan Tidak Diketahui"
+msgid "Host Unknown"
+msgstr "Host Tidak Diketahui"
 
 #
 msgid "Source Host Isolated"
 msgstr "Host Asal Terisolasi"
 
 #
-msgid "Destination Net Prohibited"
-msgstr "Jaringan Tujuan Terlarang"
+msgid "Net Prohibited"
+msgstr "Jaringan Terlarang"
 
 #
-msgid "Destination Host Prohibited"
-msgstr "Host Tujuan Terlarang"
+msgid "Host Prohibited"
+msgstr "Host Terlarang"
 
 #
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "Jaringan Tujuan Tidak Terjangkau untuk Type of Service"
+msgid "Net Unreachable for ToS"
+msgstr "Jaringan Tidak Terjangkau untuk ToS"
 
 #
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "Host Tujuan Tidak Terjangkau untuk Type of Service"
+msgid "Host Unreachable for ToS"
+msgstr "Host Tidak Terjangkau untuk ToS"
 
 #
 msgid "Packet filtered"
@@ -636,36 +616,28 @@ msgid "Precedence Cutoff"
 msgstr "Batas Prioritas"
 
 #
-msgid "Dest Unreachable"
-msgstr "Tujuan Tidak Terjangkau"
-
-#
-msgid "Bad Code"
-msgstr "Kode Buruk"
-
-#
 msgid "Source Quench"
 msgstr ""
 
 #
-msgid "Redirect Network"
-msgstr "Alihkan Network"
-
-#
-msgid "Redirect Host"
-msgstr "Alihkan Host"
-
-#
-msgid "Redirect Type of Service and Network"
-msgstr "Alihkan TOS dan Jaringan"
-
-#
-msgid "Redirect Type of Service and Host"
-msgstr "Alihkan TOS dan Host"
-
-#
 msgid "Redirect"
 msgstr "Alihkan"
+
+#
+msgid "Network"
+msgstr "Network"
+
+#
+msgid "Host"
+msgstr "Host"
+
+#
+msgid "ToS and Network"
+msgstr "TOS dan Jaringan"
+
+#
+msgid "ToS and Host"
+msgstr "TOS dan Host"
 
 #
 msgid "New nexthop"
@@ -676,12 +648,12 @@ msgid "Echo Request"
 msgstr "Echo permintaan"
 
 #
-msgid "Time to live exceeded"
-msgstr "Time to live terlampaui"
+msgid "extension"
+msgstr "perpanjangan"
 
 #
-msgid "Frag reassembly time exceeded"
-msgstr "Waktu reassembly fragmen terlampaui"
+msgid "TTL"
+msgstr "TTL"
 
 #
 msgid "Timestamp"
@@ -706,10 +678,6 @@ msgstr "Mask Alamat Permintaan"
 #
 msgid "Address Mask Reply"
 msgstr "Mask Alamat Balasan"
-
-#
-msgid "Bad ICMP type"
-msgstr "Tipe ICMP buruk"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -768,11 +736,11 @@ msgid "bytes"
 msgstr "byte"
 
 #
-msgid "icmp_seq"
+msgid "seq"
 msgstr ""
 
 #
-msgid "ident"
+msgid "id"
 msgstr ""
 
 #
@@ -820,8 +788,8 @@ msgid "got 0x"
 msgstr "actual: 0x"
 
 # hostname ping statistics
-msgid " ping statistics"
-msgstr " ping statistik"
+msgid "ping statistics"
+msgstr "ping statistik"
 
 # %ld packets transmitted
 msgid "packet transmitted"
@@ -889,7 +857,7 @@ msgid "LOCALHOST"
 msgstr ""
 
 #
-msgid "(corrupted payload)"
+msgid "corrupted payload"
 msgstr "(data korup)"
 
 #
@@ -905,8 +873,8 @@ msgid "asymm"
 msgstr ""
 
 #
-msgid "NET ERROR"
-msgstr "KESALAHAN JARINGAN"
+msgid "Net error"
+msgstr "Kesalahan jaringan"
 
 #
 msgid "reply received"

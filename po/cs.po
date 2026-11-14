@@ -398,7 +398,7 @@ msgid "flow"
 msgstr "tok"
 
 #
-msgid "Destination unreachable"
+msgid "Destination Unreachable"
 msgstr "Cíl je nedostupný"
 
 #
@@ -414,11 +414,11 @@ msgid "Beyond scope of source address"
 msgstr "Mimo síťovou oblast zdrojové adresy"
 
 #
-msgid "Address unreachable"
+msgid "Address Unreachable"
 msgstr "Adresa není dostupná"
 
 #
-msgid "Port unreachable"
+msgid "Port Unreachable"
 msgstr "Port nedosažitelný"
 
 #
@@ -470,14 +470,6 @@ msgid "info"
 msgstr "info"
 
 #
-msgid "Echo request"
-msgstr "Požadavek na echo"
-
-#
-msgid "Echo reply"
-msgstr "Odpověď na echo"
-
-#
 msgid "MLD Query"
 msgstr "Dotaz MLD"
 
@@ -490,7 +482,7 @@ msgid "MLD Reduction"
 msgstr "Zkrácení MLD"
 
 #
-msgid "Unknown icmp type"
+msgid "Unknown ICMP type"
 msgstr "Neznámý typ ICMP"
 
 #
@@ -504,10 +496,6 @@ msgstr "Zpráva je příliš dlouhá"
 #
 msgid "parse error"
 msgstr "chyba rozboru"
-
-#
-msgid "too short"
-msgstr "příliš krátké"
 
 #
 msgid "truncated"
@@ -606,8 +594,8 @@ msgid "data bytes"
 msgstr "datových bajtů"
 
 #
-msgid "(same route)"
-msgstr "(stejná trasa)"
+msgid "same route"
+msgstr "stejná trasa"
 
 #
 msgid "absolute not-standard"
@@ -630,20 +618,12 @@ msgid "Echo Reply"
 msgstr "Odpověď na echo"
 
 #
-msgid "Destination Net Unreachable"
-msgstr "Cílová síť nedostupná"
+msgid "Net Unreachable"
+msgstr "Síť nedostupná"
 
 #
-msgid "Destination Host Unreachable"
-msgstr "Cílový stroj nedostupný"
-
-#
-msgid "Destination Protocol Unreachable"
-msgstr "Cílový protokol nedostupný"
-
-#
-msgid "Destination Port Unreachable"
-msgstr "Cílový port nedostupný"
+msgid "Protocol Unreachable"
+msgstr "Protokol nedostupný"
 
 #
 msgid "Frag needed and DF set"
@@ -654,32 +634,32 @@ msgid "Source Route Failed"
 msgstr "Zdrojová trasa nezafungovala"
 
 #
-msgid "Destination Net Unknown"
-msgstr "Cílová síť není známa"
+msgid "Net Unknown"
+msgstr "Síť není známa"
 
 #
-msgid "Destination Host Unknown"
-msgstr "Cílový stroj není znám"
+msgid "Host Unknown"
+msgstr "Stroj není znám"
 
 #
 msgid "Source Host Isolated"
 msgstr "Zdrojový stroj je izolován"
 
 #
-msgid "Destination Net Prohibited"
-msgstr "Cílová síť je zakázána"
+msgid "Net Prohibited"
+msgstr "Síť je zakázána"
 
 #
-msgid "Destination Host Prohibited"
-msgstr "Cílový stroj je zakázán"
+msgid "Host Prohibited"
+msgstr "Stroj je zakázán"
 
 #
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "Cílový síť není pro daný typ služby dostupná"
+msgid "Net Unreachable for ToS"
+msgstr "Síť není pro daný ToS"
 
 #
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "Cílový stroj není pro daný typ služby dostupný"
+msgid "Host Unreachable for ToS"
+msgstr "Stroj není pro daný ToS"
 
 #
 msgid "Packet filtered"
@@ -694,36 +674,28 @@ msgid "Precedence Cutoff"
 msgstr "Nedostatečná přednost"
 
 #
-msgid "Dest Unreachable"
-msgstr "Cíl nedostupný"
-
-#
-msgid "Bad Code"
-msgstr "Chybný kód"
-
-#
 msgid "Source Quench"
 msgstr "Útlum zdroje"
 
 #
-msgid "Redirect Network"
-msgstr "Přesměrování sítě"
-
-#
-msgid "Redirect Host"
-msgstr "Přesměrování stroje"
-
-#
-msgid "Redirect Type of Service and Network"
-msgstr "Přesměrování druhu služby a sítě"
-
-#
-msgid "Redirect Type of Service and Host"
-msgstr "Přesměrování druhu služby a stroje"
-
-#
 msgid "Redirect"
 msgstr "Přesměrování"
+
+#
+msgid "Network"
+msgstr "Sítě"
+
+#
+msgid "Host"
+msgstr "Stroje"
+
+#
+msgid "ToS and Network"
+msgstr "ToS a sítě"
+
+#
+msgid "ToS and Host"
+msgstr "ToS a stroje"
 
 #
 msgid "New nexthop"
@@ -734,12 +706,12 @@ msgid "Echo Request"
 msgstr "Požadavek na echo"
 
 #
-msgid "Time to live exceeded"
-msgstr "Překročena doba životnosti"
+msgid "extension"
+msgstr "rozšíření"
 
 #
-msgid "Frag reassembly time exceeded"
-msgstr "Překročena doba pro provedení opětovného složení fragmentů"
+msgid "TTL"
+msgstr "TTL"
 
 #
 msgid "Timestamp"
@@ -764,10 +736,6 @@ msgstr "Dotaz na masku adresy"
 #
 msgid "Address Mask Reply"
 msgstr "Odpověď s maskou adresy"
-
-#
-msgid "Bad ICMP type"
-msgstr "Chybný typ ICMP"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -829,11 +797,11 @@ msgstr[1] "bajty"
 msgstr[2] "bajtů"
 
 #
-msgid "icmp_seq"
+msgid "seq"
 msgstr "pořadí"
 
 #
-msgid "ident"
+msgid "id"
 msgstr ""
 
 #
@@ -881,8 +849,8 @@ msgid "got 0x"
 msgstr "obdrženo 0x"
 
 # hostname ping statistics
-msgid " ping statistics"
-msgstr " ping statistika"
+msgid "ping statistics"
+msgstr "ping statistika"
 
 # %ld packets transmitted
 msgid "packet transmitted"
@@ -963,7 +931,7 @@ msgid "LOCALHOST"
 msgstr ""
 
 #
-msgid "(corrupted payload)"
+msgid "corrupted payload"
 msgstr "(poškozená data)"
 
 #
@@ -979,8 +947,8 @@ msgid "asymm"
 msgstr "asym."
 
 #
-msgid "NET ERROR"
-msgstr "CHYBA SÍTĚ"
+msgid "Net error"
+msgstr "Chyba sítě"
 
 #
 msgid "reply received"

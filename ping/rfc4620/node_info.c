@@ -169,8 +169,7 @@ void niquery_fill_nonce(struct ping_ni *ni, uint16_t seq, uint8_t *nonce)
 #endif
 }
 
-int niquery_check_nonce(struct ping_ni *ni, uint8_t *nonce)
-{
+int niquery_check_nonce(struct ping_ni *ni, uint8_t *nonce) {
 #if NONCE_MEMORY
 	uint16_t seq = ntohsp((uint16_t *)nonce);
 	if (memcmp(nonce, &ni->nonce_ptr[NONCE_SIZE * (seq % MAX_DUP_CHK)], NONCE_SIZE))
@@ -181,66 +180,52 @@ int niquery_check_nonce(struct ping_ni *ni, uint8_t *nonce)
 #endif
 }
 
-static int niquery_set_qtype(struct ping_ni *ni, int type)
-{
-	if (niquery_is_enabled(ni) && ni->query != type) {
-		printf("%s\n", _("Qtype conflict"));
-		return -1;
-	}
-	ni->query = type;
-	return 0;
+static int niquery_set_qtype(struct ping_ni *ni, int type) {
+	int rc = niquery_is_enabled(ni) && (ni->query != type) ? -1 : 0;
+	if (rc < 0)
+		printf("%s\n", _NI_ERR_QTYPE);
+	else
+		ni->query = type;
+	return rc;
 }
 
-static int niquery_option_name_handler(struct ping_ni *ni, int index UNUSED, const char *arg UNUSED)
-{
-	if (niquery_set_qtype(ni, IPUTILS_NI_QTYPE_DNSNAME) < 0)
-		return -1;
-	return 0;
+static int niquery_option_name_handler(struct ping_ni *ni, int index UNUSED, const char *arg UNUSED) {
+	return niquery_set_qtype(ni, IPUTILS_NI_QTYPE_DNSNAME);
 }
 
-static int niquery_option_ipv6_handler(struct ping_ni *ni, int index UNUSED, const char *arg UNUSED)
-{
-	if (niquery_set_qtype(ni, IPUTILS_NI_QTYPE_IPV6ADDR) < 0)
-		return -1;
-	return 0;
+static int niquery_option_ipv6_handler(struct ping_ni *ni, int index UNUSED, const char *arg UNUSED) {
+	return niquery_set_qtype(ni, IPUTILS_NI_QTYPE_IPV6ADDR);
 }
 
-static int niquery_option_ipv6_flag_handler(struct ping_ni *ni, int index, const char *arg UNUSED)
-{
-	if (niquery_set_qtype(ni, IPUTILS_NI_QTYPE_IPV6ADDR) < 0)
-		return -1;
-	ni->flag |= niquery_options[index].data;
-	return 0;
+static int niquery_option_ipv6_flag_handler(struct ping_ni *ni, int index, const char *arg UNUSED) {
+	int rc = niquery_set_qtype(ni, IPUTILS_NI_QTYPE_IPV6ADDR);
+	if (!rc)
+		ni->flag |= niquery_options[index].data;
+	return rc;
 }
 
-static int niquery_option_ipv4_handler(struct ping_ni *ni, int index UNUSED, const char *arg UNUSED)
-{
-	if (niquery_set_qtype(ni, IPUTILS_NI_QTYPE_IPV4ADDR) < 0)
-		return -1;
-	return 0;
+static int niquery_option_ipv4_handler(struct ping_ni *ni, int index UNUSED, const char *arg UNUSED) {
+	return niquery_set_qtype(ni, IPUTILS_NI_QTYPE_IPV4ADDR);
 }
 
-static int niquery_option_ipv4_flag_handler(struct ping_ni *ni, int index, const char *arg UNUSED)
-{
-	if (niquery_set_qtype(ni, IPUTILS_NI_QTYPE_IPV4ADDR) < 0)
-		return -1;
-	ni->flag |= niquery_options[index].data;
-	return 0;
+static int niquery_option_ipv4_flag_handler(struct ping_ni *ni, int index, const char *arg UNUSED) {
+	int rc = niquery_set_qtype(ni, IPUTILS_NI_QTYPE_IPV4ADDR);
+	if (!rc)
+		ni->flag |= niquery_options[index].data;
+	return rc;
 }
 
-int niquery_is_subject_valid(struct ping_ni *ni)
-{
-	return ni->subject_type >= 0 && ni->subject;
+int niquery_is_subject_valid(struct ping_ni *ni) {
+	return (ni->subject_type >= 0) && ni->subject;
 }
 
-static int niquery_set_subject_type(struct ping_ni *ni, int type)
-{
-	if (niquery_is_subject_valid(ni) && ni->subject_type != type) {
-		printf("%s\n", _("Subject type conflict"));
-		return -1;
-	}
-	ni->subject_type = type;
-	return 0;
+static int niquery_set_subject_type(struct ping_ni *ni, int type) {
+	int rc = (niquery_is_subject_valid(ni) && ni->subject_type != type) ? -1 : 0;
+	if (rc < 0)
+		printf("%s\n", _NI_ERR_SUBJ);
+	else
+		ni->subject_type = type;
+	return rc;
 }
 
 static int niquery_option_subject_addr_handler(struct ping_ni *ni, int index, const char *arg)
@@ -325,7 +310,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 	{ // glibc: internal libidn2 lookup
 	  int rc = __idna_to_dns_encoding(name, &idn);
 	  if (rc)
-		errx(EINVAL, "%s: %s", _("IDN encoding error"), gai_strerror(rc)); }
+		errx(EINVAL, "%s: %s", _NI_ERR_IDN, gai_strerror(rc)); }
 #else
 	idn = strdup(name);
 	if (!idn)
@@ -336,7 +321,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 	if (p) {
 		*p = '\0';
 		if (strlen(p + 1) >= IFNAMSIZ)
-			errx(EXIT_FAILURE, "%s", _("Too long scope name"));
+			errx(EXIT_FAILURE, "%s", _NI_LONG_SCOPE);
 	}
 
 	namelen = strlen(idn);
@@ -372,10 +357,10 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 
 	n = dn_comp(canonname, (unsigned char *)buf, buflen, dnptrs, lastdnptr);
 	if (n < 0) {
-		warnx("%s: %s", _("Inappropriate subject name"), canonname);
+		warnx("%s: %s", _NI_BAD_SUBJ, canonname);
 		goto errexit;
 	} else if ((size_t)n >= buflen) {
-		warnx("%s", _("dn_comp() returned too long result"));
+		warnx("%s", _NI_DN_TOO_LONG);
 		goto errexit;
 	}
 
@@ -410,9 +395,8 @@ errexit:
 	exit(EXIT_FAILURE);
 }
 
-int niquery_option_help_handler(struct ping_ni *ni UNUSED, int index, const char *arg UNUSED)
-{
-	fprintf(index ? stdout : stderr,
+int niquery_option_help_handler(struct ping_ni *ni UNUSED, int index, const char *arg UNUSED) {
+	const char *ni_opt_help =
 "Nodeinfo options\n"
 "\n"
 "Query:\n"
@@ -434,7 +418,8 @@ int niquery_option_help_handler(struct ping_ni *ni UNUSED, int index, const char
 "\n"
 "Help:\n"
 "  help\n"
-);
+;
+	fputs(ni_opt_help, index ? stdout : stderr);
 	exit(index ? EXIT_SUCCESS : EINVAL);
 }
 

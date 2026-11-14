@@ -83,7 +83,6 @@
 #define PACKHDRLEN	(sizeof(struct icmphdr) + sizeof(struct timeval))
 #define	DEFDATALEN	(DEFIPPAYLOAD - sizeof(struct icmphdr))	// default data length
 #define MAXPAYLOAD	(USHRT_MAX - PACKHDRLEN)		// largest payload
-#define V4IN6_WARNING	"Embedded IPv4 Address"
 #define PINGTYPE(raw)	((raw) ? "raw" : "datagram")
 
 #define AFTYPE(af)	(af == AF_UNSPEC ? "unspec" : \
@@ -185,20 +184,20 @@ static inline void opt_I(state_t *rts, const char *str) {
 	if (strchr(str, ':')) {
 		char *addr = strdup(str);
 		if (!addr)
-			err(errno, "%s: %s", _("Cannot copy"), str);
+			err(errno, "%s: %s", _CANNOT_COPY, str);
 		char *scope = strchr(addr, SCOPE_DELIMITER);
 		if (scope) {
 			*scope++ = 0;
 			rts->so.device = str + (scope - addr);
 		}
 		if (inet_pton(AF_INET6, addr, &SA6_IN(&rts->source)) <= 0)
-			errx(EINVAL, "%s: %s", _("Invalid source address"), str);
+			errx(EINVAL, "%s: %s", _INV_SRCADDR, str);
 		rts->opt.strictsource = true;
 		free(addr);
 	} else {
 		int rc = inet_pton(AF_INET, str, &SA4_IN(&rts->source));
 		if (rc < 0)
-			errx(EINVAL, "%s: %s", _("Invalid source"), str);
+			errx(EINVAL, "%s: %s", _INV_SRC, str);
 		if (rc)
 			rts->opt.strictsource = true;
 		else
@@ -206,18 +205,16 @@ static inline void opt_I(state_t *rts, const char *str) {
 	}
 	if (rts->so.device && !rts->so.device[0]) { // add trim?
 		errno = ENODATA;
-		err(errno, "%s", _("Invalid source"));
+		err(errno, "%s", _INV_SRC);
 	}
 }
 
 #ifdef ENABLE_RFC4620
 static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) { // NONNULL(1, 3)
 	if (rts->datalen != DEFDATALEN) // '-s' indication
-		errx(EINVAL, "%s: %s", _WARN,
-			_("Nodeinfo packet can only have a header"));
+		errx(EINVAL, "%s: %s", _WARN, _NI_ONLY_HDR);
 	if (hints->ai_family == AF_INET) // '-4' indiacation
-		errx(EINVAL, "%s: %s", _WARN,
-			_("Nodeinfo query cannot be sent over IPv4"));
+		errx(EINVAL, "%s: %s", _WARN, _NI_NOT_OVER4);
 	if (!rts->ni) {
 		rts->ni = calloc(1, sizeof(struct ping_ni));
 		if (!rts->ni)
@@ -225,7 +222,7 @@ static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) 
 		rts->ni->query        = -1;
 		rts->ni->subject_type = -1;
 		if (niquery_option_handler(rts->ni, str) < 0)
-			errx(EINVAL, "%s: %s", _("Cannot set nodeinfo option"), str);
+			errx(EINVAL, "%s: %s", _NI_OPT_NOSET, str);
 		hints->ai_socktype = SOCK_RAW;
 		rts->datalen = 0;
 	}
@@ -235,8 +232,7 @@ static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) 
 static inline void opt_s(state_t *rts) {
 #ifdef ENABLE_RFC4620
 	if (rts->ni)
-		errx(EXIT_FAILURE, "%s: %s", _WARN,
-			_("Nodeinfo packet can only have a header"));
+		errx(EXIT_FAILURE, "%s: %s", _WARN, _NI_ONLY_HDR);
 #endif
 	uint len = VALID_INTSTR(0, MAXPAYLOAD);
 	uint8_t *pack = calloc(1, PACKHDRLEN + len);
@@ -268,8 +264,7 @@ static void switch_opt(char c, void *data) { // NONNULL(2)
 		bool ip4 = (c == '4');
 #ifdef ENABLE_RFC4620
 		if (RTS_DATA->ni && ip4) // '-N' indication
-			errx(EINVAL, "%s: %s", _WARN,
-				_("Nodeinfo query cannot be sent over IPv4"));
+			errx(EINVAL, "%s: %s", _WARN, _NI_NOT_OVER4);
 #endif
 		int incompat = ip4 ? AF_INET6 : AF_INET;
 		if (RTS_HINT->ai_family == incompat)
@@ -326,8 +321,7 @@ static void switch_opt(char c, void *data) { // NONNULL(2)
 		RTS_DATA->opt.resolve = true;
 		break;
 	case 'i': {
-		double value = str2dbl(optarg, 0, (double)INT_MAX / 1000,
-			_("Bad timing interval"));
+		double value = str2dbl(optarg, 0, (double)INT_MAX / 1000, _BAD_TIMING);
 		RTS_DATA->interval = (int)(value * 1000);
 		RTS_DATA->opt.interval = true;
 	}	break;
@@ -337,8 +331,7 @@ static void switch_opt(char c, void *data) { // NONNULL(2)
 	case 'l':
 		RTS_DATA->preload = VALID_INTSTR(1, MAX_DUP_CHK);
 		if (RTS_DATA->uid && (RTS_DATA->preload > 3))
-			errx(EINVAL, "%s: %d",
-_("Cannot set preload to value greater than 3"), RTS_DATA->preload);
+			errx(EINVAL, "%s: %d", _VALUE_GT_3, RTS_DATA->preload);
 		break;
 	case 'L':
 		RTS_DATA->so.noloop = true;
@@ -418,9 +411,9 @@ _("Cannot set preload to value greater than 3"), RTS_DATA->preload);
 		else if (TSSTREQ("tsprespec") || TSSTREQ("prespec"))
 			RTS_DATA->so.ts_opt = IPOPT_TS_PRESPEC;
 		else { // 0(TSONLY) 1(TSANDADDR) 3(PRESPEC)
-			RTS_DATA->so.ts_opt = str2ll(optarg, 0, 3, _("Invalid timestamp type"));
+			RTS_DATA->so.ts_opt = str2ll(optarg, 0, 3, _INV_TS_TYPE);
 			if (RTS_DATA->so.ts_opt == 2) // 2: reserved
-				errx(EINVAL, "%s: %s", _("Invalid timestamp type"), optarg);
+				errx(EINVAL, "%s: %s", _INV_TS_TYPE, optarg);
 		}
 #undef TSSTREQ
 		break;
@@ -434,8 +427,7 @@ _("Cannot set preload to value greater than 3"), RTS_DATA->preload);
 		RTS_DATA->deadline = VALID_INTSTR(0, INT_MAX);
 		break;
 	case 'W': {
-		double value = str2dbl(optarg, 0, (double)INT_MAX / 1000,
-			_("Bad linger time"));
+		double value = str2dbl(optarg, 0, (double)INT_MAX / 1000, _BAD_LINGER);
 		/* lingertime will be converted to usec later */
 		RTS_DATA->lingertime = (int)(value * 1000);
 	}	break;
@@ -507,7 +499,7 @@ int main(int argc, char **argv) {
 	argv += optind;
 	if (argc <= 0) {
 		errno = EDESTADDRREQ;
-		warn("%s", _("No goal"));
+		warn("%s", _NO_GOAL);
 		usage(EDESTADDRREQ);
 	}
 	const char *target = argv[argc - 1];
@@ -522,7 +514,7 @@ int main(int argc, char **argv) {
 	} else if (!rts.ident16) {
 		/* Current Linux kernel 6.0 doesn't support on SOCK_DGRAM setting ident == 0 */
 		if (rts.opt.verbose)
-			warnx("%s", _("ident 0 => forcing raw socket"));
+			warnx("%s", _FORCE_RAW);
 		hints.ai_socktype = SOCK_RAW;
 	}
 
@@ -549,11 +541,11 @@ int main(int argc, char **argv) {
 			switch (hints.ai_family) {
 			case AF_INET6:
 				errno = ENETUNREACH;
-				err(errno, _(V4IN6_WARN));
+				err(errno, _EMBEDDED_ADDR4);
 				break;
 			case AF_UNSPEC:
 				unmap_ai_sa4(ai);
-				warnx("%s: %s", WARN, _(V4IN6_WARN));
+				warnx("%s: %s", WARN, _EMBEDDED_ADDR4);
 				break;
 			default: break;
 			}

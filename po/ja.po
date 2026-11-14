@@ -345,7 +345,7 @@ msgid "flow"
 msgstr "フロー"
 
 #
-msgid "Destination unreachable"
+msgid "Destination Unreachable"
 msgstr "目的地へ届きません"
 
 #
@@ -361,11 +361,11 @@ msgid "Beyond scope of source address"
 msgstr "送信元アドレスのスコープ外です"
 
 #
-msgid "Address unreachable"
+msgid "Address Unreachable"
 msgstr "アドレスに届きません"
 
 #
-msgid "Port unreachable"
+msgid "Port Unreachable"
 msgstr "ポートに届きません"
 
 #
@@ -417,14 +417,6 @@ msgid "info"
 msgstr "情報"
 
 #
-msgid "Echo request"
-msgstr "エコー要求"
-
-#
-msgid "Echo reply"
-msgstr "エコー応答"
-
-#
 msgid "MLD Query"
 msgstr "マルチキャストグループ問い合わせ"
 
@@ -437,8 +429,8 @@ msgid "MLD Reduction"
 msgstr "マルチキャストグループ離脱"
 
 #
-msgid "Unknown icmp type"
-msgstr "未知のicmpの種別です"
+msgid "Unknown ICMP type"
+msgstr "未知のICMPの種別です"
 
 #
 msgid "Local error"
@@ -451,10 +443,6 @@ msgstr "メッセージが長すぎます"
 #
 msgid "parse error"
 msgstr "解析エラー"
-
-#
-msgid "too short"
-msgstr "短すぎます"
 
 #
 msgid "truncated"
@@ -549,8 +537,8 @@ msgid "data bytes"
 msgstr "バイトのデータ"
 
 #
-msgid "(same route)"
-msgstr "(同一経路)"
+msgid "same route"
+msgstr "同一経路"
 
 #
 msgid "absolute not-standard"
@@ -573,20 +561,12 @@ msgid "Echo Reply"
 msgstr "エコー応答"
 
 #
-msgid "Destination Net Unreachable"
-msgstr "目的のネットワークへ届きません"
+msgid "Net Unreachable"
+msgstr "ネットワークへ届きません"
 
 #
-msgid "Destination Host Unreachable"
-msgstr "目的のホストへ届きません"
-
-#
-msgid "Destination Protocol Unreachable"
-msgstr "目的のプロトコルへ届きません"
-
-#
-msgid "Destination Port Unreachable"
-msgstr "目的のポートへ届きません"
+msgid "Protocol Unreachable"
+msgstr "プロトコルへ届きません"
 
 #
 msgid "Frag needed and DF set"
@@ -597,32 +577,32 @@ msgid "Source Route Failed"
 msgstr "ソースルーティングに失敗しました"
 
 #
-msgid "Destination Net Unknown"
-msgstr "目的のネットワークが不明です"
+msgid "Net Unknown"
+msgstr "ネットワークが不明です"
 
 #
-msgid "Destination Host Unknown"
-msgstr "目的のホストが不明です"
+msgid "Host Unknown"
+msgstr "ホストが不明です"
 
 #
 msgid "Source Host Isolated"
 msgstr "送信元ホストが孤立しています"
 
 #
-msgid "Destination Net Prohibited"
-msgstr "目的のネットワークは禁止されています"
+msgid "Net Prohibited"
+msgstr "ネットワークは禁止されています"
 
 #
-msgid "Destination Host Prohibited"
-msgstr "目的のホストは禁止されています"
+msgid "Host Prohibited"
+msgstr "ホストは禁止されています"
 
 #
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "このtosでは目的のネットワークへ届きません"
+msgid "Net Unreachable for ToS"
+msgstr "このtosではネットワークへ届きません"
 
 #
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "このtosでは目的のホストへ届きません"
+msgid "Host Unreachable for ToS"
+msgstr "このtosではホストへ届きません"
 
 #
 msgid "Packet filtered"
@@ -637,36 +617,28 @@ msgid "Precedence Cutoff"
 msgstr "優先度に基づく遮断"
 
 #
-msgid "Dest Unreachable"
-msgstr "目的サイトへ届きません"
-
-#
-msgid "Bad Code"
-msgstr "不正なコード"
-
-#
 msgid "Source Quench"
 msgstr "発信抑制"
 
 #
-msgid "Redirect Network"
-msgstr "ネットワークのリダイレクト"
+msgid "Redirect"
+msgstr "リダイレクト"
+
+#
+msgid "Network"
+msgstr "ネットワーク"
 
 #
 msgid "Redirect Host"
-msgstr "ホストのリダイレクト"
+msgstr "ホスト"
 
 #
-msgid "Redirect Type of Service and Network"
-msgstr "TOSのためのネットワークリダイレクト"
+msgid "ToS and Network"
+msgstr "TOSのためのネットワーク"
 
 #
-msgid "Redirect Type of Service and Host"
-msgstr "TOSのためのホストリダイレクト"
-
-#
-msgid "Redirect"
-msgstr "リダイレクト"
+msgid "ToS and Host"
+msgstr "TOSのためのホスト"
 
 #
 msgid "New nexthop"
@@ -677,12 +649,12 @@ msgid "Echo Request"
 msgstr "エコー要求"
 
 #
-msgid "Time to live exceeded"
-msgstr "TTLを超過しました"
+msgid "extension"
+msgstr "拡大"
 
 #
-msgid "Frag reassembly time exceeded"
-msgstr "断片化パケットの再構築時間を超過しました"
+msgid "TTL"
+msgstr "TTL"
 
 #
 msgid "Timestamp"
@@ -707,10 +679,6 @@ msgstr "アドレスマスク要求"
 #
 msgid "Address Mask Reply"
 msgstr "アドレスマスク応答"
-
-#
-msgid "Bad ICMP type"
-msgstr "不正なICMP種別です"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -763,11 +731,11 @@ msgid_plural "bytes"
 msgstr[0] "バイト"
 
 #
-msgid "icmp_seq"
+msgid "seq"
 msgstr ""
 
 #
-msgid "ident"
+msgid "id"
 msgstr ""
 
 #
@@ -815,8 +783,8 @@ msgid "got 0x"
 msgstr "実際: 0x"
 
 # hostname ping statistics
-msgid " ping statistics"
-msgstr " ping 統計"
+msgid "ping statistics"
+msgstr "ping 統計"
 
 # %ld packets transmitted
 msgid "packet transmitted"
@@ -884,7 +852,7 @@ msgid "LOCALHOST"
 msgstr ""
 
 #
-msgid "(corrupted payload)"
+msgid "corrupted payload"
 msgstr "(破損したデータ)"
 
 #
@@ -900,7 +868,7 @@ msgid "asymm"
 msgstr ""
 
 #
-msgid "NET ERROR"
+msgid "Net error"
 msgstr "ネットワークエラー"
 
 #

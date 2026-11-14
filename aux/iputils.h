@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <netdb.h>
 
+#include "po.h"
 #include "cc_attr.h"
 
 #ifndef NOOP
@@ -33,24 +34,6 @@
 		err(errno, "%s", "getsockname()"); \
 } while (0)
 
-#ifdef USE_NLS
-#include <locale.h>
-#include <libintl.h>
-#define BIND_NLS do {                            \
-	setlocale(LC_ALL, "");                   \
-	bindtextdomain(PACKAGE_NAME, LOCALEDIR); \
-	textdomain(PACKAGE_NAME);                \
-} while (0)
-#define _(text) gettext(text)
-#define _n(singular, plural, number) ngettext((singular), (plural), (number))
-#else
-#define BIND_NLS NOOP
-#define _(text) text
-#define _n(singular, plural, number) plural
-#endif
-
-#define BYTES(nbytes) _n("byte", "bytes", (nbytes))
-
 #if defined(USE_IDN) && defined(AI_IDN)
 # define AI_FLAGS (AI_CANONNAME | AI_IDN | AI_CANONIDN)
 #else
@@ -70,12 +53,7 @@
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof((arr)[0]))
 #endif
 
-#define WARN	"WARNING"	// warning prefix
-#define _WARN	_(WARN)
-#define V4IN6_WARN	"Embedded IPv4 Address"
-
-#define EXCL_OPTS_MSG _("Mutually exclusive options")
-#define OPTEXCL(a, b) errx(EINVAL, "%s: -%c -%c", EXCL_OPTS_MSG, (a), (b))
+#define OPTEXCL(a, b) errx(EINVAL, "%s: -%c -%c", _EXCL_OPTS, (a), (b))
 
 #define MSFMT "%.3f"		// common timing format in milliseconds
 #define TMMS  MSFMT "%s"	// ".3fms"

@@ -201,12 +201,12 @@ do { // was 'restart:'
 	}
 
 	if (e == NULL) {
-		puts(_("No info"));
+		puts(_NO_INFO);
 		return 0;
 	}
 
 	if (e->ee_origin == SO_EE_ORIGIN_LOCAL)
-		printf("%2d?: [%s] ", rts->ttl, _("LOCALHOST"));
+		printf("%2d?: [%s] ", rts->ttl, _LOCALHOST);
 	else if (e->ee_origin == SO_EE_ORIGIN_ICMP6 || e->ee_origin == SO_EE_ORIGIN_ICMP) {
 		struct sockaddr *sa = SA(e + 1);
 		socklen_t salen =
@@ -233,9 +233,9 @@ do { // was 'restart:'
 	if (retts) {
 		struct timespec res = {0};
 		timespecsub(&ts, retts, &res);
-		printf(TMMS " ", res.tv_sec * 1000 + res.tv_nsec / 1000000., _("ms"));
+		printf(TMMS " ", res.tv_sec * 1000 + res.tv_nsec / 1000000., _MSEC);
 		if (broken_router)
-			printf("%s ", _("(corrupted payload)"));
+			printf("(%s) ", _PLD_CORRUPT);
 	}
 
 	if      (rethops <= 64)
@@ -245,6 +245,8 @@ do { // was 'restart:'
 	else
 		rethops = 256 - rethops;
 
+	char ch = 0;
+	bool re = false;
 	switch (e->ee_errno) {
 	case ETIMEDOUT:
 		putchar('\n');
@@ -253,16 +255,18 @@ do { // was 'restart:'
 		assert((rts->pkthold >= e->ee_info) && (e->ee_info > rts->hdrsize));
 		rts->pktsize = e->ee_info;
 		progress     = rts->pktsize;
-		printf("%s %u\n", _("pmtu"), rts->pktsize);
+		printf("%s %u\n", _PMTU, rts->pktsize);
 		break;
 	case ECONNREFUSED:
-		puts(_("reached"));
+		puts(_REACHED);
 		rts->hops_to   = (sndhops < 0) ? rts->ttl : sndhops;
 		rts->hops_from = rethops;
-		return 0;
+		re = true;
+		break;
 	case EPROTO:
-		printf("!P\n");
-		return 0;
+		ch = 'P';
+		re = true;
+		break;
 	case EHOSTUNREACH:
 		if ((e->ee_origin == SO_EE_ORIGIN_ICMP &&
 		     e->ee_type == ICMP_TIME_EXCEEDED &&
@@ -274,24 +278,31 @@ do { // was 'restart:'
 				bool sent = (sndhops >= 0);
 				if (( sent && (rethops != sndhops )) ||
 				    (!sent && (rethops != rts->ttl)))
-					printf("(%s %d)", _("asymm"), rethops);
+					printf("(%s %d)", _ASYMM, rethops);
 			}
 			putchar('\n');
 			break;
 		}
-		printf("!H\n");
-		return 0;
+		ch = 'H';
+		re = true;
+		break;
 	case ENETUNREACH:
-		printf("!N\n");
-		return 0;
+		ch = 'N';
+		re = true;
+		break;
 	case EACCES:
-		printf("!A\n");
-		return 0;
+		ch = 'A';
+		re = true;
+		break;
 	default:
 		putchar('\n');
-		warnx("%s", _("NET ERROR"));
-		return 0;
+		warnx("%s", _NET_ERROR);
+		re = true;
 	}
+	if (ch)
+		printf("!%c\n", ch);
+	if (re)
+		return 0;
 } while (true); // was 'goto restart'
 
 	return 0;
@@ -355,14 +366,13 @@ static int probe_ttl(state_t *rts) {
 		data_wait(rts->sock);
 		ssize_t got = recv(rts->sock, rts->pktbuf, rts->pktsize, MSG_DONTWAIT);
 		if (got > 0) { // was print("reply received 8")
-			printf("%2d?: %s: %zd %s\n", rts->ttl,
-				_("reply received"), got, BYTES(got));
+			printf("%2d?: %s: %zd %s\n", rts->ttl, _RECV_REPLY, got, _N_BYTES(got));
 			return 0;
 		}
 		return recverr(rts);
 	}
 
-	printf("%2d:  %s\n", rts->ttl, _("send fail"));
+	printf("%2d:  %s\n", rts->ttl, _SEND_FAIL);
 	return 0;
 }
 
@@ -380,8 +390,8 @@ static const char *usestr =
 
 NORETURN static void usage(int rc) {
 	usage_data_t use = {
-		.usestr = usestr,
-		.target = "TARGET",
+		.usestr = _(usestr),
+		.target = _TARGET,
 		.more   = !MORE,
 	};
 	usage_common(rc, &use);
@@ -410,7 +420,7 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 			switch (hints->ai_family) {
 			case AF_INET6:
 				errno = ENETUNREACH;
-				err(errno, _(V4IN6_WARN));
+				err(errno, _EMBEDDED_ADDR4);
 				break;
 			case AF_UNSPEC: {
 				// like ping:unmap_ai_sa4(ai);
@@ -423,7 +433,7 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 				memcpy(ai->ai_addr, &sa4, SA4_LEN);
 				ai->ai_addrlen = SA4_LEN;
 				ai->ai_family  = AF_INET;
-				warnx("%s: %s", WARN, _(V4IN6_WARN));
+				warnx("%s: %s", WARN, _EMBEDDED_ADDR4);
 			}	break;
 			default:
 				break;
@@ -495,12 +505,12 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 }
 
 static void resume(const state_t *rts) {
-	printf("     %s: %s=%d", _("Resume"), _("pmtu"), rts->pktsize);
+	printf("     %s: %s=%d", _RESUME, _PMTU, rts->pktsize);
 	if (rts->hops_to >= 0)
-		printf(" %s=%d", _("hops"), rts->hops_to);
+		printf(" %s=%d", _HOPS, rts->hops_to);
 	if (rts->hops_from >= 0)
-		printf(" %s=%d", _("back"), rts->hops_from);
-	printf("\n");
+		printf(" %s=%d", _BACK, rts->hops_from);
+	putchar('\n');
 }
 
 
@@ -540,7 +550,7 @@ int main(int argc, char **argv) {
 		int rc = (argc > 0) ? EINVAL : EDESTADDRREQ;
 		if (argc <= 0) {
 			errno = rc;
-			warn("%s", _("No goal"));
+			warn("%s", _NO_GOAL);
 		}
 		usage(rc);
 	}
@@ -564,7 +574,7 @@ int main(int argc, char **argv) {
 
 	if (rts.pktsize <= rts.hdrsize) {
 		errno = ERANGE;
-		err(errno, "%s: %u-%u", _("Packet length"), rts.hdrsize, UINT16_MAX);
+		err(errno, "%s: %u-%u", _PKT_LENGTH, rts.hdrsize, UINT16_MAX);
 	}
 
 	rts.pkthold = rts.pktsize;
@@ -598,9 +608,9 @@ int main(int argc, char **argv) {
 			}
 		} while (again);
 		if (rc < 0)
-			printf("%2d:  %s\n", rts.ttl, _("no reply"));
+			printf("%2d:  %s\n", rts.ttl, _NO_REPLY);
 	}
-	printf("     %s: %s=%d\n", _("Too many hops"), _("pmtu"), rts.pktsize);
+	printf("     %s: %s=%d\n", _TOO_MANY_HOPS, _PMTU, rts.pktsize);
 
 	resume(&rts);
 	free(rts.pktbuf); // in favor of analysis tools

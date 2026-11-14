@@ -83,8 +83,8 @@ static const char *usestr =
 
 NORETURN static void usage(int rc) {
 	usage_data_t use = {
-		.usestr = usestr,
-		.target = "TARGET",
+		.usestr = _(usestr),
+		.target = _TARGET,
 		.more   = !MORE,
 	};
 	usage_common(rc, &use);
@@ -105,19 +105,16 @@ static inline void send_n_stat(state_t *rts) {
 }
 
 static void resume(const counter_t *stat) {
-	printf("%s: %d (%d %s)\n", _("Sent probes"), stat->sent,
-		stat->brd_sent, _n("broadcast", "broadcasts", stat->brd_sent));
-	printf("%s: %d", _("Received responses"), stat->recv);
+	printf("%s: %d (%d %s)\n", _SENT_PROB, stat->sent, stat->brd_sent, _N_BRD(stat->brd_sent));
+	printf("%s: %d", _RECV_RESP, stat->recv);
 	if (stat->brd_recv || stat->req_recv) {
 		printf(" (");
 		if (stat->req_recv)
-			printf("%d %s", stat->req_recv,
-				_n("request", "requests", stat->req_recv));
+			printf("%d %s", stat->req_recv, _N_REQUEST(stat->req_recv));
 		if (stat->req_recv && stat->brd_recv)
 			printf(", ");
 		if (stat->brd_recv)
-			printf("%d %s", stat->brd_recv,
-				_n("broadcast", "broadcasts", stat->brd_recv));
+			printf("%d %s", stat->brd_recv, _N_BRD(stat->brd_recv));
 		printf(")");
 	}
 	putchar('\n');
@@ -164,7 +161,7 @@ static bool valid_flags(uint flags, const char *name, bool quiet, bool dad) {
 	if (!(flags & IFF_UP)) {
 		if (name && name[0]) {
 			if (!quiet)
-				warnx("%s: %s", name, _("Interface is down"));
+				warnx("%s: %s", name, _IFACE_DOWN);
 			exit(EINVAL);
 		}
 		return false;
@@ -172,7 +169,7 @@ static bool valid_flags(uint flags, const char *name, bool quiet, bool dad) {
 	if (flags & (IFF_NOARP | IFF_LOOPBACK)) {
 		if (name && name[0]) {
 			if (!quiet)
-				warnx("%s: %s", name, _("Interface is not ARPable"));
+				warnx("%s: %s", name, _NO_ARP_IFACE);
 			exit(dad ? EXIT_SUCCESS : EINVAL);
 		}
 		return false;
@@ -263,7 +260,7 @@ static void find_brd_addr(arpdev_t *dev, struct sockaddr_ll *he, bool quiet) {
 		memcpy(he->sll_addr, ll->sll_addr, he->sll_halen);
 	else {
 		if (!quiet)
-			warnx("%s: %s", _WARN, _("Using default broadcast address"));
+			warnx("%s: %s", _WARN, _USING_BRD);
 		memset(he->sll_addr, -1, he->sll_halen);
 	}
 	if (dev->ifa_list) { // no need more
@@ -476,8 +473,7 @@ static inline void bind_sock(struct sockaddr_ll *from, struct sockaddr_ll *to,
 	GETSOCKNAME(sock, SA(from), SLL_LEN);
 	if (!from->sll_halen) {
 		if (!quiet)
-			warnx("%s: %s (%s)", ifname,
-_("Interface is not ARPable"), _("no ll address"));
+			warnx("%s: %s (%s)", ifname, _NO_ARP_IFACE, _NO_LL_ADDR);
 		exit(dad ? EXIT_SUCCESS : EXIT_FAILURE);
 	}
 	*to = *from;
@@ -552,7 +548,7 @@ static void setup(state_t *rts) {
 			err(errno, "socket(%s, %s)", "INET", "DGRAM");
 		if (rts->dev.name[0] &&
 		    (bindtodev(probe_fd, rts->dev.name)/*privileged action*/ < 0))
-			warn("%s: %s: %s", _WARN, rts->dev.name, _("Interface is ignored"));
+			warn("%s: %s: %s", _WARN, rts->dev.name, _IFACE_IGN);
 		//
 		struct sockaddr_in addr = {.sin_family = AF_INET};
 		if (rts->source || rts->saddr.s_addr) {
@@ -578,8 +574,8 @@ static void setup(state_t *rts) {
 static inline void print_header(const char *name,
 	const struct in_addr src, const struct in_addr dst)
 {
-	printf("%s %s", _("ARPING"), inet_ntoa(dst));
-	printf(" %s %s", _("from"),  inet_ntoa(src));
+	printf("%s %s", _ARPING, inet_ntoa(dst));
+	printf(" %s %s", _FROM,  inet_ntoa(src));
 	if (name && name[0])
 		printf("%%%s", name);
 	putchar('\n');
@@ -655,7 +651,7 @@ int main(int argc, char **argv) {
 		int rc = (argc > 0) ? EINVAL : EDESTADDRREQ;
 		if (argc <= 0) {
 			errno = rc;
-			warn("%s", _("No goal"));
+			warn("%s", _NO_GOAL);
 		}
 		usage(rc);
 	}
@@ -674,7 +670,7 @@ int main(int argc, char **argv) {
 		print_header(ifname, rts.saddr, rts.daddr);
 	}
 	if (!rts.source && !rts.saddr.s_addr && !rts.opt.dad)
-		errx(EINVAL, "%s", _("No source address in not-DAD mode"));
+		errx(EINVAL, "%s", _NOSRC_IN_DAD);
 	//
 	return main_loop(&rts) ? EXIT_FAILURE : EXIT_SUCCESS;
 }

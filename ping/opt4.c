@@ -107,7 +107,7 @@ static void ipopt_rr(const uint8_t *data, int len, bool resolve, bool flood) {
 		for (; len > 0; len -= 4, data += 4)
 			puts_addrln(*(in_addr_t*)data, resolve);
 	} else
-		printf("\t%s", _("(same route)"));
+		printf("\t(%s)", _SAME_ROUTE);
 }
 //
 static void print_ipopt_ts(uint32_t ts, uint32_t* xtime, const char *rel, const char *abs) {
@@ -136,13 +136,13 @@ static void ipopt_ts(const uint8_t *data, int len, bool resolve) {
 		}
 		uint32_t ts = bswap_32(*(uint32_t*)data);
 		if (IS_BIT31_SET(ts))
-			print_ipopt_ts(ts & INT32_MAX, &nonstdtime, _("not-standard"), _("absolute not-standard"));
+			print_ipopt_ts(ts & INT32_MAX, &nonstdtime, _NOT_STD, _ABS_NOT_STD);
 		else
-			print_ipopt_ts(ts, &stdtime, NULL, _("absolute"));
+			print_ipopt_ts(ts, &stdtime, NULL, _ABSOLUTE);
 	}
 	uint8_t unrec = flags >> 4;
 	if (unrec)
-		printf("%s: %u\n", _("Unrecorded hops"), unrec);
+		printf("%s: %u\n", _UNREC_HOPS, unrec);
 }
 //
 
@@ -173,7 +173,7 @@ void print4_ip_opts(const uint8_t *opt, int len, bool resolve, bool flood) {
 				ipopt_ts(opt, rest, resolve);
 				break;
 			default:
-				printf("\n%s %u (0x%02x)", _("Unknown option"), t, t);
+				printf("\n%s %u (0x%02x)", _UNKN_OPT, t, t);
 				break;
 			}
 		}

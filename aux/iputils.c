@@ -127,13 +127,13 @@ NORETURN static void version_n_exit(int features) {
 }
 
 void usage_common(int rc, const usage_data_t *udata) { // NONNULL(2)
-	printf("\n%s:\n  %s", _("Usage"), myname);
+	printf("\n%s:\n  %s", _USAGE, myname);
 	if (udata->usestr)
-		printf(" [%s]", _("options"));
-	printf(" %s%s\n", _(udata->target), udata->more ? " ..." : "");
+		printf(" [%s]", _OPTIONS);
+	printf(" %s%s\n", udata->target, udata->more ? " ..." : "");
 	if (udata->usestr)
-		printf("\n%s:\n%s", _("Options"), _(udata->usestr));
-	printf("\n%s %s(8)\n", _("For more details see"), myname);
+		printf("\n%s:\n%s", _OPTIONS_H, udata->usestr);
+	printf("\n%s %s(8)\n", _FOR_MORE, myname);
 	exit(rc);
 }
 
@@ -252,9 +252,9 @@ void warn_if_missing_cap(int cap) {
 			cap == CAP_SYS_NICE  ? _STR(CAP_SYS_NICE)  :
 			NULL;
 		if (capname)
-			warnx("%s: %s", _("=> missing capability"), capname);
+			warnx("%s: %s", _MISS_CAP, capname);
 		else
-			warnx("%s: %d", _("=> missing capability"), cap);
+			warnx("%s: %d", _MISS_CAP, cap);
 	}
 }
 #endif

@@ -201,14 +201,14 @@ static inline timediff_e opt_measure(state_t *rts, measurement_data_t *m, delta_
 	{ // low 4bits
 	  uint8_t low = opt[3] & 0xf;
 	  if (low != IPOPT_TS_PRESPEC) {
-		warnx("%s: %u", _("Wrong timestamp"), low);
+		warnx("%s: %u", _WRONG_TS, low);
 		return DT_NONSTD;
 	  }
 	}
 	{ // high 4bits
 	  uint8_t high = opt[3] >> 4;
 	  if (high && ((high != 1) || (rts->optlen != OPTLEN_3)))
-		 warnx("%s: %u", _("Overflow hops"), high);
+		warnx("%s: %u", _OVER_HOPS, high);
 	}
 	for (int i = 0; i < (opt[2] - 5) / 8; i++) {
 		uint32_t *timep = (uint32_t *)(opt + OPTLEN(i));
@@ -235,7 +235,7 @@ static inline timediff_e opt_measure(state_t *rts, measurement_data_t *m, delta_
 		}
 	}
 	if (!(dt->send && dt->recv && dt->peer1 && dt->peer2)) {
-		warnx("%s", _("Wrong timestamp"));
+		warnx("%s", _WRONG_TS);
 		return DT_ERROR;
 	}
 	return DT_GOOD;
@@ -402,8 +402,8 @@ static const char *usestr =
 
 NORETURN static void usage(int rc) {
 	usage_data_t use = {
-		.usestr = usestr,
-		.target = "HOST",
+		.usestr = _(usestr),
+		.target = _HOST,
 		.more   = !MORE,
 	};
 	usage_common(rc, &use);
@@ -487,7 +487,7 @@ int main(int argc, char **argv) {
 		int rc = (argc > 0) ? EINVAL : EDESTADDRREQ;
 		if (argc <= 0) {
 			errno = rc;
-			warn("%s", _("No goal"));
+			warn("%s", _NO_GOAL);
 		}
 		usage(rc);
 	}
@@ -549,10 +549,11 @@ int main(int argc, char **argv) {
 
 	switch (measure(&rts, SA(&to), SA4_LEN)) {
 	case DT_ERROR:
-		if (errno) err(errno, "%s(%s)", _("measure"), PEERNAME);
-		errx(EXIT_FAILURE, "%s(%s): %s", _("measure"), PEERNAME, _("Unknown failure"));
+		if (errno)
+			err(errno, "%s(%s)", _MEASURE, PEERNAME);
+		errx(EXIT_FAILURE, "%s(%s): %s", _MEASURE, PEERNAME, _UNKN_FAIL);
 	case DT_NONSTD:
-		errx(EXIT_FAILURE, "%s(%s): %s", _("measure"), PEERNAME, _("Non-standard time format"));
+		errx(EXIT_FAILURE, "%s(%s): %s", _MEASURE, PEERNAME, _NON_STD_TIME);
 	default: break;
 	}
 
@@ -563,13 +564,11 @@ int main(int argc, char **argv) {
 		char ts[64];
 		if (!strftime(ts, sizeof(ts), rts.ts_format, &tm))
 			ts[0] = 0;
-		const char *ms = _("ms");
+		const char *ms = _MSEC;
 		putchar('\n');
-		printf("%s=%s ", _("host"), PEERNAME);
-		printf("%s=%ld(%ld)%s/%ld%s ", _("rtt"),
-			rts.rtt, rts.sigma, ms, rts.min_rtt, ms);
-		printf("%s=%d%s/%d%s ", _("delta"),
-			rts.delta1, ms, rts.delta2, ms);
+		printf("%s=%s ", _HOST_L, PEERNAME);
+		printf("%s=%ld(%ld)%s/%ld%s ", _RTT, rts.rtt, rts.sigma, ms, rts.min_rtt, ms);
+		printf("%s=%d%s/%d%s ", _DELTA, rts.delta1, ms, rts.delta2, ms);
 		printf("[%s]", ts);
 	  } else
 		printf("%lld %d %d", (long long)now, rts.delta1, rts.delta2);

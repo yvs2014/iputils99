@@ -63,12 +63,12 @@
 #include <netinet/ip_icmp.h>
 #include <linux/errqueue.h>
 
+#include "po.h"
+#include "cc_attr.h"
 #include "exterr.h"
-#include "iputils.h"
 #include "stats.h"
 #include "aux4.h"
 #include "aux6.h"
-#include "cc_attr.h"
 
 // common IPv4/IPv6 ICMP header
 typedef struct icmp46h {
@@ -118,9 +118,8 @@ static void print_ee_reply(const state_t *rts, uint16_t seq,
 		SUPPRESS_UNUSED_RESULT_WARN(write(STDOUT_FILENO, "\bE", 2));
 	else {
 		PRINT_TIMESTAMP;
-		printf("%s %s: %s=%u ",
-			_("From"), sprint_addr(ee + 1, salen, rts->opt.resolve),
-			_("icmp_seq"), seq);
+		printf("%s %s: %s=%u ", _FROM_H,
+			sprint_addr(ee + 1, salen, rts->opt.resolve), _SEQ, seq);
 		if (rts->ip6)
 			print_icmp6msg(ee->ee_type, ee->ee_code, ee->ee_info, rts->red);
 		else
@@ -135,9 +134,9 @@ static inline void print_local_ee(bool flood, uint32_t ee_errno, uint32_t ee_inf
 	if (flood)
 		SUPPRESS_UNUSED_RESULT_WARN(write(STDOUT_FILENO, "E", 1));
 	else if (ee_errno != EMSGSIZE)
-		warnx("%s", _("Local error"));
+		warnx("%s", _LOCAL_ERR);
 	else
-		warnx("%s: %s: mtu=%u", _("Local error"), _("Message too long"), ee_info);
+		warnx("%s: %s: mtu=%u", _LOCAL_ERR, _MSG_TOOLONG, ee_info);
 }
 
 int get_errmsg(state_t *rts, const sock_t *sock, struct msghdr *msg) {

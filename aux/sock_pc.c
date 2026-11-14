@@ -14,11 +14,11 @@
 #endif
 
 #include "sock_pc.h"
-#include "iputils.h"
+#include "po.h"
 
 int setsock_ipopt_ts(int fd, struct ip_timestamp *opt, uint8_t flg, uint8_t len) { // NONNULL(2)
 	if (len % 4)
-		errx(EINVAL, "%s", _("timestamp length is not a multiple of 4"));
+		errx(EINVAL, "%s", _WRONG_TS_LEN);
 	opt->ipt_code = IPOPT_TIMESTAMP,
 	opt->ipt_len  = len;
 	opt->ipt_ptr  = 5;

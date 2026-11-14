@@ -399,7 +399,7 @@ msgid "flow"
 msgstr "fluxo"
 
 #
-msgid "Destination unreachable"
+msgid "Destination Unreachable"
 msgstr "Destino inalcançável"
 
 #
@@ -415,11 +415,11 @@ msgid "Beyond scope of source address"
 msgstr "Além do escopo do endereço de origem"
 
 #
-msgid "Address unreachable"
+msgid "Address Unreachable"
 msgstr "Endereço inalcançável"
 
 #
-msgid "Port unreachable"
+msgid "Port Unreachable"
 msgstr "Porta inalcançável"
 
 #
@@ -471,14 +471,6 @@ msgid "info"
 msgstr "info"
 
 #
-msgid "Echo request"
-msgstr "Requisição de eco"
-
-#
-msgid "Echo reply"
-msgstr "Resposta de eco"
-
-#
 msgid "MLD Query"
 msgstr "Consulta de MLD"
 
@@ -491,8 +483,8 @@ msgid "MLD Reduction"
 msgstr "Redução de MLD"
 
 #
-msgid "Unknown icmp type"
-msgstr "Tipo de icmp desconhecido"
+msgid "Unknown ICMP type"
+msgstr "Tipo de ICMP desconhecido"
 
 #
 msgid "Local error"
@@ -505,10 +497,6 @@ msgstr "Mensagem longa demais"
 #
 msgid "parse error"
 msgstr "erro de análise"
-
-#
-msgid "too short"
-msgstr "curta demais"
 
 #
 msgid "truncated"
@@ -607,8 +595,8 @@ msgid "data bytes"
 msgstr "bytes de dados"
 
 #
-msgid "(same route)"
-msgstr "(mesma rota)"
+msgid "same route"
+msgstr "mesma rota"
 
 #
 msgid "absolute not-standard"
@@ -631,20 +619,12 @@ msgid "Echo Reply"
 msgstr "Resposta de eco"
 
 #
-msgid "Destination Net Unreachable"
-msgstr "Rede de destino inalcançável"
+msgid "Net Unreachable"
+msgstr "Rede inalcançável"
 
 #
-msgid "Destination Host Unreachable"
-msgstr "Host de destino inalcançável"
-
-#
-msgid "Destination Protocol Unreachable"
-msgstr "Protocolo de destino inalcançável"
-
-#
-msgid "Destination Port Unreachable"
-msgstr "Porta de destino inalcançável"
+msgid "Protocol Unreachable"
+msgstr "Protocolo inalcançável"
 
 #
 msgid "Frag needed and DF set"
@@ -655,32 +635,32 @@ msgid "Source Route Failed"
 msgstr "Rota da origem falhou"
 
 #
-msgid "Destination Net Unknown"
-msgstr "Rede de destino desconhecida"
+msgid "Net Unknown"
+msgstr "Rede desconhecida"
 
 #
-msgid "Destination Host Unknown"
-msgstr "Host de destino desconhecido"
+msgid "Host Unknown"
+msgstr "Host desconhecido"
 
 #
 msgid "Source Host Isolated"
 msgstr "Host de origem isolado"
 
 #
-msgid "Destination Net Prohibited"
-msgstr "Rede de destino proibida"
+msgid "Net Prohibited"
+msgstr "Rede proibida"
 
 #
-msgid "Destination Host Prohibited"
-msgstr "Host de destino proibido"
+msgid "Host Prohibited"
+msgstr "Host proibido"
 
 #
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "Rede de destino inalcançável para o tipo de serviço"
+msgid "Net Unreachable for ToS"
+msgstr "Rede inalcançável para ToS"
 
 #
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "Host de destino inalcançável para o tipo de serviço"
+msgid "Host Unreachable for ToS"
+msgstr "Host inalcançável para o ToS"
 
 #
 msgid "Packet filtered"
@@ -695,36 +675,28 @@ msgid "Precedence Cutoff"
 msgstr "Corte de precedência"
 
 #
-msgid "Dest Unreachable"
-msgstr "Destino inalcançável"
-
-#
-msgid "Bad Code"
-msgstr "Código inválido"
-
-#
 msgid "Source Quench"
 msgstr "Source Quench"
 
 #
-msgid "Redirect Network"
-msgstr "Redirecionamento de rede"
-
-#
-msgid "Redirect Host"
-msgstr "Redirecionamento de host"
-
-#
-msgid "Redirect Type of Service and Network"
-msgstr "Redirecionamento de tipo de serviço e rede"
-
-#
-msgid "Redirect Type of Service and Host"
-msgstr "Redirecionamento de tipo de serviço e host"
-
-#
 msgid "Redirect"
 msgstr "Redirecionamento"
+
+#
+msgid "Network"
+msgstr "Rede"
+
+#
+msgid "Host"
+msgstr "Host"
+
+#
+msgid "ToS and Network"
+msgstr "ToS e rede"
+
+#
+msgid "ToS and Host"
+msgstr "ToS e host"
 
 #
 msgid "New nexthop"
@@ -735,12 +707,12 @@ msgid "Echo Request"
 msgstr "Requisição de eco"
 
 #
-msgid "Time to live exceeded"
-msgstr "Tempo de vida excedido"
+msgid "extension"
+msgstr "extensão"
 
 #
-msgid "Frag reassembly time exceeded"
-msgstr "Tempo de remontagem de frag excedido"
+msgid "TTL"
+msgstr "TTL"
 
 #
 msgid "Timestamp"
@@ -765,10 +737,6 @@ msgstr "Requisição da máscara de endereço"
 #
 msgid "Address Mask Reply"
 msgstr "Resposta da máscara de endereço"
-
-#
-msgid "Bad ICMP type"
-msgstr "Tipo inválido de ICMP"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -829,11 +797,11 @@ msgstr[0] "byte"
 msgstr[1] "bytes"
 
 #
-msgid "icmp_seq"
+msgid "seq"
 msgstr ""
 
 #
-msgid "ident"
+msgid "id"
 msgstr ""
 
 #
@@ -881,8 +849,8 @@ msgid "got 0x"
 msgstr "obteve 0x"
 
 # hostname ping statistics
-msgid " ping statistics"
-msgstr " estatísticas de ping"
+msgid "ping statistics"
+msgstr "estatísticas de ping"
 
 # %ld packets transmitted
 msgid "packet transmitted"
@@ -961,7 +929,7 @@ msgid "LOCALHOST"
 msgstr ""
 
 #
-msgid "(corrupted payload)"
+msgid "corrupted payload"
 msgstr "(payload corrompido)"
 
 #
@@ -977,8 +945,8 @@ msgid "asymm"
 msgstr ""
 
 #
-msgid "NET ERROR"
-msgstr "ERRO DE REDE"
+msgid "Net error"
+msgstr "Erro de rede"
 
 #
 msgid "reply received"

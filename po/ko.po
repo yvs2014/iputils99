@@ -344,7 +344,7 @@ msgid "flow"
 msgstr ""
 
 #
-msgid "Destination unreachable"
+msgid "Destination Unreachable"
 msgstr "대상에 도달 할 수 없음"
 
 #
@@ -360,11 +360,11 @@ msgid "Beyond scope of source address"
 msgstr "원천 주소의 범위를 벗어남"
 
 #
-msgid "Address unreachable"
+msgid "Address Unreachable"
 msgstr "접근 할 수 없는 주소"
 
 #
-msgid "Port unreachable"
+msgid "Port Unreachable"
 msgstr "접근 할 수 없는 포트"
 
 #
@@ -416,14 +416,6 @@ msgid "info"
 msgstr "정보"
 
 #
-msgid "Echo request"
-msgstr "반향 요청"
-
-#
-msgid "Echo reply"
-msgstr "반향 응답"
-
-#
 msgid "MLD Query"
 msgstr "MLD 요청"
 
@@ -436,8 +428,8 @@ msgid "MLD Reduction"
 msgstr "MLD 축소"
 
 #
-msgid "Unknown icmp type"
-msgstr "알 수 없는 icmp 형식"
+msgid "Unknown ICMP type"
+msgstr "알 수 없는 ICMP 형식"
 
 #
 msgid "Local error"
@@ -450,10 +442,6 @@ msgstr "메시지가 너무 길음"
 #
 msgid "parse error"
 msgstr "구문 분석 오류"
-
-#
-msgid "too short"
-msgstr "너무 짧음"
 
 #
 msgid "truncated"
@@ -548,8 +536,8 @@ msgid "data bytes"
 msgstr "바이트(데이터)"
 
 #
-msgid "(same route)"
-msgstr "(동일 경로)"
+msgid "same route"
+msgstr "동일 경로"
 
 #
 msgid "absolute not-standard"
@@ -572,20 +560,12 @@ msgid "Echo Reply"
 msgstr "반향 응답"
 
 #
-msgid "Destination Net Unreachable"
-msgstr "대상 넷에 도달 할 수 없음"
+msgid "Net Unreachable"
+msgstr "넷에 도달 할 수 없음"
 
 #
-msgid "Destination Host Unreachable"
-msgstr "대상 호스트에 도달 할 수 없음"
-
-#
-msgid "Destination Protocol Unreachable"
-msgstr "대상 통신규악에 도달 할 수 없음"
-
-#
-msgid "Destination Port Unreachable"
-msgstr "대상 포트에 도달 할 수 없음"
+msgid "Protocol Unreachable"
+msgstr "통신규악에 도달 할 수 없음"
 
 #
 msgid "Frag needed and DF set"
@@ -596,32 +576,32 @@ msgid "Source Route Failed"
 msgstr "원천 경로에 실패함"
 
 #
-msgid "Destination Net Unknown"
-msgstr "대상 넷을 알지 못함"
+msgid "Net Unknown"
+msgstr "넷을 알지 못함"
 
 #
-msgid "Destination Host Unknown"
-msgstr "대상 호스트를 알지 못함"
+msgid "Host Unknown"
+msgstr "호스트를 알지 못함"
 
 #
 msgid "Source Host Isolated"
 msgstr "원천 호스트가 격리됨"
 
 #
-msgid "Destination Net Prohibited"
-msgstr "대상 넷이 금지됨"
+msgid "Net Prohibited"
+msgstr "넷이 금지됨"
 
 #
-msgid "Destination Host Prohibited"
-msgstr "대상 호스트가 금지됨"
+msgid "Host Prohibited"
+msgstr "호스트가 금지됨"
 
 #
-msgid "Destination Net Unreachable for Type of Service"
-msgstr "서비스 형식으로 대상 네트워크에 도달할 수 없습니다"
+msgid "Net Unreachable for ToS"
+msgstr "서비스 형식으로 네트워크에 도달할 수 없습니다"
 
 #
-msgid "Destination Host Unreachable for Type of Service"
-msgstr "서비스 유형을 위해 대상 호스트에 도달 할 수 없습니다"
+msgid "Host Unreachable for ToS"
+msgstr "서비스 유형을 위해 호스트에 도달 할 수 없습니다"
 
 #
 msgid "Packet filtered"
@@ -636,36 +616,28 @@ msgid "Precedence Cutoff"
 msgstr "우선순위 효력 차단"
 
 #
-msgid "Dest Unreachable"
-msgstr "대상에 도달 할 수 없으며"
-
-#
-msgid "Bad Code"
-msgstr "잘못된 코드"
-
-#
 msgid "Source Quench"
 msgstr "발신 제한"
 
 #
-msgid "Redirect Network"
-msgstr "네트워크 넘겨주기"
-
-#
-msgid "Redirect Host"
-msgstr "호스트 넘겨주기"
-
-#
-msgid "Redirect Type of Service and Network"
-msgstr "서비스 및 네트워크의 경로 재지정 형식"
-
-#
-msgid "Redirect Type of Service and Host"
-msgstr "서비스 및 호스트의 경로 재지정 형식"
-
-#
 msgid "Redirect"
 msgstr "넘겨주기"
+
+#
+msgid "Network"
+msgstr "네트워크"
+
+#
+msgid "Host"
+msgstr "호스트"
+
+#
+msgid "ToS and Network"
+msgstr "서비스 및 네트워크의"
+
+#
+msgid "ToS and Host"
+msgstr "서비스 및 호스트의"
 
 #
 msgid "New nexthop"
@@ -676,12 +648,12 @@ msgid "Echo Request"
 msgstr "반향 요청"
 
 #
-msgid "Time to live exceeded"
-msgstr "유효기간(ttl)이 초과됨"
+msgid "extension"
+msgstr "확대"
 
 #
-msgid "Frag reassembly time exceeded"
-msgstr "조각 재결합 시간이 초과됨"
+msgid "TTL"
+msgstr "TTL"
 
 #
 msgid "Timestamp"
@@ -706,10 +678,6 @@ msgstr "주소 매스크 요청"
 #
 msgid "Address Mask Reply"
 msgstr "주소 매스크 응답"
-
-#
-msgid "Bad ICMP type"
-msgstr "잘못된 ICMP 형식"
 
 #
 msgid "Pattern must be specified as hex digits"
@@ -769,11 +737,11 @@ msgid_plural "bytes"
 msgstr[0] "바이트"
 
 #
-msgid "icmp_seq"
+msgid "seq"
 msgstr ""
 
 #
-msgid "ident"
+msgid "id"
 msgstr ""
 
 #
@@ -821,8 +789,8 @@ msgid "got 0x"
 msgstr "수신: 0x"
 
 # hostname ping statistics
-msgid " ping statistics"
-msgstr " ping 통계"
+msgid "ping statistics"
+msgstr "ping 통계"
 
 # %ld packets transmitted
 msgid "packet transmitted"
@@ -890,7 +858,7 @@ msgid "LOCALHOST"
 msgstr "로컬호스트"
 
 #
-msgid "(corrupted payload)"
+msgid "corrupted payload"
 msgstr "(손상된 데이터를)"
 
 #
@@ -906,7 +874,7 @@ msgid "asymm"
 msgstr ""
 
 #
-msgid "NET ERROR"
+msgid "Net error"
 msgstr "넷 오류"
 
 #
