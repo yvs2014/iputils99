@@ -34,7 +34,11 @@ void setsock_mtudisc(int fd, int mtu, bool ip6) {
 }
 
 void setsock_mtudisc_probedo(int fd, bool ip6) {
-	int mtu = ip6 ? IPV6_PMTUDISC_PROBE : IP_PMTUDISC_PROBE;
+	int mtu =
+#if IPV6_PMTUDISC_PROBE != IP_PMTUDISC_PROBE
+		ip6 ? IPV6_PMTUDISC_PROBE :
+#endif
+		IP_PMTUDISC_PROBE;
 	if (setsockopt(fd, IPPROTO46, IPMTU46_VAL, &mtu, sizeof(mtu)) < 0)
 		setsock_mtudisc(fd, PMTUDISCDO, ip6); // fallback
 }

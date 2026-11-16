@@ -89,16 +89,14 @@ uint nl_nametoindex(const char name[], struct ifaddrs *ifas) {
 	}
 	//
 	uint ndx = 0;
-	if (list) {
+	if (list)
 		for (const struct ifaddrs *ifa = list; ifa;
-		     ifa = ifa->ifa_next, ndx = 0)
-		{
+		     ifa = ifa->ifa_next, ndx = 0) {
 			ndx = if_nametoindex(ifa->ifa_name);
-			if (ndx && (ndx <= INT_MAX))
-				if (nl_altname(ndx, name))
-					break;
+			if (ndx && (ndx <= INT_MAX) && nl_altname(ndx, name))
+				break;
 		}
-	} else
+	else
 		warnxt("%s", strerror(ENODATA));
 	//
 	if (!ifas && list)

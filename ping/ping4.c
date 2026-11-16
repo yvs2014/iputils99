@@ -168,9 +168,8 @@ static inline void print_ipicmp4hdr(const struct icmphdr *icmp, const struct iph
 	const bool_opt_t *opt, uint8_t color)
 {
 	uint32_t gw = ntohl(icmp->un.gateway);
-	if (print_icmp4msg(icmp->type, icmp->code, gw, gw, opt, color))
-		if (opt->verbose)
-			print_ip4hdr(ip, opt->resolve, opt->flood);
+	if (print_icmp4msg(icmp->type, icmp->code, gw, gw, opt, color) && opt->verbose)
+		print_ip4hdr(ip, opt->resolve, opt->flood);
 }
 
 static inline bool ping4_icmp_extra_type(state_t *rts,
@@ -222,7 +221,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 	size_t  hlen  =  0;
 	int away      = -1;
 	if (raw) {
-		hlen = ip->ihl * 4;
+		hlen = ip->ihl * (size_t)4;
 		if ((received < (hlen + sizeof(struct icmphdr))) || (ip->ihl < 5)) {
 			if (rts->opt.verbose)
 				warnxt("%s: %s (%zd %s)",
@@ -379,8 +378,9 @@ static inline const char *ping4_run_args(const char *target, bool hops, struct a
 			freeaddrinfo(res);
 	}
 	if (hops && ipt) {
-		if ((ipt->ipt_len * 2) < (ARRAY_LEN(ipt->data) - 1)) {
-			ipt->data[ipt->ipt_len * 2] = to->sin_addr.s_addr;
+		size_t n = ipt->ipt_len * (size_t)2;
+		if ((n + 1) < ARRAY_LEN(ipt->data)) {
+			ipt->data[n] = to->sin_addr.s_addr;
 			ipt->ipt_len++;
 		} else
 			errxt(EINVAL, "%s, %s=%zd", _TOOMANY_HOPS, _MAX, ARRAY_LEN(ipt->data) / 2);
@@ -430,6 +430,8 @@ static int probe_dst4(state_t *rts, struct ip_timestamp *ipt, // NONNULL(1, 2)
 			close(fd);
 			return -1;
 		}
+		break;
+	default:
 		break;
 	}
 	//
@@ -482,8 +484,8 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	}
 	if (arg_cnt > 1) {
 		if (rts->opt.rroute)
-			usage(EINVAL);
-		else if (rts->so.ts_opt < 0)
+			usage(EINVAL); // NORETURN
+		if (rts->so.ts_opt < 0)
 			rts->opt.sourceroute = true;
 		else if (rts->so.ts_opt != IPOPT_TS_PRESPEC)
 			errxt(EINVAL, "%s", _ONLY_TSPRESPEC);
@@ -537,9 +539,8 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		(rts->opt.ident && !sock->raw) ? rts->ident16 : 0,
 		rts->opt.strictsource, SA(&rts->source), !IP6);
 
-	if (rts->opt.connect_sk)
-		if (connect(sock->fd, SA(&rts->whereto), SA4_LEN) < 0)
-			errt(errno, "%s", "connect()");
+	if (rts->opt.connect_sk && (connect(sock->fd, SA(&rts->whereto), SA4_LEN) < 0))
+		errt(errno, "%s", "connect()");
 	//
 	size_t optlen = ((rts->so.ts_opt >= 0) || rts->opt.rroute || rts->opt.sourceroute) ?
 		MAX_IPOPTLEN : 0;

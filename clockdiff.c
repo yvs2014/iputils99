@@ -299,10 +299,10 @@ static inline timediff_e measure_msg(state_t *rts, measurement_data_t *m) {
 
 // Handles wrap-around to avoid that around midnight small time differences appear enormous.
 // However, the two machine's clocks must be within 12 hours from each other.
-#define SET_DELTA(delta, keep, value) long delta = (value);    \
-	if      (delta < HALFDAY_BEFORE) delta += DAY_IN_MSEC; \
-	else if (delta > HALFDAY_AFTER)  delta -= DAY_IN_MSEC; \
-	if (delta < keep) keep = delta;
+#define SET_DELTA(delta, keep, value) long (delta) = (value);      \
+	if      ((delta) < HALFDAY_BEFORE) (delta) += DAY_IN_MSEC; \
+	else if ((delta) > HALFDAY_AFTER)  (delta) -= DAY_IN_MSEC; \
+	if ((delta) < (keep)) (keep) = (delta);
 //
 		SET_DELTA(delta1, m->min1, dt.peer1 - dt.send)
 		SET_DELTA(delta2, m->min2, dt.recv - (rts->optlen ? dt.peer2 : dt.peer1))
@@ -423,6 +423,8 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 	}	break;
 	case 'I':
 		RTS_DATA->ts_format = "%FT%T%z"; // ISO
+		break;
+	default:
 		break;
 	}
 #undef RTS_DATA

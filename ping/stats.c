@@ -44,7 +44,6 @@
 #include "iputils.h"
 
 #define RTT_MAX (UINT8_MAX * 2)
-#define MAXWAIT_USEC (MAXWAIT * MLN)
 
 // "min/avg/max/mdev ms"
 #define TIMING_MS   "%s = " MSFMT "/" MSFMT "/" MSFMT "/" TM_MS
@@ -162,7 +161,7 @@ void print_status(const state_t *rts) {
 		return;
 	in_print_status = true;
 	int lost = rts->ntransmitted ?
-		(100ll * (rts->ntransmitted - rts->nreceived)) / rts->ntransmitted
+		(100LL * (rts->ntransmitted - rts->nreceived)) / rts->ntransmitted
 		: 0;
 	// stderr due to signals
 	fprintf(stderr, "%ld/%ld %s", rts->nreceived, rts->ntransmitted, _PACKETS);
@@ -296,8 +295,9 @@ static inline void calculator(state_t *rts, stat_aux_t *stat) {
 			rts->opt.latency = true;
 			gettimeofday(&tv, NULL);
 		} while (true);
-		if (stat->triptime > MAXWAIT_USEC)
-			stat->triptime = MAXWAIT_USEC;
+		long maxwait = (long)MAXWAIT * MLN;
+		if (stat->triptime > maxwait)
+			stat->triptime = maxwait;
 		if (stat->ack) {
 			rts->tsum  += stat->triptime;
 			rts->tsum2 += (double)stat->triptime * stat->triptime;

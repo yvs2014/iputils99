@@ -301,12 +301,11 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 		tokens = ntokens - rts->interval;
 	}
 
-	if (rts->opt.outstanding && (rts->ntransmitted > 0)) {
-		if(!rcvd_test(rts->ntransmitted, rts->bitmap)) {
-			PRINT_TIMESTAMP;
-			printf("%s: %s=%lu\n", _NO_ANSWER, _SEQ, rts->ntransmitted % MAX_DUP_CHK);
-			fflush(stdout);
-		}
+	if (rts->opt.outstanding && (rts->ntransmitted > 0) &&
+	    !rcvd_test(rts->ntransmitted, rts->bitmap)) {
+		PRINT_TIMESTAMP;
+		printf("%s: %s=%lu\n", _NO_ANSWER, _SEQ, rts->ntransmitted % MAX_DUP_CHK);
+		fflush(stdout);
 	}
 
 	int rc;
@@ -445,10 +444,8 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 
 	if (itistty) {
 		struct winsize w = {0};
-		if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1) {
-			if (w.ws_col > 0)
-				rts->screen_width = w.ws_col;
-		}
+		if ((ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) >= 0) && (w.ws_col > 0))
+			rts->screen_width = w.ws_col;
 	}
 }
 
@@ -568,10 +565,9 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock, ui
 #endif
 				struct timeval timeval = {0};
 				if (rts->opt.latency || !recv_tv) {
-					if (rts->opt.latency || ioctl(sock->fd, SIOCGSTAMP, &timeval)) {
-						if (gettimeofday(&timeval, NULL) < 0)
-							memset(&timeval, 0, sizeof(timeval));
-					}
+					if ((rts->opt.latency || ioctl(sock->fd, SIOCGSTAMP, &timeval)) &&
+					    (gettimeofday(&timeval, NULL) < 0))
+						memset(&timeval, 0, sizeof(timeval));
 					recv_tv = &timeval;
 				}
 				not_ours = fnset->parse_reply(rts, sock->raw, &msg, received, addrbuf, recv_tv);
@@ -696,9 +692,8 @@ void bind_by_need(int fd, uint16_t port, bool strict, struct sockaddr *src, bool
 		else
 			SA4(src)->sin_port  = port;
 	}
-	if (strict || port)
-		if (bind(fd, src, ip6 ? SA6_LEN : SA4_LEN) < 0)
-			errt(errno, "bind(%s)", "icmp-socket");
+	if ((strict || port) && (bind(fd, src, ip6 ? SA6_LEN : SA4_LEN) < 0))
+		errt(errno, "bind(%s)", "icmp-socket");
 }
 
 void pmtu_interval(state_t *rts) { // NONNULL(1)

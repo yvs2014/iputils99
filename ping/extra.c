@@ -36,9 +36,8 @@ void ping6_unspec(const char *target, const struct in6_addr *addr,
 		if (ai->ai_family != AF_INET6)
 			continue;
 		struct sockaddr_in6 *sa = (struct sockaddr_in6 *)ai->ai_addr;
-		if (sa && sa->sin6_scope_id)
-			if (!memcmp(addr, &sa->sin6_addr, sizeof(struct in6_addr)))
-				break;
+		if (sa && sa->sin6_scope_id && !memcmp(addr, &sa->sin6_addr, sizeof(struct in6_addr)))
+			break;
 	}
 	if (res)
 		freeaddrinfo(res);

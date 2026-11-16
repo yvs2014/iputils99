@@ -21,12 +21,10 @@
 #include "usage.h"
 
 void close_stdout(void) {
-	if (fclose(stdout))
-		if ((errno != EBADF) && (errno != EPIPE))
-			errt(errno, "stdout");
-	if (fclose(stderr))
-		if ((errno != EBADF) && (errno != EPIPE))
-			errt(errno, "stderr");
+	if (fclose(stdout) && (errno != EBADF) && (errno != EPIPE))
+		errt(errno, "stdout");
+	if (fclose(stderr) && (errno != EBADF) && (errno != EPIPE))
+		errt(errno, "stderr");
 }
 
 #ifndef timespecsub

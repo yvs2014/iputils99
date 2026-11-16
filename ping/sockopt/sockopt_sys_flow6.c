@@ -78,7 +78,7 @@ void setsock_flow6(int fd, int flow, size_t size, struct sockaddr *sa, socklen_t
 		memcpy(&flr->flr_dst, &sa6->sin6_addr, sizeof(sa6->sin6_addr));
 		if (setsockopt(fd, IPPROTO_IPV6, IPV6_FLOWLABEL_MGR, flr, sizeof(*flr)) < 0)
 			errt(errno, "setsockopt(%s)", "IPV6_FLOWLABEL_MGR");
-		sa6->sin6_flowinfo = flow = flr->flr_label;
+		sa6->sin6_flowinfo = flr->flr_label;
 		int on = 1;
 		if (setsockopt(fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND, &on, sizeof(on)) < 0)
 			errt(errno, "setsockopt(%s)", "IPV6_FLOWINFO_SEND");

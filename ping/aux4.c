@@ -98,7 +98,7 @@ uint16_t in_cksum(const uint16_t *addr, int len, uint16_t csum) {
 void print_ip4hdr(const struct iphdr *ip, bool resolve, bool flood) {
 	printf("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst Data\n");
 	printf(" %1x  %1x  %02x %04x %04x", ip->version, ip->ihl, ip->tos, ip->tot_len, ip->id);
-	printf("   %1x %04x", ((ip->frag_off) & 0xe000) >> 13, (ip->frag_off) & 0x1fff);
+	printf("   %1x %04x", (ip->frag_off & 0xe000) >> 13, ip->frag_off & 0x1fff);
 	printf("  %02x  %02x %04x", ip->ttl, ip->protocol, ip->check);
 	printf(" %s ", inet_ntoa(*(struct in_addr *)&ip->saddr));
 	printf(" %s ", inet_ntoa(*(struct in_addr *)&ip->daddr));

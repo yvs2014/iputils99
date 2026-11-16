@@ -60,7 +60,7 @@ NORETURN static void usage(int rc) {
 	usage_common(rc, &use);
 }
 
-#define STREQ(a, b) (!strncmp((a), (b), AI_FMTLEN * 2))
+#define STREQ(a, b) (!strncmp((a), (b), AI_FMTLEN * (size_t)2))
 
 #define IF_AI_MACRO(macro) { if (STREQ(arg, (#macro))) return (macro); }
 #define IF_AI_MACRONAME(macro, name) { if (STREQ(arg, (name))) return (macro); }
@@ -190,6 +190,8 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 		list_ai_consts();
 	case 'v':
 		GAI_OPT->verbose = true;
+		break;
+	default:
 		break;
 	}
 #undef GAI_OPT

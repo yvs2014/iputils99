@@ -81,7 +81,7 @@ static int niquery_option_subject_addr_handler(struct ping_ni *ni, int index, co
 static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, const char *name);
 static int niquery_option_help_handler(struct ping_ni *ni, int index, const char *arg);
 
-struct niquery_option niquery_options[] = {
+static struct niquery_option niquery_options[] = {
 	NIQUERY_OPTION("name",			0,	0,				niquery_option_name_handler),
 	NIQUERY_OPTION("fqdn",			0,	0,				niquery_option_name_handler),
 	NIQUERY_OPTION("ipv6",			0,	0,				niquery_option_ipv6_handler),

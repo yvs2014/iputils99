@@ -127,9 +127,8 @@ void setsock_buffer(int fd, int sndbuf, int preload) {
 		warnt("setsockopt(%s)", _STR(SO_RCVBUF));
 	//
 	int rcvbuf = hold;
-	if (!getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &hold, &size))
-		if (hold < rcvbuf)
-			warnxt("%s: %s", _WARN, _SMALL_RCVBUF);
+	if (!getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &hold, &size) && (hold < rcvbuf))
+		warnxt("%s: %s", _WARN, _SMALL_RCVBUF);
 }
 
 void setsock_debug(int fd) {
@@ -177,7 +176,7 @@ bool setsock_rcvtime(int fd, int interval) {
 	 * Note, it is just an optimization allowing to avoid redundant poll() */
 	struct timeval tv = {
 		.tv_sec  = SCHINT(interval) / 1000,
-		.tv_usec = 1000 * (SCHINT(interval) % 1000),
+		.tv_usec = (suseconds_t)1000 * (SCHINT(interval) % 1000),
 	  };
 	int rc = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 	if (rc < 0)

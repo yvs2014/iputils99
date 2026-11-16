@@ -333,14 +333,11 @@ static int probe_ttl(state_t *rts) {
 		struct probehdr *hdr = rts->pktbuf;
 		for (probe = 0; probe < MAX_PROBES; probe++) {
 			hdr->ttl = rts->ttl;
-			switch (rts->af) {
-			case AF_INET6:
-				SA6(&rts->addr)->sin6_port = htons(rts->port + rts->hisptr);
-				break;
-			case AF_INET:
-				SA4(&rts->addr)->sin_port  = htons(rts->port + rts->hisptr);
-				break;
-			}
+			uint16_t port = htons(rts->port + rts->hisptr);
+			if (rts->af == AF_INET6)
+				SA6(&rts->addr)->sin6_port = port;
+			else
+				SA4(&rts->addr)->sin_port  = port;
 			clock_gettime(CLOCK_MONOTONIC, &hdr->ts);
 			rts->his[rts->hisptr].hops     = rts->ttl;
 			rts->his[rts->hisptr].sendtime = hdr->ts;
@@ -439,9 +436,7 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 				break;
 			}
 		// open socket
-		switch (ai->ai_family) {
-		case AF_INET:
-		case AF_INET6:
+		if ((ai->ai_family == AF_INET) || (ai->ai_family == AF_INET6)) {
 			sock = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 			if (rts->verbose)
 				warnxt("socket(af=%d, type=%d, proto=%d)",
@@ -453,7 +448,6 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 				rts->addrlen = ai->ai_addrlen;
 				rts->af      = ai->ai_family;
 			}
-			break;
 		}
 		if (sock >= 0)
 			break;
@@ -500,6 +494,8 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 		break;
 	case 'v':
 		RTS_DATA->verbose = true;
+		break;
+	default:
 		break;
 	}
 }

@@ -85,9 +85,9 @@
 #define MAXPAYLOAD	(USHRT_MAX - PACKHDRLEN)		// largest payload
 #define PINGTYPE(raw)	((raw) ? "raw" : "datagram")
 
-#define AFTYPE(af)	(af == AF_UNSPEC ? "unspec" : \
-			 af == AF_INET   ? "ip4"    : \
-			 af == AF_INET6  ? "ip6"    : "")
+#define AFTYPE(af)	((af) == AF_UNSPEC ? "unspec" : \
+			 (af) == AF_INET   ? "ip4"    : \
+			 (af) == AF_INET6  ? "ip6"    : "")
 #define PING_FEATURES (FEAT_CAP | FEAT_IDN | FEAT_NLS | FEAT_ALTNAME | FEAT_RFC4620)
 
 /* This may not be needed if both protocol versions always had the same value,
@@ -175,8 +175,7 @@ static void open_socket(sock_t *sock, int af, int proto, bool verbose) {
 			warn_if_missing_cap(CAP_NET_RAW);
 		if (errno)
 			errt(errno, "%s", __func__);
-		else
-			errxt(EXIT_FAILURE, "%s", __func__);
+		errxt(EXIT_FAILURE, "%s", __func__);
 	}
 }
 
@@ -431,6 +430,8 @@ static void switch_opt(char c, void *data) { // NONNULL(2)
 		/* lingertime will be converted to usec later */
 		RTS_DATA->lingertime = (int)(value * 1000);
 	}	break;
+	default:
+		break;
 	}
 #undef RTS_DATA
 #undef RTS_HINT

@@ -324,14 +324,9 @@ static int probe_dst6(state_t *rts, struct sockaddr_in6 *dst, int sock_fd, bool 
 	dst->sin6_port = htons(1025);
 	if (connect(fd, SA(dst), SA6_LEN) >= 0)
 		return fd;
-	switch (errno) {
-	case EHOSTUNREACH:
-	case ENETUNREACH:
-		if (next) {
-			close(fd);
-			return -1;
-		}
-		break;
+	if (((errno == EHOSTUNREACH) || (errno == ENETUNREACH)) && next) {
+		close(fd);
+		return -1;
 	}
 	//
 	errt(errno, "connect");
@@ -368,8 +363,8 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 	//
 	char *target = NULL;
 	if (argc > 1)
-		usage(EINVAL);
-	else if (argc == 1)
+		usage(EINVAL); // NORETURN
+	if (argc == 1)
 		target = *argv;
 #ifdef ENABLE_RFC4620
 	else if (rts->ni) {
