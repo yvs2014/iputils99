@@ -56,7 +56,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <err.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <netdb.h>
@@ -226,7 +225,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 		hlen = ip->ihl * 4;
 		if ((received < (hlen + sizeof(struct icmphdr))) || (ip->ihl < 5)) {
 			if (rts->opt.verbose)
-				warnx("%s: %s (%zd %s)",
+				warnxt("%s: %s (%zd %s)",
 					sprint_addr(SA4(addr), SA4_LEN, rts->opt.resolve),
 				_PKT_SHORT, received, _N_BYTES(received));
 			return true;
@@ -362,12 +361,12 @@ static inline const char *ping4_run_args(const char *target, bool hops, struct a
 			int rc = GAI_WRAPPER(target, NULL, &hints, &res);
 			if (rc) {
 				if (rc == EAI_SYSTEM)
-					err(errno, "%s", "getaddrinfo()");
-				errx(rc, TARGET_FMT ": %s", target, gai_strerror(rc));
+					errt(errno, "%s", "getaddrinfo()");
+				errxt(rc, TARGET_FMT ": %s", target, gai_strerror(rc));
 			}
 		}
 		if (!res)
-			errx(EXIT_FAILURE, "%s", "getaddrinfo()");
+			errxt(EXIT_FAILURE, "%s", "getaddrinfo()");
 		memcpy(to, res->ai_addr, SA4_LEN);
 		/*
 		 * On certain network setup getaddrinfo() can return empty
@@ -384,7 +383,7 @@ static inline const char *ping4_run_args(const char *target, bool hops, struct a
 			ipt->data[ipt->ipt_len * 2] = to->sin_addr.s_addr;
 			ipt->ipt_len++;
 		} else
-			errx(EINVAL, "%s, %s=%zd", _TOOMANY_HOPS, _MAX, ARRAY_LEN(ipt->data) / 2);
+			errxt(EINVAL, "%s, %s=%zd", _TOOMANY_HOPS, _MAX, ARRAY_LEN(ipt->data) / 2);
 	}
 	return hostname;
 }
@@ -394,7 +393,7 @@ static int probe_dst4(state_t *rts, struct ip_timestamp *ipt, // NONNULL(1, 2)
 {
 	int fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (fd < 0)
-		err(errno, "socket");
+		errt(errno, "socket");
 	if (rts->so.device) {
 		uint iface = nl_name2ndx(rts->so.device);
 		if (!iface)
@@ -419,8 +418,8 @@ static int probe_dst4(state_t *rts, struct ip_timestamp *ipt, // NONNULL(1, 2)
 	switch (errno) {
 	case EACCES: {
 		if (!rts->opt.broadcast)
-			errx(EINVAL, _WANT_BRD);
-		warnx("%s: %s", _WARN, _PINGING_BRD);
+			errxt(EINVAL, _WANT_BRD);
+		warnxt("%s: %s", _WARN, _PINGING_BRD);
 		setsock_broadcast(fd);
 		if (connect(fd, SA(&dst), SA4_LEN) >= 0)
 			return fd;
@@ -434,14 +433,14 @@ static int probe_dst4(state_t *rts, struct ip_timestamp *ipt, // NONNULL(1, 2)
 		break;
 	}
 	//
-	err(errno, "connect");
+	errt(errno, "connect");
 }
 
 // take next addrinfo if `rc' < 0, otherwise exit with `rc'
 int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const sock_t *sock) { // NONNULL(1, 4, 5)
 #ifdef ENABLE_RFC4620
 	if (rts->ni && niquery_is_enabled(rts->ni))
-		errx(EINVAL, "%s", _NI_NOT_OVER4);
+		errxt(EINVAL, "%s", _NI_NOT_OVER4);
 #endif
 	fnset_t ping4_func_set = {
 		.bpf_filter     = ping4_bpf_filter,
@@ -487,12 +486,12 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		else if (rts->so.ts_opt < 0)
 			rts->opt.sourceroute = true;
 		else if (rts->so.ts_opt != IPOPT_TS_PRESPEC)
-			errx(EINVAL, "%s", _ONLY_TSPRESPEC);
+			errxt(EINVAL, "%s", _ONLY_TSPRESPEC);
 		else if ((size_t)argc > ARRAY_LEN(((struct ip_timestamp *)0)->data))
-			errx(EINVAL, "%s: %d (%s=%zd)", _TOOMANY_TSHOPS, argc,
+			errxt(EINVAL, "%s: %d (%s=%zd)", _TOOMANY_TSHOPS, argc,
 				_MAX, ARRAY_LEN(((struct ip_timestamp *)0)->data) - 1);
 	} else if (rts->so.ts_opt == IPOPT_TS_PRESPEC)
-		errx(EINVAL, "%s", _NO_TS_HOPS);
+		errxt(EINVAL, "%s", _NO_TS_HOPS);
 
 	if (!SA4ADDR(&rts->source)) {
 		// part for ip46 merging
@@ -503,7 +502,7 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		SA4(&rts->source)->sin_port = 0;
 		close(fd);
 		if (rts->so.device && !nl_name2ndx(rts->so.device)) {
-			warnx("%s: %s: %s", _WARN, rts->so.device, WARN_NOSRCDEV);
+			warnxt("%s: %s: %s", _WARN, rts->so.device, WARN_NOSRCDEV);
 			rts->unreldev = true;
 		}
 	} else if (rts->so.device)
@@ -540,7 +539,7 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 
 	if (rts->opt.connect_sk)
 		if (connect(sock->fd, SA(&rts->whereto), SA4_LEN) < 0)
-			err(errno, "%s", "connect()");
+			errt(errno, "%s", "connect()");
 	//
 	size_t optlen = ((rts->so.ts_opt >= 0) || rts->opt.rroute || rts->opt.sourceroute) ?
 		MAX_IPOPTLEN : 0;
@@ -553,7 +552,7 @@ int ping4_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 				(MAX_IPOPTLEN - 4);
 			if (setsock_ipopt_ts(sock->fd, ipopt.ipt, flg, len) < 0) {
 //				try fallback with undocumented `flg = 2'?
-				err(errno, _TS_OPT);
+				errt(errno, _TS_OPT);
 			}
 		} else if (rts->opt.rroute)
 			setsock_ipopt_rr(sock->fd, ipopt.ipn);

@@ -18,7 +18,6 @@
 #include <string.h>
 #include <limits.h>
 #include <assert.h>
-#include <err.h>
 #include <errno.h>
 #include <time.h>
 #include <sys/time.h>
@@ -32,6 +31,7 @@
 #include <linux/errqueue.h> // SO_EE_ORIGIN_xxx
 
 #include "iputils.h"
+#include "usage.h"
 #include "str2num.h"
 #include "sock_pt.h"
 
@@ -296,7 +296,7 @@ do { // was 'restart:'
 		break;
 	default:
 		putchar('\n');
-		warnx("%s", _NET_ERROR);
+		warnxt("%s", _NET_ERROR);
 		re = true;
 	}
 	if (ch)
@@ -310,7 +310,7 @@ do { // was 'restart:'
 
 static inline void setsock_opts(int sock, bool ip6, bool verbose) {
 	if (verbose)
-		warnx("set sock%c options: %s, %s", '4', "MTU_DISCOVER, RECVERR",
+		warnxt("set sock%c options: %s, %s", '4', "MTU_DISCOVER, RECVERR",
 			ip6 ?
 #ifdef IPV6_RECVHOPLIMIT
 			"RECVHOPLIMIT, 2292HOPLIMIT"
@@ -399,7 +399,7 @@ NORETURN static void usage(int rc) {
 
 static inline int resolve(const char *target, state_t *rts, const struct addrinfo *hints) {
 	if (rts->verbose)
-		warnx("resolve(%s, port=%u)", target, rts->port);
+		warnxt("resolve(%s, port=%u)", target, rts->port);
 	char service[NI_MAXSERV];
 	sprintf(service, "%u", rts->port);
 	//
@@ -407,11 +407,11 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 	int rc = GAI_WRAPPER(target, service, hints, &res);
 	if (rc) {
 		if (rc == EAI_SYSTEM)
-			err(errno, "%s", "getaddrinfo()");
-		errx(rc, TARGET_FMT ": %s", target, gai_strerror(rc));
+			errt(errno, "%s", "getaddrinfo()");
+		errxt(rc, TARGET_FMT ": %s", target, gai_strerror(rc));
 	}
 	if (!res)
-		errx(EXIT_FAILURE, "%s", "getaddrinfo()");
+		errxt(EXIT_FAILURE, "%s", "getaddrinfo()");
 	//
 	int sock = -1;
 	for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
@@ -420,7 +420,7 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 			switch (hints->ai_family) {
 			case AF_INET6:
 				errno = ENETUNREACH;
-				err(errno, _EMBEDDED_ADDR4);
+				errt(errno, _EMBEDDED_ADDR4);
 				break;
 			case AF_UNSPEC: {
 				// like ping:unmap_ai_sa4(ai);
@@ -433,7 +433,7 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 				memcpy(ai->ai_addr, &sa4, SA4_LEN);
 				ai->ai_addrlen = SA4_LEN;
 				ai->ai_family  = AF_INET;
-				warnx("%s: %s", WARN, _EMBEDDED_ADDR4);
+				warnxt("%s: %s", WARN, _EMBEDDED_ADDR4);
 			}	break;
 			default:
 				break;
@@ -444,10 +444,10 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 		case AF_INET6:
 			sock = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 			if (rts->verbose)
-				warnx("socket(af=%d, type=%d, proto=%d)",
+				warnxt("socket(af=%d, type=%d, proto=%d)",
 					ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 			if (sock < 0)
-				warn("socket(af=%d)", ai->ai_family);
+				warnt("socket(af=%d)", ai->ai_family);
 			else { // success
 				memcpy(&rts->addr, ai->ai_addr, ai->ai_addrlen);
 				rts->addrlen = ai->ai_addrlen;
@@ -505,12 +505,16 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 }
 
 static void resume(const state_t *rts) {
+	if (itistty)
+		fputs(COLOR_BOLD, stdout);
 	printf("     %s: %s=%d", _RESUME, _PMTU, rts->pktsize);
 	if (rts->hops_to >= 0)
 		printf(" %s=%d", _HOPS, rts->hops_to);
 	if (rts->hops_from >= 0)
 		printf(" %s=%d", _BACK, rts->hops_from);
 	putchar('\n');
+	if (itistty)
+		fputs(COLOR_NORMAL, stdout);
 }
 
 
@@ -550,7 +554,7 @@ int main(int argc, char **argv) {
 		int rc = (argc > 0) ? EINVAL : EDESTADDRREQ;
 		if (argc <= 0) {
 			errno = rc;
-			warn("%s", _NO_GOAL);
+			warnt("%s", _NO_GOAL);
 		}
 		usage(rc);
 	}
@@ -559,11 +563,11 @@ int main(int argc, char **argv) {
 	//
 	rts.sock = resolve(argv[0], &rts, &hints);
 	if ((rts.sock < 0) || !rts.af)
-		errx(EXIT_FAILURE, "resolve(%s)", argv[0]);
+		errxt(EXIT_FAILURE, "resolve(%s)", argv[0]);
 
 	if ((rts.af != AF_INET) && (rts.af != AF_INET6)) {
 		errno = EAFNOSUPPORT;
-		err(errno, "%d", rts.af);
+		errxt(errno, "%d", rts.af);
 	}
 	{ bool ip6 = rts.af == AF_INET6;
 	  setsock_opts(rts.sock, ip6, rts.verbose);
@@ -574,16 +578,16 @@ int main(int argc, char **argv) {
 
 	if (rts.pktsize <= rts.hdrsize) {
 		errno = ERANGE;
-		err(errno, "%s: %u-%u", _PKT_LENGTH, rts.hdrsize, UINT16_MAX);
+		errxt(errno, "%s: %u-%u", _PKT_LENGTH, rts.hdrsize, UINT16_MAX);
 	}
 
 	rts.pkthold = rts.pktsize;
 	rts.pktbuf  = calloc(1, rts.pkthold);
 	if (!rts.pktbuf)
-		err(errno, "calloc(%d)", rts.pkthold);
+		errxt(errno, "calloc(%d)", rts.pkthold);
 
 	if (rts.verbose)
-		warnx("run upto %u hops", rts.max_hops);
+		warnxt("run upto %u hops", rts.max_hops);
 	for (int ttl = 1; ttl <= rts.max_hops; ttl++) {
 		rts.ttl = ttl;
 		setsock_ttl(rts.sock, ttl, !MULTICAST_TOO, rts.af == AF_INET6);
@@ -607,8 +611,13 @@ int main(int argc, char **argv) {
 					break;
 			}
 		} while (again);
-		if (rc < 0)
+		if (rc < 0) {
+			if (itistty)
+				fputs(COLOR_YELLOW, stdout);
 			printf("%2d:  %s\n", rts.ttl, _NO_REPLY);
+			if (itistty)
+				fputs(COLOR_NORMAL, stdout);
+		}
 	}
 	printf("     %s: %s=%d\n", _TOO_MANY_HOPS, _PMTU, rts.pktsize);
 

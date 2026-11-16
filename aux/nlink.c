@@ -11,11 +11,11 @@
 #include <string.h>
 #include <limits.h>
 #include <errno.h>
-#include <err.h>
 #include <net/if.h>
 #include <net/if_arp.h>
 
 #include "nlink.h"
+#include "warnerr.h"
 
 #define NETLINK		"NETLINK"
 #define NL_WRONG_TYPE	"%s: got type=%u, expected=%u"
@@ -84,7 +84,7 @@ uint nl_nametoindex(const char name[], struct ifaddrs *ifas) {
 		return 0;
 	struct ifaddrs *list = ifas;
 	if (!ifas && getifaddrs(&list)) {
-		warn("getifaddrs()");
+		warnt("getifaddrs()");
 		return 0;
 	}
 	//
@@ -99,7 +99,7 @@ uint nl_nametoindex(const char name[], struct ifaddrs *ifas) {
 					break;
 		}
 	} else
-		warnx("%s", strerror(ENODATA));
+		warnxt("%s", strerror(ENODATA));
 	//
 	if (!ifas && list)
 		freeifaddrs(list);
@@ -153,11 +153,11 @@ int nl_query(const char name[], int flags, int type,
 // send query
 	int fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
 	if (fd < 0) {
-		warn("socket(%s)", NETLINK);
+		warnt("socket(%s)", NETLINK);
 		return -1;
 	}
 	if (sendmsg(fd, &mh, 0) < 0) {
-		warn("sendmsg(%s)", NETLINK);
+		warnt("sendmsg(%s)", NETLINK);
 		return -1;
 	}
 // get response
@@ -172,11 +172,11 @@ int nl_query(const char name[], int flags, int type,
 		case NLMSG_ERROR:
 			errno = abs(((struct nlmsgerr *)NLMSG_DATA(nh))->error);
 			if (!errno) errno = EIO;
-			warn("%s", NETLINK);
+			warnt("%s", NETLINK);
 			break;
 		case NLMSG_OVERRUN:
 			errno = EOVERFLOW;
-			warn("%s: iov", NETLINK);
+			warnt("%s: iov", NETLINK);
 			break;
 		case NLMSG_DONE:
 			break;
@@ -186,10 +186,10 @@ int nl_query(const char name[], int flags, int type,
 					if (nh->nlmsg_len > minlen)
 						rc = handler(nh, name);
 					else
-						warnx(NL_TOO_SHORT, NETLINK,
+						warnxt(NL_TOO_SHORT, NETLINK,
 							nh->nlmsg_len, minlen);
 				} else
-					warnx(NL_WRONG_TYPE, NETLINK,
+					warnxt(NL_WRONG_TYPE, NETLINK,
 						nh->nlmsg_type, expected);
 			}
 			break;

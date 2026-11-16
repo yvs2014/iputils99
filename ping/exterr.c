@@ -57,7 +57,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <err.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
@@ -69,6 +68,7 @@
 #include "stats.h"
 #include "aux4.h"
 #include "aux6.h"
+#include "warnerr.h"
 
 // common IPv4/IPv6 ICMP header
 typedef struct icmp46h {
@@ -89,7 +89,7 @@ static inline const struct sock_extended_err *cmsg_sock_ext_err(struct msghdr *m
 		if ((c->cmsg_level == level) && (c->cmsg_type == type))
 			e = (struct sock_extended_err *)CMSG_DATA(c);
 	if (e) return e;
-	errx(EXIT_FAILURE, "%s() abort: no suitable extended error for level=%d and type=%d", __func__, level, type);
+	errxt(EXIT_FAILURE, "%s() abort: no suitable extended error for level=%d and type=%d", __func__, level, type);
 	abort();
 }
 
@@ -134,9 +134,9 @@ static inline void print_local_ee(bool flood, uint32_t ee_errno, uint32_t ee_inf
 	if (flood)
 		SUPPRESS_UNUSED_RESULT_WARN(write(STDOUT_FILENO, "E", 1));
 	else if (ee_errno != EMSGSIZE)
-		warnx("%s", _LOCAL_ERR);
+		warnxt("%s", _LOCAL_ERR);
 	else
-		warnx("%s: %s: mtu=%u", _LOCAL_ERR, _MSG_TOOLONG, ee_info);
+		warnxt("%s: %s: mtu=%u", _LOCAL_ERR, _MSG_TOOLONG, ee_info);
 }
 
 int get_errmsg(state_t *rts, const sock_t *sock, struct msghdr *msg) {

@@ -14,7 +14,7 @@ project('iputils99', 'c',
 			check: false).stdout().strip() : '',
 )
 
-updated_at = '20261115'
+updated_at = '20261116'
 
 GNUSRC = '-D_GNU_SOURCE'
 add_project_arguments(GNUSRC, language: 'c')

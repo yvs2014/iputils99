@@ -52,7 +52,6 @@
 // local changes by yvs@
 // ping setsock-option functions depended on 'linux/in6' header
 
-#include <err.h>
 #include <errno.h>
 #include <string.h>
 #include <stdint.h>
@@ -62,6 +61,7 @@
 #include <linux/in.h>
 
 #include "sockopt_sys_flow6.h"
+#include "warnerr.h"
 
 extern uint32_t htonl(uint32_t);
 
@@ -77,12 +77,12 @@ void setsock_flow6(int fd, int flow, size_t size, struct sockaddr *sa, socklen_t
 		struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *)sa;
 		memcpy(&flr->flr_dst, &sa6->sin6_addr, sizeof(sa6->sin6_addr));
 		if (setsockopt(fd, IPPROTO_IPV6, IPV6_FLOWLABEL_MGR, flr, sizeof(*flr)) < 0)
-			err(errno, "setsockopt(%s)", "IPV6_FLOWLABEL_MGR");
+			errt(errno, "setsockopt(%s)", "IPV6_FLOWLABEL_MGR");
 		sa6->sin6_flowinfo = flow = flr->flr_label;
 		int on = 1;
 		if (setsockopt(fd, IPPROTO_IPV6, IPV6_FLOWINFO_SEND, &on, sizeof(on)) < 0)
-			err(errno, "setsockopt(%s)", "IPV6_FLOWINFO_SEND");
+			errt(errno, "setsockopt(%s)", "IPV6_FLOWINFO_SEND");
 	} else
-		warn("IPV6_FLOW: wrong salen=%u", salen);
+		warnt("IPV6_FLOW: wrong salen=%u", salen);
 }
 

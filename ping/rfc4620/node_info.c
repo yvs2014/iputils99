@@ -36,7 +36,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
-#include <err.h>
 #include <errno.h> // IWYU pragma: keep
 #include <resolv.h>
 #include <net/if.h>
@@ -112,7 +111,7 @@ void niquery_init_nonce(struct ping_ni *ni)
 	iputils_srand();
 	ni->nonce_ptr = calloc(NONCE_SIZE, MAX_DUP_CHK);
 	if (!ni->nonce_ptr)
-		err(errno, "calloc(%u, %u)", NONCE_SIZE, MAX_DUP_CHK);
+		errt(errno, "calloc(%u, %u)", NONCE_SIZE, MAX_DUP_CHK);
 
 	ni->nonce_ptr[0] = ~0;
 #else
@@ -254,7 +253,7 @@ static int niquery_option_subject_addr_handler(struct ping_ni *ni, int index, co
 		break;
 	default:
 		/* should not happen */
-		warnx("%s: unknown IPUTILS_NI_ICMP6_SUBJ family(%d)", arg, niquery_options[index].data);
+		warnxt("%s: unknown IPUTILS_NI_ICMP6_SUBJ family(%d)", arg, niquery_options[index].data);
 		return -1;
 	}
 
@@ -262,9 +261,9 @@ static int niquery_option_subject_addr_handler(struct ping_ni *ni, int index, co
 	int rc = GAI_WRAPPER(arg, 0, &hints, &res);
 	if (rc) {
 		if (rc == EAI_SYSTEM)
-			warn("%s", "getaddrinfo()");
+			warnt("%s", "getaddrinfo()");
 		else
-			warnx(TARGET_FMT ": %s", arg, gai_strerror(rc));
+			warnxt(TARGET_FMT ": %s", arg, gai_strerror(rc));
 		return -1;
 	}
 
@@ -310,7 +309,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 	{ // glibc: internal libidn2 lookup
 	  int rc = __idna_to_dns_encoding(name, &idn);
 	  if (rc)
-		errx(EINVAL, "%s: %s", _NI_ERR_IDN, gai_strerror(rc)); }
+		errxt(EINVAL, "%s: %s", _NI_ERR_IDN, gai_strerror(rc)); }
 #else
 	idn = strdup(name);
 	if (!idn)
@@ -321,7 +320,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 	if (p) {
 		*p = '\0';
 		if (strlen(p + 1) >= IFNAMSIZ)
-			errx(EXIT_FAILURE, "%s", _NI_LONG_SCOPE);
+			errxt(EXIT_FAILURE, "%s", _NI_LONG_SCOPE);
 	}
 
 	namelen = strlen(idn);
@@ -345,7 +344,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 					   plus non-fqdn indicator. */
 	buf = malloc(buflen);
 	if (!buf) {
-		warn("malloc(%zu)", buflen);
+		warnt("malloc(%zu)", buflen);
 		goto errexit;
 	}
 
@@ -357,10 +356,10 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 
 	n = dn_comp(canonname, (unsigned char *)buf, buflen, dnptrs, lastdnptr);
 	if (n < 0) {
-		warnx("%s: %s", _NI_BAD_SUBJ, canonname);
+		warnxt("%s: %s", _NI_BAD_SUBJ, canonname);
 		goto errexit;
 	} else if ((size_t)n >= buflen) {
-		warnx("%s", _NI_DN_TOO_LONG);
+		warnxt("%s", _NI_DN_TOO_LONG);
 		goto errexit;
 	}
 
@@ -387,7 +386,7 @@ static int niquery_option_subject_name_handler(struct ping_ni *ni, int index, co
 
 	return 0;
 oomexit:
-	warn("malloc()");
+	warnt("malloc()");
 errexit:
 	free(buf);
 	free(canonname);

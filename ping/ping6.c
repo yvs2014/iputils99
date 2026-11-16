@@ -66,7 +66,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <err.h>
 #include <netinet/ip6.h>
 #include <netinet/icmp6.h>
 #include <linux/errqueue.h> // SO_EE_xxx
@@ -299,7 +298,7 @@ static void ping6_bpf_filter(const state_t *rts, const sock_t *sock) {
 static int probe_dst6(state_t *rts, struct sockaddr_in6 *dst, int sock_fd, bool next) { // NONNULL(1, 2)
 	int fd = socket(AF_INET6, SOCK_DGRAM, 0);
 	if (fd < 0)
-		err(errno, "socket");
+		errt(errno, "socket");
 	bool scoped = IN6_IS_ADDR_LINKLOCAL(&SA6_IN(dst)) ||
 		      IN6_IS_ADDR_MC_LINKLOCAL(&SA6_IN(dst));
 	if (rts->so.device) {
@@ -335,7 +334,7 @@ static int probe_dst6(state_t *rts, struct sockaddr_in6 *dst, int sock_fd, bool 
 		break;
 	}
 	//
-	err(errno, "connect");
+	errt(errno, "connect");
 }
 
 /* Return >= 0: exit with this code, < 0: go on to next addrinfo result */
@@ -396,7 +395,7 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 			scope_id = SA6(&rts->firsthop)->sin6_scope_id;
 		else if ( SA6(&rts->firsthop)->sin6_scope_id &&
 			 (SA6(&rts->firsthop)->sin6_scope_id != scope_id))
-			errx(EINVAL, "%s", _SCOPE_DISCR);
+			errxt(EINVAL, "%s", _SCOPE_DISCR);
 	}
 
 	rts->hostname = target;
@@ -410,7 +409,7 @@ int ping6_run(state_t *rts, int argc, char **argv, struct addrinfo *ai, const so
 		SA6(&rts->source)->sin6_port = 0;
 		close(fd);
 		if (rts->so.device && !nl_name2ndx(rts->so.device)) {
-			warnx("%s: %s: %s", _WARN, rts->so.device, WARN_NOSRCDEV);
+			warnxt("%s: %s: %s", _WARN, rts->so.device, WARN_NOSRCDEV);
 			rts->unreldev = true;
 		}
 	} else if (rts->so.device && (IN6_IS_ADDR_LINKLOCAL(&SA6_IN(&rts->source)) ||

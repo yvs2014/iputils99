@@ -58,7 +58,6 @@
 #include <limits.h>
 #include <assert.h>
 #include <errno.h>
-#include <err.h>
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <ifaddrs.h>
@@ -68,6 +67,7 @@
 #include "iputils.h"
 #include "str2num.h"
 #include "common.h"
+#include "usage.h"
 #include "ping4.h"
 #include "ping6.h"
 #include "extra.h"
@@ -158,7 +158,7 @@ static void open_socket(sock_t *sock, int af, int proto, bool verbose) {
 		}
 	}
 	if (verbose)
-		warnx("%s %s socket", PINGTYPE(sock->raw), AFTYPE(af));
+		warnxt("%s %s socket", PINGTYPE(sock->raw), AFTYPE(af));
 	//
 	errno = 0;
 	if (sock->raw) {
@@ -174,9 +174,9 @@ static void open_socket(sock_t *sock, int af, int proto, bool verbose) {
 		if (sock->raw && geteuid())
 			warn_if_missing_cap(CAP_NET_RAW);
 		if (errno)
-			err(errno, "%s", __func__);
+			errt(errno, "%s", __func__);
 		else
-			errx(EXIT_FAILURE, "%s", __func__);
+			errxt(EXIT_FAILURE, "%s", __func__);
 	}
 }
 
@@ -184,20 +184,20 @@ static inline void opt_I(state_t *rts, const char *str) {
 	if (strchr(str, ':')) {
 		char *addr = strdup(str);
 		if (!addr)
-			err(errno, "%s: %s", _CANNOT_COPY, str);
+			errt(errno, "%s: %s", _CANNOT_COPY, str);
 		char *scope = strchr(addr, SCOPE_DELIMITER);
 		if (scope) {
 			*scope++ = 0;
 			rts->so.device = str + (scope - addr);
 		}
 		if (inet_pton(AF_INET6, addr, &SA6_IN(&rts->source)) <= 0)
-			errx(EINVAL, "%s: %s", _INV_SRCADDR, str);
+			errxt(EINVAL, "%s: %s", _INV_SRCADDR, str);
 		rts->opt.strictsource = true;
 		free(addr);
 	} else {
 		int rc = inet_pton(AF_INET, str, &SA4_IN(&rts->source));
 		if (rc < 0)
-			errx(EINVAL, "%s: %s", _INV_SRC, str);
+			errxt(EINVAL, "%s: %s", _INV_SRC, str);
 		if (rc)
 			rts->opt.strictsource = true;
 		else
@@ -205,24 +205,24 @@ static inline void opt_I(state_t *rts, const char *str) {
 	}
 	if (rts->so.device && !rts->so.device[0]) { // add trim?
 		errno = ENODATA;
-		err(errno, "%s", _INV_SRC);
+		errt(errno, "%s", _INV_SRC);
 	}
 }
 
 #ifdef ENABLE_RFC4620
 static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) { // NONNULL(1, 3)
 	if (rts->datalen != DEFDATALEN) // '-s' indication
-		errx(EINVAL, "%s: %s", _WARN, _NI_ONLY_HDR);
+		errxt(EINVAL, "%s: %s", _WARN, _NI_ONLY_HDR);
 	if (hints->ai_family == AF_INET) // '-4' indiacation
-		errx(EINVAL, "%s: %s", _WARN, _NI_NOT_OVER4);
+		errxt(EINVAL, "%s: %s", _WARN, _NI_NOT_OVER4);
 	if (!rts->ni) {
 		rts->ni = calloc(1, sizeof(struct ping_ni));
 		if (!rts->ni)
-			err(errno, "calloc(%zu)", sizeof(struct ping_ni));
+			errt(errno, "calloc(%zu)", sizeof(struct ping_ni));
 		rts->ni->query        = -1;
 		rts->ni->subject_type = -1;
 		if (niquery_option_handler(rts->ni, str) < 0)
-			errx(EINVAL, "%s: %s", _NI_OPT_NOSET, str);
+			errxt(EINVAL, "%s: %s", _NI_OPT_NOSET, str);
 		hints->ai_socktype = SOCK_RAW;
 		rts->datalen = 0;
 	}
@@ -232,12 +232,12 @@ static inline void opt_N(state_t *rts, const char *str, struct addrinfo *hints) 
 static inline void opt_s(state_t *rts) {
 #ifdef ENABLE_RFC4620
 	if (rts->ni)
-		errx(EXIT_FAILURE, "%s: %s", _WARN, _NI_ONLY_HDR);
+		errxt(EXIT_FAILURE, "%s: %s", _WARN, _NI_ONLY_HDR);
 #endif
 	uint len = VALID_INTSTR(0, MAXPAYLOAD);
 	uint8_t *pack = calloc(1, PACKHDRLEN + len);
 	if (!pack)
-		err(errno, "calloc(%zu)", PACKHDRLEN + len);
+		errt(errno, "calloc(%zu)", PACKHDRLEN + len);
 	if (rts->outpack)
 		free(rts->outpack);
 	rts->outpack = pack;
@@ -264,7 +264,7 @@ static void switch_opt(char c, void *data) { // NONNULL(2)
 		bool ip4 = (c == '4');
 #ifdef ENABLE_RFC4620
 		if (RTS_DATA->ni && ip4) // '-N' indication
-			errx(EINVAL, "%s: %s", _WARN, _NI_NOT_OVER4);
+			errxt(EINVAL, "%s: %s", _WARN, _NI_NOT_OVER4);
 #endif
 		int incompat = ip4 ? AF_INET6 : AF_INET;
 		if (RTS_HINT->ai_family == incompat)
@@ -331,7 +331,7 @@ static void switch_opt(char c, void *data) { // NONNULL(2)
 	case 'l':
 		RTS_DATA->preload = VALID_INTSTR(1, MAX_DUP_CHK);
 		if (RTS_DATA->uid && (RTS_DATA->preload > 3))
-			errx(EINVAL, "%s: %d", _VALUE_GT_3, RTS_DATA->preload);
+			errxt(EINVAL, "%s: %d", _VALUE_GT_3, RTS_DATA->preload);
 		break;
 	case 'L':
 		RTS_DATA->so.noloop = true;
@@ -352,7 +352,7 @@ static void switch_opt(char c, void *data) { // NONNULL(2)
 			RTS_DATA->so.mtudisc = IP_PMTUDISC_PROBE;
 		else {
 			errno = EINVAL;
-			err(errno, "-%c %s", c, optarg);
+			errt(errno, "-%c %s", c, optarg);
 		}
 		break;
 	case 'n':
@@ -413,7 +413,7 @@ static void switch_opt(char c, void *data) { // NONNULL(2)
 		else { // 0(TSONLY) 1(TSANDADDR) 3(PRESPEC)
 			RTS_DATA->so.ts_opt = str2ll(optarg, 0, 3, _INV_TS_TYPE);
 			if (RTS_DATA->so.ts_opt == 2) // 2: reserved
-				errx(EINVAL, "%s: %s", _INV_TS_TYPE, optarg);
+				errxt(EINVAL, "%s: %s", _INV_TS_TYPE, optarg);
 		}
 #undef TSSTREQ
 		break;
@@ -479,7 +479,7 @@ int main(int argc, char **argv) {
 
 	rts.outpack = calloc(1, PACKHDRLEN + rts.datalen);
 	if (!rts.outpack)
-		err(errno, "calloc(%zu)", PACKHDRLEN + rts.datalen);
+		errt(errno, "calloc(%zu)", PACKHDRLEN + rts.datalen);
 
 	struct addrinfo hints = {
 		.ai_family   = AF_UNSPEC,
@@ -499,7 +499,7 @@ int main(int argc, char **argv) {
 	argv += optind;
 	if (argc <= 0) {
 		errno = EDESTADDRREQ;
-		warn("%s", _NO_GOAL);
+		warnt("%s", _NO_GOAL);
 		usage(EDESTADDRREQ);
 	}
 	const char *target = argv[argc - 1];
@@ -514,7 +514,7 @@ int main(int argc, char **argv) {
 	} else if (!rts.ident16) {
 		/* Current Linux kernel 6.0 doesn't support on SOCK_DGRAM setting ident == 0 */
 		if (rts.opt.verbose)
-			warnx("%s", _FORCE_RAW);
+			warnxt("%s", _FORCE_RAW);
 		hints.ai_socktype = SOCK_RAW;
 	}
 
@@ -522,17 +522,17 @@ int main(int argc, char **argv) {
 	int rcode = GAI_WRAPPER(target, NULL, &hints, &res);
 	if (rcode) {
 		if (rcode == EAI_SYSTEM)
-			err(errno, "%s", "getaddrinfo()");
-		errx(rcode, TARGET_FMT ": %s", target, gai_strerror(rcode));
+			errt(errno, "%s", "getaddrinfo()");
+		errxt(rcode, TARGET_FMT ": %s", target, gai_strerror(rcode));
 	}
 
 	for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
 		if (rts.opt.verbose) {
 			if (ai->ai_canonname)
-				warnx("ai_family %s, ai_canonname %s",
+				warnxt("ai_family %s, ai_canonname %s",
 					AFTYPE(ai->ai_family), ai->ai_canonname);
 			else
-				warnx("ai_family %s", AFTYPE(ai->ai_family));
+				warnxt("ai_family %s", AFTYPE(ai->ai_family));
 		}
 
 		// ip4-in-ip6-space workaround
@@ -541,11 +541,11 @@ int main(int argc, char **argv) {
 			switch (hints.ai_family) {
 			case AF_INET6:
 				errno = ENETUNREACH;
-				err(errno, _EMBEDDED_ADDR4);
+				errt(errno, _EMBEDDED_ADDR4);
 				break;
 			case AF_UNSPEC:
 				unmap_ai_sa4(ai);
-				warnx("%s: %s", WARN, _EMBEDDED_ADDR4);
+				warnxt("%s: %s", WARN, _EMBEDDED_ADDR4);
 				break;
 			default: break;
 			}
@@ -571,7 +571,7 @@ int main(int argc, char **argv) {
 		} break;
 		default:
 			errno = EAFNOSUPPORT;
-			err(errno, "%d", ai->ai_family);
+			errt(errno, "%d", ai->ai_family);
 		}
 
 		if (rcode >= 0)

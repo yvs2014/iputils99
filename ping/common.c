@@ -33,7 +33,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <err.h>
 #include <errno.h>
 #include <assert.h>
 #include <signal.h>
@@ -49,6 +48,7 @@
 
 #include "iputils.h"
 #include "common.h"
+#include "usage.h"
 #include "stats.h"
 #include "setsock.h"
 #include "sock_pa.h"
@@ -159,7 +159,7 @@ NORETURN void usage(int rc) {
 void fill_payload(int quiet, const char *str, uint8_t *payload, size_t len) {
 	for (const char *cp = str; *cp; cp++)
 		if (!isxdigit(*cp))
-			errx(EINVAL, "%s: %s", _WRONG_PATT, cp);
+			errxt(EINVAL, "%s: %s", _WRONG_PATT, cp);
 #define PAD_BYTES	16
 	uint pad[PAD_BYTES];
 	errno = 0;
@@ -173,9 +173,9 @@ void fill_payload(int quiet, const char *str, uint8_t *payload, size_t len) {
 		&pad[8],  &pad[9],  &pad[10], &pad[11],
 		&pad[12], &pad[13], &pad[14], &pad[15]);
 	if (errno)
-		errx(errno, "sscanf()");
+		errxt(errno, "sscanf()");
 	if (items <= 0)
-		errx(EINVAL, "%s", _BLANK_PATT);
+		errxt(EINVAL, "%s", _BLANK_PATT);
 	size_t max = (items > PAD_BYTES) ? PAD_BYTES : items;
 	for (size_t i = 0; i <= len; i++)
 		payload[i] = pad[i % max];
@@ -387,7 +387,7 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 		if (rts->opt.flood)
 			SUPPRESS_UNUSED_RESULT_WARN(write(STDOUT_FILENO, "E", 1));
 		else
-			warn("sendmsg");
+			warnt("sendmsg");
 	}
 	tokens = 0;
 	return SCHINT(rts->interval);
@@ -400,9 +400,9 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 
 	// interval restrictions
 	if (rts->uid && (rts->interval < MIN_USER_MS))
-		errx(EINVAL, "%s: %s %u %s, %s", _CANNOT_FLOOD, _MIN_OPT_I, MIN_USER_MS, _MSEC, _SEE_OPT_I);
+		errxt(EINVAL, "%s: %s %u %s, %s", _CANNOT_FLOOD, _MIN_OPT_I, MIN_USER_MS, _MSEC, _SEE_OPT_I);
 	if (rts->interval >= (INT_MAX / rts->preload))
-		errx(EINVAL, "%s: %d", _ILL_PREINT, rts->interval);
+		errxt(EINVAL, "%s: %d", _ILL_PREINT, rts->interval);
 	// socket options
 	if (rts->opt.so_debug)
 		setsock_debug(sock->fd); // privileged action
@@ -443,7 +443,7 @@ static void ping_setup(state_t *rts, const sock_t *sock) {
 		setitimer(ITIMER_REAL, &it, NULL);
 	}
 
-	if (isatty(STDOUT_FILENO)) {
+	if (itistty) {
 		struct winsize w = {0};
 		if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) != -1) {
 			if (w.ws_col > 0)
@@ -554,7 +554,7 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock, ui
 				recv_error = 0;
 				if (!fnset->receive_error(rts, sock)) {
 					if (errno) {
-						warn("recvmsg");
+						warnt("recvmsg");
 						break;
 					}
 					not_ours = true;
@@ -580,7 +580,7 @@ static bool main_loop(state_t *rts, const fnset_t *fnset, const sock_t *sock, ui
 			if (not_ours && sock->raw) {
 				if (rts->unidentified) {
 					if (rts->opt.verbose)
-warnx("id=0x%04x: %s: %u", rts->ident16, _UNFILTERED, rts->unidentified);
+warnxt("id=0x%04x: %s: %u", rts->ident16, _UNFILTERED, rts->unidentified);
 				} else if (fnset->bpf_filter)
 					fnset->bpf_filter(rts, sock);
 				rts->unidentified++;
@@ -630,7 +630,7 @@ int setup_n_loop(state_t *rts, size_t iph_len, size_t icmph_len, size_t opt_len,
 	size_t packlen = hlen + rts->datalen;
 	uint8_t *packet = calloc(1, packlen);
 	if (!packet)
-		err(errno, "calloc(%zu)", packlen);
+		errt(errno, "calloc(%zu)", packlen);
 	ping_setup(rts, sock);
 	errno = 0; // postsetup cleanup
 	drop_priv();
@@ -698,7 +698,7 @@ void bind_by_need(int fd, uint16_t port, bool strict, struct sockaddr *src, bool
 	}
 	if (strict || port)
 		if (bind(fd, src, ip6 ? SA6_LEN : SA4_LEN) < 0)
-			err(errno, "bind(%s)", "icmp-socket");
+			errt(errno, "bind(%s)", "icmp-socket");
 }
 
 void pmtu_interval(state_t *rts) { // NONNULL(1)
@@ -711,9 +711,9 @@ void pmtu_interval(state_t *rts) { // NONNULL(1)
 #endif
 	if (rts->uid) {
 		if (rts->interval < MIN_MCAST_MS)
-			errx(EINVAL, "%s %u %s, %s", rts->ip6 ? _MIN_MC : _MIN_BRD, MIN_MCAST_MS, _MSEC, _SEE_OPT_I);
+			errxt(EINVAL, "%s %u %s, %s", rts->ip6 ? _MIN_MC : _MIN_BRD, MIN_MCAST_MS, _MSEC, _SEE_OPT_I);
 		if ((rts->so.mtudisc >= 0) && (rts->so.mtudisc != PMTUDISCDO))
-			errx(EINVAL, "%s %s", rts->ip6 ? _PING_MC : _PING_BRD, _NOT_FRAGM);
+			errxt(EINVAL, "%s %s", rts->ip6 ? _PING_MC : _PING_BRD, _NOT_FRAGM);
 	}
 	if (rts->so.mtudisc < 0)
 		rts->so.mtudisc = PMTUDISCDO;

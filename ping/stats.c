@@ -35,7 +35,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <err.h>
 #include <errno.h>
 #include <math.h>
 #include <sys/time.h>
@@ -148,8 +147,12 @@ static inline void stat_timing(const state_t *rts) {
 bool resume(const state_t *rts) {
 	putchar('\n');
 	fflush(stdout);
+	if (itistty)
+		fputs(COLOR_BOLD, stdout);
 	stat_header(rts);
 	stat_timing(rts);
+	if (itistty)
+		fputs(COLOR_NORMAL, stdout);
 	return (!rts->nreceived || (rts->deadline && (rts->nreceived < rts->npackets)));
 }
 
@@ -184,8 +187,9 @@ void print_timestamp(void) {
 // Called once at ping setup
 void headline(const state_t *rts, size_t nodatalen, size_t datalen) { // NONNULL(1)
 	socklen_t len = rts->ip6 ? SA6_LEN : SA4_LEN;
-	printf("%s %s (%s)", _PING, rts->hostname,
-		sprint_addr(&rts->whereto, len, false));
+	if (itistty)
+		fputs(COLOR_BOLD, stdout);
+	printf("%s %s (%s)", _PING, rts->hostname, sprint_addr(&rts->whereto, len, false));
 	if (rts->ip6 && (rts->so.flow >= 0))
 		printf(", %s 0x%05x", _FLOW, ntohl(rts->so.flow));
 	if (rts->so.device || rts->opt.strictsource) {
@@ -196,6 +200,8 @@ void headline(const state_t *rts, size_t nodatalen, size_t datalen) { // NONNULL
 		putchar(':');
 	}
 	printf(" %zu(%zu) %s\n", datalen, datalen + nodatalen, _DATABYTES);
+	if (itistty)
+		fputs(COLOR_NORMAL, stdout);
 }
 
 static inline bool print_stats(const state_t *rts, const stat_aux_t *stat) {
@@ -268,21 +274,21 @@ static inline void calculator(state_t *rts, stat_aux_t *stat) {
 			if (wrong_usec) {
 				diff.tv_usec = MLN - 1;
 				if (tv.tv_usec < 0) diff.tv_usec = -diff.tv_usec;
-				warnx("%s: %s: .%06ld: %s",
+				warnxt("%s: %s: .%06ld: %s",
 					_WARN, _RTT, tv.tv_usec, strerror(EDOM));
 			}
 			bool wrong_sec = llabs(tv.tv_sec) >= RTT_MAX;
 			if (wrong_sec) {
 				diff.tv_sec = RTT_MAX; diff.tv_usec = 0;
 				if (tv.tv_sec < 0) diff.tv_sec = -diff.tv_sec;
-				warnx("%s: %s: %ld: %s",
+				warnxt("%s: %s: %ld: %s",
 					_WARN, _RTT, tv.tv_sec, strerror(EDOM));
 			}
 			stat->triptime = diff.tv_sec * MLN + diff.tv_usec;
 			if (!(wrong_sec || wrong_usec || (stat->triptime < 0)))
 				break;
 			if (stat->triptime < 0)
-				warnx("%s: %s: %ld.%06ld", _WARN, _TIME_BACK, tv.tv_sec, tv.tv_usec);
+				warnxt("%s: %s: %ld.%06ld", _WARN, _TIME_BACK, tv.tv_sec, tv.tv_usec);
 			if (rts->opt.latency) {
 				stat->triptime = 0;
 				break;

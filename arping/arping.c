@@ -30,6 +30,7 @@
 
 #include "processing.h"
 #include "iputils.h"
+#include "usage.h"
 #include "str2num.h"
 #include "sock_pa.h"
 #include "nlink.h"
@@ -105,6 +106,8 @@ static inline void send_n_stat(state_t *rts) {
 }
 
 static void resume(const counter_t *stat) {
+	if (itistty)
+		fputs(COLOR_BOLD, stdout);
 	printf("%s: %d (%d %s)\n", _SENT_PROB, stat->sent, stat->brd_sent, _N_BRD(stat->brd_sent));
 	printf("%s: %d", _RECV_RESP, stat->recv);
 	if (stat->brd_recv || stat->req_recv) {
@@ -115,9 +118,11 @@ static void resume(const counter_t *stat) {
 			printf(", ");
 		if (stat->brd_recv)
 			printf("%d %s", stat->brd_recv, _N_BRD(stat->brd_recv));
-		printf(")");
+		putchar(')');
 	}
 	putchar('\n');
+	if (itistty)
+		fputs(COLOR_NORMAL, stdout);
 	fflush(stdout);
 }
 
@@ -149,11 +154,11 @@ static void guess_device(struct in_addr addr, arpdev_t *dev) {
 	int ndx = nl_query(dev->name, NLM_F_REQUEST, RTM_GETROUTE, &q, sizeof(q),
 		RTM_NEWROUTE, NLMSG_HDRLEN + sizeof(struct rtmsg), oif2ndx);
 	if (ndx < 0)
-		errx(EXIT_FAILURE, "%s() failed", __func__);
+		errxt(EXIT_FAILURE, "%s() failed", __func__);
 	if (if_indextoname(ndx, dev->name))
 		dev->ndx = ndx;
 	else
-		err(errno ? errno : EXIT_FAILURE, "if_indextoname(%d)", ndx);
+		errt(errno ? errno : EXIT_FAILURE, "if_indextoname(%d)", ndx);
 }
 
 // common checks for `ifa_flags'
@@ -161,7 +166,7 @@ static bool valid_flags(uint flags, const char *name, bool quiet, bool dad) {
 	if (!(flags & IFF_UP)) {
 		if (name && name[0]) {
 			if (!quiet)
-				warnx("%s: %s", name, _IFACE_DOWN);
+				warnxt("%s: %s", name, _IFACE_DOWN);
 			exit(EINVAL);
 		}
 		return false;
@@ -169,7 +174,7 @@ static bool valid_flags(uint flags, const char *name, bool quiet, bool dad) {
 	if (flags & (IFF_NOARP | IFF_LOOPBACK)) {
 		if (name && name[0]) {
 			if (!quiet)
-				warnx("%s: %s", name, _NO_ARP_IFACE);
+				warnxt("%s: %s", name, _NO_ARP_IFACE);
 			exit(dad ? EXIT_SUCCESS : EINVAL);
 		}
 		return false;
@@ -217,11 +222,11 @@ static int check_device(state_t *rts) {
 	assert(rts->dev.name[0]);
 	//
 	if (getifaddrs(&rts->dev.ifa_list)) {
-		warn("%s", "getifaddrs()");
+		warnt("%s", "getifaddrs()");
 		return -1;
 	}
 	if (!rts->dev.ifa_list) {
-		warnx("%s", strerror(ENODATA));
+		warnxt("%s", strerror(ENODATA));
 		return 1;
 	}
 	//
@@ -238,7 +243,7 @@ static int check_device(state_t *rts) {
 	if (rts->dev.ifa) { // interface found
 		rts->dev.ndx = if_nametoindex(rts->dev.ifa->ifa_name);
 		if (!rts->dev.ndx) {
-			warn("if_nametoindex(%s)", rts->dev.ifa->ifa_name);
+			warnt("if_nametoindex(%s)", rts->dev.ifa->ifa_name);
 			rc = -1;
 		}
 	}
@@ -260,7 +265,7 @@ static void find_brd_addr(arpdev_t *dev, struct sockaddr_ll *he, bool quiet) {
 		memcpy(he->sll_addr, ll->sll_addr, he->sll_halen);
 	else {
 		if (!quiet)
-			warnx("%s: %s", _WARN, _USING_BRD);
+			warnxt("%s: %s", _WARN, _USING_BRD);
 		memset(he->sll_addr, -1, he->sll_halen);
 	}
 	if (dev->ifa_list) { // no need more
@@ -292,10 +297,10 @@ static continue_t fd_signal(struct pollfd *pollfd) { // NONNULL(1)
 		    (sigval.ssi_signo == SIGQUIT) ||
 		    (sigval.ssi_signo == SIGTERM))
 			return QUIT;
-		warn("unexpected signal: %d", sigval.ssi_signo);
+		warnt("unexpected signal: %d", sigval.ssi_signo);
 	} else {
-		errno ? warn("read(%s)", "signalfd") :
-		       warnx("read(%s)", "signalfd");
+		errno ? warnt("read(%s)", "signalfd") :
+		       warnxt("read(%s)", "signalfd");
 	}
 	return CONTINUE;
 }
@@ -309,8 +314,8 @@ static continue_t fd_timer(struct pollfd *pollfd, estate_t *erts) { // NONNULL(1
 			return QUIT;
 		send_n_stat(rts);
 	} else {
-		errno ? warn("read(%s)", "timerfd") :
-		       warnx("read(%s)", "timerfd");
+		errno ? warnt("read(%s)", "timerfd") :
+		       warnxt("read(%s)", "timerfd");
 	}
 	return CONTINUE;
 }
@@ -322,13 +327,13 @@ static continue_t fd_socket(struct pollfd *pollfd, estate_t *erts) { // NONNULL(
 	uint8_t packet[4096] = {0};
 	ssize_t size = recvfrom(pollfd->fd, packet, sizeof(packet), 0, SA(&sll), &socklen);
 	if (size < 0) {
-		warn("%s", "recvfrom()");
+		warnt("%s", "recvfrom()");
 		if ((errno == ENETDOWN) && !erts->failed)
 			erts->failed = true;
 		return CONTINUE;
 	}
 	if (socklen > sizeof(sll)) {
-		warnx("recvfrom(): %s", "sockaddr was truncated");
+		warnxt("recvfrom(): %s", "sockaddr was truncated");
 		return CONTINUE;
 	}
 	bool cast = false;
@@ -388,7 +393,7 @@ static continue_t fd_loop(uint len, struct pollfd fds[len], estate_t *erts) { //
 #define SET_PFD(typ, nam, val) do {  \
 	fds[typ].fd = (val);         \
 	if (fds[typ].fd < 0) {       \
-		warn("%s", (nam));   \
+		warnt("%s", (nam));  \
 		return EXIT_FAILURE; \
 	}                            \
 } while(0)
@@ -398,7 +403,7 @@ static continue_t fd_loop(uint len, struct pollfd fds[len], estate_t *erts) { //
 		.it_value.tv_sec     = (val),                 \
 	};                                                    \
 	if (timerfd_settime(fds[typ].fd, 0, &(var), NULL)) {  \
-		warn("%s", "timerfd_settime()");              \
+		warnt("%s", "timerfd_settime()");             \
 		return EXIT_FAILURE;                          \
 	}                                                     \
 	fds[typ].events = ev_mask;
@@ -415,7 +420,7 @@ static bool main_loop(state_t *rts) {
 	sigaddset(&mask, SIGQUIT);
 	sigaddset(&mask, SIGTERM);
 	if (sigprocmask(SIG_BLOCK, &mask, NULL) < 0) {
-		warn("%s", "sigprocmask()");
+		warnt("%s", "sigprocmask()");
 		return EXIT_FAILURE;
 	}
 	SET_PFD(POLLFD_SIGNAL, "signalfd()", signalfd(-1, &mask, 0));
@@ -442,7 +447,7 @@ static bool main_loop(state_t *rts) {
 				break;
 		} else if (errno != EAGAIN) {
 			if (errno)
-				warn("%s", "poll()");
+				warnt("%s", "poll()");
 			break;
 		}
 	}
@@ -469,11 +474,11 @@ static inline void bind_sock(struct sockaddr_ll *from, struct sockaddr_ll *to,
 	from->sll_ifindex  = ifndx;
 	from->sll_protocol = htons(ETH_P_ARP);
 	if (bind(sock, SA(from), SLL_LEN) < 0)
-		err(errno, "bind()");
+		errt(errno, "bind()");
 	GETSOCKNAME(sock, SA(from), SLL_LEN);
 	if (!from->sll_halen) {
 		if (!quiet)
-			warnx("%s: %s (%s)", ifname, _NO_ARP_IFACE, _NO_LL_ADDR);
+			warnxt("%s: %s (%s)", ifname, _NO_ARP_IFACE, _NO_LL_ADDR);
 		exit(dad ? EXIT_SUCCESS : EXIT_FAILURE);
 	}
 	*to = *from;
@@ -502,18 +507,18 @@ static void arping_resolv(state_t *rts) {
 	int rc = GAI_WRAPPER(rts->target, NULL, &hints, &res);
 	if (rc) {
 		if (rc == EAI_SYSTEM)
-			err(errno, "%s", "getaddrinfo()");
-		errx(rc, TARGET_FMT ": %s", rts->target, gai_strerror(rc));
+			errt(errno, "%s", "getaddrinfo()");
+		errxt(rc, TARGET_FMT ": %s", rts->target, gai_strerror(rc));
 	}
 	if (!res)
-		errx(EXIT_FAILURE, "%s", "getaddrinfo()");
+		errxt(EXIT_FAILURE, "%s", "getaddrinfo()");
 	sa_family_t af = res->ai_family;
 	if (af == AF_INET)
 		memcpy(&rts->daddr, &SA4_IN(res->ai_addr), sizeof(struct in_addr));
 	freeaddrinfo(res);
 	// be sure: IP4 only
 	if (af != AF_INET)
-		errx(EAFNOSUPPORT, TARGET_FMT ": %s", rts->target,
+		errxt(EAFNOSUPPORT, TARGET_FMT ": %s", rts->target,
 			strerror(af ? ENODEV : ENXIO));
 }
 
@@ -531,12 +536,12 @@ static void setup(state_t *rts) {
 		errno = ENODEV;
 		if (rts->dev.name[0])
 			err_nodev(rts->dev.req ? rts->dev.req : rts->dev.name);
-		warn("%s", rts->target);
+		warnt("%s", rts->target);
 	}
 	//
 	if (rts->source && inet_aton(rts->source, &rts->saddr) != 1) {
 		errno = EADDRNOTAVAIL;
-		err(errno, "%s", rts->source);
+		errt(errno, "%s", rts->source);
 	}
 	//
 	if (!rts->opt.dad && rts->opt.unsolicited && !rts->source)
@@ -545,23 +550,23 @@ static void setup(state_t *rts) {
 	if (!rts->opt.dad || rts->source) {
 		int probe_fd = socket(AF_INET, SOCK_DGRAM, 0);
 		if (probe_fd < 0)
-			err(errno, "socket(%s, %s)", "INET", "DGRAM");
+			errt(errno, "socket(%s, %s)", "INET", "DGRAM");
 		if (rts->dev.name[0] &&
 		    (bindtodev(probe_fd, rts->dev.name)/*privileged action*/ < 0))
-			warn("%s: %s: %s", _WARN, rts->dev.name, _IFACE_IGN);
+			warnt("%s: %s: %s", _WARN, rts->dev.name, _IFACE_IGN);
 		//
 		struct sockaddr_in addr = {.sin_family = AF_INET};
 		if (rts->source || rts->saddr.s_addr) {
 			addr.sin_addr = rts->saddr;
 			if (bind(probe_fd, SA(&addr), SA4_LEN) < 0)
-				err(errno, "%s", "bind()");
+				errt(errno, "%s", "bind()");
 		} else if (!rts->opt.dad) {
 			addr.sin_port = htons(1025);
 			addr.sin_addr = rts->daddr;
 			if (!rts->opt.unsolicited) {
 				setsock_dontroute(probe_fd);
 				if (connect(probe_fd, SA(&addr), SA4_LEN) < 0)
-					err(errno, "%s", "connect()");
+					errt(errno, "%s", "connect()");
 				GETSOCKNAME(probe_fd, SA(&addr), SA4_LEN);
 			}
 			rts->saddr = addr.sin_addr;
@@ -574,11 +579,15 @@ static void setup(state_t *rts) {
 static inline void print_header(const char *name,
 	const struct in_addr src, const struct in_addr dst)
 {
+	if (itistty)
+		fputs(COLOR_BOLD, stdout);
 	printf("%s %s", _ARPING, inet_ntoa(dst));
 	printf(" %s %s", _FROM,  inet_ntoa(src));
 	if (name && name[0])
 		printf("%%%s", name);
 	putchar('\n');
+	if (itistty)
+		fputs(COLOR_NORMAL, stdout);
 }
 
 static char *optstr = "Abc:Dfhi:I:qs:UVw:";
@@ -651,7 +660,7 @@ int main(int argc, char **argv) {
 		int rc = (argc > 0) ? EINVAL : EDESTADDRREQ;
 		if (argc <= 0) {
 			errno = rc;
-			warn("%s", _NO_GOAL);
+			warnt("%s", _NO_GOAL);
 		}
 		usage(rc);
 	}
@@ -670,7 +679,7 @@ int main(int argc, char **argv) {
 		print_header(ifname, rts.saddr, rts.daddr);
 	}
 	if (!rts.source && !rts.saddr.s_addr && !rts.opt.dad)
-		errx(EINVAL, "%s", _NOSRC_IN_DAD);
+		errxt(EINVAL, "%s", _NOSRC_IN_DAD);
 	//
 	return main_loop(&rts) ? EXIT_FAILURE : EXIT_SUCCESS;
 }

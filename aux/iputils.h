@@ -8,7 +8,7 @@
 #include <netdb.h>
 
 #include "po.h"
-#include "cc_attr.h"
+#include "warnerr.h" // IWYU pragma: keep
 
 #ifndef NOOP
 #define NOOP ((void)0)
@@ -28,10 +28,10 @@
 #define SA(sa) ((struct sockaddr *)(sa))
 #define SA4ADDR(sa) (SA4_IN(sa).s_addr)
 //
-#define GETSOCKNAME(sock, addr, addrlen) do {      \
-	socklen_t len = (addrlen);                 \
-	if (getsockname((sock), (addr), &len) < 0) \
-		err(errno, "%s", "getsockname()"); \
+#define GETSOCKNAME(sock, addr, addrlen) do {       \
+	socklen_t len = (addrlen);                  \
+	if (getsockname((sock), (addr), &len) < 0)  \
+		errt(errno, "%s", "getsockname()"); \
 } while (0)
 
 #if defined(USE_IDN) && defined(AI_IDN)
@@ -53,7 +53,7 @@
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof((arr)[0]))
 #endif
 
-#define OPTEXCL(a, b) errx(EINVAL, "%s: -%c -%c", _EXCL_OPTS, (a), (b))
+#define OPTEXCL(a, b) errxt(EINVAL, "%s: -%c -%c", _EXCL_OPTS, (a), (b))
 
 #define MSFMT "%.3f"		// common timing format in milliseconds
 #define TMMS  MSFMT "%s"	// ".3fms"
@@ -64,25 +64,9 @@
 
 #define MORE true
 
-enum {
-	FEAT_CAP     = 0x1,
-	FEAT_IDN     = 0x2,
-	FEAT_NLS     = 0x4,
-	FEAT_ALTNAME = 0x8,
-	FEAT_RFC4620 = 0x10,
-};
-
-typedef struct usage_data {
-	const char *usestr, *target;
-	bool more;
-} usage_data_t;
-
 //
 
 void close_stdout(void);
-void setmyname(const char *argv0);
-
-NORETURN void usage_common(int rc, const usage_data_t *udata); // NONNULL(2)
 
 void common_getopt(int argc, char **argv, const char *optstr, int features,
 	void (*usage_fn)(int), void (*switch_fn)(char, void*), void *data);

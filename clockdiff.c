@@ -72,6 +72,7 @@
 
 #include "iputils.h"
 #include "sock_pc.h"
+#include "usage.h"
 #ifdef HAVE_LIBCAP
 #include "caps.h"
 #else
@@ -121,7 +122,6 @@ typedef struct run_state {
 	long min_rtt;
 	long sigma;
 	const char *ts_format;
-	bool interactive;
 } state_t;
 
 typedef struct measurement_data {
@@ -201,14 +201,14 @@ static inline timediff_e opt_measure(state_t *rts, measurement_data_t *m, delta_
 	{ // low 4bits
 	  uint8_t low = opt[3] & 0xf;
 	  if (low != IPOPT_TS_PRESPEC) {
-		warnx("%s: %u", _WRONG_TS, low);
+		warnxt("%s: %u", _WRONG_TS, low);
 		return DT_NONSTD;
 	  }
 	}
 	{ // high 4bits
 	  uint8_t high = opt[3] >> 4;
 	  if (high && ((high != 1) || (rts->optlen != OPTLEN_3)))
-		warnx("%s: %u", _OVER_HOPS, high);
+		warnxt("%s: %u", _OVER_HOPS, high);
 	}
 	for (int i = 0; i < (opt[2] - 5) / 8; i++) {
 		uint32_t *timep = (uint32_t *)(opt + OPTLEN(i));
@@ -235,7 +235,7 @@ static inline timediff_e opt_measure(state_t *rts, measurement_data_t *m, delta_
 		}
 	}
 	if (!(dt->send && dt->recv && dt->peer1 && dt->peer2)) {
-		warnx("%s", _WRONG_TS);
+		warnxt("%s", _WRONG_TS);
 		return DT_ERROR;
 	}
 	return DT_GOOD;
@@ -292,8 +292,8 @@ static inline timediff_e measure_msg(state_t *rts, measurement_data_t *m) {
 			if (IS_BIT31_SET(dt.peer1))
 				return DT_NONSTD;
 		}
-		if (rts->interactive) {
-			printf(".");
+		if (itistty) {
+			putchar('.');
 			fflush(stdout);
 		}
 
@@ -452,7 +452,7 @@ static inline void set_nice(void) {
 	if (errno) {
 		errno = keep;
 		warn_if_missing_cap(CAP_SYS_NICE);
-		err(errno, "nice(%d)", inc);
+		errt(errno, "nice(%d)", inc);
 	}
 }
 
@@ -487,13 +487,11 @@ int main(int argc, char **argv) {
 		int rc = (argc > 0) ? EINVAL : EDESTADDRREQ;
 		if (argc <= 0) {
 			errno = rc;
-			warn("%s", _NO_GOAL);
+			warnt("%s", _NO_GOAL);
 		}
 		usage(rc);
 	}
 
-	if (isatty(fileno(stdin)) && isatty(fileno(stdout)))
-		rts.interactive = true;
 	validate_hostlen(argv[0], true);
 
 #ifdef HAVE_ARC4RANDOM_UNIFORM
@@ -517,17 +515,17 @@ int main(int argc, char **argv) {
 	  int rc = GAI_WRAPPER(argv[0], NULL, &hints, &res);
 	  if (rc) {
 		if (rc == EAI_SYSTEM)
-			err(errno, "%s", "getaddrinfo()");
-		errx(rc, TARGET_FMT ": %s", argv[0], gai_strerror(rc));
+			errt(errno, "%s", "getaddrinfo()");
+		errxt(rc, TARGET_FMT ": %s", argv[0], gai_strerror(rc));
 	  }
 	  if (!res)
-		errx(EXIT_FAILURE, "%s", "getaddrinfo()");
+		errxt(EXIT_FAILURE, "%s", "getaddrinfo()");
 	  canonname = strdup(res->ai_canonname);
 	  memcpy(&to, res->ai_addr, SA4_LEN);
 	  freeaddrinfo(res);
 	}
 	if (connect(rts.sock, SA(&to), SA4_LEN) < 0)
-		err(errno, "%s", "connect()");
+		errt(errno, "%s", "connect()");
 	if (rts.optlen) {
 		struct sockaddr_in from = {0};
 		GETSOCKNAME(rts.sock, SA(&from), SA4_LEN);
@@ -542,7 +540,7 @@ int main(int argc, char **argv) {
 			0,
 		}};
 		if (setsock_ipopt_ts(rts.sock, &ipt, IPOPT_TS_PRESPEC, rts.optlen) < 0) {
-			warn("IP_OPTIONS: fallback to ICMP timestamp");
+			warnt("IP_OPTIONS: fallback to ICMP timestamp");
 			rts.optlen = 0;
 		}
 	}
@@ -550,15 +548,15 @@ int main(int argc, char **argv) {
 	switch (measure(&rts, SA(&to), SA4_LEN)) {
 	case DT_ERROR:
 		if (errno)
-			err(errno, "%s(%s)", _MEASURE, PEERNAME);
-		errx(EXIT_FAILURE, "%s(%s): %s", _MEASURE, PEERNAME, _UNKN_FAIL);
+			errt(errno, "%s(%s)", _MEASURE, PEERNAME);
+		errxt(EXIT_FAILURE, "%s(%s): %s", _MEASURE, PEERNAME, _UNKN_FAIL);
 	case DT_NONSTD:
-		errx(EXIT_FAILURE, "%s(%s): %s", _MEASURE, PEERNAME, _NON_STD_TIME);
+		errxt(EXIT_FAILURE, "%s(%s): %s", _MEASURE, PEERNAME, _NON_STD_TIME);
 	default: break;
 	}
 
 	{ time_t now = time(NULL);
-	  if (rts.interactive) {
+	  if (itistty) {
 		struct tm tm = {0};
 		localtime_r(&now, &tm);
 		char ts[64];
@@ -566,10 +564,10 @@ int main(int argc, char **argv) {
 			ts[0] = 0;
 		const char *ms = _MSEC;
 		putchar('\n');
-		printf("%s=%s ", _HOST_L, PEERNAME);
+		printf("%s%s=%s ", COLOR_BOLD, _HOST_L, PEERNAME);
 		printf("%s=%ld(%ld)%s/%ld%s ", _RTT, rts.rtt, rts.sigma, ms, rts.min_rtt, ms);
 		printf("%s=%d%s/%d%s ", _DELTA, rts.delta1, ms, rts.delta2, ms);
-		printf("[%s]", ts);
+		printf("[%s]%s", ts, COLOR_NORMAL);
 	  } else
 		printf("%lld %d %d", (long long)now, rts.delta1, rts.delta2);
 	  putchar('\n');

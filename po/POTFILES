@@ -8,6 +8,7 @@ aux/sock_pa.c
 aux/sock_pc.c
 aux/sock_pt.c
 aux/nlink.c
+aux/usage_n_warn.c
 clockdiff.c
 gai.c
 ping/ping.c

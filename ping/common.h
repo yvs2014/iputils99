@@ -59,7 +59,7 @@ typedef uint32_t	bitmap_t;
 #define RETURN_IF_TOO_SHORT(received, minimum) do {	\
 	if ((received) < (minimum)) {			\
 		if (rts->opt.verbose)			\
-			warnx("%s: %zd %s (%s: %zd)",	\
+			warnxt("%s: %zd %s (%s: %zd)",	\
 _PKT_SHORT, (size_t)(received), _N_BYTES(received),	\
 _MINIMAL, (size_t)(minimum));				\
 		return true;				\

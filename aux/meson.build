@@ -2,6 +2,7 @@
 
 aux_src    += files('iputils.c')
 aux_src    += files('str2num.c')
+aux_src    += files('usage_n_warn.c')
 aux_subsrc += {'iface'  : files('nlink.c')  }
 aux_subsrc += {'sock_pa': files('sock_pa.c')}
 aux_subsrc += {'sock_pc': files('sock_pc.c')}

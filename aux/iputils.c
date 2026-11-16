@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
-#include <err.h>
 #include <errno.h>
+#include <err.h>
 
 #if defined(USE_IDN) && !defined(USE_NLS)
 #include <locale.h>
@@ -18,14 +18,15 @@
 #endif
 
 #include "iputils.h"
+#include "usage.h"
 
 void close_stdout(void) {
 	if (fclose(stdout))
 		if ((errno != EBADF) && (errno != EPIPE))
-			err(errno, "stdout");
+			errt(errno, "stdout");
 	if (fclose(stderr))
 		if ((errno != EBADF) && (errno != EPIPE))
-			err(errno, "stderr");
+			errt(errno, "stderr");
 }
 
 #ifndef timespecsub
@@ -51,91 +52,6 @@ void timersub(struct timeval *a, struct timeval *b, struct timeval *res) {
 	}
 }
 #endif
-
-static const char *myname;
-
-void setmyname(const char *argv0) {
-	myname =
-#ifdef HAVE_GETPROGNAME
-	getprogname();
-#elif  HAVE_PROGRAM_INVOCATION_SHORT_NAME
-	program_invocation_short_name;
-#else
-	NULL;
-#endif
-	if (!myname)
-		myname = argv0 ? argv0 : "";
-}
-
-#ifdef HAVE_LIBCAP
-#define CAP_FEATURE	'+'
-#else
-#define CAP_FEATURE	'-'
-#endif
-#ifdef USE_IDN
-#define IDN_FEATURE	'+'
-#else
-#define IDN_FEATURE	'-'
-#endif
-#ifdef USE_NLS
-#define NLS_FEATURE	'+'
-#else
-#define NLS_FEATURE	'-'
-#endif
-#ifdef USE_ALTNAMES
-#define ALTNAME_FEATURE	'+'
-#else
-#define ALTNAME_FEATURE	'-'
-#endif
-#ifdef ENABLE_RFC4620
-#define RFC4620_FEATURE	'+'
-#else
-#define RFC4620_FEATURE	'-'
-#endif
-
-NORETURN static void version_n_exit(int features) {
-	if (!myname)
-		setmyname(NULL);
-	printf("%s %s%s",
-		myname,
-#ifdef PACKAGE_NAME
-		PACKAGE_NAME,
-#else
-		"iputils",
-#endif
-#ifdef PACKAGE_VERSION
-		"_" PACKAGE_VERSION
-#else
-		""
-#endif
-	);
-	if (features) {
-		putchar(':');
-		if (features & FEAT_CAP)
-			printf(" %cCAP",     CAP_FEATURE);
-		if (features & FEAT_IDN)
-			printf(" %cIDN",     IDN_FEATURE);
-		if (features & FEAT_NLS)
-			printf(" %cNLS",     NLS_FEATURE);
-		if (features & FEAT_ALTNAME)
-			printf(" %cALTNAME", ALTNAME_FEATURE);
-		if (features & FEAT_RFC4620)
-			printf(" %cRFC4620", RFC4620_FEATURE);
-	}
-	putchar('\n');
-	exit(EXIT_SUCCESS);
-}
-
-void usage_common(int rc, const usage_data_t *udata) { // NONNULL(2)
-	printf("\n%s:\n  %s", _USAGE, myname);
-	if (udata->usestr)
-		printf(" [%s]", _OPTIONS);
-	printf(" %s%s\n", udata->target, udata->more ? " ..." : "");
-	if (udata->usestr)
-		printf("\n%s:\n%s", _OPTIONS_H, udata->usestr);
-	printf("\n%s %s(8)\n", _FOR_MORE, myname);
-	exit(rc);
-}
 
 inline int gai_wrapper(const char *restrict node, const char *restrict service,
 	const struct addrinfo *restrict hints, struct addrinfo **restrict res)
@@ -165,7 +81,7 @@ static inline char *idn2_decode(const char *restrict node) {
 		rc = idn2_to_ascii_8z(node, &decoded, 0);
 	}
 	if (rc != IDN2_OK) {
-		warn("%s: %s", node, idn2_strerror(rc));
+		warnt("%s: %s", node, idn2_strerror(rc));
 		if (decoded) {
 			free(decoded);
 			decoded = NULL;
@@ -206,11 +122,11 @@ int validate_hostlen(const char *host, bool fail) {
 	int re = 0;
 	if (!host || !host[0]) {
 		re = errno = EDESTADDRREQ;
-		fail ? err(errno, NULL) : warn(NULL);
+		fail ? errt(errno, NULL) : warnt(NULL);
 	} else if (strnlen(host, HOSTNAME_MAXLEN) >= HOSTNAME_MAXLEN) {
 		re = errno = EOVERFLOW;
-		fail ? err(errno, "%.*s", HOSTNAME_MAXLEN, host) :
-		       warn("%.*s", HOSTNAME_MAXLEN, host);
+		fail ? errt(errno, "%.*s", HOSTNAME_MAXLEN, host) :
+		       warnt("%.*s", HOSTNAME_MAXLEN, host);
 	}
 	return re;
 }
@@ -224,7 +140,7 @@ void common_getopt(int argc, char **argv, const char *optstr, int features, // N
 	case '?':
 		if (optopt) {
 			errno = EINVAL;
-			warn("-%c", optopt);
+			warnt("-%c", optopt);
 		}
 		if (usage_fn)
 			usage_fn(optopt ? EXIT_FAILURE : EXIT_SUCCESS);

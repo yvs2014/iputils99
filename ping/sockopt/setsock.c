@@ -52,7 +52,6 @@
 // local changes by yvs@
 // ping setsock-option functions
 
-#include <err.h>
 #include <errno.h>
 #include <sys/socket.h>
 #include <netinet/ip.h>
@@ -73,13 +72,13 @@
 
 void setsock_tos(int fd, int tos, bool ip6) {
 	if (setsockopt(fd, IPPROTO46, ip6 ? IPV6_TCLASS : IP_TOS, &tos, sizeof(tos)) < 0)
-		err(errno, "setsockopt(%s)", ip6 ? _STR(IPV6_TCLASS) : _STR(IP_TOS));
+		errt(errno, "setsockopt(%s)", ip6 ? _STR(IPV6_TCLASS) : _STR(IP_TOS));
 }
 
 void setsock_noloop(int fd, bool ip6) {
 	int off = 0;
 	if (setsockopt(fd, IPPROTO46, ip6 ? IPV6_MULTICAST_LOOP : IP_MULTICAST_LOOP, &off, sizeof(off)) < 0)
-		err(errno, "%s", _NODIS_MC_LO);
+		errt(errno, "%s", _NODIS_MC_LO);
 }
 
 #ifdef SO_MARK
@@ -90,9 +89,9 @@ void setsock_mark(int fd, int mark) {
 	NET_RAW_OFF;
 	errno = keep;
 	if (rc < 0) {
-		warn("%s: %s: %d", _WARN, _SETMARK_FAIL, mark);
+		warnt("%s: %s: %d", _WARN, _SETMARK_FAIL, mark);
 		warn_if_missing_cap(CAP_NET_RAW);
-		err(errno, "setsockopt(%s)", _STR(SO_MARK));
+		errt(errno, "setsockopt(%s)", _STR(SO_MARK));
 	}
 }
 #endif
@@ -104,33 +103,33 @@ void setsock_icmp6_filter(int fd, uint8_t pass) {
 	if (pass)
 		ICMP6_FILTER_SETPASS(pass, &filter);
 	if (setsockopt(fd, IPPROTO_ICMPV6, ICMP6_FILTER, &filter, sizeof(filter)) < 0)
-		err(errno, "setsockopt(%s)", _STR(ICMP6_FILTER));
+		errt(errno, "setsockopt(%s)", _STR(ICMP6_FILTER));
 }
 
 void setsock_cksum6(int fd) {
 	// checksum should be enabled by default and setting this option might fail anyway
 	int csum_offset = 2;
 	if (setsockopt(fd, SOL_RAW, IPV6_CHECKSUM, &csum_offset, sizeof(csum_offset)) < 0)
-		warn("setsockopt(%s)", _STR(IPV6_CHECKSUM));
+		warnt("setsockopt(%s)", _STR(IPV6_CHECKSUM));
 }
 
 // Estimate memory eaten by single packet. It is rough estimate.
 // Actually, for small datalen's it depends on kernel side a lot.
 void setsock_buffer(int fd, int sndbuf, int preload) {
 	if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &sndbuf, sizeof(sndbuf)) < 0)
-		warn("setsockopt(%s)", _STR(SO_SNDBUF));
+		warnt("setsockopt(%s)", _STR(SO_SNDBUF));
 	//
 	int hold = sndbuf * preload;
 	socklen_t size = sizeof(hold);
 	if (hold < (IP_MAXPACKET + 1))
 		hold = (IP_MAXPACKET + 1);
 	if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &hold, size) < 0)
-		warn("setsockopt(%s)", _STR(SO_RCVBUF));
+		warnt("setsockopt(%s)", _STR(SO_RCVBUF));
 	//
 	int rcvbuf = hold;
 	if (!getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &hold, &size))
 		if (hold < rcvbuf)
-			warnx("%s: %s", _WARN, _SMALL_RCVBUF);
+			warnxt("%s: %s", _WARN, _SMALL_RCVBUF);
 }
 
 void setsock_debug(int fd) {
@@ -142,7 +141,7 @@ void setsock_debug(int fd) {
 	errno = keep;
 	if (rc < 0) {
 		warn_if_missing_cap(CAP_NET_ADMIN);
-		warn("setsockopt(%s)", _STR(SO_DEBUG));
+		warnt("setsockopt(%s)", _STR(SO_DEBUG));
 	}
 }
 
@@ -155,7 +154,7 @@ inline void setsock_binddev(int fd, const char dev[]) { // NONNULL(2)
 void setsock_timestamp(int fd) {
 	int on = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_TIMESTAMP, &on, sizeof(on)) < 0)
-		warnx("%s", _SO_TS2IOCG);
+		warnxt("%s", _SO_TS2IOCG);
 }
 #endif
 
@@ -170,7 +169,7 @@ void setsock_sndtime(int fd, int interval) {
 		.tv_usec = ge_ms ? 0 : 1000 * SCHINT(interval),
 	};
 	if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) < 0)
-		warn("setsockopt(%s)", _STR(SO_SNDTIMEO));
+		warnt("setsockopt(%s)", _STR(SO_SNDTIMEO));
 }
 
 bool setsock_rcvtime(int fd, int interval) {
@@ -182,7 +181,7 @@ bool setsock_rcvtime(int fd, int interval) {
 	  };
 	int rc = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 	if (rc < 0)
-		warn("setsockopt(%s)", _STR(SO_RCVTIMEO));
+		warnt("setsockopt(%s)", _STR(SO_RCVTIMEO));
 	// for setting `flood_poll'
 	return !!rc;
 }
@@ -193,7 +192,7 @@ void setsock_ipopt_rr(int fd, ipopt_noped_t *opt) {
 	opt->len = sizeof(ipopt_noped_t) - sizeof(((ipopt_noped_t*)0)->nop); /*39*/
 	opt->off = IPOPT_MINOFF;
 	if (setsockopt(fd, IPPROTO_IP, IP_OPTIONS, opt, sizeof(*opt)) < 0)
-		err(errno, _RECORD_ROUTE);
+		errt(errno, _RECORD_ROUTE);
 }
 
 void setsock_ipopt_xrr(int fd, ipopt_noped_t *opt, uint8_t val, uint8_t len) {
@@ -210,7 +209,7 @@ void setsock_ipopt_xrr(int fd, ipopt_noped_t *opt, uint8_t val, uint8_t len) {
 		errno = keep;
 		if (rc < 0) {
 			warn_if_missing_cap(CAP_NET_RAW);
-			err(errno, "%s: %s(%d)", _RECORD_ROUTE,
+			errt(errno, "%s: %s(%d)", _RECORD_ROUTE,
 				IPOPT_SSRR ? _STR(IPOPT_SSRR) :
 				IPOPT_LSRR ? _STR(IPOPT_LSRR) : "?",
 				val);
@@ -221,13 +220,13 @@ void setsock_ipopt_xrr(int fd, ipopt_noped_t *opt, uint8_t val, uint8_t len) {
 void setsock_retopts(int fd) {
 	int on = 1;
 	if (setsockopt(fd, IPPROTO_IP, IP_RETOPTS, &on, sizeof(on)) < 0)
-		warn("setsockopt(%s)", _STR(IP_RETOPTS));
+		warnt("setsockopt(%s)", _STR(IP_RETOPTS));
 }
 
 void setsock_broadcast(int fd) {
 	int on = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &on, sizeof(on)) < 0)
-		err(errno, "setsockopt(%s)", _STR(SO_BROADCAST));
+		errt(errno, "setsockopt(%s)", _STR(SO_BROADCAST));
 }
 
 /*
@@ -242,7 +241,7 @@ void setsock_pktinfo(int fd, uint iface, const char dev[], bool ip6) { // NONNUL
 		ipi.ipi4.ipi_ifindex  = iface;
 	socklen_t len = ip6 ? sizeof(struct in6_pktinfo) : sizeof(struct in_pktinfo);
 	if (setsockopt(fd1, IPPROTO_IP, IP_PKTINFO, &ipi, len) < 0)
-		err(errno, "setsockopt(%s, %s)", _STR(IP_PKTINFO), dev);
+		errt(errno, "setsockopt(%s, %s)", _STR(IP_PKTINFO), dev);
 }
 */
 

@@ -9,7 +9,7 @@
 
 #define SOCK_BPF_INFO(verbose, version, fd, ident) do { \
 	if (verbose)                                    \
-		warnx("bpf%c socket=%d ident=0x%04x",   \
+		warnxt("bpf%c socket=%d ident=0x%04x",  \
 		      (version), (fd), (ident));        \
 } while (0)
 

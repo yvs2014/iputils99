@@ -4,7 +4,6 @@
 
 #include <string.h>
 #include <errno.h>
-#include <err.h>
 #include <sys/socket.h>
 #include <net/if.h>
 #ifdef USE_ALTNAMES
@@ -35,12 +34,12 @@ int bindtodev(int fd, const char dev[]) { // NONNULL(2)
 NORETURN void err_nodev(const char dev[]) { // NONNULL(1)
 	if (!errno)
 		errno = ENODEV;
-	err(errno, "%.*s", MAXDEVNAME, dev);
+	errt(errno, "%.*s", MAXDEVNAME, dev);
 }
 
 void setsock_dontroute(int fd) {
 	int on = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof(on)) < 0)
-		warn("setsockopt(%s)", _STR(SO_DONTROUTE));
+		warnt("setsockopt(%s)", _STR(SO_DONTROUTE));
 }
 

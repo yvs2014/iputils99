@@ -2,7 +2,6 @@
 //
 // setsockopt() stuff: ping, tracepath
 
-#include <err.h>
 #include <errno.h>
 #include <sys/socket.h>
 #include <netinet/ip6.h>
@@ -31,7 +30,7 @@
 
 void setsock_mtudisc(int fd, int mtu, bool ip6) {
 	if (setsockopt(fd, IPPROTO_IPV6, IPMTU46_VAL, &mtu, sizeof(mtu)) < 0)
-		err(errno, "setsockopt(%s)", IPMTU46_STR);
+		errt(errno, "setsockopt(%s)", IPMTU46_STR);
 }
 
 void setsock_mtudisc_probedo(int fd, bool ip6) {
@@ -42,9 +41,9 @@ void setsock_mtudisc_probedo(int fd, bool ip6) {
 
 void setsock_ttl(int fd, int ttl, bool multicast_too, bool ip6) {
 	if (setsockopt(fd, IPPROTO46, IPTTL46_VAL, &ttl, sizeof(ttl)) < 0)
-		err(errno, "setsockopt(%s)", IPTTL46_STR);
+		errt(errno, "setsockopt(%s)", IPTTL46_STR);
 	if (multicast_too && setsockopt(fd, IPPROTO46, MCTTL46_VAL, &ttl, sizeof(ttl)) < 0)
-		err(errno, "setsockopt(%s)", MCTTL46_STR);
+		errt(errno, "setsockopt(%s)", MCTTL46_STR);
 }
 
 void setsock_recvttl(int fd, bool ip6) {
@@ -58,15 +57,15 @@ void setsock_recvttl(int fd, bool ip6) {
 (setsockopt(fd, IPPROTO_IPV6, IPV6_HOPLIMIT,     &on, sizeof(on)) < 0)
 #endif
 	)
-			err(errno, "setsockopt(%s)", "IPV6_*HOPLIMIT");
+			errt(errno, "setsockopt(%s)", "IPV6_*HOPLIMIT");
 	} else
 		if (setsockopt(fd, IPPROTO_IP, IP_RECVTTL, &on, sizeof(on)) < 0)
-			err(errno, "setsockopt(%s)", _STR(IP_RECVTTL));
+			errt(errno, "setsockopt(%s)", _STR(IP_RECVTTL));
 }
 
 void setsock_recverr(int fd, bool ip6) {
 	int on = 1;
 	if (setsockopt(fd, IPPROTO46, RECVERR46_VAL, &on, sizeof(on)) < 0)
-		err(errno, "setsockopt(%s)", RECVERR46_STR);
+		errt(errno, "setsockopt(%s)", RECVERR46_STR);
 }
 

@@ -52,7 +52,6 @@
 // local changes by yvs@
 // ping setsock-option functions depended on 'linux/icmp4' header
 
-#include <err.h>
 #include <errno.h>
 #include <sys/socket.h>
 
@@ -60,6 +59,7 @@
 #include <linux/icmp.h>
 
 #include "sockopt_sys_icmp4.h"
+#include "warnerr.h"
 
 void setsock_icmp4_filter(int fd, const int32_t flag[]) { // NONNULL(2)
 	uint32_t u = 0;
@@ -67,6 +67,6 @@ void setsock_icmp4_filter(int fd, const int32_t flag[]) { // NONNULL(2)
 		u |= (1 << *flag);
 	struct icmp_filter filt = {.data = ~u};
 	if (setsockopt(fd, SOL_RAW, ICMP_FILTER, &filt, sizeof(filt)) < 0)
-		err(errno, "setsockopt(%s: %04X)", "ICMP_FILTER", filt.data);
+		errt(errno, "setsockopt(%s: %04X)", "ICMP_FILTER", filt.data);
 }
 

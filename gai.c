@@ -10,13 +10,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
-#include <err.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <netdb.h>
 
 #include "iputils.h"
 #include "str2num.h"
+#include "usage.h"
 
 #define AI_FMTLEN 16
 
@@ -103,7 +103,7 @@ static inline uint ai_macro2value(char opt, const char *arg) {
 #endif
 	//
 	errno = EINVAL;
-	err(errno, "-%c %s", opt, arg);
+	errt(errno, "-%c %s", opt, arg);
 }
 
 
@@ -183,7 +183,7 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 		if (!GAI_OPT->idn2)
 			GAI_OPT->idn2 = true;
 #else
-		warnx(_NO_NEED_OPT_I);
+		warnxt(_NO_NEED_OPT_I);
 #endif
 		break;
 	case 'l':
@@ -244,8 +244,8 @@ int main(int argc, char **argv) {
 #endif
 			gai_wrapper(name, NULL, &hints, &res);
 		if (rc) {
-			(rc == EAI_SYSTEM) ? warn("%s", name) :
-				warnx(TARGET_FMT ": %s", name, gai_strerror(rc));
+			(rc == EAI_SYSTEM) ? warnt("%s", name) :
+				warnxt(TARGET_FMT ": %s", name, gai_strerror(rc));
 			re = rc;
 		} else for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
 			int af = ai->ai_family;
@@ -255,7 +255,7 @@ int main(int argc, char **argv) {
 				println_gni(ai->ai_addr, ai->ai_addrlen);
 			} else {
 				re = errno = EAFNOSUPPORT;
-				warn("%s: ai_family=%d", name, af);
+				warnt("%s: ai_family=%d", name, af);
 			}
 		}
 		if (res) freeaddrinfo(res);

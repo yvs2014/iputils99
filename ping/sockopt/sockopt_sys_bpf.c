@@ -52,19 +52,19 @@
 // local changes by yvs@
 // ping setsock-option functions depended on 'linux/filter' header
 
-#include <err.h>
 #include <errno.h>
 #include <sys/socket.h>
 
 #include "sockopt_sys_bpf.h"
+#include "warnerr.h"
 
 void setsock_bpf(int fd, struct sock_fprog prog) {
 	if (setsockopt(fd, SOL_SOCKET, SO_ATTACH_FILTER, &prog, sizeof(prog)) < 0)
-		err(errno, "setsockopt(%s)", "SO_ATTACH_FILTER");
+		errt(errno, "setsockopt(%s)", "SO_ATTACH_FILTER");
 #ifdef SO_LOCK_FILTER
 	int on = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_LOCK_FILTER, &on, sizeof(on)) < 0)
-		warn("setsockopt(%s)", "SO_LOCK_FILTER");
+		warnt("setsockopt(%s)", "SO_LOCK_FILTER");
 #endif
 }
 
