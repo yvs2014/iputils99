@@ -254,6 +254,13 @@
 #define __OPT_v "verbose output"
 #define __OPT_V "print version"
 
+// clockdiff
+#define __CLOCKDIFF_PRE2 "by default, ICMP timestamps are only used (see RFC792, page 16)"
+#define __CLOCKDIFF_OPT2 "use IP timestamp and ICMP echo"
+#define __CLOCKDIFF_OPT3 "use three-term IP timestamp and ICMP echo"
+#define __CLOCKDIFF_PREI "by default, 'ctime' format is used"
+#define __CLOCKDIFF_OPTI "use ISO time format"
+
 // gai
 #define __GAI_OPT_f0 "ai_flags decimal or hex value"
 #define __GAI_OPT_f1 "use -f multiple times to combine flags"

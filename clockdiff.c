@@ -388,21 +388,18 @@ static timediff_e measure(state_t *rts, const struct sockaddr *sa, socklen_t sal
 	return DT_GOOD;
 }
 
-static const char *usestr =
-"      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
-"  -2  use IP timestamp and ICMP echo\n"
-"  -3  use three-term IP timestamp and ICMP echo\n"
-"\n"
-"      by default, 'ctime' format is used\n"
-"  -I  use ISO time format\n"
-"\n"
-"  -h  print help and exit\n"
-"  -V  print version and exit\n"
-;
+static const usage_opt_t uopts[] = { // null-terminated
+	{.opt = '2', .desc = {__CLOCKDIFF_OPT2},     .pre = __CLOCKDIFF_PRE2},
+	{.opt = '3', .desc = {__CLOCKDIFF_OPT3, ""}},
+	{.opt = 'I', .desc = {__CLOCKDIFF_OPTI, ""}, .pre = __CLOCKDIFF_PREI},
+	{.opt = 'h', .desc = {__OPT_h}},
+	{.opt = 'V', .desc = {__OPT_V}},
+	{0},
+};
 
 NORETURN static void usage(int rc) {
 	usage_data_t use = {
-		.usestr = _(usestr),
+		.opts   = uopts,
 		.target = _HOST,
 		.more   = !MORE,
 	};

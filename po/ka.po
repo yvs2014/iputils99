@@ -89,26 +89,20 @@ msgstr ""
 
 ### clockdiff options
 
-msgid ""
-"      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
-"  -2  use IP timestamp and ICMP echo\n"
-"  -3  use three-term IP timestamp and ICMP echo\n"
-"\n"
-"      by default, 'ctime' format is used\n"
-"  -I  use ISO time format\n"
-"\n"
-"  -h  print help and exit\n"
-"  -V  print version and exit\n"
-msgstr ""
-"      ნაგულისხმევად გამოიყენება მხოლოდ ICMP დროის ნიშნული (იხ RFC792, გვ 16)\n"
-"  -2  IP დროის შტამპისა და icmp ექოს გამოყენება\n"
-"  -3  3 IP დროის შტამპისა და icmp ექოს გამოყენება\n"
-"\n"
-"      ნაგულისხმევად გამოიყენება 'ctime' ფორმატი\n"
-"  -I  გამოიყენეთ ISO დროის ფორმატი\n"
-"\n"
-"  -h  ამ შეტყობინების გამოტანა\n"
-"  -V  ვერსიის გამოტანა და მუშაობის დასრულება\n"
+msgid "by default, ICMP timestamps are only used (see RFC792, page 16)"
+msgstr "ნაგულისხმევად გამოიყენება მხოლოდ ICMP დროის ნიშნული (იხ RFC792, გვ 16)"
+
+msgid "use IP timestamp and ICMP echo"
+msgstr "IP დროის შტამპისა და icmp ექოს გამოყენება"
+
+msgid "use three-term IP timestamp and ICMP echo"
+msgstr "3 IP დროის შტამპისა და icmp ექოს გამოყენება"
+
+msgid "by default, 'ctime' format is used"
+msgstr "ნაგულისხმევად გამოიყენება 'ctime' ფორმატი"
+
+msgid "use ISO time format"
+msgstr "გამოიყენეთ ISO დროის ფორმატი"
 
 
 ### ping options

@@ -89,26 +89,20 @@ msgstr ""
 
 ### clockdiff options
 
-msgid ""
-"      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
-"  -2  use IP timestamp and ICMP echo\n"
-"  -3  use three-term IP timestamp and ICMP echo\n"
-"\n"
-"      by default, 'ctime' format is used\n"
-"  -I  use ISO time format\n"
-"\n"
-"  -h  print help and exit\n"
-"  -V  print version and exit\n"
-msgstr ""
-"      기본 설정 시 ICMP 타임스탬프만 사용합니다 (RFC792, 16쪽 참고)\n"
-"  -2  IP 타임스탬프와 ICMP 에코 활용\n"
-"  -3  3회 IP 타임스탬프와 ICMP 에코 활용\n"
-"\n"
-"      기본적으로 'ctime' 형식을 사용합니다\n"
-"  -I  ISO 시간 형식을 사용한다\n"
-"\n"
-"  -h  이 도움말을 표시합니다\n"
-"  -V  버전을 출력하고 나갑니다\n"
+msgid "by default, ICMP timestamps are only used (see RFC792, page 16)"
+msgstr "기본 설정 시 ICMP 타임스탬프만 사용합니다 (RFC792, 16쪽 참고)"
+
+msgid "use IP timestamp and ICMP echo"
+msgstr "IP 타임스탬프와 ICMP 에코 활용"
+
+msgid "use three-term IP timestamp and ICMP echo"
+msgstr "3회 IP 타임스탬프와 ICMP 에코 활용"
+
+msgid "by default, 'ctime' format is used"
+msgstr "기본적으로 'ctime' 형식을 사용합니다"
+
+msgid "use ISO time format"
+msgstr "ISO 시간 형식을 사용한다"
 
 
 ### ping options

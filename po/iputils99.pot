@@ -77,16 +77,19 @@ msgstr ""
 
 ### clockdiff options
 
-msgid ""
-"      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
-"  -2  use IP timestamp and ICMP echo\n"
-"  -3  use three-term IP timestamp and ICMP echo\n"
-"\n"
-"      by default, 'ctime' format is used\n"
-"  -I  use ISO time format\n"
-"\n"
-"  -h  print help and exit\n"
-"  -V  print version and exit\n"
+msgid "by default, ICMP timestamps are only used (see RFC792, page 16)"
+msgstr ""
+
+msgid "use IP timestamp and ICMP echo"
+msgstr ""
+
+msgid "use three-term IP timestamp and ICMP echo"
+msgstr ""
+
+msgid "by default, 'ctime' format is used"
+msgstr ""
+
+msgid "use ISO time format"
 msgstr ""
 
 

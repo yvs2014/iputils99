@@ -92,26 +92,20 @@ msgstr ""
 
 ### clockdiff options
 
-msgid ""
-"      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
-"  -2  use IP timestamp and ICMP echo\n"
-"  -3  use three-term IP timestamp and ICMP echo\n"
-"\n"
-"      by default, 'ctime' format is used\n"
-"  -I  use ISO time format\n"
-"\n"
-"  -h  print help and exit\n"
-"  -V  print version and exit\n"
-msgstr ""
-"      デフォルトでは、ICMPタイムスタンプのみが使用されます (RFC792の16ページを参照)"
-"  -2  IPタイムスタンプとICMPエコーを使用します\n"
-"  -3  3項目のIPタイムスタンプとICMPエコーを使用します\n"
-"\n"
-"      デフォルトでは 'ctime' 形式が使用されます\n"
-"  -I  ISO形式の時刻\n"
-"\n"
-"  -h  このヘルプを表示します\n"
-"  -V  バージョンを表示して終了します\n"
+msgid "by default, ICMP timestamps are only used (see RFC792, page 16)"
+msgstr "デフォルトでは、ICMPタイムスタンプのみが使用されます (RFC792の16ページを参照)"
+
+msgid "use IP timestamp and ICMP echo"
+msgstr "IPタイムスタンプとICMPエコーを使用します"
+
+msgid "use three-term IP timestamp and ICMP echo"
+msgstr "3項目のIPタイムスタンプとICMPエコーを使用します"
+
+msgid "by default, 'ctime' format is used"
+msgstr "デフォルトでは 'ctime' 形式が使用されます"
+
+msgid "use ISO time format"
+msgstr "ISO形式の時刻"
 
 
 ### ping options

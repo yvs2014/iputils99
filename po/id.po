@@ -89,26 +89,20 @@ msgstr ""
 
 ### clockdiff options
 
-msgid ""
-"      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
-"  -2  use IP timestamp and ICMP echo\n"
-"  -3  use three-term IP timestamp and ICMP echo\n"
-"\n"
-"      by default, 'ctime' format is used\n"
-"  -I  use ISO time format\n"
-"\n"
-"  -h  print help and exit\n"
-"  -V  print version and exit\n"
-msgstr ""
-"      secara default, hanya timestamp ICMP yang digunakan (lihat RFC792, halaman 16)\n"
-"  -2  gunakan timestamp IP dan icmp echo\n"
-"  -3  gunakan three-term timestamp IP dan icmp echo\n"
-"\n"
-"      secara default, format 'ctime' yang digunakan\n"
-"  -I  gunakan format waktu ISO\n"
-"\n"
-"  -h  tampilkan bantuan\n"
-"  -V  tampilkan versi\n"
+msgid "by default, ICMP timestamps are only used (see RFC792, page 16)"
+msgstr "secara default, hanya timestamp ICMP yang digunakan (lihat RFC792, halaman 16)"
+
+msgid "use IP timestamp and ICMP echo"
+msgstr "gunakan timestamp IP dan icmp echo"
+
+msgid "use three-term IP timestamp and ICMP echo"
+msgstr "gunakan three-term timestamp IP dan icmp echo"
+
+msgid "by default, 'ctime' format is used"
+msgstr "secara default, format 'ctime' yang digunakan"
+
+msgid "use ISO time format"
+msgstr "gunakan format waktu ISO"
 
 
 ### ping options

@@ -88,26 +88,20 @@ msgstr ""
 
 ### clockdiff options
 
-msgid ""
-"      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
-"  -2  use IP timestamp and ICMP echo\n"
-"  -3  use three-term IP timestamp and ICMP echo\n"
-"\n"
-"      by default, 'ctime' format is used\n"
-"  -I  use ISO time format\n"
-"\n"
-"  -h  print help and exit\n"
-"  -V  print version and exit\n"
-msgstr ""
-"      oletuksena käytetään vain ICMP-aikaleimaa (katso RFC792, sivu 16)\n"
-"  -2  käytä IP-aikaleimaa ja icmp-echoa\n"
-"  -3  käytä kolmen aikavälin IP-aikaleimaa ja icmp-kaikua\n"
-"\n"
-"      oletuksena käytetään ctime-muotoa\n"
-"  -I  käytä ISO-aikamuotoa\n"
-"\n"
-"  -h  näytä tämä ohje\n"
-"  -V  tulosta versio ja poistu\n"
+msgid "by default, ICMP timestamps are only used (see RFC792, page 16)"
+msgstr "oletuksena käytetään vain ICMP-aikaleimaa (katso RFC792, sivu 16)"
+
+msgid "use IP timestamp and ICMP echo"
+msgstr "käytä IP-aikaleimaa ja icmp-echoa"
+
+msgid "use three-term IP timestamp and ICMP echo"
+msgstr "käytä kolmen aikavälin IP-aikaleimaa ja icmp-kaikua"
+
+msgid "by default, 'ctime' format is used"
+msgstr "oletuksena käytetään ctime-muotoa"
+
+msgid "use ISO time format"
+msgstr "käytä ISO-aikamuotoa"
 
 
 ### ping options

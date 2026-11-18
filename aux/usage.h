@@ -16,7 +16,7 @@ enum {
 #define MAXOPTDESC 5
 typedef struct usage_opt {
 	char opt;
-	const char *arg, *desc[MAXOPTDESC];
+	const char *arg, *desc[MAXOPTDESC], *pre;
 } usage_opt_t;
 
 #define MORE true

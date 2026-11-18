@@ -124,6 +124,8 @@ void usage_common(int rc, const usage_data_t *udata) { // NONNULL(2)
 	if (udata->usestr || uopt)
 		printf("\n%s%s%s:\n", bold, _OPTIONS_H, norm);
 	for (uint i = 0; (i < MAXOPTS) && uopt && uopt->opt; i++, uopt++) {
+		if (uopt->pre)
+			printf(OPTINDENT "   %-*s %s\n", udata->indent, "", _(uopt->pre));
 		printf(OPTINDENT "-%s%c ", yell, uopt->opt);
 		if (uopt->arg)
 			uprintn(udata->indent, _(uopt->arg));

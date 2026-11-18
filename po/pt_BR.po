@@ -89,26 +89,20 @@ msgstr ""
 
 ### clockdiff options
 
-msgid ""
-"      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
-"  -2  use IP timestamp and ICMP echo\n"
-"  -3  use three-term IP timestamp and ICMP echo\n"
-"\n"
-"      by default, 'ctime' format is used\n"
-"  -I  use ISO time format\n"
-"\n"
-"  -h  print help and exit\n"
-"  -V  print version and exit\n"
-msgstr ""
-"      por padrão, são usados apenas os timestamps de ICMP (consulte RFC792, página 16)\n"
-"  -2  usa carimbo de tempo IP e eco de icmp\n"
-"  -3  usa carimbo de tempo IP e eco de icmp em três termos\n"
-"\n"
-"      por padrão, formato 'ctime' é utilizado\n"
-"  -I  usa formato de hora ISO\n"
-"\n"
-"  -h  exibe esta ajuda\n"
-"  -V  imprime a versão e sai\n"
+msgid "by default, ICMP timestamps are only used (see RFC792, page 16)"
+msgstr "por padrão, são usados apenas os timestamps de ICMP (consulte RFC792, página 16)"
+
+msgid "use IP timestamp and ICMP echo"
+msgstr "usa carimbo de tempo IP e eco de iCMP"
+
+msgid "use three-term IP timestamp and ICMP echo"
+msgstr "usa carimbo de tempo IP e eco de ICMP em três termos"
+
+msgid "by default, 'ctime' format is used"
+msgstr "por padrão, formato 'ctime' é utilizado"
+
+msgid "use ISO time format"
+msgstr "usa formato de hora ISO"
 
 
 ### ping options
