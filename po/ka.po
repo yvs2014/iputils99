@@ -211,26 +211,26 @@ msgstr ""
 
 ### tracepath options
 
-msgid ""
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -v             verbose output\n"
-"  -V             print version and exit\n"
-msgstr ""
-"  -4             IPv4-ის გამოყენება\n"
-"  -6             IPv6-ის გამოყენება\n"
-"  -b             სახელისა და მისამართის დაბეჭდვა\n"
-"  -l <სიგრძე>    პაკეტის სიგრძის დაყენება\n"
-"  -m <ჰოპები>    ჰოპების რაოდენობის მაქსიმუმი\n"
-"  -n             DNS-ის გადაწყვეტის გამორთვა\n"
-"  -p  <პორტი>    დანიშნულების <პორტის> გამოყენება\n"
-"  -v             მეტი შეტყობინების გამოტანა\n"
-"  -V             ვერსიის დაბეჭდვა და გამოსვლა\n"
+msgid "print both name and IP"
+msgstr "სახელისა და მისამართის დაბეჭდვა"
+
+msgid "packet length"
+msgstr "პაკეტის სიგრძე"
+
+msgid "length"
+msgstr "სიგრძე"
+
+msgid "maximum hops"
+msgstr "მაქსიმალური ნახტომები"
+
+msgid "no reverse DNS name resolution"
+msgstr "DNS-ის გადაწყვეტის გამორთვა"
+
+msgid "destination port"
+msgstr "დანიშნულების პორტი"
+
+msgid "port"
+msgstr "პორტი"
 
 
 ### gai options

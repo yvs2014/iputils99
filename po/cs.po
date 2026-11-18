@@ -211,26 +211,26 @@ msgstr ""
 
 ### tracepath options
 
-msgid ""
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -v             verbose output\n"
-"  -V             print version and exit\n"
+msgid "print both name and IP"
+msgstr "vypíše doménové jméno i IP adresu"
+
+msgid "packet length"
+msgstr "délka paketu"
+
+msgid "length"
+msgstr "délka"
+
+msgid "maximum hops"
+msgstr "maximum skoků"
+
+msgid "no reverse DNS name resolution"
+msgstr "nepřeloží doménová jména"
+
+msgid "destination port"
+msgstr "cílový port"
+
+msgid "port"
 msgstr ""
-"  -4             použije IPv4\n"
-"  -6             použije IPv6\n"
-"  -b             vypíše doménové jméno i IP adresu\n"
-"  -l <délka>     použije paket o <délce>\n"
-"  -m <skoky>     použije nejvýše <skoků>\n"
-"  -n             nepřeloží doménová jména\n"
-"  -p <port>      použije cílový <port>\n"
-"  -v             podrobný výstup\n"
-"  -V             vypíše verzi a skončí\n"
 
 
 ### gai options

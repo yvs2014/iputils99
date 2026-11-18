@@ -36,29 +36,6 @@ typedef struct valstr {
 } valstr_s;
 
 
-static const usage_opt_t uopts[] = { // null-terminated
-	{.opt = '4', .desc = {__OPT_4}},
-	{.opt = '6', .desc = {__OPT_6}},
-	{.opt = 'f', .arg = __GAI_ARG_f, .desc = {__GAI_OPT_f0, __GAI_OPT_f1}},
-	{.opt = 'F', .arg = __GAI_ARG_F, .desc = {__GAI_OPT_F0, __GAI_OPT_F1}},
-	{.opt = 'i', .desc = {__GAI_OPT_i0, __GAI_OPT_i1}},
-	{.opt = 'l', .desc = {__GAI_OPT_l}},
-	{.opt = 'h', .desc = {__OPT_h}},
-	{.opt = 'v', .desc = {__OPT_v}},
-	{.opt = 'V', .desc = {__OPT_V}},
-	{0},
-};
-
-NORETURN static void usage(int rc) {
-	const usage_data_t use = {
-		.indent = 6,
-		.opts   = uopts,
-		.target = _HOST,
-		.more   = MORE,
-	};
-	usage_common(rc, &use);
-}
-
 #define STREQ(a, b) (!strncmp((a), (b), AI_FMTLEN * (size_t)2))
 
 #define IF_AI_MACRO(macro) { if (STREQ(arg, (#macro))) return (macro); }
@@ -156,6 +133,31 @@ NORETURN static inline void list_ai_consts(void) {
 }
 
 static char *optstr = "hf:F:ilvV46";
+
+static const usage_opt_t uopts[] = { // null-terminated
+	{.opt = '4', .desc = {__OPT_4}},
+	{.opt = '6', .desc = {__OPT_6}},
+	{.opt = 'f', .arg  = __VALUE, .desc = {__GAI_OPT_f0, __GAI_OPT_f1}},
+	{.opt = 'F', .arg  = __MACRO, .desc = {__GAI_OPT_F0, __GAI_OPT_F1}},
+	{.opt = 'i', .desc = {__GAI_OPT_i0, __GAI_OPT_i1}},
+	{.opt = 'l', .desc = {__GAI_OPT_l}},
+	{.opt = 'h', .desc = {__OPT_h}},
+	{.opt = 'v', .desc = {__OPT_v}},
+	{.opt = 'V', .desc = {__OPT_V}},
+	{0},
+};
+
+NORETURN static void usage(int rc) {
+	const usage_data_t use = {
+		.indent  = 6,
+		.options = uopts,
+		.optstr  = optstr,
+		.target  = _HOST,
+		.more    = MORE,
+	};
+	usage_common(rc, &use);
+}
+
 static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 #define GAI_OPT ((gaiopt_s *)data)
 	switch (c) {

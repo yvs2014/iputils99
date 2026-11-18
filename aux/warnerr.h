@@ -15,7 +15,7 @@ void warnxt(const char *fmt, ...);
 NORETURN void errt(int eval, const char *fmt, ...);
 NORETURN void errxt(int eval, const char *fmt, ...);
 
-extern bool itistty;
+extern bool itistty; // TODO: -0 -> itistty=false
 
 #define OPTEXCL(a, b) errxt(EINVAL, "%s: -%c -%c", _EXCL_OPTS, (a), (b))
 

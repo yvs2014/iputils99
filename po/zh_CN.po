@@ -203,26 +203,26 @@ msgstr ""
 
 ### tracepath options
 
-msgid ""
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -v             verbose output\n"
-"  -V             print version and exit\n"
-msgstr ""
-"  -4             使用 IPv4\n"
-"  -6             使用 IPv6\n"
-"  -b             显示名称和 IP\n"
-"  -l <长度>      指定包长度为 <长度>\n"
-"  -m <跃点数>    指定最大跃点数为 <跃点数>\n"
-"  -n             不进行名称解析\n"
-"  -p <端口号>    目标端口号 <端口号>\n"
-"  -v             详细输出\n"
-"  -V             显示版本信息并退出\n"
+msgid "print both name and IP"
+msgstr "显示名称和 IP"
+
+msgid "packet length"
+msgstr "数据包长度"
+
+msgid "length"
+msgstr "长度"
+
+msgid "maximum hops"
+msgstr "最大跳数"
+
+msgid "no reverse DNS name resolution"
+msgstr "不进行名称解析"
+
+msgid "destination port"
+msgstr "目的端口"
+
+msgid "port"
+msgstr "端口号"
 
 
 ### gai options

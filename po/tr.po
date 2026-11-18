@@ -208,26 +208,26 @@ msgstr ""
 
 ### tracepath options
 
-msgid ""
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -v             verbose output\n"
-"  -V             print version and exit\n"
+msgid "print both name and IP"
+msgstr "hem ad hem de IP yazdır"
+
+msgid "packet length"
+msgstr "paket uzunluğu"
+
+msgid "length"
+msgstr "uzunluk"
+
+msgid "maximum hops"
+msgstr "maksimum atlama sayısı"
+
+msgid "no reverse DNS name resolution"
+msgstr "DNS ad çözümlemesi yok"
+
+msgid "destination port"
+msgstr "hedef port"
+
+msgid "port"
 msgstr ""
-"  -4             IPv4 kullan\n"
-"  -6             IPv6 kullan\n"
-"  -b             hem ad hem de IP yazdır\n"
-"  -l <uzunluk>   <uzunluk> boyunda paket kullan\n"
-"  -m <atlama>    en fazla <atlama> kadar atlama kullan\n"
-"  -n             DNS ad çözümlemesi yok\n"
-"  -p <port>      <port> hedef bağlantı noktasını kullan\n"
-"  -v             ayrıntılı çıktı\n"
-"  -V             sürüm bilgisini yazdır ve çık\n"
 
 
 ### gai options

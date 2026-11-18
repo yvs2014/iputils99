@@ -211,26 +211,26 @@ msgstr ""
 
 ### tracepath options
 
-msgid ""
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -v             verbose output\n"
-"  -V             print version and exit\n"
-msgstr ""
-"  -4             використовувати IPv4\n"
-"  -6             використовувати IPv6\n"
-"  -b             виводити назву та адресу\n"
-"  -l <довжина>   довжина пакетів у байтах\n"
-"  -m <переходів> максимальна кількість переходів\n"
-"  -n             не використовувати DNS\n"
-"  -p <порт>      використовувати <порт> призначення\n"
-"  -v             докладне виведення\n"
-"  -V             вивести версію та завершити роботу\n"
+msgid "print both name and IP"
+msgstr "виводити назву та адресу"
+
+msgid "packet length"
+msgstr "довжина пакетів"
+
+msgid "length"
+msgstr "довжина"
+
+msgid "maximum hops"
+msgstr "кількість переходів"
+
+msgid "no reverse DNS name resolution"
+msgstr "не використовувати DNS"
+
+msgid "destination port"
+msgstr "порт призначення"
+
+msgid "port"
+msgstr "порт"
 
 
 ### gai options

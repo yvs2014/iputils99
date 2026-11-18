@@ -222,26 +222,26 @@ msgstr ""
 
 ### tracepath options
 
-msgid ""
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -v             verbose output\n"
-"  -V             print version and exit\n"
-msgstr ""
-"  -4             IPv4 verwenden\n"
-"  -6             IPv6 verwenden\n"
-"  -b             Namen und IP-Adresse ausgeben\n"
-"  -l <Länge>     Paketlänge <Länge> verwenden\n"
-"  -m <Hops>      Maximale Anzahl der Hops\n"
-"  -n             Keine Rückwerts-DNS-Namensauflösung\n"
-"  -p <Port>      Zielport <Port> verwenden\n"
-"  -v             ausführliche Ausgabe\n"
-"  -V             Version ausgeben und beenden\n"
+msgid "print both name and IP"
+msgstr "Namen und IP-Adresse ausgeben"
+
+msgid "packet length"
+msgstr "Paketlänge"
+
+msgid "length"
+msgstr "Länge"
+
+msgid "maximum hops"
+msgstr "maximal Hops"
+
+msgid "no reverse DNS name resolution"
+msgstr "Keine Rückwerts-DNS-Namensauflösung"
+
+msgid "destination port"
+msgstr "Zielport"
+
+msgid "port"
+msgstr "Port"
 
 
 ### gai options

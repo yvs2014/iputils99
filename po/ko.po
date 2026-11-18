@@ -160,26 +160,26 @@ msgstr ""
 
 ### tracepath options
 
-msgid ""
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -v             verbose output\n"
-"  -V             print version and exit\n"
-msgstr ""
-"  -4             IPv4를 사용합니다\n"
-"  -6             IPv6를 사용합니다\n"
-"  -b             이름과 IP 모두 출력합니다\n"
-"  -l <length>    패킷 <length>를 사용합니다\n"
-"  -m <hops>      최대 <hops>을 사용합니다\n"
-"  -n             역방향 DNS 이름 확인이 없습니다\n"
-"  -p <port>      대상 <port>를 사용합니다\n"
-"  -v             많이 출력\n"
-"  -V             버전을 출력하고 종료합니다\n"
+msgid "print both name and IP"
+msgstr "이름과 IP 모두 출력합니다"
+
+msgid "packet length"
+msgstr "패킷 길이"
+
+msgid "length"
+msgstr "길이"
+
+msgid "maximum hops"
+msgstr "최대 홉 수"
+
+msgid "no reverse DNS name resolution"
+msgstr "역방향 DNS 이름 확인이 없습니다"
+
+msgid "destination port"
+msgstr "목적지 포트"
+
+msgid "port"
+msgstr "포트"
 
 
 ### gai options

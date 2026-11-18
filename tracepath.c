@@ -373,27 +373,6 @@ static int probe_ttl(state_t *rts) {
 	return 0;
 }
 
-static const char *usestr =
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -v             verbose output\n"
-"  -V             print version and exit\n"
-;
-
-NORETURN static void usage(int rc) {
-	usage_data_t use = {
-		.usestr = _(usestr),
-		.target = _TARGET,
-		.more   = !MORE,
-	};
-	usage_common(rc, &use);
-}
-
 static inline int resolve(const char *target, state_t *rts, const struct addrinfo *hints) {
 	if (rts->verbose)
 		warnxt("resolve(%s, port=%u)", target, rts->port);
@@ -458,7 +437,35 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 	return sock;
 }
 
+//
+
 static char *optstr = "bhl:m:np:vV46";
+
+static const usage_opt_t uopts[] = { // null-terminated
+        {.opt = '4', .desc = {__OPT_4}},
+        {.opt = '6', .desc = {__OPT_6}},
+        {.opt = 'b', .desc = {__TRACEPATH_OPT_b}},
+        {.opt = 'l', .arg  = __LENGTH, .desc = {__TRACEPATH_OPT_l}},
+        {.opt = 'm', .arg  = __HOPS,   .desc = {__TRACEPATH_OPT_m}},
+        {.opt = 'n', .desc = {__TRACEPATH_OPT_n}},
+        {.opt = 'p', .arg  = __PORT,   .desc = {__TRACEPATH_OPT_p}},
+        {.opt = 'h', .desc = {__OPT_h}},
+        {.opt = 'v', .desc = {__OPT_v}},
+        {.opt = 'V', .desc = {__OPT_V}},
+        {0},
+};
+
+NORETURN static void usage(int rc) {
+	usage_data_t use = {
+		.indent  = 7,
+		.options = uopts,
+		.optstr  = optstr,
+		.target  = _TARGET,
+		.more    = !MORE,
+	};
+	usage_common(rc, &use);
+}
+
 static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 #define RTS_DATA ((state_t *)data)
 #define RTS_HINT ((struct addrinfo *)(RTS_DATA->auxdata))

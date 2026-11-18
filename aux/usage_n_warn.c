@@ -116,10 +116,13 @@ void usage_common(int rc, const usage_data_t *udata) { // NONNULL(2)
 	const char *bold = itistty ? COLOR_BOLD   : "";
 	const char *norm = itistty ? COLOR_NORMAL : "";
 	const char *yell = itistty ? COLOR_YELLOW : "";
-	printf("\n%s%s%s:\n  %s", bold, _USAGE, norm, myname);
-	const usage_opt_t *uopt = udata->opts;
-	if (udata->usestr || uopt)
+	printf("\n%s%s%s:\n", bold, _USAGE, norm);
+	printf(OPTINDENT "%s", myname);
+	const usage_opt_t *uopt = udata->options;
+	if (udata->usestr)
 		printf(" [%s%s%s]", yell, _OPTIONS, norm);
+	if (udata->optstr)
+		printf(" [%s%s%s]", yell, udata->optstr, norm);
 	printf(" %s%s\n", udata->target, udata->more ? " ..." : "");
 	if (udata->usestr || uopt)
 		printf("\n%s%s%s:\n", bold, _OPTIONS_H, norm);

@@ -203,26 +203,26 @@ msgstr ""
 
 ### tracepath options
 
-msgid ""
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -v             verbose output\n"
-"  -V             print version and exit\n"
+msgid "print both name and IP"
+msgstr "tulosta sekä nimi että IP"
+
+msgid "packet length"
+msgstr "paketin pituus"
+
+msgid "length"
+msgstr "pituus"
+
+msgid "maximum hops"
+msgstr "hyppyjen enimmäismäärä"
+
+msgid "no reverse DNS name resolution"
+msgstr "ei DNS-nimen selvitystä"
+
+msgid "destination port"
+msgstr "kohdeportin"
+
+msgid "port"
 msgstr ""
-"  -4             käytä IPv4\n"
-"  -6             käytä IPv6\n"
-"  -b             tulosta sekä nimi että IP\n"
-"  -l <length>    käytä paketille pituutta\n"
-"  -m <hops>      käytä enintään hyppyä\n"
-"  -n             ei DNS-nimen selvitystä\n"
-"  -p <port>      käytä kohdeporttia\n"
-"  -v             monisanainen tulos\n"
-"  -V             tulostaa version ja poistu\n"
 
 
 ### gai options

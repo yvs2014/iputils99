@@ -22,8 +22,8 @@ typedef struct usage_opt {
 #define MORE true
 typedef struct usage_data {
 	uint8_t indent;
-	const usage_opt_t *opts; // opts[] null-terminated array
-	const char *usestr, *target;
+	const usage_opt_t *options; // options[] null-terminated array
+	const char *usestr, *optstr, *target;
 	bool more;
 } usage_data_t;
 

@@ -148,16 +148,25 @@ msgstr ""
 
 ### tracepath options
 
-msgid ""
-"  -4             use IPv4\n"
-"  -6             use IPv6\n"
-"  -b             print both name and IP\n"
-"  -l <length>    use packet <length>\n"
-"  -m <hops>      use maximum <hops>\n"
-"  -n             no reverse DNS name resolution\n"
-"  -p <port>      use destination <port>\n"
-"  -v             verbose output\n"
-"  -V             print version and exit\n"
+msgid "print both name and IP"
+msgstr ""
+
+msgid "packet length"
+msgstr ""
+
+msgid "length"
+msgstr ""
+
+msgid "maximum hops"
+msgstr ""
+
+msgid "no reverse DNS name resolution"
+msgstr ""
+
+msgid "destination port"
+msgstr ""
+
+msgid "port"
 msgstr ""
 
 

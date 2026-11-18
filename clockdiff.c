@@ -388,10 +388,14 @@ static timediff_e measure(state_t *rts, const struct sockaddr *sa, socklen_t sal
 	return DT_GOOD;
 }
 
+//
+
+static char *optstr = "hIV23";
+
 static const usage_opt_t uopts[] = { // null-terminated
-	{.opt = '2', .desc = {__CLOCKDIFF_OPT2},     .pre = __CLOCKDIFF_PRE2},
-	{.opt = '3', .desc = {__CLOCKDIFF_OPT3, ""}},
-	{.opt = 'I', .desc = {__CLOCKDIFF_OPTI, ""}, .pre = __CLOCKDIFF_PREI},
+	{.opt = '2', .desc = {__CLOCKDIFF_OPT_2},     .pre = __CLOCKDIFF_PRE_2},
+	{.opt = '3', .desc = {__CLOCKDIFF_OPT_3, ""}},
+	{.opt = 'I', .desc = {__CLOCKDIFF_OPT_I, ""}, .pre = __CLOCKDIFF_PRE_I},
 	{.opt = 'h', .desc = {__OPT_h}},
 	{.opt = 'V', .desc = {__OPT_V}},
 	{0},
@@ -399,14 +403,14 @@ static const usage_opt_t uopts[] = { // null-terminated
 
 NORETURN static void usage(int rc) {
 	usage_data_t use = {
-		.opts   = uopts,
-		.target = _HOST,
-		.more   = !MORE,
+		.options = uopts,
+		.optstr  = optstr,
+		.target  = _HOST,
+		.more    = !MORE,
 	};
 	usage_common(rc, &use);
 }
 
-static char *optstr = "hIV23";
 static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 #define RTS_DATA ((state_t *)data)
 	switch (c) {

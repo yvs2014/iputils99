@@ -220,8 +220,15 @@
 #define _PMTU          _("pmtu")
 #define _ASYMM         _("asymm")
 #define _RESUME        _("Resume")
-#define _HOPS          _("hops")
 #define _BACK          _("back")
+
+#define __PORT   "port"
+#define __LENGTH "length"
+#define __HOPS   "hops"
+#define _HOPS    _(__HOPS)
+#define __VALUE  "value"
+#define __MACRO  "macro"
+
 #define _PKT_LENGTH    _("Packet length")
 #define _NO_REPLY      _("no reply")
 #define _TOO_MANY_HOPS _("Too many hops")
@@ -254,20 +261,25 @@
 #define __OPT_v "verbose output"
 #define __OPT_V "print version"
 
+// tracepath
+#define __TRACEPATH_OPT_b "print both name and IP"
+#define __TRACEPATH_OPT_l "packet length"
+#define __TRACEPATH_OPT_m "maximum hops"
+#define __TRACEPATH_OPT_n "no reverse DNS name resolution"
+#define __TRACEPATH_OPT_p "destination port"
+
 // clockdiff
-#define __CLOCKDIFF_PRE2 "by default, ICMP timestamps are only used (see RFC792, page 16)"
-#define __CLOCKDIFF_OPT2 "use IP timestamp and ICMP echo"
-#define __CLOCKDIFF_OPT3 "use three-term IP timestamp and ICMP echo"
-#define __CLOCKDIFF_PREI "by default, 'ctime' format is used"
-#define __CLOCKDIFF_OPTI "use ISO time format"
+#define __CLOCKDIFF_PRE_2 "by default, ICMP timestamps are only used (see RFC792, page 16)"
+#define __CLOCKDIFF_OPT_2 "use IP timestamp and ICMP echo"
+#define __CLOCKDIFF_OPT_3 "use three-term IP timestamp and ICMP echo"
+#define __CLOCKDIFF_PRE_I "by default, 'ctime' format is used"
+#define __CLOCKDIFF_OPT_I "use ISO time format"
 
 // gai
 #define __GAI_OPT_f0 "ai_flags decimal or hex value"
 #define __GAI_OPT_f1 "use -f multiple times to combine flags"
-#define __GAI_ARG_f  "value"
 #define __GAI_OPT_F0 "ai_flags macro like AI_IDN"
 #define __GAI_OPT_F1 "use -F multiple times to combine flags"
-#define __GAI_ARG_F  "macro"
 #define __GAI_OPT_i0 "convert IDN names using libidn2"
 #define __GAI_OPT_i1 "(available if IDN is not transparently supported)"
 #define __GAI_OPT_l  "list AI_xxx constants"
