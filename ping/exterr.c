@@ -63,7 +63,7 @@
 #include <linux/errqueue.h>
 
 #include "po.h"
-#include "cc_attr.h"
+#include "attr.h"
 #include "exterr.h"
 #include "stats.h"
 #include "aux4.h"

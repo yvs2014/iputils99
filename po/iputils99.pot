@@ -15,37 +15,50 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-# iputils99 edition
+### usage strings
 
-#
 msgid "Usage"
 msgstr ""
 
-#
 msgid "Options"
 msgstr ""
 
-#
 msgid "options"
 msgstr ""
 
-#
 msgid "TARGET"
 msgstr ""
 
-#
 msgid "HOST"
 msgstr ""
 
-#
 msgid "For more details see"
 msgstr ""
 
-#
 msgid "No goal"
 msgstr ""
 
-# arping options
+
+### common options
+
+msgid "use IPv4"
+msgstr ""
+
+msgid "use IPv6"
+msgstr ""
+
+msgid "print help"
+msgstr ""
+
+msgid "verbose output"
+msgstr ""
+
+msgid "print version"
+msgstr ""
+
+
+### arping options
+
 msgid ""
 "  -f            quit on first reply\n"
 "  -q            be quiet\n"
@@ -61,7 +74,9 @@ msgid ""
 "  -s <source>   source IP address\n"
 msgstr ""
 
-# clockdiff options
+
+### clockdiff options
+
 msgid ""
 "      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
 "  -2  use IP timestamp and ICMP echo\n"
@@ -74,7 +89,9 @@ msgid ""
 "  -V  print version and exit\n"
 msgstr ""
 
-# ping options
+
+### ping options
+
 msgid ""
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
@@ -125,7 +142,9 @@ msgid ""
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 msgstr ""
 
-# tracepath options
+
+### tracepath options
+
 msgid ""
 "  -4             use IPv4\n"
 "  -6             use IPv6\n"
@@ -138,23 +157,37 @@ msgid ""
 "  -V             print version and exit\n"
 msgstr ""
 
-# gai options
-msgid ""
-"  -4        IPv4 family\n"
-"  -6        IPv6 family\n"
-"  -f value  ai_flags decimal or hex value\n"
-"            use -f multiple times to combine flags\n"
-"  -F macro  ai_flags macro like AI_IDN\n"
-"            use -F multiple times to combine flags\n"
-"  -i        convert IDN names using libidn2\n"
-"            (available if IDN is not transparently supported)\n"
-"  -l        list AI_xxx constants\n"
-"  -h        print help\n"
-"  -v        verbose output\n"
-"  -V        print version\n"
+
+### gai options
+
+msgid "ai_flags decimal or hex value"
 msgstr ""
 
-#
+msgid "use -f multiple times to combine flags"
+msgstr ""
+
+msgid "value"
+msgstr ""
+
+msgid "ai_flags macro like AI_IDN"
+msgstr ""
+
+msgid "use -F multiple times to combine flags"
+msgstr ""
+
+msgid "macro"
+msgstr ""
+
+msgid "convert IDN names using libidn2"
+msgstr ""
+
+msgid "(available if IDN is not transparently supported)"
+msgstr ""
+
+msgid "list AI_xxx constants"
+msgstr ""
+
+###
 msgid "no need in -i, IDN is transparently supported"
 msgstr ""
 
@@ -189,6 +222,7 @@ msgstr ""
 
 msgid "deprecated"
 msgstr ""
+
 
 ###
 

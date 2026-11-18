@@ -16,37 +16,52 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11) ? 0 : "
 "n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
-# local edition: yvs, 2024-2025
+### local edition: yvs, 2024-2026
 
-#
+### usage strings
+
 msgid "Usage"
 msgstr "Застосування"
 
-#
 msgid "Options"
 msgstr "Параметри"
 
-#
 msgid "options"
 msgstr "параметри"
 
-#
 msgid "TARGET"
 msgstr "ЦІЛЬ"
 
-#
 msgid "HOST"
 msgstr "ВУЗОЛ"
 
-#
 msgid "For more details see"
 msgstr "Докладніший опис можна знайти в"
 
-#
 msgid "No goal"
 msgstr "Нема мети"
 
-# arping options
+
+### common options
+
+msgid "use IPv4"
+msgstr "використовувати IPv4"
+
+msgid "use IPv6"
+msgstr "використовувати IPv6"
+
+msgid "print help"
+msgstr "показати довідку"
+
+msgid "verbose output"
+msgstr "докладне виведення"
+
+msgid "print version"
+msgstr "показати версію"
+
+
+### arping options
+
 msgid ""
 "  -f            quit on first reply\n"
 "  -q            be quiet\n"
@@ -75,7 +90,9 @@ msgstr ""
 "  -I <пристрій> пристрій ethernet, яким слід скористатися\n"
 "  -s <джерело>  IP адреса джерела\n"
 
-# clockdiff options
+
+### clockdiff options
+
 msgid ""
 "      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
 "  -2  use IP timestamp and ICMP echo\n"
@@ -97,7 +114,9 @@ msgstr ""
 "  -h  показати довідку та завершити роботу\n"
 "  -V  вивести версію та завершити роботу\n"
 
-# ping options
+
+### ping options
+
 msgid ""
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
@@ -195,7 +214,9 @@ msgstr ""
 "  -F <відмітка>      визначити відмітку потоку, типова - випадкова\n"
 "  -N <параметр>      задати параметр NodeInfo (подивіться -N help)\n"
 
-# tracepath options
+
+### tracepath options
+
 msgid ""
 "  -4             use IPv4\n"
 "  -6             use IPv6\n"
@@ -217,36 +238,37 @@ msgstr ""
 "  -v             докладне виведення\n"
 "  -V             вивести версію та завершити роботу\n"
 
-# gai options
-msgid ""
-"  -4        IPv4 family\n"
-"  -6        IPv6 family\n"
-"  -f value  ai_flags decimal or hex value\n"
-"            use -f multiple times to combine flags\n"
-"  -F macro  ai_flags macro like AI_IDN\n"
-"            use -F multiple times to combine flags\n"
-"  -i        convert IDN names using libidn2\n"
-"            (available if IDN is not transparently supported)\n"
-"  -l        list AI_xxx constants\n"
-"  -h        print help\n"
-"  -v        verbose output\n"
-"  -V        print version\n"
 
-msgstr ""
-"  -4        сімейство адрес IPv4\n"
-"  -6        сімейство адрес IPv6\n"
-"  -f число  ai_flags значення (десяткове або шістнадцяткове)\n"
-"            використовуйте -f декілька разів для об'єднання аргументів\n"
-"  -F макро  ai_flags макро (на зразок AI_IDN)\n"
-"            використовуйте -F декілька разів для об'єднання аргументів\n"
-"  -i        конвертувати IDN назви за допомогою libidn2\n"
-"            (опція доступна, якщо IDN не підтримується прозоро)\n"
-"  -l        перелік AI_xxx констант\n"
-"  -h        вивести довідку\n"
-"  -v        докладне виведення\n"
-"  -V        вивести версію\n"
+### gai options
 
-#
+msgid "ai_flags decimal or hex value"
+msgstr "десяткове або шістнадцяткове значення ai_flags"
+
+msgid "use -f multiple times to combine flags"
+msgstr "використовуйте -f декілька разів для об'єднання аргументів"
+
+msgid "value"
+msgstr "число"
+
+msgid "ai_flags macro like AI_IDN"
+msgstr "ai_flags макро на зразок AI_IDN"
+
+msgid "use -F multiple times to combine flags"
+msgstr "використовуйте -F декілька разів для об'єднання аргументів"
+
+msgid "macro"
+msgstr "макро"
+
+msgid "convert IDN names using libidn2"
+msgstr "конвертувати IDN назви за допомогою libidn2"
+
+msgid "(available if IDN is not transparently supported)"
+msgstr "(опція доступна, якщо IDN не підтримується прозоро)"
+
+msgid "list AI_xxx constants"
+msgstr "перелік констант AI_xxx"
+
+###
 msgid "no need in -i, IDN is transparently supported"
 msgstr "опція -i не потрібна, IDN підтримується прозоро"
 
@@ -281,6 +303,7 @@ msgstr "Без розпізнавання назви сервісу"
 
 msgid "deprecated"
 msgstr "застаріло"
+
 
 ###
 

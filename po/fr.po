@@ -15,37 +15,50 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 
-# iputils99 edition
+### usage strings
 
-#
 msgid "Usage"
 msgstr "Utilisation"
 
-#
 msgid "Options"
 msgstr ""
 
-#
 msgid "options"
 msgstr ""
 
-#
 msgid "TARGET"
 msgstr "CIBLE"
 
-#
 msgid "HOST"
 msgstr "HÔTE"
 
-#
 msgid "For more details see"
 msgstr "Pour plus de détails, consultez"
 
-#
 msgid "No goal"
 msgstr "Aucun objectif"
 
-# arping options
+
+### common options
+
+msgid "use IPv4"
+msgstr "utiliser IPv4"
+
+msgid "use IPv6"
+msgstr "utiliser IPv6"
+
+msgid "print help"
+msgstr "imprimer l'aide"
+
+msgid "verbose output"
+msgstr "sortie verbeuse"
+
+msgid "print version"
+msgstr "imprimer la version"
+
+
+### arping options
+
 msgid ""
 "  -f            quit on first reply\n"
 "  -q            be quiet\n"
@@ -74,7 +87,9 @@ msgstr ""
 "  -I <device>   périphérique Ethernet à utiliser\n"
 "  -s <source>   adresse IP source\n"
 
-# clockdiff options
+
+### clockdiff options
+
 msgid ""
 "      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
 "  -2  use IP timestamp and ICMP echo\n"
@@ -97,7 +112,9 @@ msgstr ""
 "  -h  afficher cette aide\n"
 "  -V  afficher la version et quitter\n"
 
-# ping options
+
+### ping options
+
 msgid ""
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
@@ -201,7 +218,9 @@ msgstr ""
 "   -N <nodeinfo opt> utilise la requête d'informations sur le nœud IPv6, "
 "essayez <help> comme argument\n"
 
-# tracepath options
+
+### tracepath options
+
 msgid ""
 "  -4             use IPv4\n"
 "  -6             use IPv6\n"
@@ -222,6 +241,76 @@ msgstr ""
 "  -p <port>      utiliser le port de destination <port>\n"
 "  -v             sortie verbeuse\n"
 "  -V             afficher la version et quitter\n"
+
+
+### gai options
+
+msgid "ai_flags decimal or hex value"
+msgstr "valeur décimale ou hexadécimale pour ai_flags"
+
+msgid "use -f multiple times to combine flags"
+msgstr "utilisez -f à plusieurs reprises pour combiner des options"
+
+msgid "value"
+msgstr "valeur"
+
+msgid "ai_flags macro like AI_IDN"
+msgstr "macro ai_flags comme AI_IDN"
+
+msgid "use -F multiple times to combine flags"
+msgstr "utilisez -F à plusieurs reprises pour combiner des options"
+
+msgid "macro"
+msgstr ""
+
+msgid "convert IDN names using libidn2"
+msgstr "convertir les noms IDN à l'aide de libidn2"
+
+msgid "(available if IDN is not transparently supported)"
+msgstr "(disponible si les IDN ne sont pas pris en charge de manière transparente)"
+
+msgid "list AI_xxx constants"
+msgstr "lister les constantes AI_xxx"
+
+
+###
+msgid "no need in -i, IDN is transparently supported"
+msgstr "L'option -i n'est pas nécessaire, les IDN sont pris en charge de manière transparente"
+
+### AI_xxx descriptions
+
+msgid "Socket address for bind()"
+msgstr "Adresse de socket pour bind()"
+
+msgid "Request for canonical name"
+msgstr "Demande de nom canonique"
+
+msgid "Don't use host resolution"
+msgstr "Ne pas utiliser la résolution d'hôtes"
+
+msgid "IPv4 mapped addresses are acceptable"
+msgstr "Les adresses mappées IPv4 sont acceptables"
+
+msgid "IPv4 mapped and IPv6 addresses"
+msgstr "Adresses IPv4 mappées et adresses IPv6"
+
+msgid "Use host configuration to choose address type"
+msgstr "Utilisez la configuration de l’hôte pour choisir le type d’adresse"
+
+msgid "Convert to IDN format if necessary"
+msgstr "Convertir au format IDN si nécessaire"
+
+msgid "Translate canonical name from IDN format"
+msgstr "Traduire le nom canonique à partir du format IDN"
+
+msgid "Don't use service resolution"
+msgstr "Ne pas utiliser la résolution de service"
+
+msgid "deprecated"
+msgstr "déprécié"
+
+
+###
 
 #
 msgid "Sent probes"

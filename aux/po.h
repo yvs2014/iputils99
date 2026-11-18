@@ -244,4 +244,25 @@
 #define _N_BRD(brds)          _n("broadcast", "broadcasts", (brds))
 #define _N_REQUEST(reqs)      _n("request", "requests", (reqs))
 
+// usage strings
+//
+
+// common
+#define __OPT_4 "use IPv4"
+#define __OPT_6 "use IPv6"
+#define __OPT_h "print help"
+#define __OPT_v "verbose output"
+#define __OPT_V "print version"
+
+// gai
+#define __GAI_OPT_f0 "ai_flags decimal or hex value"
+#define __GAI_OPT_f1 "use -f multiple times to combine flags"
+#define __GAI_ARG_f  "value"
+#define __GAI_OPT_F0 "ai_flags macro like AI_IDN"
+#define __GAI_OPT_F1 "use -F multiple times to combine flags"
+#define __GAI_ARG_F  "macro"
+#define __GAI_OPT_i0 "convert IDN names using libidn2"
+#define __GAI_OPT_i1 "(available if IDN is not transparently supported)"
+#define __GAI_OPT_l  "list AI_xxx constants"
+
 #endif

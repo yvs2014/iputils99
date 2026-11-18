@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <locale.h>
 
-#include "cc_attr.h"
+#include "attr.h"
 #include "warnerr.h"
 
 NORETURN static void str2num_fail(const char *msg, const char *str) {

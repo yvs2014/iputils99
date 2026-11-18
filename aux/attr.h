@@ -1,5 +1,5 @@
-#ifndef CC_ATTR_H
-#define CC_ATTR_H
+#ifndef ATTR_H
+#define ATTR_H
 
 // wrapper: __has_attribute
 #ifndef __has_attribute
@@ -36,5 +36,17 @@
 #else
 #define SUPPRESS_UNUSED_RESULT_WARN
 #endif
+
+//
+
+#ifndef ARRAY_LEN
+#define ARRAY_LEN(arr) (sizeof(arr) / sizeof((arr)[0]))
+#endif
+
+#ifndef NOOP
+#define NOOP ((void)0)
+#endif
+
+#define _STR(macro) (#macro)
 
 #endif

@@ -1,8 +1,9 @@
 #ifndef USAGE_H
 #define USAGE_H
 
+#include <stdint.h>
 #include <stdbool.h>
-#include "cc_attr.h"
+#include "attr.h"
 
 enum {
 	FEAT_CAP     = 0x1,
@@ -12,7 +13,16 @@ enum {
 	FEAT_RFC4620 = 0x10,
 };
 
+#define MAXOPTDESC 5
+typedef struct usage_opt {
+	char opt;
+	const char *arg, *desc[MAXOPTDESC];
+} usage_opt_t;
+
+#define MORE true
 typedef struct usage_data {
+	uint8_t indent;
+	const usage_opt_t *opts; // opts[] null-terminated array
 	const char *usestr, *target;
 	bool more;
 } usage_data_t;

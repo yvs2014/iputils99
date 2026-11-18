@@ -16,37 +16,51 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-# iputils99 edition
 
-#
+### usage strings
+
 msgid "Usage"
-msgstr "使用法:"
+msgstr "使用法"
 
-#
 msgid "Options"
 msgstr "オプション"
 
-#
 msgid "options"
 msgstr "オプション"
 
-#
 msgid "TARGET"
 msgstr "送信先"
 
-#
 msgid "HOST"
-msgstr ""
+msgstr "送信先"
 
-#
 msgid "For more details see"
 msgstr "詳細は を参照してください:"
 
-#
 msgid "No goal"
-msgstr ""
+msgstr "ターゲットなし"
 
-# arping options
+
+### common options
+
+msgid "use IPv4"
+msgstr "IPv4を使用します"
+
+msgid "use IPv6"
+msgstr "IPv6を使用します"
+
+msgid "print help"
+msgstr "このヘルプを表示します"
+
+msgid "verbose output"
+msgstr "詳細な出力"
+
+msgid "print version"
+msgstr "バージョンを表示"
+
+
+### arping options
+
 msgid ""
 "  -f            quit on first reply\n"
 "  -q            be quiet\n"
@@ -75,7 +89,9 @@ msgstr ""
 "  -I <デバイス>     使用するイーサネットデバイスを指定します\n"
 "  -s <送信元>       送信元IPアドレス\n"
 
-# clockdiff options
+
+### clockdiff options
+
 msgid ""
 "      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
 "  -2  use IP timestamp and ICMP echo\n"
@@ -97,7 +113,9 @@ msgstr ""
 "  -h  このヘルプを表示します\n"
 "  -V  バージョンを表示して終了します\n"
 
-# ping options
+
+### ping options
+
 msgid ""
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
@@ -148,7 +166,9 @@ msgid ""
 "  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
 msgstr ""
 
-# tracepath options
+
+### tracepath options
+
 msgid ""
 "  -4             use IPv4\n"
 "  -6             use IPv6\n"
@@ -166,9 +186,79 @@ msgstr ""
 "  -l <サイズ>    パケット長を指定します。\n"
 "  -m <ホップ>    最大ホップ数を指定します。\n"
 "  -n             DNS名前解決を行いません。\n"
-"  -v             詳細な出力\n"
 "  -p <ポート>    送信先ポートを指定します。\n"
+"  -v             詳細な出力\n"
 "  -V             バージョンを表示して終了します。\n"
+
+
+### gai options
+#
+#msgid "ai_flags decimal or hex value"
+#msgstr ""
+#
+#msgid "use -f multiple times to combine flags"
+#msgstr ""
+#
+#msgid "value"
+#msgstr ""
+#
+#msgid "ai_flags macro like AI_IDN"
+#msgstr ""
+#
+#msgid "use -F multiple times to combine flags"
+#msgstr ""
+#
+#msgid "macro"
+#msgstr ""
+#
+#msgid "convert IDN names using libidn2"
+#msgstr ""
+#
+#msgid "(available if IDN is not transparently supported)"
+#msgstr ""
+#
+#msgid "list AI_xxx constants"
+#msgstr ""
+
+###
+#msgid "no need in -i, IDN is transparently supported"
+#msgstr ""
+
+### AI_xxx descriptions
+#
+#msgid "Socket address for bind()"
+#msgstr ""
+#
+#msgid "Request for canonical name"
+#msgstr ""
+#
+#msgid "Don't use host resolution"
+#msgstr ""
+#
+#msgid "IPv4 mapped addresses are acceptable"
+#msgstr ""
+#
+#msgid "IPv4 mapped and IPv6 addresses"
+#msgstr ""
+#
+#msgid "Use host configuration to choose address type"
+#msgstr ""
+#
+#msgid "Convert to IDN format if necessary"
+#msgstr ""
+#
+#msgid "Translate canonical name from IDN format"
+#msgstr ""
+#
+#msgid "Don't use service resolution"
+#msgstr ""
+#
+#msgid "deprecated"
+#msgstr ""
+
+
+###
+
 
 #
 msgid "Sent probes"

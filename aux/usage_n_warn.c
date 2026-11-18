@@ -97,14 +97,47 @@ NORETURN void version_n_exit(int features) {
 	exit(EXIT_SUCCESS);
 }
 
+// print unicode string like ("%-*s", width, string)
+static void uprintn(uint8_t w, const char *s) {
+  if (s) {
+    fputs(s, stdout);
+    for (; *s && w; s++)
+      if ((*s & 0xc0) != 0x80)
+        w--;
+  }
+  if (w)
+    printf("%*s", w, "");
+}
+
+#define MAXOPTS   50
+#define OPTINDENT "  "
+
 void usage_common(int rc, const usage_data_t *udata) { // NONNULL(2)
 	const char *bold = itistty ? COLOR_BOLD   : "";
 	const char *norm = itistty ? COLOR_NORMAL : "";
+	const char *yell = itistty ? COLOR_YELLOW : "";
 	printf("\n%s%s%s:\n  %s", bold, _USAGE, norm, myname);
-	if (udata->usestr)
-		printf(" [%s]", _OPTIONS);
+	const usage_opt_t *uopt = udata->opts;
+	if (udata->usestr || uopt)
+		printf(" [%s%s%s]", yell, _OPTIONS, norm);
 	printf(" %s%s\n", udata->target, udata->more ? " ..." : "");
-	if (udata->usestr)
+	if (udata->usestr || uopt)
+		printf("\n%s%s%s:\n", bold, _OPTIONS_H, norm);
+	for (uint i = 0; (i < MAXOPTS) && uopt && uopt->opt; i++, uopt++) {
+		printf(OPTINDENT "-%s%c ", yell, uopt->opt);
+		if (uopt->arg)
+			uprintn(udata->indent, _(uopt->arg));
+		else
+			printf("%*s", udata->indent, "");
+		fputs(norm, stdout);
+		if (uopt->desc[0])
+			printf(" %s", _(uopt->desc[0]));
+		putchar('\n');
+		if (uopt->desc[0]) for (uint j = 1;
+		   (j < ARRAY_LEN(uopt->desc)) && uopt->desc[j]; j++)
+			printf(OPTINDENT "   %-*s %s\n", udata->indent, "", _(uopt->desc[j]));
+	}
+	if (udata->usestr && !uopt)
 		printf("\n%s%s%s:\n%s", bold, _OPTIONS_H, norm, udata->usestr);
 	printf("\n%s%s %s(8)%s\n", bold, _FOR_MORE, myname, norm);
 	exit(rc);

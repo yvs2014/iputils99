@@ -36,24 +36,23 @@ typedef struct valstr {
 } valstr_s;
 
 
-static const char *usestr =
-"  -4        IPv4 family\n"
-"  -6        IPv6 family\n"
-"  -f value  ai_flags decimal or hex value\n"
-"            use -f multiple times to combine flags\n"
-"  -F macro  ai_flags macro like AI_IDN\n"
-"            use -F multiple times to combine flags\n"
-"  -i        convert IDN names using libidn2\n"
-"            (available if IDN is not transparently supported)\n"
-"  -l        list AI_xxx constants\n"
-"  -h        print help\n"
-"  -v        verbose output\n"
-"  -V        print version\n"
-;
+static const usage_opt_t uopts[] = { // null-terminated
+	{.opt = '4', .desc = {__OPT_4}},
+	{.opt = '6', .desc = {__OPT_6}},
+	{.opt = 'f', .arg = __GAI_ARG_f, .desc = {__GAI_OPT_f0, __GAI_OPT_f1}},
+	{.opt = 'F', .arg = __GAI_ARG_F, .desc = {__GAI_OPT_F0, __GAI_OPT_F1}},
+	{.opt = 'i', .desc = {__GAI_OPT_i0, __GAI_OPT_i1}},
+	{.opt = 'l', .desc = {__GAI_OPT_l}},
+	{.opt = 'h', .desc = {__OPT_h}},
+	{.opt = 'v', .desc = {__OPT_v}},
+	{.opt = 'V', .desc = {__OPT_V}},
+	{0},
+};
 
 NORETURN static void usage(int rc) {
-	usage_data_t use = {
-		.usestr = _(usestr),
+	const usage_data_t use = {
+		.indent = 6,
+		.opts   = uopts,
 		.target = _HOST,
 		.more   = MORE,
 	};

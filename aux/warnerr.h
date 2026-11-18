@@ -2,7 +2,7 @@
 #define WARNERR_H
 
 #include <stdbool.h>
-#include "cc_attr.h"
+#include "attr.h"
 
 #define COLOR_NORMAL "\033[0m"
 #define COLOR_BOLD   "\033[1m"
@@ -16,5 +16,7 @@ NORETURN void errt(int eval, const char *fmt, ...);
 NORETURN void errxt(int eval, const char *fmt, ...);
 
 extern bool itistty;
+
+#define OPTEXCL(a, b) errxt(EINVAL, "%s: -%c -%c", _EXCL_OPTS, (a), (b))
 
 #endif

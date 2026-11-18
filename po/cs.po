@@ -15,37 +15,51 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
-# iputils99 edition
+### iputils99
 
-#
+### usage strings
+
 msgid "Usage"
 msgstr "Použití"
 
-#
 msgid "Options"
 msgstr "Přepínače"
 
-#
 msgid "options"
 msgstr "přepínače"
 
-#
 msgid "TARGET"
 msgstr "CÍL"
 
-#
 msgid "HOST"
 msgstr "STROJ"
 
-#
 msgid "For more details see"
 msgstr "Podrobnosti naleznete v"
 
-#
 msgid "No goal"
 msgstr "Žádný cíl"
 
-# arping options
+
+### common options
+
+msgid "use IPv4"
+msgstr "použije IPv4"
+
+msgid "use IPv6"
+msgstr "použije IPv6"
+
+msgid "print help"
+msgstr "vypíše nápovědu"
+
+msgid "verbose output"
+msgstr "podrobný výstup"
+
+msgid "print version"
+msgstr "vypíše verzi"
+
+
+### arping options
 msgid ""
 "  -f            quit on first reply\n"
 "  -q            be quiet\n"
@@ -73,7 +87,9 @@ msgstr ""
 "  -I <rozhraní> které ethernetové rozhraní se použije\n"
 "  -s <zdroj>    zdrojová IP adresa\n"
 
-# clockdiff options
+
+### clockdiff options
+
 msgid ""
 "      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
 "  -2  use IP timestamp and ICMP echo\n"
@@ -96,7 +112,9 @@ msgstr ""
 "  -h  vypíše tuto nápovědu a skončí\n"
 "  -V  vypíše údaje o verzi a skončí\n"
 
-# ping options
+
+### ping options
+
 msgid ""
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
@@ -197,7 +215,9 @@ msgstr ""
 "  -F <jmenovka toku>   definuje jmenovku toku, výchozí je náhodná\n"
 "  -N <nodeinfo volba>  použije IPv6 node info query, try <help> as argument\n"
 
-# tracepath options
+
+### tracepath options
+
 msgid ""
 "  -4             use IPv4\n"
 "  -6             use IPv6\n"
@@ -219,7 +239,75 @@ msgstr ""
 "  -v             podrobný výstup\n"
 "  -V             vypíše verzi a skončí\n"
 
-#
+
+### gai options
+
+msgid "ai_flags decimal or hex value"
+msgstr "ai_flags – desítková nebo šestnáctková hodnota"
+
+msgid "use -f multiple times to combine flags"
+msgstr "použijte -f vícekrát pro zkombinování příznaků"
+
+msgid "value"
+msgstr "hodnota"
+
+msgid "ai_flags macro like AI_IDN"
+msgstr "makro ai_flags podobné AI_IDN"
+
+msgid "use -F multiple times to combine flags"
+msgstr "použijte -F vícekrát pro zkombinování příznaků"
+
+msgid "macro"
+msgstr "makro"
+
+msgid "convert IDN names using libidn2"
+msgstr "převést názvy IDN pomocí libidn2"
+
+msgid "(available if IDN is not transparently supported)"
+msgstr "(k dispozici pokud IDN není transparentně podporováno)"
+
+msgid "list AI_xxx constants"
+msgstr "seznam AI_xxx konstant"
+
+###
+msgid "no need in -i, IDN is transparently supported"
+msgstr "-i není potřeba, IDN je podporováno transparentně"
+
+### AI_xxx descriptions
+
+msgid "Socket address for bind()"
+msgstr "Adresa soketu pro bind()"
+
+msgid "Request for canonical name"
+msgstr "Žádost o kanonický název"
+
+msgid "Don't use host resolution"
+msgstr "Nepřekládat názvy strojů"
+
+msgid "IPv4 mapped addresses are acceptable"
+msgstr "Adresy mapované na IPv4 jsou přípustné"
+
+msgid "IPv4 mapped and IPv6 addresses"
+msgstr "Adresy mapované na IPv4 a adresy IPv6"
+
+msgid "Use host configuration to choose address type"
+msgstr "K výběru typu adresy použijte konfiguraci strojů"
+
+msgid "Convert to IDN format if necessary"
+msgstr "V případě potřeby převeďte do formátu IDN"
+
+msgid "Translate canonical name from IDN format"
+msgstr "Překládat kanonický název z formátu IDN"
+
+msgid "Don't use service resolution"
+msgstr "Nepoužívejte rozlišení služeb"
+
+msgid "deprecated"
+msgstr "zastaralé"
+
+
+###
+
 msgid "Sent probes"
 msgstr "Odesláno dotazů"
 

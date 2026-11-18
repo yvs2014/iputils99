@@ -15,33 +15,50 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-# iputils99 edition
+### usage strings
 
-#
 msgid "Usage"
 msgstr "Kullanım"
 
-#
 msgid "Options"
 msgstr "Seçenekler"
 
-#
 msgid "options"
 msgstr "seçenekler"
 
-#
 msgid "TARGET"
 msgstr "HEDEF"
 
-#
 msgid "HOST"
 msgstr "MAKINE_ADINI"
 
-#
 msgid "For more details see"
 msgstr "Daha fazla bilgi için:"
 
-# arping options
+msgid "No goal"
+msgstr "Hedef yok"
+
+
+### common options
+
+msgid "use IPv4"
+msgstr "IPv4 kullan"
+
+msgid "use IPv6"
+msgstr "IPv6 kullan"
+
+msgid "print help"
+msgstr "yardım bilgisini görüntüle"
+
+msgid "verbose output"
+msgstr "ayrıntılı çıktı"
+
+msgid "print version"
+msgstr "sürümü yazdır"
+
+
+### arping options
+
 msgid ""
 "  -f            quit on first reply\n"
 "  -q            be quiet\n"
@@ -69,7 +86,9 @@ msgstr ""
 "  -I <aygıt>    hangi ethernet aygıtı kullanılacak\n"
 "  -s <kaynak>   kaynak IP adresi\n"
 
-# clockdiff options
+
+### clockdiff options
+
 msgid ""
 "      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
 "  -2  use IP timestamp and ICMP echo\n"
@@ -91,7 +110,9 @@ msgstr ""
 "  -h  bu yardım bilgisini görüntüle\n"
 "  -V  sürüm bilgisini yazdır ve çık\n"
 
-# ping options
+
+### ping options
+
 msgid ""
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
@@ -190,7 +211,9 @@ msgstr ""
 "  -N <düğüm bilgisi> icmp6 düğüm bilgisi sorgusunu kullan, argüman olarak "
 "<help> deneyin\n"
 
-# tracepath options
+
+### tracepath options
+
 msgid ""
 "  -4             use IPv4\n"
 "  -6             use IPv6\n"
@@ -211,6 +234,75 @@ msgstr ""
 "  -p <port>      <port> hedef bağlantı noktasını kullan\n"
 "  -v             ayrıntılı çıktı\n"
 "  -V             sürüm bilgisini yazdır ve çık\n"
+
+
+### gai options
+#
+#msgid "ai_flags decimal or hex value"
+#msgstr ""
+#
+#msgid "use -f multiple times to combine flags"
+#msgstr ""
+#
+#msgid "value"
+#msgstr ""
+#
+#msgid "ai_flags macro like AI_IDN"
+#msgstr ""
+#
+#msgid "use -F multiple times to combine flags"
+#msgstr ""
+#
+#msgid "macro"
+#msgstr ""
+#
+#msgid "convert IDN names using libidn2"
+#msgstr ""
+#
+#msgid "(available if IDN is not transparently supported)"
+#msgstr ""
+#
+#msgid "list AI_xxx constants"
+#msgstr ""
+
+###
+#msgid "no need in -i, IDN is transparently supported"
+#msgstr ""
+
+### AI_xxx descriptions
+#
+#msgid "Socket address for bind()"
+#msgstr ""
+#
+#msgid "Request for canonical name"
+#msgstr ""
+#
+#msgid "Don't use host resolution"
+#msgstr ""
+#
+#msgid "IPv4 mapped addresses are acceptable"
+#msgstr ""
+#
+#msgid "IPv4 mapped and IPv6 addresses"
+#msgstr ""
+#
+#msgid "Use host configuration to choose address type"
+#msgstr ""
+#
+#msgid "Convert to IDN format if necessary"
+#msgstr ""
+#
+#msgid "Translate canonical name from IDN format"
+#msgstr ""
+#
+#msgid "Don't use service resolution"
+#msgstr ""
+#
+#msgid "deprecated"
+#msgstr ""
+
+
+###
 
 #
 msgid "Sent probes"

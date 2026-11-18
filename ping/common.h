@@ -10,7 +10,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-#include "cc_attr.h"
+#include "attr.h"
 
 #ifdef ENABLE_RFC4620
 #include "node_info.h"

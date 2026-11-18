@@ -10,10 +10,6 @@
 #include "po.h"
 #include "warnerr.h" // IWYU pragma: keep
 
-#ifndef NOOP
-#define NOOP ((void)0)
-#endif
-
 #ifndef IS_BIT31_SET
 #define IS_BIT31_SET(x) ((x) & 0x80000000)
 #endif
@@ -47,22 +43,12 @@
 
 //
 
-#define _STR(macro) (#macro)
-
-#ifndef ARRAY_LEN
-#define ARRAY_LEN(arr) (sizeof(arr) / sizeof((arr)[0]))
-#endif
-
-#define OPTEXCL(a, b) errxt(EINVAL, "%s: -%c -%c", _EXCL_OPTS, (a), (b))
-
 #define MSFMT "%.3f"		// common timing format in milliseconds
 #define TMMS  MSFMT "%s"	// ".3fms"
 #define TM_MS MSFMT " %s"	// ".3f ms"
 #ifndef TARGET_FMT
 #define TARGET_FMT "%.64s"	// limit to 64 characters
 #endif
-
-#define MORE true
 
 //
 

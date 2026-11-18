@@ -15,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-# iputils99 edition
+### usage strings
 
 #
 msgid "Usage"
@@ -45,7 +45,27 @@ msgstr "Weitere Details in"
 msgid "No goal"
 msgstr "Kein Ziel"
 
-# arping options
+
+### common options
+
+msgid "use IPv4"
+msgstr "Verwende IPv4"
+
+msgid "use IPv6"
+msgstr "Verwende IPv6"
+
+msgid "print help"
+msgstr "Diese Hilfe anzeigen"
+
+msgid "verbose output"
+msgstr "ausführliche Ausgabe"
+
+msgid "print version"
+msgstr "Version ausgeben"
+
+
+### arping options
+
 msgid ""
 "  -f            quit on first reply\n"
 "  -q            be quiet\n"
@@ -74,7 +94,9 @@ msgstr ""
 "  -I <Gerät>     Ethernet Gerät <Gerät> verwenden\n"
 "  -s <Quelle>    Quell-IP-Adresse\n"
 
-# clockdiff options
+
+### clockdiff options
+
 msgid ""
 "      by default, ICMP timestamps are only used (see RFC792, page 16)\n"
 "  -2  use IP timestamp and ICMP echo\n"
@@ -96,7 +118,9 @@ msgstr ""
 "  -h  Diese Hilfe anzeigen\n"
 "  -V  Version ausgeben und beenden\n"
 
-# ping options
+
+### ping options
+
 msgid ""
 "  -a                 use audible ping\n"
 "  -A                 use adaptive ping\n"
@@ -201,7 +225,9 @@ msgstr ""
 "  -N <nodeinfo opt>  Verwende IPv6 Node-Info-Anfrage, versuche <Hilfe> als "
 "Argument\n"
 
-# tracepath options
+
+### tracepath options
+
 msgid ""
 "  -4             use IPv4\n"
 "  -6             use IPv6\n"
@@ -223,7 +249,75 @@ msgstr ""
 "  -v             ausführliche Ausgabe\n"
 "  -V             Version ausgeben und beenden\n"
 
-#
+
+### gai options
+
+msgid "ai_flags decimal or hex value"
+msgstr "ai_flags Dezimal- oder Hexadezimalwert"
+
+msgid "use -f multiple times to combine flags"
+msgstr "Verwenden Sie -f mehrfach um Flags zu kombinieren"
+
+msgid "value"
+msgstr "Wert"
+
+msgid "ai_flags macro like AI_IDN"
+msgstr "ai_flags-Makro wie AI_IDN"
+
+msgid "use -F multiple times to combine flags"
+msgstr "Verwenden Sie -F mehrfach um Flags zu kombinieren"
+
+msgid "macro"
+msgstr "Makro"
+
+msgid "convert IDN names using libidn2"
+msgstr "IDN-Namen mithilfe von libidn2 konvertieren"
+
+msgid "(available if IDN is not transparently supported)"
+msgstr "(verfügbar falls IDN nicht transparent unterstützt wird)"
+
+msgid "list AI_xxx constants"
+msgstr "AI_xxx-Konstanten auflisten"
+
+###
+msgid "no need in -i, IDN is transparently supported"
+msgstr "-i ist nicht erforderlich, IDN wird transparent unterstützt"
+
+### AI_xxx descriptions
+
+msgid "Socket address for bind()"
+msgstr "Socket-Adresse für bind()"
+
+msgid "Request for canonical name"
+msgstr "Anfrage für kanonischen Namen"
+
+msgid "Don't use host resolution"
+msgstr "Host-Auflösung nicht verwenden"
+
+msgid "IPv4 mapped addresses are acceptable"
+msgstr "IPv4-abgebildete Adressen sind zulässig"
+
+msgid "IPv4 mapped and IPv6 addresses"
+msgstr "IPv4-gemappte Adressen und IPv6-Adressen"
+
+msgid "Use host configuration to choose address type"
+msgstr "Verwenden Sie die Hostkonfiguration um den Adresstyp auszuwählen"
+
+msgid "Convert to IDN format if necessary"
+msgstr "Falls erforderlich in das IDN-Format umwandeln"
+
+msgid "Translate canonical name from IDN format"
+msgstr "Kanonischen Namen aus dem IDN-Format übersetzen"
+
+msgid "Don't use service resolution"
+msgstr "Dienstauflösung nicht verwenden"
+
+msgid "deprecated"
+msgstr "veraltet"
+
+
+###
+
 msgid "Sent probes"
 msgstr "Sonden gesendet"
 
