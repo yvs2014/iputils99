@@ -59,32 +59,53 @@ msgstr "显示版本"
 
 ### arping options
 
-msgid ""
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
-msgstr ""
-"  -f            收到回复就退出\n"
-"  -q            不要显示信息\n"
-"  -b            始终使用广播而不是单拨\n"
-"  -D            重复地址检测模式\n"
-"  -U            主动 ARP 模式, 更新邻居 ARP 表\n"
-"  -A            ARP 应答模式, 更新邻居 ARP 表\n"
-"  -V            显示版本号然后退出\n"
-"  -c <数目>     指定发送多少个包\n"
-"  -w <超时>     指定等待超时时间\n"
-"  -i <间隔>     设置两个包之间的间隔时间 (默认: 1 秒)\n"
-"  -I <设备>     指定使用的设备\n"
-"  -s <来源>     源 IP 地址\n"
+msgid "ARP answer mode, update your neighbours"
+msgstr "ARP 应答模式, 更新邻居 ARP 表"
+
+msgid "keep on broadcasting, do not unicast"
+msgstr "始终使用广播而不是单拨"
+
+msgid "how many packets to send"
+msgstr "指定发送多少个包"
+
+msgid "count"
+msgstr "数目"
+
+msgid "duplicate address detection mode"
+msgstr "重复地址检测模式"
+
+msgid "quit on first reply"
+msgstr "收到回复就退出"
+
+msgid "set interval between packets (default: 1 second)"
+msgstr "设置两个包之间的间隔时间 (默认: 1 秒)"
+
+msgid "interval"
+msgstr "间隔"
+
+msgid "which ethernet device to use"
+msgstr "指定使用的设备"
+
+msgid "device"
+msgstr "设备"
+
+msgid "be quiet"
+msgstr "不要显示信息"
+
+msgid "source IP address"
+msgstr "源 IP 地址"
+
+msgid "source"
+msgstr "来源"
+
+msgid "unsolicited ARP mode, update your neighbours"
+msgstr "主动 ARP 模式, 更新邻居 ARP 表"
+
+msgid "how long to wait for a reply"
+msgstr "指定等待超时时间"
+
+msgid "timeout"
+msgstr "超时"
 
 
 ### clockdiff options

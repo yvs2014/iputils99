@@ -99,14 +99,14 @@ NORETURN void version_n_exit(int features) {
 
 // print unicode string like ("%-*s", width, string)
 static void uprintn(uint8_t w, const char *s) {
-  if (s) {
-    fputs(s, stdout);
-    for (; *s && w; s++)
-      if ((*s & 0xc0) != 0x80)
-        w--;
-  }
-  if (w)
-    printf("%*s", w, "");
+	if (s) {
+		fputs(s, stdout);
+		for (; *s && w; s++)
+			if ((*s & 0xc0) != 0x80)
+				w--;
+	}
+	if (w)
+		printf("%*s", w, "");
 }
 
 #define MAXOPTS   50

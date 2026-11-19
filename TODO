@@ -1,4 +1,3 @@
+on-the-way: split .po help message into parts (optional: -m, -N)
 
-TODO: ping: split .po help message into parts (optional: -m, -N)
 TODO: ping: drop_priv() ASAP
-

@@ -59,32 +59,53 @@ msgstr "imprimir versão"
 
 ### arping options
 
-msgid ""
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
+msgid "ARP answer mode, update your neighbours"
+msgstr "modo de resposta do ARP, atualiza seus vizinhos"
+
+msgid "keep on broadcasting, do not unicast"
+msgstr "continua transmitindo em broadcast, não faz unicast"
+
+msgid "how many packets to send"
+msgstr "quantos pacotes devem ser enviados"
+
+msgid "count"
+msgstr "qtde"
+
+msgid "duplicate address detection mode"
+msgstr "duplica o modo de detecção de endereço"
+
+msgid "quit on first reply"
+msgstr "sai na primeira resposta"
+
+msgid "set interval between packets (default: 1 second)"
+msgstr "define intervalo entre pacotes (padrão: 1 segundo)"
+
+msgid "interval"
+msgstr "intervalo"
+
+msgid "which ethernet device to use"
+msgstr "qual dispositivo ethernet deve ser usado"
+
+msgid "device"
+msgstr "disp"
+
+msgid "be quiet"
+msgstr "modo silencioso"
+
+msgid "source IP address"
+msgstr "endereço IP de origem"
+
+msgid "source"
+msgstr "origem"
+
+msgid "unsolicited ARP mode, update your neighbours"
+msgstr "modo ARP não solicitado, atualiza seus vizinhos"
+
+msgid "how long to wait for a reply"
+msgstr "por quanto tempo aguardar por uma resposta"
+
+msgid "timeout"
 msgstr ""
-"  -f            sai na primeira resposta\n"
-"  -q            modo silencioso\n"
-"  -b            continua transmitindo em broadcast, não faz unicast\n"
-"  -D            duplica o modo de detecção de endereço\n"
-"  -U            modo ARP não solicitado, atualiza seus vizinhos\n"
-"  -A            modo de resposta do ARP, atualiza seus vizinhos\n"
-"  -V            imprime a versão e sai\n"
-"  -c <qtde>     quantos pacotes devem ser enviados\n"
-"  -w <timeout>  por quanto tempo aguardar por uma resposta\n"
-"  -i <interval> define intervalo entre pacotes (padrão: 1 segundo)\n"
-"  -I <disp>     qual dispositivo <disp> ethernet deve ser usado\n"
-"  -s <origem>   endereço IP de origem\n"
 
 
 ### clockdiff options

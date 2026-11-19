@@ -150,7 +150,7 @@ do { // was 'restart:'
 	  int slot = port - rts->port;
 	  if ((slot >= 0) && (slot < (HIS_ELEMS - 1)) && rts->his[slot].hops) {
 		sndhops = rts->his[slot].hops;
-		retts  = &rts->his[slot].sendtime;
+		retts = &rts->his[slot].sendtime;
 		rts->his[slot].hops = 0;
 	  }
 	}
@@ -442,17 +442,17 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 static char *optstr = "bhl:m:np:vV46";
 
 static const usage_opt_t uopts[] = { // null-terminated
-        {.opt = '4', .desc = {__OPT_4}},
-        {.opt = '6', .desc = {__OPT_6}},
-        {.opt = 'b', .desc = {__TRACEPATH_OPT_b}},
-        {.opt = 'l', .arg  = __LENGTH, .desc = {__TRACEPATH_OPT_l}},
-        {.opt = 'm', .arg  = __HOPS,   .desc = {__TRACEPATH_OPT_m}},
-        {.opt = 'n', .desc = {__TRACEPATH_OPT_n}},
-        {.opt = 'p', .arg  = __PORT,   .desc = {__TRACEPATH_OPT_p}},
-        {.opt = 'h', .desc = {__OPT_h}},
-        {.opt = 'v', .desc = {__OPT_v}},
-        {.opt = 'V', .desc = {__OPT_V}},
-        {0},
+	{.opt = '4', .desc = {__OPT_4}},
+	{.opt = '6', .desc = {__OPT_6}},
+	{.opt = 'b', .desc = {__TRACEPATH_OPT_b}},
+	{.opt = 'l', .arg  = __LENGTH, .desc = {__TRACEPATH_OPT_l}},
+	{.opt = 'm', .arg  = __HOPS,   .desc = {__TRACEPATH_OPT_m}},
+	{.opt = 'n', .desc = {__TRACEPATH_OPT_n}},
+	{.opt = 'p', .arg  = __PORT,   .desc = {__TRACEPATH_OPT_p}},
+	{.opt = 'h', .desc = {__OPT_h}},
+	{.opt = 'v', .desc = {__OPT_v}},
+	{.opt = 'V', .desc = {__OPT_V}},
+	{0},
 };
 
 NORETURN static void usage(int rc) {

@@ -100,7 +100,7 @@
 		  (disc6); }
 
 typedef int (*run_fn)(state_t *rts, int argc, char **argv,
-        struct addrinfo *ai, const sock_t *sock);
+	struct addrinfo *ai, const sock_t *sock);
 
 static void open_socket(sock_t *sock, int af, int proto, bool verbose) {
 	assert((af == AF_INET) || (af == AF_INET6));

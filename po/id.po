@@ -59,32 +59,53 @@ msgstr "tampilkan versi"
 
 ### arping options
 
-msgid ""
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
+msgid "ARP answer mode, update your neighbours"
+msgstr "mode jawaban ARP, perbarui tetangga Anda"
+
+msgid "keep on broadcasting, do not unicast"
+msgstr "teruslah broadcast, jangan gunakan unicast"
+
+msgid "how many packets to send"
+msgstr "jumlah paket yang harus dikirim"
+
+msgid "count"
+msgstr "jumlah"
+
+msgid "duplicate address detection mode"
+msgstr "mendeteksi alamat duplikat"
+
+msgid "quit on first reply"
+msgstr "keluar saat menerima balasan pertama"
+
+msgid "set interval between packets (default: 1 second)"
+msgstr "atur interval antar paket (bawaan: 1 detik)"
+
+msgid "interval"
 msgstr ""
-"  -f            keluar saat menerima balasan pertama\n"
-"  -q            mode diam\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            mendeteksi alamat duplikat\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            tampilkan versi\n"
-"  -c <count>    jumlah paket yang harus dikirim\n"
-"  -w <timeout>  lama menunggu balasan\n"
-"  -i <interval> atur interval antar paket (bawaan: 1 detik)\n"
-"  -I <device>   perangkat ethernet\n"
-"  -s <asal>     alamat IP asal\n"
+
+msgid "which ethernet device to use"
+msgstr "perangkat ethernet"
+
+msgid "device"
+msgstr "perangkat"
+
+msgid "be quiet"
+msgstr "mode diam"
+
+msgid "source IP address"
+msgstr "alamat IP asal"
+
+msgid "source"
+msgstr "asal"
+
+msgid "unsolicited ARP mode, update your neighbours"
+msgstr "mode ARP yang tidak diminta, perbarui tetangga Anda"
+
+msgid "how long to wait for a reply"
+msgstr "lama menunggu balasan"
+
+msgid "timeout"
+msgstr ""
 
 
 ### clockdiff options

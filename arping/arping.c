@@ -65,32 +65,6 @@ typedef struct run_state {
 	arpopt_t opt;
 } state_t;
 
-//
-
-static const char *usestr =
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
-;
-
-NORETURN static void usage(int rc) {
-	usage_data_t use = {
-		.usestr = _(usestr),
-		.target = _TARGET,
-		.more   = !MORE,
-	};
-	usage_common(rc, &use);
-}
-
 static inline void update_stat(struct timespec *last, int *sent, int *brd_sent) {
 	if (last)
 		clock_gettime(CLOCK_MONOTONIC, last);
@@ -285,9 +259,9 @@ static inline bool rc_unsol(const counter_t *stat, const arpopt_t *opt, bool got
 
 //
 typedef struct estate {
-  state_t *rts;
-  bool failed;
-  uint64_t total;
+	state_t *rts;
+	bool failed;
+	uint64_t total;
 } estate_t;
 //
 static continue_t fd_signal(struct pollfd *pollfd) { // NONNULL(1)
@@ -590,7 +564,38 @@ static inline void print_header(const char *name,
 		fputs(COLOR_NORMAL, stdout);
 }
 
+//
+
 static char *optstr = "Abc:Dfhi:I:qs:UVw:";
+
+static const usage_opt_t uopts[] = { // null-terminated
+	{.opt = 'A', .desc = {__ARPING_OPT_A}},
+	{.opt = 'b', .desc = {__ARPING_OPT_b}},
+	{.opt = 'c', .arg  = __COUNT,    .desc = {__ARPING_OPT_c}},
+	{.opt = 'D', .desc = {__ARPING_OPT_D}},
+	{.opt = 'f', .desc = {__ARPING_OPT_f}},
+	{.opt = 'i', .arg  = __INTERVAL, .desc = {__ARPING_OPT_i}},
+	{.opt = 'I', .arg  = __DEVICE,   .desc = {__ARPING_OPT_I}},
+	{.opt = 'q', .desc = {__ARPING_OPT_q}},
+	{.opt = 's', .arg  = __SOURCE,   .desc = {__ARPING_OPT_s}},
+	{.opt = 'U', .desc = {__ARPING_OPT_U}},
+	{.opt = 'w', .arg  = __TIMEOUT,  .desc = {__ARPING_OPT_w}},
+	{.opt = 'h', .desc = {__OPT_h}},
+	{.opt = 'V', .desc = {__OPT_V}},
+	{0},
+};
+
+NORETURN static void usage(int rc) {
+	usage_data_t use = {
+		.indent  = 9,
+		.options = uopts,
+		.optstr  = optstr,
+		.target = _TARGET,
+		.more   = !MORE,
+	};
+	usage_common(rc, &use);
+}
+
 static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 #define RTS_DATA ((state_t *)data)
 	switch (c) {

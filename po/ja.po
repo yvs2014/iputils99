@@ -61,33 +61,53 @@ msgstr "バージョンを表示"
 
 ### arping options
 
-msgid ""
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
-msgstr ""
-"  -f                最初の応答で終了します\n"
-"  -q                表示を抑制します\n"
-"  -b                ブロードキャストパケットのみを使用し、ユニキャストに移行"
-"しません\n"
-"  -D                重複アドレス検出モード (DAD) で実行します\n"
-"  -U                ARP要求パケットを使用してARPキャッシュを更新します\n"
-"  -A                ARP応答パケットを使用してARPキャッシュを更新します\n"
-"  -V                バージョンを表示し終了します\n"
-"  -c <回数>         パケットを指定回数送信した後に終了します\n"
-"  -w <タイムアウト> 応答待ち時間を指定します\n"
-"  -i <間隔>         パケットの送信間隔を指定します (デフォルト: 1 秒)\n"
-"  -I <デバイス>     使用するイーサネットデバイスを指定します\n"
-"  -s <送信元>       送信元IPアドレス\n"
+msgid "ARP answer mode, update your neighbours"
+msgstr "ARP応答パケットを使用してARPキャッシュを更新します"
+
+msgid "keep on broadcasting, do not unicast"
+msgstr "ブロードキャストパケットのみを使用し、ユニキャストに移行しません"
+
+msgid "how many packets to send"
+msgstr "パケットを指定回数送信した後に終了します"
+
+msgid "count"
+msgstr "回数"
+
+msgid "duplicate address detection mode"
+msgstr "重複アドレス検出モード (DAD) で実行します"
+
+msgid "quit on first reply"
+msgstr "最初の応答で終了します"
+
+msgid "set interval between packets (default: 1 second)"
+msgstr "パケットの送信間隔を指定します (デフォルト: 1 秒)"
+
+msgid "interval"
+msgstr "間隔"
+
+msgid "which ethernet device to use"
+msgstr "使用するイーサネットデバイスを指定します"
+
+msgid "device"
+msgstr "デバイス"
+
+msgid "be quiet"
+msgstr "表示を抑制します"
+
+msgid "source IP address"
+msgstr "送信元IPアドレス"
+
+msgid "source"
+msgstr "送信元"
+
+msgid "unsolicited ARP mode, update your neighbours"
+msgstr "ARP要求パケットを使用してARPキャッシュを更新します"
+
+msgid "how long to wait for a reply"
+msgstr "応答待ち時間を指定します"
+
+msgid "timeout"
+msgstr "タイムアウト"
 
 
 ### clockdiff options

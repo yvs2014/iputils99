@@ -60,32 +60,54 @@ msgstr "vypíše verzi"
 
 
 ### arping options
-msgid ""
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
+
+msgid "ARP answer mode, update your neighbours"
+msgstr "režim odpovědi ARP, aktualizuje sousedy"
+
+msgid "keep on broadcasting, do not unicast"
+msgstr "pokračuje ve všesměrovém vysílání, žádný unicast"
+
+msgid "how many packets to send"
+msgstr "kolik paketů se má odeslat"
+
+msgid "count"
+msgstr "počet"
+
+msgid "duplicate address detection mode"
+msgstr "režim zjišťování duplicitních adres"
+
+msgid "quit on first reply"
+msgstr "skončí s první odpovědí"
+
+msgid "set interval between packets (default: 1 second)"
+msgstr "nastaví interval mezi pakety (výchozí: 1 sekunda)"
+
+msgid "interval"
 msgstr ""
-"  -f            skončí s první odpovědí\n"
-"  -q            potlačí obvyklý výstup\n"
-"  -b            pokračuje ve všesměrovém vysílání, žádný unicast\n"
-"  -D            režim zjišťování duplicitních adres\n"
-"  -U            režim nevyžádaného ARP, aktualizuje sousedy\n"
-"  -A            režim odpovědi ARP, aktualizuje sousedy\n"
-"  -V            vypíše verzi a skončí\n"
-"  -c <počet>    kolik paketů se má odeslat\n"
-"  -w <čas>      jak dlouho čekat na odpověď\n"
-"  -i <interval> nastaví interval mezi pakety (výchozí: 1 sekunda)\n"
-"  -I <rozhraní> které ethernetové rozhraní se použije\n"
-"  -s <zdroj>    zdrojová IP adresa\n"
+
+msgid "which ethernet device to use"
+msgstr "které ethernetové rozhraní se použije"
+
+msgid "device"
+msgstr "rozhraní"
+
+msgid "be quiet"
+msgstr "potlačí obvyklý výstup"
+
+msgid "source IP address"
+msgstr "zdrojová IP adresa"
+
+msgid "source"
+msgstr "zdroj"
+
+msgid "unsolicited ARP mode, update your neighbours"
+msgstr "režim nevyžádaného ARP, aktualizuje sousedy"
+
+msgid "how long to wait for a reply"
+msgstr "jak dlouho čekat na odpověď"
+
+msgid "timeout"
+msgstr "čas"
 
 
 ### clockdiff options
@@ -242,7 +264,7 @@ msgid "use -f multiple times to combine flags"
 msgstr "použijte -f vícekrát pro zkombinování příznaků"
 
 msgid "value"
-msgstr "hodnota"
+msgstr "hodn."
 
 msgid "ai_flags macro like AI_IDN"
 msgstr "makro ai_flags podobné AI_IDN"

@@ -24,7 +24,7 @@ static inline void set_caps(const cap_value_t flag[]) { // NONNULL(1)
 		if (cap_get_flag(curr, *flag, CAP_PERMITTED, &c) < 0)
 			err(errno, "cap_get_flag(%s, %d)", "PERMITTED", *flag);
 		if ((c != CAP_CLEAR) && // add to permitted
-                    (cap_set_flag(caps, CAP_PERMITTED, 1, flag, CAP_SET) < 0))
+		    (cap_set_flag(caps, CAP_PERMITTED, 1, flag, CAP_SET) < 0))
 			err(errno, "cap_set_flag(%s, flag=%d, onoff=%d)", "PERMITTED", *flag, CAP_SET);
 	}
 	// set them and clear others

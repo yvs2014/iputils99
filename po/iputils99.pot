@@ -59,19 +59,52 @@ msgstr ""
 
 ### arping options
 
-msgid ""
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
+msgid "ARP answer mode, update your neighbours"
+msgstr ""
+
+msgid "keep on broadcasting, do not unicast"
+msgstr ""
+
+msgid "how many packets to send"
+msgstr ""
+
+msgid "count"
+msgstr ""
+
+msgid "duplicate address detection mode"
+msgstr ""
+
+msgid "quit on first reply"
+msgstr ""
+
+msgid "set interval between packets (default: 1 second)"
+msgstr ""
+
+msgid "interval"
+msgstr ""
+
+msgid "which ethernet device to use"
+msgstr ""
+
+msgid "device"
+msgstr ""
+
+msgid "be quiet"
+msgstr ""
+
+msgid "source IP address"
+msgstr ""
+
+msgid "source"
+msgstr ""
+
+msgid "unsolicited ARP mode, update your neighbours"
+msgstr ""
+
+msgid "how long to wait for a reply"
+msgstr ""
+
+msgid "timeout"
 msgstr ""
 
 

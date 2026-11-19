@@ -257,12 +257,16 @@ static inline timediff_e measure_msg(state_t *rts, measurement_data_t *m) {
 
 	m->icmp = (struct icmphdr *)(m->packet + (m->ip->ihl << 2));
 
-#define REPLY_WITH_TS ((m->icmp->type == ICMP_TIMESTAMPREPLY) || \
-  (rts->optlen && (m->icmp->type == ICMP_ECHOREPLY) && (m->packet[20] == IPOPT_TIMESTAMP)))
+#define REPLY_WITH_TS ( \
+	(m->icmp->type == ICMP_TIMESTAMPREPLY) || \
+	(rts->optlen && (m->icmp->type == ICMP_ECHOREPLY) && (m->packet[20] == IPOPT_TIMESTAMP)) \
+)
 //
-#define ICMP_ECHO_OKAY ((m->icmp->un.echo.id       == rts->id16  ) && \
-                        (m->icmp->un.echo.sequence >= rts->seqno0) && \
-	                (m->icmp->un.echo.sequence <= rts->seqno ))
+#define ICMP_ECHO_OKAY ( \
+	(m->icmp->un.echo.id       == rts->id16  ) && \
+	(m->icmp->un.echo.sequence >= rts->seqno0) && \
+	(m->icmp->un.echo.sequence <= rts->seqno )    \
+)
 	delta_timing_t dt = {0};
 	if (REPLY_WITH_TS && ICMP_ECHO_OKAY) {
 		if (rts->acked < m->icmp->un.echo.sequence)

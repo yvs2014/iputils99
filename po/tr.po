@@ -59,32 +59,53 @@ msgstr "sürümü yazdır"
 
 ### arping options
 
-msgid ""
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
-msgstr ""
-"  -f            ilk yanıtta çık\n"
-"  -q            sessiz ol\n"
-"  -b            genel yayına devam et, tek noktaya yayın yapma\n"
-"  -D            yinelenen adres algılama modu\n"
-"  -U            istenmeyen ARP modu, komşularınızı güncelleyin\n"
-"  -A            ARP cevap modu, komşularınızı güncelleyin\n"
-"  -V            sürüm bilgisini yazdır ve çık\n"
-"  -c <sayı>     kaç paket gönderilecek\n"
-"  -w <süre>     yanıt için ne kadar beklenecek\n"
-"  -i <aralık>   paketler arasındaki aralığı ayarla (öntanımlı: 1 saniye)\n"
-"  -I <aygıt>    hangi ethernet aygıtı kullanılacak\n"
-"  -s <kaynak>   kaynak IP adresi\n"
+msgid "ARP answer mode, update your neighbours"
+msgstr "ARP cevap modu, komşularınızı güncelleyin"
+
+msgid "keep on broadcasting, do not unicast"
+msgstr "genel yayına devam et, tek noktaya yayın yapma"
+
+msgid "how many packets to send"
+msgstr "kaç paket gönderilecek"
+
+msgid "count"
+msgstr "sayı"
+
+msgid "duplicate address detection mode"
+msgstr "yinelenen adres algılama modu"
+
+msgid "quit on first reply"
+msgstr "ilk yanıtta çık"
+
+msgid "set interval between packets (default: 1 second)"
+msgstr "paketler arasındaki aralığı ayarla (öntanımlı: 1 saniye)"
+
+msgid "interval"
+msgstr "aralık"
+
+msgid "which ethernet device to use"
+msgstr "hangi ethernet aygıtı kullanılacak"
+
+msgid "device"
+msgstr "aygıt"
+
+msgid "be quiet"
+msgstr "sessiz ol"
+
+msgid "source IP address"
+msgstr "kaynak IP adresi"
+
+msgid "source"
+msgstr "kaynak"
+
+msgid "unsolicited ARP mode, update your neighbours"
+msgstr "istenmeyen ARP modu, komşularınızı güncelleyin"
+
+msgid "how long to wait for a reply"
+msgstr "yanıt için ne kadar beklenecek"
+
+msgid "timeout"
+msgstr "süre"
 
 
 ### clockdiff options

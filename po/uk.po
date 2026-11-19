@@ -62,33 +62,53 @@ msgstr "показати версію"
 
 ### arping options
 
-msgid ""
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
-msgstr ""
-"  -f            вийти при першій відповіді\n"
-"  -q            не виводити даних\n"
-"  -b            продовжувати пінгування всієї підмережі,\n"
-"                та не переходити до направленої адресації\n"
-"  -D            режим виявлення дублікатів адрес\n"
-"  -U            незапитуваний режим ARP, оновити ваше оточення\n"
-"  -A            режим відповідей ARP, оновити ваше оточення\n"
-"  -V            вивести версію та завершити роботу\n"
-"  -c <к-ть>     кількість пакетів, які слід надіслати\n"
-"  -w <час>      час очікування на відповідь\n"
-"  -i <інтервал> інтервал між пакетами (типове значення: 1 секунда)\n"
-"  -I <пристрій> пристрій ethernet, яким слід скористатися\n"
-"  -s <джерело>  IP адреса джерела\n"
+msgid "ARP answer mode, update your neighbours"
+msgstr "режим відповідей ARP, оновити ваше оточення"
+
+msgid "keep on broadcasting, do not unicast"
+msgstr "надалі бродкастити, не переходити до направленої адресації"
+
+msgid "how many packets to send"
+msgstr "кількість пакетів, які слід надіслати"
+
+msgid "count"
+msgstr "число"
+
+msgid "duplicate address detection mode"
+msgstr "режим виявлення дублікатів адрес"
+
+msgid "quit on first reply"
+msgstr "вийти при першій відповіді"
+
+msgid "set interval between packets (default: 1 second)"
+msgstr "інтервал між пакетами (типове значення: 1 секунда)"
+
+msgid "interval"
+msgstr "інтервал"
+
+msgid "which ethernet device to use"
+msgstr "пристрій ethernet, яким слід скористатися"
+
+msgid "device"
+msgstr "пристрій"
+
+msgid "be quiet"
+msgstr "режим тиші"
+
+msgid "source IP address"
+msgstr "IP адреса джерела"
+
+msgid "source"
+msgstr "джерело"
+
+msgid "unsolicited ARP mode, update your neighbours"
+msgstr "режим ARP без запитів, оновити ваше оточення"
+
+msgid "how long to wait for a reply"
+msgstr "час очікування на відповідь"
+
+msgid "timeout"
+msgstr "тайм-аут"
 
 
 ### clockdiff options
@@ -1087,7 +1107,7 @@ msgstr "Надто багато переходів"
 
 #
 msgid "hops"
-msgstr "переходів"
+msgstr "кроків"
 
 #
 msgid "back"

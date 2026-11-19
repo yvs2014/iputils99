@@ -66,33 +66,53 @@ msgstr "Version ausgeben"
 
 ### arping options
 
-msgid ""
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
-msgstr ""
-"  -f             Nach erster Antwort beenden\n"
-"  -q             Stiller Modus\n"
-"  -b             Alle Pakete als Broadcast versenden, kein Unicast "
-"verwenden\n"
-"  -D             Modus zur Erkennung doppelter Adressen (DAD)\n"
-"  -U             Unsolicited ARP Modus, Nachbarn aktualisieren\n"
-"  -A             ARP Antwort-Modus, Nachbarn aktualisieren\n"
-"  -V             Version ausgeben und beenden\n"
-"  -c <Anzahl>    <Anzahl> Pakete senden\n"
-"  -w <timeout>   Maximale Wartezeit auf Antworten\n"
-"  -i <Intervall> Paket-Sendeintervall (Standard: 1 Sekunde)\n"
-"  -I <Gerät>     Ethernet Gerät <Gerät> verwenden\n"
-"  -s <Quelle>    Quell-IP-Adresse\n"
+msgid "ARP answer mode, update your neighbours"
+msgstr "ARP Antwort-Modus, Nachbarn aktualisieren"
+
+msgid "keep on broadcasting, do not unicast"
+msgstr "Alle Pakete als Broadcast versenden, kein Unicast verwenden"
+
+msgid "how many packets to send"
+msgstr "Anzahl Pakete senden"
+
+msgid "count"
+msgstr "Anzahl"
+
+msgid "duplicate address detection mode"
+msgstr "Modus zur Erkennung doppelter Adressen (DAD)"
+
+msgid "quit on first reply"
+msgstr "Nach erster Antwort beenden"
+
+msgid "set interval between packets (default: 1 second)"
+msgstr "Paket-Sendeintervall (Standard: 1 Sekunde)"
+
+msgid "interval"
+msgstr "Intervall"
+
+msgid "which ethernet device to use"
+msgstr "Ethernet Gerät verwenden"
+
+msgid "device"
+msgstr "Gerät"
+
+msgid "be quiet"
+msgstr "Stiller Modus"
+
+msgid "source IP address"
+msgstr "Quell-IP-Adresse"
+
+msgid "source"
+msgstr "Quelle"
+
+msgid "unsolicited ARP mode, update your neighbours"
+msgstr "Unsolicited ARP Modus, Nachbarn aktualisieren"
+
+msgid "how long to wait for a reply"
+msgstr "Maximale Wartezeit auf Antworten"
+
+msgid "timeout"
+msgstr "Time-out"
 
 
 ### clockdiff options

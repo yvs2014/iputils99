@@ -59,32 +59,53 @@ msgstr "버전을 출력하"
 
 ### arping options
 
-msgid ""
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
-msgstr ""
-"  -f            처음 응답시 끝내기\n"
-"  -q            출력 제외\n"
-"  -b            단일 전송이 아닌 광역 전송 유지\n"
-"  -D            중복 주소 발견 모드\n"
-"  -U            자체 ARP 모드로, 인접 노드 최신화\n"
-"  -A            ARP 응답 모드로, 인접 노드 최신화\n"
-"  -V            버전을 출력하고 나갑니다\n"
-"  -c <갯수>     보낼 패킷 수\n"
-"  -w <제한시간> 기다리는 시간\n"
-"  -i <주기시간> 패킷 전송 주기를 설정합니다(기본: 1초)\n"
-"  -I <장치>     사용 하려는 이더넷 장치\n"
-"  -s <원천>     원천 IP 주소\n"
+msgid "ARP answer mode, update your neighbours"
+msgstr "ARP 응답 모드로, 인접 노드 최신화"
+
+msgid "keep on broadcasting, do not unicast"
+msgstr "단일 전송이 아닌 광역 전송 유지"
+
+msgid "how many packets to send"
+msgstr "보낼 패킷 수"
+
+msgid "count"
+msgstr "갯수"
+
+msgid "duplicate address detection mode"
+msgstr "중복 주소 발견 모드"
+
+msgid "quit on first reply"
+msgstr "처음 응답시 끝내기"
+
+msgid "set interval between packets (default: 1 second)"
+msgstr "패킷 전송 주기를 설정합니다(기본: 1초)"
+
+msgid "interval"
+msgstr "주기시간"
+
+msgid "which ethernet device to use"
+msgstr "사용 하려는 이더넷 장치"
+
+msgid "device"
+msgstr "장치"
+
+msgid "be quiet"
+msgstr "출력 제외"
+
+msgid "source IP address"
+msgstr "원천 IP 주소"
+
+msgid "source"
+msgstr "원천"
+
+msgid "unsolicited ARP mode, update your neighbours"
+msgstr "자체 ARP 모드로, 인접 노드 최신화"
+
+msgid "how long to wait for a reply"
+msgstr "기다리는 시간"
+
+msgid "timeout"
+msgstr "제한시간"
 
 
 ### clockdiff options

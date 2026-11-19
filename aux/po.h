@@ -222,12 +222,17 @@
 #define _RESUME        _("Resume")
 #define _BACK          _("back")
 
-#define __PORT   "port"
-#define __LENGTH "length"
-#define __HOPS   "hops"
-#define _HOPS    _(__HOPS)
-#define __VALUE  "value"
-#define __MACRO  "macro"
+#define __PORT     "port"
+#define __LENGTH   "length"
+#define __HOPS     "hops"
+#define _HOPS      _(__HOPS)
+#define __VALUE    "value"
+#define __MACRO    "macro"
+#define __COUNT    "count"
+#define __TIMEOUT  "timeout"
+#define __INTERVAL "interval"
+#define __DEVICE   "device"
+#define __SOURCE   "source"
 
 #define _PKT_LENGTH    _("Packet length")
 #define _NO_REPLY      _("no reply")
@@ -260,6 +265,19 @@
 #define __OPT_h "print help"
 #define __OPT_v "verbose output"
 #define __OPT_V "print version"
+
+// arping
+#define __ARPING_OPT_A "ARP answer mode, update your neighbours"
+#define __ARPING_OPT_b "keep on broadcasting, do not unicast"
+#define __ARPING_OPT_c "how many packets to send"
+#define __ARPING_OPT_D "duplicate address detection mode"
+#define __ARPING_OPT_f "quit on first reply"
+#define __ARPING_OPT_i "set interval between packets (default: 1 second)"
+#define __ARPING_OPT_I "which ethernet device to use"
+#define __ARPING_OPT_q "be quiet"
+#define __ARPING_OPT_s "source IP address"
+#define __ARPING_OPT_U "unsolicited ARP mode, update your neighbours"
+#define __ARPING_OPT_w "how long to wait for a reply"
 
 // tracepath
 #define __TRACEPATH_OPT_b "print both name and IP"

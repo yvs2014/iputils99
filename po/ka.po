@@ -59,32 +59,53 @@ msgstr "ვერსიის ჩვენება"
 
 ### arping options
 
-msgid ""
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
-msgstr ""
-"  -f               პირველივე პასუხზე გამოსვლა\n"
-"  -q               ჩუმად ყოფნა\n"
-"  -b               გადაცემის გაგრძელება უნიკასტის გარეშე\n"
-"  -D               დუბლირებული მისამართის დადგენის რეჟიმი\n"
-"  -A               ARP პასუხის რეჟიმი. განაახლეთ თქვენი მეზობლები\n"
-"  -U               ARP რეჟიმი. განაახლეთ თქვენი მეზობლები\n"
-"  -V               ვერსიის დაბეჭდვა და გასვლა\n"
-"  -c <რაოდენობა>   რამდენი პაკეტი გაიგზავნოს\n"
-"  -w <დრო>         რამდენ ხანს დაველოდო პასუხის\n"
-"  -i <ინტერვალი>   პაკეტებს შორის ინტერვალის დაყენება (ნაგულისხმევი: 1 წამი)\n"
-"  -l <მოწყობილობა> გამოყენებადი ქსელის ინტერფეისის სახელი\n"
-"  -s <წყარო>       წყაროს IP მისამართი\n"
+msgid "ARP answer mode, update your neighbours"
+msgstr "ARP პასუხის რეჟიმი. განაახლეთ თქვენი მეზობლები"
+
+msgid "keep on broadcasting, do not unicast"
+msgstr "გადაცემის გაგრძელება უნიკასტის გარეშე"
+
+msgid "how many packets to send"
+msgstr "რამდენი პაკეტი გაიგზავნოს"
+
+msgid "count"
+msgstr "ნომერი"
+
+msgid "duplicate address detection mode"
+msgstr "დუბლირებული მისამართის დადგენის რეჟიმი"
+
+msgid "quit on first reply"
+msgstr "პირველივე პასუხზე გამოსვლა"
+
+msgid "set interval between packets (default: 1 second)"
+msgstr "პაკეტებს შორის ინტერვალის დაყენება (ნაგულისხმევი: 1 წამი)"
+
+msgid "interval"
+msgstr "ინტერვალი"
+
+msgid "which ethernet device to use"
+msgstr "გამოყენებადი ქსელის ინტერფეისის სახელი"
+
+msgid "device"
+msgstr "მოწყ."
+
+msgid "be quiet"
+msgstr "ჩუმად ყოფნა"
+
+msgid "source IP address"
+msgstr "წყაროს IP მისამართი"
+
+msgid "source"
+msgstr "წყარო"
+
+msgid "unsolicited ARP mode, update your neighbours"
+msgstr "ARP რეჟიმი, განაახლეთ თქვენი მეზობლები"
+
+msgid "how long to wait for a reply"
+msgstr "რამდენ ხანს დაველოდო პასუხის"
+
+msgid "timeout"
+msgstr "დრო"
 
 
 ### clockdiff options

@@ -66,7 +66,7 @@ static inline uint ai_macro2value(char opt, const char *arg) {
 #ifdef AI_CANONIDN
 	IF_AI_MACRO(AI_CANONIDN);
 #endif
-        // optional: deprecated AI flags
+	// optional: deprecated AI flags
 #ifdef _AI_IDN_ALLOW_UNASSIGNED
 	IF_AI_MACRONAME(_AI_IDN_ALLOW_UNASSIGNED, "AI_IDN_ALLOW_UNASSIGNED")
 #endif

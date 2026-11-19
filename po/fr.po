@@ -59,33 +59,53 @@ msgstr "imprimer la version"
 
 ### arping options
 
-msgid ""
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
+msgid "ARP answer mode, update your neighbours"
+msgstr "mode réponse ARP, met à jour vos voisins"
+
+msgid "keep on broadcasting, do not unicast"
+msgstr "continuer à diffuser, ne pas diffuser en monodiffusion"
+
+msgid "how many packets to send"
+msgstr "nombre de paquets à envoyer"
+
+msgid "count"
+msgstr "nombre"
+
+msgid "duplicate address detection mode"
+msgstr "mode de détection d’adresses dupliquées"
+
+msgid "quit on first reply"
+msgstr "quitter dès la première réponse"
+
+msgid "set interval between packets (default: 1 second)"
+msgstr "définir l’intervalle entre les paquets (par défaut : 1 seconde)"
+
+msgid "interval"
+msgstr "num"
+
+msgid "which ethernet device to use"
+msgstr "appareil Ethernet à utiliser"
+
+msgid "device"
+msgstr "appareil"
+
+msgid "be quiet"
+msgstr "être silencieux"
+
+msgid "source IP address"
+msgstr "adresse IP source"
+
+msgid "source"
 msgstr ""
-"  -f            quitter dès la première réponse\n"
-"  -q            être silencieux\n"
-"  -b            continuer à diffuser, ne pas diffuser en monodiffusion\n"
-"  -D            mode de détection d’adresses dupliquées\n"
-"  -U            mode ARP non sollicité, met à jour vos voisins\n"
-"  -A            mode réponse ARP, met à jour vos voisins\n"
-"  -V            afficher la version et quitter\n"
-"  -c <count>    nombre de paquets à envoyer\n"
-"  -w <timeout>  temps à attendre la réponse\n"
-"  -i <interval> définir l’intervalle entre les paquets (par défaut : "
-"1 seconde)\n"
-"  -I <device>   périphérique Ethernet à utiliser\n"
-"  -s <source>   adresse IP source\n"
+
+msgid "unsolicited ARP mode, update your neighbours"
+msgstr "mode ARP non sollicité, met à jour vos voisins"
+
+msgid "how long to wait for a reply"
+msgstr "temps à attendre la réponse"
+
+msgid "timeout"
+msgstr "temps"
 
 
 ### clockdiff options
@@ -176,7 +196,7 @@ msgstr ""
 "les\n"
 "                     destinations ou pour -f), remplacer -n\n"
 "   -I <interface>    soit le nom ou l'adresse de l'interface\n"
-"   -i <intervalle>   secondes entre l'envoi de chaque paquet\n"
+"   -i <num>   secondes entre l'envoi de chaque paquet\n"
 "   -L                supprime le bouclage des paquets multicast\n"
 "   -l <preload>      envoie <preload> paquets en attendant les réponses\n"
 "   -m <mark>         marque les paquets sortants\n"

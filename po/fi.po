@@ -58,32 +58,53 @@ msgstr "tulosta versio"
 
 ### arping options
 
-msgid ""
-"  -f            quit on first reply\n"
-"  -q            be quiet\n"
-"  -b            keep on broadcasting, do not unicast\n"
-"  -D            duplicate address detection mode\n"
-"  -U            unsolicited ARP mode, update your neighbours\n"
-"  -A            ARP answer mode, update your neighbours\n"
-"  -V            print version and exit\n"
-"  -c <count>    how many packets to send\n"
-"  -w <timeout>  how long to wait for a reply\n"
-"  -i <interval> set interval between packets (default: 1 second)\n"
-"  -I <device>   which ethernet device to use\n"
-"  -s <source>   source IP address\n"
-msgstr ""
-"  -f            lopeta ensimmäisellä vastauksella\n"
-"  -q            ole hiljaa\n"
-"  -b            jatka laaja-lähetystä, ei yksi-lähetystä\n"
-"  -D            tee kaksoiskappale osoitteentunnistustilaa\n"
-"  -U            ei-toivottu ARP-tila, päivitä naapurisi\n"
-"  -A            ARP-vastaustila, päivitä naapurisi\n"
-"  -V            tulosta versio ja poistu\n"
-"  -c <count>    lähetettävien pakettien lukumäärä\n"
-"  -w <timeout>  odotettavaa aika vastaukseen\n"
-"  -i <interval> aseta pakettien välinen aika (oletus: yksi sekunti)\n"
-"  -I <device>   käytettävää ethernet-laitetta\n"
-"  -s <source>   IP-osoitteen lähde\n"
+msgid "ARP answer mode, update your neighbours"
+msgstr "ARP-vastaustila, päivitä naapurisi"
+
+msgid "keep on broadcasting, do not unicast"
+msgstr "jatka laaja-lähetystä, ei yksi-lähetystä"
+
+msgid "how many packets to send"
+msgstr "lähetettävien pakettien lukumäärä"
+
+msgid "count"
+msgstr "määrä"
+
+msgid "duplicate address detection mode"
+msgstr "tee kaksoiskappale osoitteentunnistustilaa"
+
+msgid "quit on first reply"
+msgstr "lopeta ensimmäisellä vastauksella"
+
+msgid "set interval between packets (default: 1 second)"
+msgstr "aseta pakettien välinen aika (oletus: yksi sekunti)"
+
+msgid "interval"
+msgstr "aikaväli"
+
+msgid "which ethernet device to use"
+msgstr "käytettävää ethernet-laitetta"
+
+msgid "device"
+msgstr "laite"
+
+msgid "be quiet"
+msgstr "ole hiljaa"
+
+msgid "source IP address"
+msgstr "IP-osoitteen lähde"
+
+msgid "source"
+msgstr "lähde"
+
+msgid "unsolicited ARP mode, update your neighbours"
+msgstr "ei-toivottu ARP-tila, päivitä naapurisi"
+
+msgid "how long to wait for a reply"
+msgstr "odotettavaa aika vastaukseen"
+
+msgid "timeout"
+msgstr "aikalisä"
 
 
 ### clockdiff options
