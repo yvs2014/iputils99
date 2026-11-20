@@ -109,8 +109,39 @@ static void uprintn(uint8_t w, const char *s) {
 		printf("%*s", w, "");
 }
 
+//
+
 #define MAXOPTS   50
 #define OPTINDENT "  "
+
+static void usage_options(const usage_opt_t *uopt, uint8_t indent,
+	const char *bold, const char *norm, const char *yell) { // NONNULL(1, 3, 4, 5)
+	printf("\n%s%s%s:\n", bold, _OPTIONS_H, norm);
+	for (uint i = 0; (i < MAXOPTS) && uopt && uopt->opt; i++, uopt++) {
+		const char   opt = uopt->opt;
+		const char * pre = uopt->pre;
+		const char *_pre = _(pre);
+		if (opt == HDR_OPT) {
+			printf("\n%s%s%s:\n", bold, _pre, norm);
+			continue;
+		}
+		if (pre)
+			printf(OPTINDENT "   %-*s %s\n", indent, "", _pre);
+		printf(OPTINDENT "-%s%c ", yell, uopt->opt);
+		if (uopt->arg)
+			uprintn(indent, _(uopt->arg));
+		else
+			printf("%*s", indent, "");
+		fputs(norm, stdout);
+		const char *desc = uopt->desc[0];
+		if (desc)
+			printf(" %s", _(desc));
+		putchar('\n');
+		if (desc) for (uint j = 1;
+		   (j < ARRAY_LEN(uopt->desc)) && uopt->desc[j]; j++)
+			printf(OPTINDENT "   %-*s %s\n", indent, "", _(uopt->desc[j]));
+	}
+}
 
 void usage_common(int rc, const usage_data_t *udata) { // NONNULL(2)
 	const char *bold = itistty ? COLOR_BOLD   : "";
@@ -118,32 +149,12 @@ void usage_common(int rc, const usage_data_t *udata) { // NONNULL(2)
 	const char *yell = itistty ? COLOR_YELLOW : "";
 	printf("\n%s%s%s:\n", bold, _USAGE, norm);
 	printf(OPTINDENT "%s", myname);
-	const usage_opt_t *uopt = udata->options;
-	if (udata->usestr)
-		printf(" [%s%s%s]", yell, _OPTIONS, norm);
 	if (udata->optstr)
 		printf(" [%s%s%s]", yell, udata->optstr, norm);
 	printf(" %s%s\n", udata->target, udata->more ? " ..." : "");
-	if (udata->usestr || uopt)
-		printf("\n%s%s%s:\n", bold, _OPTIONS_H, norm);
-	for (uint i = 0; (i < MAXOPTS) && uopt && uopt->opt; i++, uopt++) {
-		if (uopt->pre)
-			printf(OPTINDENT "   %-*s %s\n", udata->indent, "", _(uopt->pre));
-		printf(OPTINDENT "-%s%c ", yell, uopt->opt);
-		if (uopt->arg)
-			uprintn(udata->indent, _(uopt->arg));
-		else
-			printf("%*s", udata->indent, "");
-		fputs(norm, stdout);
-		if (uopt->desc[0])
-			printf(" %s", _(uopt->desc[0]));
-		putchar('\n');
-		if (uopt->desc[0]) for (uint j = 1;
-		   (j < ARRAY_LEN(uopt->desc)) && uopt->desc[j]; j++)
-			printf(OPTINDENT "   %-*s %s\n", udata->indent, "", _(uopt->desc[j]));
-	}
-	if (udata->usestr && !uopt)
-		printf("\n%s%s%s:\n%s", bold, _OPTIONS_H, norm, udata->usestr);
+	const usage_opt_t *uopt = udata->uopt;
+	if (uopt)
+		usage_options(uopt, udata->indent, bold, norm, yell);
 	printf("\n%s%s %s(8)%s\n", bold, _FOR_MORE, myname, norm);
 	exit(rc);
 }

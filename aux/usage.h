@@ -15,15 +15,15 @@ enum {
 
 #define MAXOPTDESC 5
 typedef struct usage_opt {
-	char opt;
+	char opt; // use '_' for extra headers
 	const char *arg, *desc[MAXOPTDESC], *pre;
 } usage_opt_t;
 
 #define MORE true
 typedef struct usage_data {
 	uint8_t indent;
-	const usage_opt_t *options; // options[] null-terminated array
-	const char *usestr, *optstr, *target;
+	const usage_opt_t *uopt; // uopt[] null-terminated array
+	const char *optstr, *target;
 	bool more;
 } usage_data_t;
 

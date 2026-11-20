@@ -218,5 +218,6 @@ void     rcvd_set  (uint16_t seq, bitmap_t *map);
 void     rcvd_clear(uint16_t seq, bitmap_t *map);
 
 NORETURN void usage(int rc);
+extern const char *optstr;
 
 #endif

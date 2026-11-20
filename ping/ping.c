@@ -243,17 +243,6 @@ static inline void opt_s(state_t *rts) {
 	rts->datalen = len;
 }
 
-static char *optstr =
-	"aAbBc:CdDe:fF:hHi:I:l:L"
-#ifdef SO_MARK
-	"m:"
-#endif
-	"M:n"
-#ifdef ENABLE_RFC4620
-	"N:"
-#endif
-	"Op:qQ:rRs:S:t:T:UvVw:W:46";
-
 static void switch_opt(char c, void *data) { // NONNULL(2)
 #define RTS_DATA ((state_t *)data)
 #define RTS_HINT ((struct addrinfo *)(RTS_DATA->auxdata))

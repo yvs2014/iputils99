@@ -314,9 +314,9 @@ is also used\&.
 only\&. Record route\&. Includes the RECORD_ROUTE option in the ECHO_REQUEST packet and displays the route buffer on returned packets\&. Note that the IP header is only large enough for nine such routes\&. Many hosts ignore or discard this option\&.
 .RE
 .PP
-\fB\-s\fR \fIpacketsize\fR
+\fB\-s\fR \fIsize\fR
 .RS 4
-Specifies the number of data bytes to be sent\&. The default is 56, which translates into 64 ICMP data bytes when combined with the 8 bytes of ICMP header data\&.
+Specifies the payload size\&. The default is 56, which translates into 64 ICMP data bytes when combined with the 8 bytes of ICMP header data\&.
 .RE
 .PP
 \fB\-S\fR \fIsndbuf\fR

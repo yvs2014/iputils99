@@ -132,7 +132,7 @@ NORETURN static inline void list_ai_consts(void) {
 	exit(EXIT_SUCCESS);
 }
 
-static char *optstr = "hf:F:ilvV46";
+static const char *optstr = "hf:F:ilvV46";
 
 static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = '4', .desc = {__OPT_4}},
@@ -149,11 +149,11 @@ static const usage_opt_t uopts[] = { // null-terminated
 
 NORETURN static void usage(int rc) {
 	const usage_data_t use = {
-		.indent  = 6,
-		.options = uopts,
-		.optstr  = optstr,
-		.target  = _HOST,
-		.more    = MORE,
+		.indent = 6,
+		.uopt   = uopts,
+		.optstr = optstr,
+		.target = _HOST,
+		.more   = MORE,
 	};
 	usage_common(rc, &use);
 }

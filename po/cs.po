@@ -52,6 +52,9 @@ msgstr "použije IPv6"
 msgid "print help"
 msgstr "vypíše nápovědu"
 
+msgid "quiet output"
+msgstr "potlačený výstup"
+
 msgid "verbose output"
 msgstr "podrobný výstup"
 
@@ -91,9 +94,6 @@ msgstr "které ethernetové rozhraní se použije"
 msgid "device"
 msgstr "rozhraní"
 
-msgid "be quiet"
-msgstr "potlačí obvyklý výstup"
-
 msgid "source IP address"
 msgstr "zdrojová IP adresa"
 
@@ -130,105 +130,113 @@ msgstr "použije časový formát ISO"
 
 ### ping options
 
-msgid ""
-"  -a                 use audible ping\n"
-"  -A                 use adaptive ping\n"
-"  -B                 sticky source address\n"
-"  -c <count>         stop after <count> replies\n"
-"  -C                 call connect() syscall on socket creation\n"
-"  -D                 print timestamps\n"
-"  -d                 use SO_DEBUG socket option\n"
-"  -e <identifier>    define identifier for ping session, default is random "
-"for\n"
-"                     SOCK_RAW and kernel defined for SOCK_DGRAM\n"
-"                     Imply using SOCK_RAW (for IPv4 only for identifier 0)\n"
-"  -f                 flood ping\n"
-"  -h                 print help and exit\n"
-"  -H                 force reverse DNS name resolution (useful for numeric\n"
-"                     destinations or for -f), override -n\n"
-"  -I <interface>     either interface name or address\n"
-"  -i <interval>      seconds between sending each packet\n"
-"  -L                 suppress loopback of multicast packets\n"
-"  -l <preload>       send <preload> number of packages while waiting "
-"replies\n"
-"  -m <mark>          tag the packets going out\n"
-"  -M <pmtud opt>     define path MTU discovery, can be one of <do|dont|want|"
-"probe>\n"
-"  -n                 no reverse DNS name resolution, override -H\n"
-"  -O                 report outstanding replies\n"
-"  -p <pattern>       contents of padding byte\n"
-"  -q                 quiet output\n"
-"  -Q <tclass>        use quality of service <tclass> bits\n"
-"  -s <size>          use <size> as number of data bytes to be sent\n"
-"  -S <size>          use <size> as SO_SNDBUF socket option value\n"
-"  -t <ttl>           define time to live\n"
-"  -U                 print user-to-user latency\n"
-"  -v                 verbose output\n"
-"  -V                 print version and exit\n"
-"  -w <deadline>      reply wait <deadline> in seconds\n"
-"  -W <timeout>       time to wait for response\n"
-"\n"
-"IPv4 options:\n"
-"  -4                 use IPv4\n"
-"  -b                 allow pinging broadcast\n"
-"  -R                 record route\n"
-"  -T <timestamp>     define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC\n"
-"\n"
-"IPv6 options:\n"
-"  -6                 use IPv6\n"
-"  -F <flowlabel>     define flow label, default is random\n"
-"  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
-msgstr ""
-"  -a                   použije slyšitelný ping\n"
-"  -A                   použije adaptivní ping\n"
-"  -B                   sticky source address\n"
-"  -c <počet>           skončí po <počet> odpovědích\n"
-"  -C                   použije connect() syscall při on tvorbě soketu\n"
-"  -D                   vypíše časovou značku\n"
-"  -d                   použije SO_DEBUG volbu soketu\n"
-"  -e <identifikátor>   definuje identifikátor pro ping session, výchozí je "
-"náhodný pro\n"
-"                       SOCK_RAW a definován kernelem pro SOCK_DGRAM\n"
-"                       Zahrnuje použití SOCK_RAW (pro IPv4 jen pro "
-"identifikátor 0)\n"
-"  -f                   zahlcující ping\n"
-"  -h                   vypíše tuto nápovědu a skončí\n"
-"  -H                   vynutí překlad reverzního DNS doménového jména ("
-"vhodné pro numerické\n"
-"                       cíle nebo pro -f), přebije -n\n"
-"  -I <rozhraní>        rozhraní nebo adresa\n"
-"  -i <interval>        interval v sekundách mezi posíláním jednotlivých "
-"packetů\n"
-"  -L                   potlačí příjem vlastních multicastových dotazů\n"
-"  -l <přednačítání>    pošle <přednačítání> paketů během čekání na odpovědi\n"
-"  -m <značka>          označí odchozí pakety\n"
-"  -M <pmtud volba>     definuje volbu pro PMTU discovery, jedno z "
-"<do|dont|want|probe>\n"
-"  -n                   nepřeloží doménová jména, přebije -H\n"
-"  -O                   nahlásí nevyřízené odpovědi\n"
-"  -p <vzor>            nastaví obsah výplňového bitu\n"
-"  -q                   potlačí většinu obvyklého výstupu\n"
-"  -Q <třída>           použije <třídu> pro quality of service\n"
-"  -s <velikost>        použije <velikost> odesílaných dat\n"
-"  -S <velikost>        použije <velikost> jako hodnotu SO_SNDBUF volbu "
-"soketu\n"
-"  -t <životnost>       definuje dobu životnosti\n"
-"  -U                   vypíše uživatel-uživatel latenci\n"
-"  -v                   podrobný výstup\n"
-"  -V                   vypíše údaje o verzi a skončí\n"
-"  -w <doba>            <doba> čekání na odpověď v sekundách\n"
-"  -W <časový limit>    časoví limit pro odpovědi\n"
-"\n"
-"IPv4 volby:\n"
-"  -4                   použije IPv4\n"
-"  -b                   povolí všesměrový ping\n"
-"  -R                   zaznamenat routování\n"
-"  -T <časová značka>   definuje časovou značku, jedno z TSONLY|TSANDADDR|TSPRESPEC\n"
-"\n"
-"IPv6 volby:\n"
-"  -6                   použije IPv6\n"
-"  -F <jmenovka toku>   definuje jmenovku toku, výchozí je náhodná\n"
-"  -N <nodeinfo volba>  použije IPv6 node info query, try <help> as argument\n"
+msgid "use audible ping"
+msgstr "použije slyšitelný ping"
+
+msgid "use adaptive ping"
+msgstr "použije adaptivní ping"
+
+msgid "sticky source address"
+msgstr "trvalá zdrojová adresa"
+
+msgid "stop after 'count' replies"
+msgstr "skončí po 'počet' odpovědích"
+
+msgid "call connect() syscall on socket creation"
+msgstr "použije connect() syscall při on tvorbě soketu"
+
+msgid "use SO_DEBUG socket option"
+msgstr "použije SO_DEBUG volbu soketu"
+
+msgid "print timestamps"
+msgstr "vypíše časovou značku"
+
+msgid "define ident for ping session, default is random for"
+msgstr "definuje identifikátor pro ping session, výchozí je náhodný pro"
+
+msgid "SOCK_RAW and kernel defined for SOCK_DGRAM,"
+msgstr "SOCK_RAW a definován kernelem pro SOCK_DGRAM,"
+
+msgid "imply using SOCK_RAW (for IPv4 only for ident 0)"
+msgstr "zahrnuje použití SOCK_RAW (pro IPv4 jen pro identifikátor 0)"
+
+msgid "flood ping"
+msgstr "zahlcující ping"
+
+msgid "force reverse DNS name resolution, override -n"
+msgstr "vynutí překlad reverzního DNS doménového jména, přebije -n"
+
+msgid "(useful for numeric destinations or for -f)"
+msgstr "(vhodné pro numerické cíle nebo pro -f)"
+
+msgid "seconds between sending each packet"
+msgstr "sekundy mezi odesláním jednotlivých paketů"
+
+msgid "either interface name or address"
+msgstr "rozhraní nebo adresa packetů"
+
+msgid "send 'preload' number of packages while waiting replies"
+msgstr "pošle 'přednačítání' paketů během čekání na odpovědi"
+
+msgid "suppress loopback of multicast packets"
+msgstr "potlačí příjem vlastních multicastových dotazů"
+
+msgid "tag the packets going out"
+msgstr "označí odchozí pakety"
+
+msgid "define path MTU discovery, can be one of do|dont|want|probe"
+msgstr "definuje volbu pro PMTU discovery, jedno z do|dont|want|probe"
+
+msgid "no reverse DNS name resolution, override -H"
+msgstr "nepřeloží doménová jména, přebije -H"
+
+msgid "report outstanding replies"
+msgstr "nahlásí nevyřízené odpovědi"
+
+msgid "content of padding bytes"
+msgstr "obsah výplňových bajtů"
+
+msgid "quality of service bits (ToS IPv4, TClass IPv6)"
+msgstr "bity kvality služby (ToS IPv4, TClass IPv6)"
+
+msgid "payload size"
+msgstr "velikost payloadu"
+
+msgid "use 'size' as SO_SNDBUF socket option value"
+msgstr "použije 'velikost' jako hodnotu SO_SNDBUF volbu soketu"
+
+msgid "define 'ttl' (time to live)"
+msgstr "definuje dobu životnosti (ttl)"
+
+msgid "print user-to-user latency"
+msgstr "vypíše uživatel-uživatel latenci"
+
+msgid "reply wait 'deadline' in seconds"
+msgstr "čekání na odpověď v sekundách"
+
+msgid "time to wait for response"
+msgstr "časoví limit pro odpovědi"
+
+msgid "IPv4 options"
+msgstr "IPv4 volby"
+
+msgid "allow broadcast pings"
+msgstr "povolí všesměrový pingy"
+
+msgid "record route"
+msgstr "zaznamenat routování"
+
+msgid "define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC"
+msgstr "definuje časovou značku, jedno z TSONLY|TSANDADDR|TSPRESPEC"
+
+msgid "IPv6 options"
+msgstr "IPv6 volby"
+
+msgid "define flow label, default is random"
+msgstr "definuje jmenovku toku, výchozí je náhodná"
+
+msgid "use IPv6 node info query, try 'help' as argument, details in ping(8)"
+msgstr "použije IPv6 node info query, try 'help' as argument, podrobnosti v ping(8)"
 
 
 ### tracepath options
@@ -934,10 +942,6 @@ msgstr "volba časové značky"
 #
 msgid "No intermediate hops for TSPRESPEC"
 msgstr "Chybí tranzitní skoky pro TSPRESPEC"
-
-#
-msgid "record route"
-msgstr "zaznamenat routování"
 
 #
 msgid "wrong byte #"

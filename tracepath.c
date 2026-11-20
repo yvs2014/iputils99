@@ -439,7 +439,7 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 
 //
 
-static char *optstr = "bhl:m:np:vV46";
+static const char *optstr = "bhl:m:np:vV46";
 
 static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = '4', .desc = {__OPT_4}},
@@ -457,11 +457,11 @@ static const usage_opt_t uopts[] = { // null-terminated
 
 NORETURN static void usage(int rc) {
 	usage_data_t use = {
-		.indent  = 7,
-		.options = uopts,
-		.optstr  = optstr,
-		.target  = _TARGET,
-		.more    = !MORE,
+		.indent = 7,
+		.uopt   = uopts,
+		.optstr = optstr,
+		.target = _TARGET,
+		.more   = !MORE,
 	};
 	usage_common(rc, &use);
 }

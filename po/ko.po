@@ -50,6 +50,9 @@ msgstr "IPv6를 사용합니다"
 msgid "print help"
 msgstr "도움말을 표시합니다"
 
+msgid "quiet output"
+msgstr "조용한 출력"
+
 msgid "verbose output"
 msgstr "많이 출력"
 
@@ -88,9 +91,6 @@ msgstr "사용 하려는 이더넷 장치"
 
 msgid "device"
 msgstr "장치"
-
-msgid "be quiet"
-msgstr "출력 제외"
 
 msgid "source IP address"
 msgstr "원천 IP 주소"
@@ -154,10 +154,10 @@ msgid ""
 "<do|dont|want|probe>\n"
 "  -n                 no reverse DNS name resolution, override -H\n"
 "  -O                 report outstanding replies\n"
-"  -p <pattern>       contents of padding byte\n"
+"  -p <pattern>       content of padding bytes\n"
 "  -q                 quiet output\n"
-"  -Q <tclass>        use quality of service <tclass> bits\n"
-"  -s <size>          use <size> as number of data bytes to be sent\n"
+"  -Q <tclass>        quality of service bits\n"
+"  -s <size>          payload size\n"
 "  -S <size>          use <size> as SO_SNDBUF socket option value\n"
 "  -t <ttl>           define time to live\n"
 "  -U                 print user-to-user latency\n"
@@ -175,7 +175,7 @@ msgid ""
 "IPv6 options:\n"
 "  -6                 use IPv6\n"
 "  -F <flowlabel>     define flow label, default is random\n"
-"  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
+"  -N <nodeinfo opt>  use IPv6 node info query, try 'help' as argument, details in ping(8)"
 msgstr ""
 
 

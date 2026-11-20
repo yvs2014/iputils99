@@ -27,7 +27,6 @@
 #define _FROM   _("from")
 #define _FROM_H _("From")
 #define _SEQ    _("seq")
-#define _TTL    _("ttl")
 #define _ID     _("id")
 #define _TIME   _("time")
 #define _MSEC   _("ms")
@@ -60,7 +59,6 @@
 #define _TIMESTAT    _("rtt min/avg/max/mdev")
 #define _ADAPTSTAT   _("ipg/ewma")
 #define _PIPE        _("pipe")
-#define _FLOW        _("flow")
 #define _INFLIGHT    _("in-flight")
 #define _MINIMAL     _("minimal")
 #define _PROBLY      _("probably")
@@ -195,7 +193,8 @@
 #define _UNEXP_ERR        _("unexpected error")
 
 #define _TS_OPT           _("timestamp option")
-#define _RECORD_ROUTE     _("record route")
+#define __RECORD_ROUTE    "record route"
+#define _RECORD_ROUTE     _(__RECORD_ROUTE)
 #define _SAME_ROUTE       _("same route")
 #define _NOT_STD          _("not-standard")
 #define _ABS_NOT_STD      _("absolute not-standard")
@@ -217,22 +216,37 @@
 #define _NON_STD_TIME  _("Non-standard time format")
 
 #define _PLD_CORRUPT   _("corrupted payload")
-#define _PMTU          _("pmtu")
 #define _ASYMM         _("asymm")
 #define _RESUME        _("Resume")
 #define _BACK          _("back")
 
-#define __PORT     "port"
-#define __LENGTH   "length"
-#define __HOPS     "hops"
-#define _HOPS      _(__HOPS)
-#define __VALUE    "value"
-#define __MACRO    "macro"
-#define __COUNT    "count"
-#define __TIMEOUT  "timeout"
-#define __INTERVAL "interval"
-#define __DEVICE   "device"
-#define __SOURCE   "source"
+#define __TOS       "tos"
+#define __TTL       "ttl"
+#define _TTL        _(__TTL)
+#define __HOPS      "hops"
+#define _HOPS       _(__HOPS)
+#define __PMTU      "pmtu"
+#define _PMTU       _(__PMTU)
+#define __PORT      "port"
+#define __SIZE      "size"
+#define __MARK      "mark"
+#define __FLOW      "flow"
+#define _FLOW       _(__FLOW)
+#define __VALUE     "value"
+#define __MACRO     "macro"
+#define __COUNT     "count"
+#define __IDENT     "ident"
+#define __LENGTH    "length"
+#define __DEVICE    "device"
+#define __SOURCE    "source"
+#define __PATTERN   "pattern"
+#define __PRELOAD   "preload"
+#define __TIMEOUT   "timeout"
+#define __INTERVAL  "interval"
+#define __DEADLINE  "deadline"
+#define __NODEINFO  "nodeinfo"
+#define __INTERFACE "interface"
+#define __TIMESTAMP "timestamp"
 
 #define _PKT_LENGTH    _("Packet length")
 #define _NO_REPLY      _("no reply")
@@ -259,12 +273,53 @@
 // usage strings
 //
 
+#define HDR_OPT '_'
 // common
 #define __OPT_4 "use IPv4"
 #define __OPT_6 "use IPv6"
 #define __OPT_h "print help"
+#define __OPT_q "quiet output"
 #define __OPT_v "verbose output"
 #define __OPT_V "print version"
+
+// ping
+#define __PING_OPT_a  "use audible ping"
+#define __PING_OPT_A  "use adaptive ping"
+#define __PING_OPT_B  "sticky source address"
+#define __PING_OPT_c  "stop after 'count' replies"
+#define __PING_OPT_C  "call connect() syscall on socket creation"
+#define __PING_OPT_d  "use SO_DEBUG socket option"
+#define __PING_OPT_D  "print timestamps"
+#define __PING_OPT_e1 "define ident for ping session, default is random for"
+#define __PING_OPT_e2 "SOCK_RAW and kernel defined for SOCK_DGRAM,"
+#define __PING_OPT_e3 "imply using SOCK_RAW (for IPv4 only for ident 0)"
+#define __PING_OPT_f  "flood ping"
+#define __PING_OPT_H1 "force reverse DNS name resolution, override -n"
+#define __PING_OPT_H2 "(useful for numeric destinations or for -f)"
+#define __PING_OPT_i  "seconds between sending each packet"
+#define __PING_OPT_I  "either interface name or address"
+#define __PING_OPT_l  "send 'preload' number of packages while waiting replies"
+#define __PING_OPT_L  "suppress loopback of multicast packets"
+#define __PING_OPT_m  "tag the packets going out"
+#define __PING_OPT_M  "define path MTU discovery, can be one of do|dont|want|probe"
+#define __PING_OPT_n  "no reverse DNS name resolution, override -H"
+#define __PING_OPT_O  "report outstanding replies"
+#define __PING_OPT_p  "content of padding bytes"
+#define __PING_OPT_Q  "quality of service bits (ToS IPv4, TClass IPv6)"
+#define __PING_OPT_s  "payload size"
+#define __PING_OPT_S  "use 'size' as SO_SNDBUF socket option value"
+#define __PING_OPT_t  "define 'ttl' (time to live)"
+#define __PING_OPT_U  "print user-to-user latency"
+#define __PING_OPT_w  "reply wait 'deadline' in seconds"
+#define __PING_OPT_W  "time to wait for response"
+// ping4 only
+#define __PING_HDR_4  "IPv4 options"
+#define __PING_OPT_b  "allow broadcast pings"
+#define __PING_OPT_T  "define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC"
+// ping6 only
+#define __PING_HDR_6  "IPv6 options"
+#define __PING_OPT_F  "define flow label, default is random"
+#define __PING_OPT_N  "use IPv6 node info query, try 'help' as argument, details in ping(8)"
 
 // arping
 #define __ARPING_OPT_A "ARP answer mode, update your neighbours"
@@ -274,7 +329,6 @@
 #define __ARPING_OPT_f "quit on first reply"
 #define __ARPING_OPT_i "set interval between packets (default: 1 second)"
 #define __ARPING_OPT_I "which ethernet device to use"
-#define __ARPING_OPT_q "be quiet"
 #define __ARPING_OPT_s "source IP address"
 #define __ARPING_OPT_U "unsolicited ARP mode, update your neighbours"
 #define __ARPING_OPT_w "how long to wait for a reply"

@@ -566,7 +566,7 @@ static inline void print_header(const char *name,
 
 //
 
-static char *optstr = "Abc:Dfhi:I:qs:UVw:";
+static const char *optstr = "Abc:Dfhi:I:qs:UVw:";
 
 static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = 'A', .desc = {__ARPING_OPT_A}},
@@ -576,7 +576,7 @@ static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = 'f', .desc = {__ARPING_OPT_f}},
 	{.opt = 'i', .arg  = __INTERVAL, .desc = {__ARPING_OPT_i}},
 	{.opt = 'I', .arg  = __DEVICE,   .desc = {__ARPING_OPT_I}},
-	{.opt = 'q', .desc = {__ARPING_OPT_q}},
+	{.opt = 'q', .desc = {__OPT_q}},
 	{.opt = 's', .arg  = __SOURCE,   .desc = {__ARPING_OPT_s}},
 	{.opt = 'U', .desc = {__ARPING_OPT_U}},
 	{.opt = 'w', .arg  = __TIMEOUT,  .desc = {__ARPING_OPT_w}},
@@ -587,9 +587,9 @@ static const usage_opt_t uopts[] = { // null-terminated
 
 NORETURN static void usage(int rc) {
 	usage_data_t use = {
-		.indent  = 9,
-		.options = uopts,
-		.optstr  = optstr,
+		.indent = 9,
+		.uopt   = uopts,
+		.optstr = optstr,
 		.target = _TARGET,
 		.more   = !MORE,
 	};

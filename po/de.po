@@ -57,6 +57,9 @@ msgstr "Verwende IPv6"
 msgid "print help"
 msgstr "Diese Hilfe anzeigen"
 
+msgid "quiet output"
+msgstr "leise Ausgabe"
+
 msgid "verbose output"
 msgstr "ausführliche Ausgabe"
 
@@ -96,9 +99,6 @@ msgstr "Ethernet Gerät verwenden"
 msgid "device"
 msgstr "Gerät"
 
-msgid "be quiet"
-msgstr "Stiller Modus"
-
 msgid "source IP address"
 msgstr "Quell-IP-Adresse"
 
@@ -135,109 +135,113 @@ msgstr "ISO-Zeitformat verwenden"
 
 ### ping options
 
-msgid ""
-"  -a                 use audible ping\n"
-"  -A                 use adaptive ping\n"
-"  -B                 sticky source address\n"
-"  -c <count>         stop after <count> replies\n"
-"  -C                 call connect() syscall on socket creation\n"
-"  -D                 print timestamps\n"
-"  -d                 use SO_DEBUG socket option\n"
-"  -e <identifier>    define identifier for ping session, default is random "
-"for\n"
-"                     SOCK_RAW and kernel defined for SOCK_DGRAM\n"
-"                     Imply using SOCK_RAW (for IPv4 only for identifier 0)\n"
-"  -f                 flood ping\n"
-"  -h                 print help and exit\n"
-"  -H                 force reverse DNS name resolution (useful for numeric\n"
-"                     destinations or for -f), override -n\n"
-"  -I <interface>     either interface name or address\n"
-"  -i <interval>      seconds between sending each packet\n"
-"  -L                 suppress loopback of multicast packets\n"
-"  -l <preload>       send <preload> number of packages while waiting "
-"replies\n"
-"  -m <mark>          tag the packets going out\n"
-"  -M <pmtud opt>     define path MTU discovery, can be one of <do|dont|want|"
-"probe>\n"
-"  -n                 no reverse DNS name resolution, override -H\n"
-"  -O                 report outstanding replies\n"
-"  -p <pattern>       contents of padding byte\n"
-"  -q                 quiet output\n"
-"  -Q <tclass>        use quality of service <tclass> bits\n"
-"  -s <size>          use <size> as number of data bytes to be sent\n"
-"  -S <size>          use <size> as SO_SNDBUF socket option value\n"
-"  -t <ttl>           define time to live\n"
-"  -U                 print user-to-user latency\n"
-"  -v                 verbose output\n"
-"  -V                 print version and exit\n"
-"  -w <deadline>      reply wait <deadline> in seconds\n"
-"  -W <timeout>       time to wait for response\n"
-"\n"
-"IPv4 options:\n"
-"  -4                 use IPv4\n"
-"  -b                 allow pinging broadcast\n"
-"  -R                 record route\n"
-"  -T <timestamp>     define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC\n"
-"\n"
-"IPv6 options:\n"
-"  -6                 use IPv6\n"
-"  -F <flowlabel>     define flow label, default is random\n"
-"  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
-msgstr ""
-"  -a                 Verwende akustischen Ping\n"
-"  -A                 Verwende adaptiven Ping\n"
-"  -B                 Sticky Quell-Adresse\n"
-"  -c <Anzahl>        Stoppe nach <Anzahl> Antworten\n"
-"  -C                 Rufe connect() syscall bei der Erstellung des Sockets "
-"auf\n"
-"  -D                 Gebe Zeitstempel aus\n"
-"  -d                 Verwende die SO_DEBUG Socket-Option\n"
-"  -e <Kennung>       Lege die Kennung für die Ping Session fest, der "
-"Standard ist Zufall für\n"
-"                     SOCK_RAW und Kernel-definiert für SOCK_DGRAM\n"
-"                     Impliziert die Verwendung von SOCK_RAW (für IPv4 gibt "
-"es nur die Kennung 0)\n"
-"  -f                 Flutender Ping\n"
-"  -h                 Hilfe ausgeben und beenden\n"
-"  -H                 Erzwinge Rückwerts-DNS-Namenauflösung (nützlich für "
-"numerische Ziele oder bei -f),\n"
-"                     überschreibt -n\n"
-"  -I <Schnittstelle> Entweder Schnittstellennamen oder Adresse\n"
-"  -i <Intervall>     Sekunden zwischen dem Senden jedes Pakets\n"
-"  -L                 Unterdrückt Loopback für Multicast-Pakete\n"
-"  -l <Nutzlast>      Sendet <Nutzlast> Anzahl der Pakete während auf "
-"Antworten gewartet wird\n"
-"  -m <Markierung>    Markiere ausgehende Pakete\n"
-"  -M <pmtud opt>     Definiert den path MTU discovery Modus, kann einer der "
-"folgenden \n"
-"                     sein <do|dont|want|probe>\n"
-"  -n                 Keine Rückwerts-DNS-Namenauflösung, überschreibt -H\n"
-"  -O                 Berichte über ausstehende Antworten\n"
-"  -p <Muster>        Inhalt der Füllbytes\n"
-"  -q                 leise Ausgabe\n"
-"  -Q <tclass>        Verwende quality of service <tclass> bits\n"
-"  -s <Größe>         Verwende <Größe> als Anzahl der zu sendenden "
-"Datenbytes\n"
-"  -S <Größe>         Verwende <Größe> als Wert der Socket-Option SO_SNDBUF\n"
-"  -t <TTL>           Lege die Zeit zum Leben (TTL) fest\n"
-"  -U                 Gebe die Benutzer-zu-Benutzer Latenz aus\n"
-"  -v                 ausführliche Ausgabe\n"
-"  -V                 Version ausgeben und beenden\n"
-"  -w <Deadline>      Warte <Deadline> Sekunden auf Antwort\n"
-"  -W <Wartezeit>     Wartezeit auf Antwort\n"
-"\n"
-"IPv4-Optionen:\n"
-"  -4                 Verwende IPv4\n"
-"  -b                 Erlaube Broadcast-Pinging\n"
-"  -R                 Zeichne Route auf\n"
-"  -T <Zeitstempel>   Legt den Zeitstempel fest, kann eines der folgenden\n"
-"                     sein TSONLY|TSANDADDR|TSPRESPEC\n"
-"\n"
-"IPv6-Optionen:\n"
-"  -6                 Verwende IPv6\n"
-"  -F <flowlabel>     Lege das flow label fest, Standard ist ein Zufälliges\n"
-"  -N <nodeinfo opt>  Verwende IPv6 Node-Info-Anfrage, versuche <Hilfe> als "
-"Argument\n"
+msgid "use audible ping"
+msgstr "Verwende akustischen Ping"
+
+msgid "use adaptive ping"
+msgstr "Verwende adaptiven Ping"
+
+msgid "sticky source address"
+msgstr "Sticky Quell-Adresse"
+
+msgid "stop after 'count' replies"
+msgstr "Stoppe nach 'Anzahl' Antworten"
+
+msgid "call connect() syscall on socket creation"
+msgstr "Rufe connect() syscall bei der Erstellung des Sockets auf"
+
+msgid "use SO_DEBUG socket option"
+msgstr "Verwende die SO_DEBUG Socket-Option"
+
+msgid "print timestamps"
+msgstr "Gebe Zeitstempel aus"
+
+msgid "define ident for ping session, default is random for"
+msgstr "Lege die Kennung für die Ping Session fest, der Standard ist Zufall für"
+
+msgid "SOCK_RAW and kernel defined for SOCK_DGRAM,"
+msgstr "SOCK_RAW und Kernel-definiert für SOCK_DGRAM,"
+
+msgid "imply using SOCK_RAW (for IPv4 only for ident 0)"
+msgstr "Impliziert die Verwendung von SOCK_RAW (für IPv4 gibt es nur die Kennung 0)"
+
+msgid "flood ping"
+msgstr "Flutender Ping"
+
+msgid "force reverse DNS name resolution, override -n"
+msgstr "Erzwinge Rückwerts-DNS-Namenauflösung, überschreibt -n"
+
+msgid "(useful for numeric destinations or for -f)"
+msgstr "(nützlich für numerische Ziele oder bei -f)"
+
+msgid "seconds between sending each packet"
+msgstr "Sekunden zwischen dem Senden jedes Pakets"
+
+msgid "either interface name or address"
+msgstr "Entweder Schnittstellennamen oder Adresse"
+
+msgid "send 'preload' number of packages while waiting replies"
+msgstr "Sendet 'Nutzlast' Anzahl der Pakete während auf"
+
+msgid "suppress loopback of multicast packets"
+msgstr "Unterdrückt Loopback für Multicast-Pakete"
+
+msgid "tag the packets going out"
+msgstr "Markiere ausgehende Pakete"
+
+msgid "define path MTU discovery, can be one of do|dont|want|probe"
+msgstr "Definiert den path MTU discovery Modus, kann einer der folgenden sein do|dont|want|probe"
+
+msgid "no reverse DNS name resolution, override -H"
+msgstr "Keine Rückwerts-DNS-Namenauflösung, überschreibt -H"
+
+msgid "report outstanding replies"
+msgstr "Berichte über ausstehende Antworten"
+
+msgid "content of padding bytes"
+msgstr "Inhalt der Füllbytes"
+
+msgid "quality of service bits (ToS IPv4, TClass IPv6)"
+msgstr "Quality-of-Service-Bits (ToS IPv4, TClass IPv6)"
+
+msgid "payload size"
+msgstr "Nutzdatengröße"
+
+msgid "use 'size' as SO_SNDBUF socket option value"
+msgstr "Verwende <Größe> als Wert der Socket-Option SO_SNDBUF"
+
+msgid "define 'ttl' (time to live)"
+msgstr "Lege die Zeit zum Leben (TTL) fest"
+
+msgid "print user-to-user latency"
+msgstr "Gebe die Benutzer-zu-Benutzer Latenz aus"
+
+msgid "reply wait 'deadline' in seconds"
+msgstr "Warte 'Deadline' Sekunden auf Antwort"
+
+msgid "time to wait for response"
+msgstr "Wartezeit auf Antwort"
+
+msgid "IPv4 options"
+msgstr "IPv4-Optionen"
+
+msgid "allow broadcast pings"
+msgstr "Erlaube Broadcast-Pings"
+
+msgid "record route"
+msgstr "Zeichne Route"
+
+msgid "define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC"
+msgstr "Legt den Zeitstempel fest, kann eines der folgenden sein TSONLY|TSANDADDR|TSPRESPEC"
+
+msgid "IPv6 options"
+msgstr "IPv6-Optionen"
+
+msgid "define flow label, default is random"
+msgstr "Lege das flow-label fest, Standard ist ein Zufälliges"
+
+msgid "use IPv6 node info query, try 'help' as argument, details in ping(8)"
+msgstr "Verwende IPv6 Node-Info-Anfrage, versuche <Hilfe> als Argument, Details in ping(8)"
 
 
 ### tracepath options
@@ -940,10 +944,6 @@ msgstr ""
 #
 msgid "No intermediate hops for TSPRESPEC"
 msgstr ""
-
-#
-msgid "record route"
-msgstr "Zeichne Route auf"
 
 msgid "wrong byte #"
 msgstr "falsches Byte #"

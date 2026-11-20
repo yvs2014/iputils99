@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <netdb.h>
 
-#include "po.h"
+#include "po.h"      // IWYU pragma: keep
 #include "warnerr.h" // IWYU pragma: keep
 
 #ifndef IS_BIT31_SET

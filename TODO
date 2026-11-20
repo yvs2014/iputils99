@@ -1,3 +1,2 @@
-on-the-way: split .po help message into parts (optional: -m, -N)
-
-TODO: ping: drop_priv() ASAP
+common '-0' option: itistty=false
+ping: drop_priv() ASAP

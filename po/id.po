@@ -50,6 +50,9 @@ msgstr "gunakan IPv6"
 msgid "print help"
 msgstr "tampilkan bantuan"
 
+msgid "quiet output"
+msgstr "keluaran senyap"
+
 msgid "verbose output"
 msgstr "keluaran terrinci"
 
@@ -88,9 +91,6 @@ msgstr "perangkat ethernet"
 
 msgid "device"
 msgstr "perangkat"
-
-msgid "be quiet"
-msgstr "mode diam"
 
 msgid "source IP address"
 msgstr "alamat IP asal"
@@ -154,10 +154,10 @@ msgid ""
 "probe>\n"
 "  -n                 no reverse DNS name resolution, override -H\n"
 "  -O                 report outstanding replies\n"
-"  -p <pattern>       contents of padding byte\n"
+"  -p <pattern>       content of padding bytes\n"
 "  -q                 quiet output\n"
-"  -Q <tclass>        use quality of service <tclass> bits\n"
-"  -s <size>          use <size> as number of data bytes to be sent\n"
+"  -Q <tclass>        quality of service bits\n"
+"  -s <size>          payload size\n"
 "  -S <size>          use <size> as SO_SNDBUF socket option value\n"
 "  -t <ttl>           define time to live\n"
 "  -U                 print user-to-user latency\n"
@@ -175,7 +175,7 @@ msgid ""
 "IPv6 options:\n"
 "  -6                 use IPv6\n"
 "  -F <flowlabel>     define flow label, default is random\n"
-"  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
+"  -N <nodeinfo opt>  use IPv6 node info query, try 'help' as argument, details in ping(8)"
 msgstr ""
 
 

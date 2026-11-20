@@ -394,7 +394,7 @@ static timediff_e measure(state_t *rts, const struct sockaddr *sa, socklen_t sal
 
 //
 
-static char *optstr = "hIV23";
+static const char *optstr = "hIV23";
 
 static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = '2', .desc = {__CLOCKDIFF_OPT_2},     .pre = __CLOCKDIFF_PRE_2},
@@ -407,10 +407,10 @@ static const usage_opt_t uopts[] = { // null-terminated
 
 NORETURN static void usage(int rc) {
 	usage_data_t use = {
-		.options = uopts,
-		.optstr  = optstr,
-		.target  = _HOST,
-		.more    = !MORE,
+		.uopt   = uopts,
+		.optstr = optstr,
+		.target = _HOST,
+		.more   = !MORE,
 	};
 	usage_common(rc, &use);
 }

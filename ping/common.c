@@ -91,64 +91,73 @@ inline void rcvd_clear(uint16_t seq, bitmap_t *map) {
 	BITMAP_ARR(bit) &= ~BITMAP_BIT(bit);
 }
 
-static const char *usestr =
-"  -a                 use audible ping\n"
-"  -A                 use adaptive ping\n"
-"  -B                 sticky source address\n"
-"  -c <count>         stop after <count> replies\n"
-"  -C                 call connect() syscall on socket creation\n"
-"  -D                 print timestamps\n"
-"  -d                 use SO_DEBUG socket option\n"
-"  -e <identifier>    define identifier for ping session, default is random for\n"
-"                     SOCK_RAW and kernel defined for SOCK_DGRAM\n"
-"                     Imply using SOCK_RAW (for IPv4 only for identifier 0)\n"
-"  -f                 flood ping\n"
-"  -h                 print help and exit\n"
-"  -H                 force reverse DNS name resolution (useful for numeric\n"
-"                     destinations or for -f), override -n\n"
-"  -I <interface>     either interface name or address\n"
-"  -i <interval>      seconds between sending each packet\n"
-"  -L                 suppress loopback of multicast packets\n"
-"  -l <preload>       send <preload> number of packages while waiting replies\n"
+const char *optstr =
+	"aAbBc:CdDe:fF:hHi:I:l:L"
 #ifdef SO_MARK
-"  -m <mark>          tag the packets going out\n"
+	"m:"
 #endif
-"  -M <pmtud opt>     define path MTU discovery, can be one of <do|dont|want|probe>\n"
-"  -n                 no reverse DNS name resolution, override -H\n"
+	"M:n"
 #ifdef ENABLE_RFC4620
-"  -N <nodeinfo>      send IPv6 Node Information Queries (RFC4620), for details see ping(8)\n"
+	"N:"
 #endif
-"  -O                 report outstanding replies\n"
-"  -p <pattern>       contents of padding byte\n"
-"  -q                 quiet output\n"
-"  -Q <tclass>        use quality of service <tclass> bits\n"
-"  -s <size>          use <size> as number of data bytes to be sent\n"
-"  -S <size>          use <size> as SO_SNDBUF socket option value\n"
-"  -t <ttl>           define time to live\n"
-"  -U                 print user-to-user latency\n"
-"  -v                 verbose output\n"
-"  -V                 print version and exit\n"
-"  -w <deadline>      reply wait <deadline> in seconds\n"
-"  -W <timeout>       time to wait for response\n"
-"\n"
-"IPv4 options:\n"
-"  -4                 use IPv4\n"
-"  -b                 allow pinging broadcast\n"
-"  -R                 record route\n"
-"  -T <timestamp>     define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC\n"
-"\n"
-"IPv6 options:\n"
-"  -6                 use IPv6\n"
-"  -F <flowlabel>     define flow label, default is random\n"
+	"Op:qQ:rRs:S:t:T:UvVw:W:46";
+
+static const usage_opt_t uopts[] = { // null-terminated
+	{.opt = 'a', .desc = {__PING_OPT_a}},
+	{.opt = 'A', .desc = {__PING_OPT_a}},
+	{.opt = 'B', .desc = {__PING_OPT_B}},
+	{.opt = 'c', .arg  = __COUNT,     .desc = {__PING_OPT_c}},
+	{.opt = 'C', .desc = {__PING_OPT_C}},
+	{.opt = 'd', .desc = {__PING_OPT_d}},
+	{.opt = 'D', .desc = {__PING_OPT_D}},
+	{.opt = 'e', .arg  = __IDENT,     .desc = {__PING_OPT_e1, __PING_OPT_e2, __PING_OPT_e3}},
+	{.opt = 'f', .desc = {__PING_OPT_f}},
+	{.opt = 'H', .desc = {__PING_OPT_H1, __PING_OPT_H2}},
+	{.opt = 'i', .arg  = __INTERVAL,  .desc = {__PING_OPT_i}},
+	{.opt = 'I', .arg  = __INTERFACE, .desc = {__PING_OPT_I}},
+	{.opt = 'l', .arg  = __PRELOAD,   .desc = {__PING_OPT_l}},
+	{.opt = 'L', .desc = {__PING_OPT_L}},
+#ifdef SO_MARK
+	{.opt = 'm', .arg  = __MARK,      .desc = {__PING_OPT_m}},
+#endif
+	{.opt = 'M', .arg  = __PMTU,      .desc = {__PING_OPT_M}},
+	{.opt = 'n', .desc = {__PING_OPT_n}},
+	{.opt = 'O', .desc = {__PING_OPT_O}},
+	{.opt = 'p', .arg  = __PATTERN,   .desc = {__PING_OPT_p}},
+	{.opt = 'Q', .arg  = __TOS,       .desc = {__PING_OPT_Q}},
+	{.opt = 's', .arg  = __SIZE,      .desc = {__PING_OPT_s}},
+	{.opt = 'S', .arg  = __SIZE,      .desc = {__PING_OPT_S}},
+	{.opt = 't', .arg  = __TTL,       .desc = {__PING_OPT_t}},
+	{.opt = 'U', .desc = {__PING_OPT_U}},
+	{.opt = 'w', .arg  = __DEADLINE,  .desc = {__PING_OPT_w}},
+	{.opt = 'W', .arg  = __TIMEOUT,   .desc = {__PING_OPT_W, ""}},
+	//
+	{.opt = 'h', .desc = {__OPT_h}},
+	{.opt = 'q', .desc = {__OPT_q}},
+	{.opt = 'v', .desc = {__OPT_v}},
+	{.opt = 'V', .desc = {__OPT_V}},
+	//
+	{.opt = HDR_OPT, .pre  = __PING_HDR_4},
+	{.opt = '4', .desc = {__OPT_4}},
+	{.opt = 'b', .desc = {__PING_OPT_b}},
+	{.opt = 'R', .desc = {__RECORD_ROUTE}},
+	{.opt = 'T', .arg  = __TIMESTAMP, .desc = {__PING_OPT_T}},
+	//
+	{.opt = HDR_OPT, .pre  = __PING_HDR_6},
+	{.opt = '6', .desc = {__OPT_6}},
+	{.opt = 'F', .arg  = __FLOW,      .desc = {__PING_OPT_F}},
 #ifdef ENABLE_RFC4620
-"  -N <nodeinfo opt>  use IPv6 node info query, try <help> as argument\n"
+	{.opt = 'N', .arg  = __NODEINFO,  .desc = {__PING_OPT_N}},
 #endif
-;
+	{0},
+};
 
 NORETURN void usage(int rc) {
 	drop_priv();
 	usage_data_t use = {
-		.usestr = _(usestr),
+		.indent = 9,
+		.uopt   = uopts,
+		.optstr = optstr,
 		.target = _TARGET,
 		.more   = !MORE,
 	};
