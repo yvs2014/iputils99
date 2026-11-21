@@ -149,10 +149,10 @@ msgstr ""
 msgid "print timestamps"
 msgstr ""
 
-msgid "define ident for ping session, default is random for"
+msgid "define ident for ping session,"
 msgstr ""
 
-msgid "SOCK_RAW and kernel defined for SOCK_DGRAM,"
+msgid "default is random for SOCK_RAW and kernel defined for SOCK_DGRAM,"
 msgstr ""
 
 msgid "imply using SOCK_RAW (for IPv4 only for ident 0)"
@@ -233,7 +233,7 @@ msgstr ""
 msgid "define flow label, default is random"
 msgstr ""
 
-msgid "use IPv6 node info query, try 'help' as argument, details in ping(8)"
+msgid "use IPv6 node info query, try '-N help', details in ping(8)"
 msgstr ""
 
 

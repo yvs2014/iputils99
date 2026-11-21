@@ -156,11 +156,11 @@ msgstr "Verwende die SO_DEBUG Socket-Option"
 msgid "print timestamps"
 msgstr "Gebe Zeitstempel aus"
 
-msgid "define ident for ping session, default is random for"
-msgstr "Lege die Kennung für die Ping Session fest, der Standard ist Zufall für"
+msgid "define ident for ping session,"
+msgstr "Lege die Kennung für die Ping Session fest,"
 
-msgid "SOCK_RAW and kernel defined for SOCK_DGRAM,"
-msgstr "SOCK_RAW und Kernel-definiert für SOCK_DGRAM,"
+msgid "default is random for SOCK_RAW and kernel defined for SOCK_DGRAM,"
+msgstr "der Standard ist Zufall für SOCK_RAW und Kernel-definiert für SOCK_DGRAM,"
 
 msgid "imply using SOCK_RAW (for IPv4 only for ident 0)"
 msgstr "Impliziert die Verwendung von SOCK_RAW (für IPv4 gibt es nur die Kennung 0)"
@@ -181,7 +181,7 @@ msgid "either interface name or address"
 msgstr "Entweder Schnittstellennamen oder Adresse"
 
 msgid "send 'preload' number of packages while waiting replies"
-msgstr "Sendet 'Nutzlast' Anzahl der Pakete während auf"
+msgstr "Sendet Preload Anzahl der Pakete während auf"
 
 msgid "suppress loopback of multicast packets"
 msgstr "Unterdrückt Loopback für Multicast-Pakete"
@@ -240,8 +240,38 @@ msgstr "IPv6-Optionen"
 msgid "define flow label, default is random"
 msgstr "Lege das flow-label fest, Standard ist ein Zufälliges"
 
-msgid "use IPv6 node info query, try 'help' as argument, details in ping(8)"
-msgstr "Verwende IPv6 Node-Info-Anfrage, versuche <Hilfe> als Argument, Details in ping(8)"
+msgid "use IPv6 node info query, try '-N help', details in ping(8)"
+msgstr "Verwende IPv6 Node-Info-Anfrage, versuche '-N help', Details in ping(8)"
+
+msgid "ident"
+msgstr "ID"
+
+msgid "interface"
+msgstr "Interface"
+
+msgid "preload"
+msgstr "Preload"
+
+msgid "mark"
+msgstr "Etikett"
+
+msgid "pattern"
+msgstr "Muster"
+
+msgid "tos"
+msgstr "ToS"
+
+msgid "size"
+msgstr "Größe"
+
+msgid "deadline"
+msgstr "DieFrist"
+
+msgid "timestamp"
+msgstr "Timestamp"
+
+msgid "nodeinfo"
+msgstr "Node-Info"
 
 
 ### tracepath options
@@ -673,7 +703,7 @@ msgstr "Ungültige Quelle"
 
 #
 msgid "Cannot set preload to value greater than 3"
-msgstr "Kann preload nicht auf Wert größer als 3 setzen"
+msgstr "Kann Preload nicht auf Wert größer als 3 setzen"
 
 #
 msgid "Bad linger time"
@@ -873,7 +903,7 @@ msgstr "Noch keine Antwort"
 
 #
 msgid "Probably, rcvbuf is not enough to hold preload"
-msgstr "rcvbuf ist wahrscheinlich nicht groß genug, um preload zu halten"
+msgstr "rcvbuf ist wahrscheinlich nicht groß genug, um Preload zu halten"
 
 #
 msgid "failed to set mark"

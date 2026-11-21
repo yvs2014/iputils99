@@ -123,7 +123,7 @@ msgid "use three-term IP timestamp and ICMP echo"
 msgstr "використовувати трикомпонентні мітки часу IP та ICMP echo"
 
 msgid "by default, 'ctime' format is used"
-msgstr "за замовчуванням використовується формат часу 'ctime'"
+msgstr "за замовчуванням використовується формат часу ctime"
 
 msgid "use ISO time format"
 msgstr "використовувати формат часу ISO"
@@ -131,102 +131,113 @@ msgstr "використовувати формат часу ISO"
 
 ### ping options
 
-msgid ""
-"  -a                 use audible ping\n"
-"  -A                 use adaptive ping\n"
-"  -B                 sticky source address\n"
-"  -c <count>         stop after <count> replies\n"
-"  -C                 call connect() syscall on socket creation\n"
-"  -D                 print timestamps\n"
-"  -d                 use SO_DEBUG socket option\n"
-"  -e <identifier>    define identifier for ping session, default is random "
-"for\n"
-"                     SOCK_RAW and kernel defined for SOCK_DGRAM\n"
-"                     Imply using SOCK_RAW (for IPv4 only for identifier 0)\n"
-"  -f                 flood ping\n"
-"  -h                 print help and exit\n"
-"  -H                 force reverse DNS name resolution (useful for numeric\n"
-"                     destinations or for -f), override -n\n"
-"  -I <interface>     either interface name or address\n"
-"  -i <interval>      seconds between sending each packet\n"
-"  -L                 suppress loopback of multicast packets\n"
-"  -l <preload>       send <preload> number of packages while waiting "
-"replies\n"
-"  -m <mark>          tag the packets going out\n"
-"  -M <pmtud opt>     define path MTU discovery, can be one of <do|dont|want|"
-"probe>\n"
-"  -n                 no reverse DNS name resolution, override -H\n"
-"  -O                 report outstanding replies\n"
-"  -p <pattern>       content of padding bytes\n"
-"  -q                 quiet output\n"
-"  -Q <tclass>        quality of service bits\n"
-"  -s <size>          payload size\n"
-"  -S <size>          use <size> as SO_SNDBUF socket option value\n"
-"  -t <ttl>           define time to live\n"
-"  -U                 print user-to-user latency\n"
-"  -v                 verbose output\n"
-"  -V                 print version and exit\n"
-"  -w <deadline>      reply wait <deadline> in seconds\n"
-"  -W <timeout>       time to wait for response\n"
-"\n"
-"IPv4 options:\n"
-"  -4                 use IPv4\n"
-"  -b                 allow pinging broadcast\n"
-"  -R                 record route\n"
-"  -T <timestamp>     define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC\n"
-"\n"
-"IPv6 options:\n"
-"  -6                 use IPv6\n"
-"  -F <flowlabel>     define flow label, default is random\n"
-"  -N <nodeinfo opt>  use IPv6 node info query, try 'help' as argument, details in ping(8)\n"
-msgstr ""
-"  -a                 використовувати звуковий супровід\n"
-"  -A                 адаптивне зондування\n"
-"  -B                 липка початкова адреса\n"
-"  -c <число>         надіслати задану кількість ICMP запитів\n"
-"  -C                 скористатися викликом connect() при створенні сокета\n"
-"  -D                 виводити часові позначки\n"
-"  -d                 встановити SO_DEBUG параметр сокета\n"
-"  -e <число>         визначити ідентифікатор ICMP пакетів, типовим є\n"
-"                     випадковий для SOCK_RAW і визначається ядром для SOCK_DGRAM\n"
-"  -f                 надсилати пакети якнайшвидше, тобто флуд\n"
-"  -h                 вивести довідку і завершити роботу\n"
-"  -H                 примусово запитувати назви IP адрес, має пріоритет вищий"
-" за -n\n"
-"  -I <інтерфейс>     назва або адреса інтерфейсу\n"
-"  -i <число>         інтервал між надсиланням пакетів (у секундах)\n"
-"  -L                 не використовувати петльовий інтерфейс для групової "
-"розсилки\n"
-"  -l <число>         надсилати задану кількість пакетів під час очікування \n"
-"на відповідь\n"
-"  -m <позначка>      позначка для вихідних пакетів\n"
-"  -M <режим>         визначити MTU режим, одне зі значень "
-"<do|dont|want|probe>\n"
-"  -n                 не запитувати назви IP адрес\n"
-"  -O                 звітувати нестандартні відповіді\n"
-"  -p <зразок>        зразок для заповнення вихідних пакетів\n"
-"  -q                 скорочене виведення\n"
-"  -Q <байт>          встановити QoS значення (ToS IPv4, TClass IPv6)\n"
-"  -s <розмір>        розмір даних які надсилатимуся\n"
-"  -S <розмір>        використовувати <розмір> як значення сокет параметра SO_SNDBUF\n"
-"  -t <число>         визначити максимальне значення TTL,\n"
-"                     зазвичай це кількість переходів до пункту призначення\n"
-"  -U                 виводити програмну затримку замість мережевої\n"
-"  -v                 докладне виведення\n"
-"  -V                 вивести версію та завершити роботу\n"
-"  -w <строк>         крайній термін очікування на відповідь (у секундах)\n"
-"  -W <час>           час очікування на відповідь (у секундах)\n"
-"\n"
-"Параметри IPv4:\n"
-"  -4                 використовувати IPv4\n"
-"  -b                 дозволити пінгування всієї підмережі\n"
-"  -R                 запис маршруту\n"
-"  -T <позначка>      визначити часову позначку, одне зі значень TSONLY|TSANDADDR|TSPRESPEC\n"
-"\n"
-"Параметри IPv6:\n"
-"  -6                 використовувати IPv6\n"
-"  -F <відмітка>      визначити відмітку потоку, типова - випадкова\n"
-"  -N <параметр>      задати параметр NodeInfo (подивіться -N help)\n"
+msgid "use audible ping"
+msgstr "використовувати звуковий супровід"
+
+msgid "use adaptive ping"
+msgstr "адаптивне зондування"
+
+msgid "sticky source address"
+msgstr "закріплена початкова адреса"
+
+msgid "stop after 'count' replies"
+msgstr "надіслати задану кількість ICMP запитів"
+
+msgid "call connect() syscall on socket creation"
+msgstr "скористатися викликом connect() при створенні сокета"
+
+msgid "use SO_DEBUG socket option"
+msgstr "встановити SO_DEBUG параметр сокета"
+
+msgid "print timestamps"
+msgstr "виводити часові позначки"
+
+msgid "define ident for ping session,"
+msgstr "визначити ідентифікатор ICMP пакетів,"
+
+msgid "default is random for SOCK_RAW and kernel defined for SOCK_DGRAM,"
+msgstr "випадковий для SOCK_RAW і визначається ядром для SOCK_DGRAM,"
+
+msgid "imply using SOCK_RAW (for IPv4 only for ident 0)"
+msgstr "передбачає використання SOCK_RAW (IPv4 тільки з ідент 0)"
+
+msgid "flood ping"
+msgstr "надсилати пакети якнайшвидше, тобто флуд"
+
+msgid "force reverse DNS name resolution, override -n"
+msgstr "примусово запитувати назви IP адрес, пріоритетніше за -n"
+
+msgid "(useful for numeric destinations or for -f)"
+msgstr "(корисно для числових адрес або з -f)"
+
+msgid "seconds between sending each packet"
+msgstr "інтервал між надсиланням пакетів у секундах"
+
+msgid "either interface name or address"
+msgstr "назва або адреса інтерфейсу"
+
+msgid "send 'preload' number of packages while waiting replies"
+msgstr "надіслати задану кількість пакетів під час очікування на відповідь"
+
+msgid "suppress loopback of multicast packets"
+msgstr "не використовувати петльовий інтерфейс для групової розсилки"
+
+msgid "tag the packets going out"
+msgstr "позначка для вихідних пакетів"
+
+msgid "define path MTU discovery, can be one of do|dont|want|probe"
+msgstr "визначити MTU режим, одне зі значень do|dont|want|probe"
+
+msgid "no reverse DNS name resolution, override -H"
+msgstr "не запитувати назви IP адрес"
+
+msgid "report outstanding replies"
+msgstr "звітувати нестандартні відповіді"
+
+msgid "content of padding bytes"
+msgstr "зразок для заповнення вихідних пакетів"
+
+msgid "quality of service bits (ToS IPv4, TClass IPv6)"
+msgstr "біти якості обслуговування (ToS IPv4, TClass IPv6)"
+
+msgid "payload size"
+msgstr "розмір даних поза заголовками"
+
+msgid "use 'size' as SO_SNDBUF socket option value"
+msgstr "використовувати 'розмір' як значення сокет параметра SO_SNDBUF"
+
+msgid "define 'ttl' (time to live)"
+msgstr "максимальне значення TTL (кількість переходів до пункту призначення)"
+
+msgid "print user-to-user latency"
+msgstr "виводити програмну затримку замість мережевої"
+
+msgid "reply wait 'deadline' in seconds"
+msgstr "крайній термін очікування на відповідь (у секундах)"
+
+msgid "time to wait for response"
+msgstr "час очікування на відповідь (у секундах)"
+
+msgid "IPv4 options"
+msgstr "Опції IPv4"
+
+msgid "allow broadcast pings"
+msgstr "дозволити пінгування всієї підмережі"
+
+msgid "record route"
+msgstr "запис маршруту"
+
+msgid "define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC"
+msgstr "визначити часову позначку, одне зі значень TSONLY|TSANDADDR|TSPRESPEC"
+
+msgid "IPv6 options"
+msgstr "Опції IPv6"
+
+msgid "define flow label, default is random"
+msgstr "визначити відмітку потоку, типово то випадкова"
+
+msgid "use IPv6 node info query, try '-N help', details in ping(8)"
+msgstr "задати параметр IPv6 NodeInfo, подивіться '-N help', подробиці в ping(8)"
 
 
 ### tracepath options
@@ -674,7 +685,7 @@ msgstr "ident 0 => примусово raw сокет"
 
 #
 msgid "Only 'tsprespec' is allowed with intermediate hops"
-msgstr "З транзитом дозволено тільки 'tsprespec'"
+msgstr "З транзитом дозволено тільки tsprespec"
 
 #
 msgid "Too many intermediate TS hops"
@@ -958,10 +969,6 @@ msgstr "опція часової позначки"
 #
 msgid "No intermediate hops for TSPRESPEC"
 msgstr "Відсутні транзитні адреси для TSPRESPEC"
-
-#
-msgid "record route"
-msgstr "запис маршруту"
 
 #
 msgid "wrong byte #"

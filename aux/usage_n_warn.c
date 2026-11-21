@@ -162,8 +162,12 @@ void usage_common(int rc, const usage_data_t *udata) { // NONNULL(2)
 //
 
 static void warnerrt(const char *fmt, va_list args, bool red, const char *msg) {
-	if (myname)
-		fprintf(stderr, "%s%s%s: ", COLOR_BOLD, myname, COLOR_NORMAL);
+	if (myname) {
+		if (itistty)
+			fprintf(stderr, "%s%s%s: ", COLOR_BOLD, myname, COLOR_NORMAL);
+		else
+			fprintf(stderr, "%s: ", myname);
+	}
 	if (itistty)
 		fputs(red ? COLOR_RED : COLOR_YELLOW, stderr);
 	vfprintf(stderr, fmt, args);

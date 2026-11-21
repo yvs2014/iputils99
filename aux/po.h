@@ -290,8 +290,8 @@
 #define __PING_OPT_C  "call connect() syscall on socket creation"
 #define __PING_OPT_d  "use SO_DEBUG socket option"
 #define __PING_OPT_D  "print timestamps"
-#define __PING_OPT_e1 "define ident for ping session, default is random for"
-#define __PING_OPT_e2 "SOCK_RAW and kernel defined for SOCK_DGRAM,"
+#define __PING_OPT_e1 "define ident for ping session,"
+#define __PING_OPT_e2 "default is random for SOCK_RAW and kernel defined for SOCK_DGRAM,"
 #define __PING_OPT_e3 "imply using SOCK_RAW (for IPv4 only for ident 0)"
 #define __PING_OPT_f  "flood ping"
 #define __PING_OPT_H1 "force reverse DNS name resolution, override -n"
@@ -319,7 +319,7 @@
 // ping6 only
 #define __PING_HDR_6  "IPv6 options"
 #define __PING_OPT_F  "define flow label, default is random"
-#define __PING_OPT_N  "use IPv6 node info query, try 'help' as argument, details in ping(8)"
+#define __PING_OPT_N  "use IPv6 node info query, try '-N help', details in ping(8)"
 
 // arping
 #define __ARPING_OPT_A "ARP answer mode, update your neighbours"

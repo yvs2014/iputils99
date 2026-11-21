@@ -128,103 +128,113 @@ msgstr "ISO zaman formatını kullanın"
 
 ### ping options
 
-msgid ""
-"  -a                 use audible ping\n"
-"  -A                 use adaptive ping\n"
-"  -B                 sticky source address\n"
-"  -c <count>         stop after <count> replies\n"
-"  -C                 call connect() syscall on socket creation\n"
-"  -D                 print timestamps\n"
-"  -d                 use SO_DEBUG socket option\n"
-"  -e <identifier>    define identifier for ping session, default is random "
-"for\n"
-"                     SOCK_RAW and kernel defined for SOCK_DGRAM\n"
-"                     Imply using SOCK_RAW (for IPv4 only for identifier 0)\n"
-"  -f                 flood ping\n"
-"  -h                 print help and exit\n"
-"  -H                 force reverse DNS name resolution (useful for numeric\n"
-"                     destinations or for -f), override -n\n"
-"  -I <interface>     either interface name or address\n"
-"  -i <interval>      seconds between sending each packet\n"
-"  -L                 suppress loopback of multicast packets\n"
-"  -l <preload>       send <preload> number of packages while waiting "
-"replies\n"
-"  -m <mark>          tag the packets going out\n"
-"  -M <pmtud opt>     define path MTU discovery, can be one of <do|dont|want|"
-"probe>\n"
-"  -n                 no reverse DNS name resolution, override -H\n"
-"  -O                 report outstanding replies\n"
-"  -p <pattern>       content of padding bytes\n"
-"  -q                 quiet output\n"
-"  -Q <tclass>        quality of service bits\n"
-"  -s <size>          payload size\n"
-"  -S <size>          use <size> as SO_SNDBUF socket option value\n"
-"  -t <ttl>           define time to live\n"
-"  -U                 print user-to-user latency\n"
-"  -v                 verbose output\n"
-"  -V                 print version and exit\n"
-"  -w <deadline>      reply wait <deadline> in seconds\n"
-"  -W <timeout>       time to wait for response\n"
-"\n"
-"IPv4 options:\n"
-"  -4                 use IPv4\n"
-"  -b                 allow pinging broadcast\n"
-"  -R                 record route\n"
-"  -T <timestamp>     define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC\n"
-"\n"
-"IPv6 options:\n"
-"  -6                 use IPv6\n"
-"  -F <flowlabel>     define flow label, default is random\n"
-"  -N <nodeinfo opt>  use IPv6 node info query, try 'help' as argument, details in ping(8)\n"
-msgstr ""
-"  -a                 duyulabilir ping kullan\n"
-"  -A                 uyarlanabilir ping kullan\n"
-"  -B                 yapışkan kaynak adresi\n"
-"  -c <sayı>          <sayı> yanıttan sonra dur\n"
-"  -C                 soket oluştururken connect() sistem çağrısını kullan\n"
-"  -D                 zaman damgalarını yazdır\n"
-"  -d                 SO_DEBUG soket seçeneğini kullan\n"
-"  -e <tanımlayıcı>   ping oturumu için tanımlayıcı belirt, öntanımlı "
-"SOCK_RAW\n"
-"                     için rastgele ve SOCK_DGRAM için çekirdek tarafından "
-"tanımlıdır\n"
-"                     SOCK_RAW kullanıldığını varsayar (IPv4 için yalnızca 0 "
-"tanımlayıcısı için)\n"
-"  -f                 flood ping\n"
-"  -h                 yardımı yazdır ve çık\n"
-"  -I <arayüz>        arayüz adı veya adresi\n"
-"  -i <aralık>        her paketin gönderilmesi arasında geçen saniye\n"
-"  -L                 çok noktaya yayın paketlerinin geri döngüsünü engelle\n"
-"  -l <ön yükleme>    yanıt beklerken <ön yükleme> tane paket gönder\n"
-"  -m <işaret>        giden paketleri etiketle\n"
-"  -M <pmtud seç>     mtu keşfi tanımla, <do|dont|want|probe> seçeneklerinden "
-"biri olabilir\n"
-"  -n                 DNS ad çözümlemesi yapılmasın\n"
-"  -O                 bekleyen yanıtları bildir\n"
-"  -p <kalıp>         dolgu baytının içeriği\n"
-"  -q                 sessiz çıktı\n"
-"  -Q <tclass>        hizmet kalitesi bitleri\n"
-"  -s <boyut>         veri yükü boyutu\n"
-"  -S <boyut>         SO_SNDBUF soket seçeneği değeri olarak <boyut> kullan\n"
-"  -t <ttl>           yaşam süresini belirt\n"
-"  -U                 kullanıcıdan kullanıcıya gecikmeyi yazdır\n"
-"  -v                 ayrıntılı çıktı\n"
-"  -V                 sürümü yazdır ve çık\n"
-"  -w <son>           <son> saniye cinsinden yanıt bekle\n"
-"  -W <aşım>          yanıt için beklenecek süre\n"
-"\n"
-"IPv4 seçenekleri:\n"
-"  -4                 IPv4 kullan\n"
-"  -b                 genel yayın pinglemeye izin ver\n"
-"  -R                 rotayı kaydet\n"
-"  -T <damga>         zaman damgasını belirt, TSONLY|TSANDADDR|TSPRESPEC "
-"seçeneklerinden biri olabilir\n"
-"\n"
-"IPv6 seçenekleri:\n"
-"  -6                 IPv6 kullan\n"
-"  -F <etiket>        akış etiketini belir, öntanımlı olarak rastgeledir\n"
-"  -N <düğüm bilgisi> icmp6 düğüm bilgisi sorgusunu kullan, argüman olarak "
-"<help> deneyin\n"
+msgid "use audible ping"
+msgstr "duyulabilir ping kullan"
+
+msgid "use adaptive ping"
+msgstr "uyarlanabilir ping kullan"
+
+msgid "sticky source address"
+msgstr "yapışkan kaynak adresi"
+
+msgid "stop after 'count' replies"
+msgstr "'sayı' yanıttan sonra dur"
+
+msgid "call connect() syscall on socket creation"
+msgstr "soket oluştururken connect() sistem çağrısını kullan"
+
+msgid "use SO_DEBUG socket option"
+msgstr "SO_DEBUG soket seçeneğini kullan"
+
+msgid "print timestamps"
+msgstr "zaman damgalarını yazdır"
+
+msgid "define ident for ping session,"
+msgstr "ping oturumu için tanımlayıcı belirt,"
+
+msgid "default is random for SOCK_RAW and kernel defined for SOCK_DGRAM,"
+msgstr "öntanımlı SOCK_RAW için rastgele ve SOCK_DGRAM için çekirdek tarafından tanımlıdır"
+
+msgid "imply using SOCK_RAW (for IPv4 only for ident 0)"
+msgstr "SOCK_RAW kullanıldığını varsayar (IPv4 için yalnızca 0 tanımlayıcısı için)"
+
+msgid "flood ping"
+msgstr "ping flood"
+
+msgid "force reverse DNS name resolution, override -n"
+msgstr "ters DNS ad çözümlemesini zorla, -n seçeneğini geçersiz kıl"
+
+msgid "(useful for numeric destinations or for -f)"
+msgstr "(sayısal hedefler veya -f için kullanışlıdır)"
+
+msgid "seconds between sending each packet"
+msgstr "her paketin gönderilmesi arasında geçen saniye"
+
+msgid "either interface name or address"
+msgstr "arayüz adı veya adresi"
+
+msgid "send 'preload' number of packages while waiting replies"
+msgstr "yanıt beklerken 'ön-yükleme' tane paket gönder"
+
+msgid "suppress loopback of multicast packets"
+msgstr "çok noktaya yayın paketlerinin geri döngüsünü engelle"
+
+msgid "tag the packets going out"
+msgstr "giden paketleri etiketle"
+
+msgid "define path MTU discovery, can be one of do|dont|want|probe"
+msgstr "mtu keşfi tanımla, do|dont|want|probe seçeneklerinden biri olabilir"
+
+msgid "no reverse DNS name resolution, override -H"
+msgstr "DNS ad çözümlemesi yapılmasın, -H seçeneğini geçersiz kıl"
+
+msgid "report outstanding replies"
+msgstr "bekleyen yanıtları bildir"
+
+msgid "content of padding bytes"
+msgstr "dolgu baytlarının içeriği"
+
+msgid "quality of service bits (ToS IPv4, TClass IPv6)"
+msgstr "hizmet kalitesi bitleri (ToS IPv4, TClass IPv6)"
+
+msgid "payload size"
+msgstr "veri yükü boyutu"
+
+msgid "use 'size' as SO_SNDBUF socket option value"
+msgstr "SO_SNDBUF soket seçeneği değeri olarak 'boyut' kullan"
+
+msgid "define 'ttl' (time to live)"
+msgstr "yaşam süresini belirt (TTL)"
+
+msgid "print user-to-user latency"
+msgstr "kullanıcıdan kullanıcıya gecikmeyi yazdır"
+
+msgid "reply wait 'deadline' in seconds"
+msgstr "'son' saniye cinsinden yanıt bekle"
+
+msgid "time to wait for response"
+msgstr "yanıt için beklenecek süre"
+
+msgid "IPv4 options"
+msgstr "IPv4 seçenekleri"
+
+msgid "allow broadcast pings"
+msgstr "genel yayın pinglemeye izin ver"
+
+msgid "record route"
+msgstr "rotayı kaydet"
+
+msgid "define timestamp, can be one of TSONLY|TSANDADDR|TSPRESPEC"
+msgstr "zaman damgasını belirt, TSONLY|TSANDADDR|TSPRESPEC"
+
+msgid "IPv6 options"
+msgstr "IPv6 seçenekleri"
+
+msgid "define flow label, default is random"
+msgstr "akış etiketini belir, öntanımlı olarak rastgeledir"
+
+msgid "use IPv6 node info query, try '-N help', details in ping(8)"
+msgstr "IPv6 düğüm bilgisi sorgusunu kullan, '-N help' komutunu deneyin, ping(8) içindeki detaylar"
 
 
 ### tracepath options
@@ -925,10 +935,6 @@ msgstr ""
 #
 msgid "No intermediate hops for TSPRESPEC"
 msgstr ""
-
-#
-msgid "record route"
-msgstr "rotayı kaydet"
 
 #
 msgid "wrong byte #"

@@ -151,11 +151,11 @@ msgstr "použije SO_DEBUG volbu soketu"
 msgid "print timestamps"
 msgstr "vypíše časovou značku"
 
-msgid "define ident for ping session, default is random for"
-msgstr "definuje identifikátor pro ping session, výchozí je náhodný pro"
+msgid "define ident for ping session,"
+msgstr "definuje identifikátor pro ping session,"
 
-msgid "SOCK_RAW and kernel defined for SOCK_DGRAM,"
-msgstr "SOCK_RAW a definován kernelem pro SOCK_DGRAM,"
+msgid "default is random for SOCK_RAW and kernel defined for SOCK_DGRAM,"
+msgstr "výchozí je náhodný pro SOCK_RAW a definován kernelem pro SOCK_DGRAM,"
 
 msgid "imply using SOCK_RAW (for IPv4 only for ident 0)"
 msgstr "zahrnuje použití SOCK_RAW (pro IPv4 jen pro identifikátor 0)"
@@ -235,8 +235,38 @@ msgstr "IPv6 volby"
 msgid "define flow label, default is random"
 msgstr "definuje jmenovku toku, výchozí je náhodná"
 
-msgid "use IPv6 node info query, try 'help' as argument, details in ping(8)"
-msgstr "použije IPv6 node info query, try 'help' as argument, podrobnosti v ping(8)"
+msgid "use IPv6 node info query, try '-N help', details in ping(8)"
+msgstr "použije IPv6 node info query, zkuste '-N help', podrobnosti v ping(8)"
+
+msgid "ident"
+msgstr "ID"
+
+msgid "interface"
+msgstr "rozhraní"
+
+msgid "preload"
+msgstr "přednačíst"
+
+msgid "mark"
+msgstr "značka"
+
+msgid "pattern"
+msgstr "vzor"
+
+msgid "tos"
+msgstr "TOS"
+
+msgid "size"
+msgstr "velikost"
+
+msgid "deadline"
+msgstr "čas.limit"
+
+msgid "timestamp"
+msgstr "čas.zn."
+
+msgid "nodeinfo"
+msgstr "uzel-info"
 
 
 ### tracepath options
