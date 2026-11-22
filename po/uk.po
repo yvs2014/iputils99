@@ -174,7 +174,7 @@ msgid "seconds between sending each packet"
 msgstr "інтервал між надсиланням пакетів у секундах"
 
 msgid "either interface name or address"
-msgstr "назва або адреса інтерфейсу"
+msgstr "назва або адреса мережевого інтерфейсу"
 
 msgid "send 'preload' number of packages while waiting replies"
 msgstr "надіслати задану кількість пакетів під час очікування на відповідь"
@@ -213,7 +213,7 @@ msgid "print user-to-user latency"
 msgstr "виводити програмну затримку замість мережевої"
 
 msgid "reply wait 'deadline' in seconds"
-msgstr "крайній термін очікування на відповідь (у секундах)"
+msgstr "'дедлайн' очікування на відповідь (у секундах)"
 
 msgid "time to wait for response"
 msgstr "час очікування на відповідь (у секундах)"
@@ -238,6 +238,36 @@ msgstr "визначити відмітку потоку, типово то ви
 
 msgid "use IPv6 node info query, try '-N help', details in ping(8)"
 msgstr "задати параметр IPv6 NodeInfo, подивіться '-N help', подробиці в ping(8)"
+
+msgid "ident"
+msgstr "ID"
+
+msgid "interface"
+msgstr "пристрій"
+
+msgid "preload"
+msgstr "прелоад"
+
+msgid "mark"
+msgstr "позначка"
+
+msgid "pattern"
+msgstr "шаблон"
+
+msgid "tos"
+msgstr "ToS"
+
+msgid "size"
+msgstr "розмір"
+
+msgid "deadline"
+msgstr "дедлайн"
+
+msgid "timestamp"
+msgstr "таймстемп"
+
+msgid "nodeinfo"
+msgstr "інфо_вузла"
 
 
 ### tracepath options
@@ -673,7 +703,7 @@ msgstr "Некоректне джерело"
 
 #
 msgid "Cannot set preload to value greater than 3"
-msgstr "Неможливо встановити розмір пре-завантаження більш за 3"
+msgstr "Неможливо встановити розмір 'прелоад' більш за 3"
 
 #
 msgid "Bad linger time"
@@ -885,7 +915,7 @@ msgstr "Порожній взірець"
 
 #
 msgid "PATTERN"
-msgstr "ВЗІРЕЦЬ"
+msgstr "ШАБЛОН"
 
 #
 msgid "PAYLOAD"
@@ -917,7 +947,7 @@ msgstr "Мінімальний інтервал для користувача м
 
 #
 msgid "Illegal preload and/or interval"
-msgstr "Некоректне пре-завантаження і/або інтервал"
+msgstr "Некоректний 'прелоад' та/або інтервал"
 
 #
 msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"

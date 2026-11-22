@@ -174,7 +174,7 @@ msgid "either interface name or address"
 msgstr "接口名称或地址"
 
 msgid "send 'preload' number of packages while waiting replies"
-msgstr "在等待回复时发送 preload 数量的包"
+msgstr "在等待回复时发送预载的包裹数量"
 
 msgid "suppress loopback of multicast packets"
 msgstr "抑制组播报文环回"
@@ -201,7 +201,7 @@ msgid "payload size"
 msgstr "有效载荷大小"
 
 msgid "use 'size' as SO_SNDBUF socket option value"
-msgstr "使用 size 作为 SO_SNDBUF 套接字选项值"
+msgstr "将此值用作 SO_SNDBUF 套接字选项的大小"
 
 msgid "define 'ttl' (time to live)"
 msgstr "定义生存时间（TTL）"
@@ -210,7 +210,7 @@ msgid "print user-to-user latency"
 msgstr "显示用户到用户的延迟"
 
 msgid "reply wait 'deadline' in seconds"
-msgstr "回复等待 deadline 以秒为单位"
+msgstr "截止期限的响应等待时长 (秒)"
 
 msgid "time to wait for response"
 msgstr "等待响应的时间"
@@ -235,6 +235,36 @@ msgstr "定义流标签，默认是随机的"
 
 msgid "use IPv6 node info query, try '-N help', details in ping(8)"
 msgstr "使用 IPv6 节点信息查询，尝试 help 作为参数"
+
+msgid "ident"
+msgstr "标识"
+
+msgid "interface"
+msgstr "接口"
+
+msgid "preload"
+msgstr "预载"
+
+msgid "mark"
+msgstr "标记"
+
+msgid "pattern"
+msgstr "模式"
+
+msgid "tos"
+msgstr "ToS"
+
+msgid "size"
+msgstr "大小"
+
+msgid "deadline"
+msgstr "截止期限"
+
+msgid "timestamp"
+msgstr "时间戳"
+
+msgid "nodeinfo"
+msgstr "网元信息"
 
 
 ### tracepath options
@@ -666,7 +696,7 @@ msgstr "源无效"
 
 #
 msgid "Cannot set preload to value greater than 3"
-msgstr "不能将 preload 设置到 3 以上的"
+msgstr "无法将预载值设置为大于 3"
 
 #
 msgid "Bad linger time"
@@ -864,7 +894,7 @@ msgstr "RCVBUF 可能不足以保持预载"
 
 #
 msgid "failed to set mark"
-msgstr "无法安装套接字过滤器"
+msgstr "未能设置标记"
 
 #
 msgid "SO_MARK not supported"
@@ -880,7 +910,7 @@ msgstr "用户的最小间隔必须 >="
 
 #
 msgid "Illegal preload and/or interval"
-msgstr "非法预紧和/或间隔"
+msgstr "非法预载或间隔"
 
 #
 msgid "no SO_TIMESTAMP support, falling back to SIOCGSTAMP"

@@ -210,7 +210,7 @@ msgid "print user-to-user latency"
 msgstr "kullanıcıdan kullanıcıya gecikmeyi yazdır"
 
 msgid "reply wait 'deadline' in seconds"
-msgstr "'son' saniye cinsinden yanıt bekle"
+msgstr "son tarihten önce yanıt için bekleme süresi (saniye cinsinden)"
 
 msgid "time to wait for response"
 msgstr "yanıt için beklenecek süre"
@@ -235,6 +235,36 @@ msgstr "akış etiketini belir, öntanımlı olarak rastgeledir"
 
 msgid "use IPv6 node info query, try '-N help', details in ping(8)"
 msgstr "IPv6 düğüm bilgisi sorgusunu kullan, '-N help' komutunu deneyin, ping(8) içindeki detaylar"
+
+msgid "ident"
+msgstr "ID"
+
+msgid "interface"
+msgstr "arayüz"
+
+msgid "preload"
+msgstr "önyükleme"
+
+msgid "mark"
+msgstr "işaret"
+
+msgid "pattern"
+msgstr "kalip"
+
+msgid "tos"
+msgstr "ToS"
+
+msgid "size"
+msgstr "boyut"
+
+msgid "deadline"
+msgstr "süre"
+
+msgid "timestamp"
+msgstr "zamandamga"
+
+msgid "nodeinfo"
+msgstr "düğümbilgi"
 
 
 ### tracepath options

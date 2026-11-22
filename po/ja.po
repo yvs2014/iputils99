@@ -238,6 +238,36 @@ msgstr ""
 msgid "use IPv6 node info query, try '-N help', details in ping(8)"
 msgstr ""
 
+msgid "ident"
+msgstr "ID"
+
+msgid "interface"
+msgstr "インターフェース"
+
+msgid "preload"
+msgstr ""
+
+msgid "mark"
+msgstr "マーク"
+
+msgid "pattern"
+msgstr "パターン"
+
+msgid "tos"
+msgstr "ToS"
+
+msgid "size"
+msgstr "サイズ"
+
+msgid "deadline"
+msgstr ""
+
+msgid "timestamp"
+msgstr "タイムスタンプ"
+
+msgid "nodeinfo"
+msgstr ""
+
 
 ### tracepath options
 

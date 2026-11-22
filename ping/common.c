@@ -155,7 +155,7 @@ static const usage_opt_t uopts[] = { // null-terminated
 NORETURN void usage(int rc) {
 	drop_priv();
 	usage_data_t use = {
-		.indent = 9,
+		.indent = 10,
 		.uopt   = uopts,
 		.optstr = optstr,
 		.target = _TARGET,

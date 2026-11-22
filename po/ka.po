@@ -236,6 +236,36 @@ msgstr "დინების ჭდის გამოყენება. ნ�
 msgid "use IPv6 node info query, try '-N help', details in ping(8)"
 msgstr "IPv6 ჭდის ინფორმაციის გამოთხოვის გამოყენება, სცადეთ '-N help', როგორც არგუმენტი, დეტალები ping(8)-ში"
 
+msgid "ident"
+msgstr "ID"
+
+msgid "interface"
+msgstr "ინტერფეისი"
+
+msgid "preload"
+msgstr "წინჩატვ"
+
+msgid "mark"
+msgstr "მარკი"
+
+msgid "pattern"
+msgstr "შაბლონი"
+
+msgid "tos"
+msgstr "ToS"
+
+msgid "size"
+msgstr "ზომა"
+
+msgid "deadline"
+msgstr "დედლაინი"
+
+msgid "timestamp"
+msgstr "დროის-სან."
+
+msgid "nodeinfo"
+msgstr ""
+
 
 ### tracepath options
 

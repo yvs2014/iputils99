@@ -174,7 +174,7 @@ msgid "either interface name or address"
 msgstr "soit le nom ou l'adresse de l'interface"
 
 msgid "send 'preload' number of packages while waiting replies"
-msgstr "envoie 'preload' paquets en attendant les réponses"
+msgstr "envoie 'précharge' paquets en attendant les réponses"
 
 msgid "suppress loopback of multicast packets"
 msgstr "supprime le bouclage des paquets multicast"
@@ -210,7 +210,7 @@ msgid "print user-to-user latency"
 msgstr "imprimer la latence d'utilisateur à utilisateur"
 
 msgid "reply wait 'deadline' in seconds"
-msgstr "la réponse attend 'date-limite' en secondes"
+msgstr "la réponse attend 'échéance' en secondes"
 
 msgid "time to wait for response"
 msgstr "temps d'attente pour la réponse"
@@ -235,6 +235,36 @@ msgstr "définit l'étiquette du flux, la valeur par défaut est aléatoire"
 
 msgid "use IPv6 node info query, try '-N help', details in ping(8)"
 msgstr "utilise la requête d'informations sur le nœud IPv6, essayez '-N help', détails dans ping(8)"
+
+msgid "ident"
+msgstr "ID"
+
+msgid "interface"
+msgstr ""
+
+msgid "preload"
+msgstr "précharge"
+
+msgid "mark"
+msgstr "marque"
+
+msgid "pattern"
+msgstr "motif"
+
+msgid "tos"
+msgstr "ToS"
+
+msgid "size"
+msgstr "taille"
+
+msgid "deadline"
+msgstr "échéance"
+
+msgid "timestamp"
+msgstr "horodatage"
+
+msgid "nodeinfo"
+msgstr ""
 
 
 ### tracepath options
@@ -824,7 +854,7 @@ msgstr "Horodatage"
 
 #
 msgid "Timestamp Reply"
-msgstr "Réponse timestamp"
+msgstr "Réponse d’horodatage"
 
 #
 msgid "Information Request"
@@ -864,12 +894,11 @@ msgstr "Encore aucune réponse"
 
 #
 msgid "Probably, rcvbuf is not enough to hold preload"
-msgstr ""
-"Probablement, le rcvbuf n’est pas suffisant pour maintenir le préchargement"
+msgstr "Probablement, le rcvbuf n’est pas suffisant pour maintenir le préchargement"
 
 #
 msgid "failed to set mark"
-msgstr "échec de définition du repère"
+msgstr "échec de la définition de marque"
 
 #
 msgid "SO_MARK not supported"

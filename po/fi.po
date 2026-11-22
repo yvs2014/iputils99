@@ -200,7 +200,7 @@ msgid "payload size"
 msgstr "hyötykuorman koko"
 
 msgid "use 'size' as SO_SNDBUF socket option value"
-msgstr "käyttää 'kokoa' SO_SNDBUF-socket-vaihtoehdon arvona"
+msgstr "käyttää 'koko' SO_SNDBUF-socket-vaihtoehdon arvona"
 
 msgid "define 'ttl' (time to live)"
 msgstr "määritä elinaika (TTL)"
@@ -209,7 +209,7 @@ msgid "print user-to-user latency"
 msgstr "tulosta käyttäjien välinen latenssi"
 
 msgid "reply wait 'deadline' in seconds"
-msgstr "vastaus odota 'deadline' sekunneissa"
+msgstr "vastaus odota 'aikaraja' sekunneissa"
 
 msgid "time to wait for response"
 msgstr "aika odottaa vastausta"
@@ -234,6 +234,36 @@ msgstr "määrittelee virtauksen otsikon, oletus on satunnainen"
 
 msgid "use IPv6 node info query, try '-N help', details in ping(8)"
 msgstr "käytä IPv6-solmutietokyselyä, kokeile '-N help', lisätietoja ping(8)"
+
+msgid "ident"
+msgstr "tunniste"
+
+msgid "interface"
+msgstr "liitäntä"
+
+msgid "preload"
+msgstr "esilataus"
+
+msgid "mark"
+msgstr "merkintä"
+
+msgid "pattern"
+msgstr "lauseke"
+
+msgid "tos"
+msgstr "ToS"
+
+msgid "size"
+msgstr "koko"
+
+msgid "deadline"
+msgstr "aikaraja"
+
+msgid "timestamp"
+msgstr "aikaleima"
+
+msgid "nodeinfo"
+msgstr "NodeInfo"
 
 
 ### tracepath options
@@ -666,7 +696,7 @@ msgstr "Virheellinen lähde"
 
 #
 msgid "Cannot set preload to value greater than 3"
-msgstr "Ei voi asettaa esikuormitusta arvoon, joka on suurempi kuin kolme"
+msgstr "Esilatausta ei voi asettaa suuremmaksi kuin 3"
 
 #
 msgid "Bad linger time"
@@ -850,7 +880,7 @@ msgstr ""
 
 #
 msgid "PATTERN"
-msgstr "Lauseke"
+msgstr "LAUSEKE"
 
 #
 msgid "PAYLOAD"

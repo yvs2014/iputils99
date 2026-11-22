@@ -174,7 +174,7 @@ msgid "either interface name or address"
 msgstr "nome da interface ou endereço"
 
 msgid "send 'preload' number of packages while waiting replies"
-msgstr "enviar 'preload' número de pacotes enquanto aguarda respostas"
+msgstr "enviar 'pré-carga' número de pacotes enquanto aguarda respostas"
 
 msgid "suppress loopback of multicast packets"
 msgstr "suprimir loopback de pacotes multicast"
@@ -210,7 +210,7 @@ msgid "print user-to-user latency"
 msgstr "imprimir latência de usuário para usuário"
 
 msgid "reply wait 'deadline' in seconds"
-msgstr "aguardar resposta por 'prazo-final' segundos"
+msgstr "aguardar resposta por prazo-final segundos"
 
 msgid "time to wait for response"
 msgstr "tempo para aguardar resposta"
@@ -235,6 +235,36 @@ msgstr "definir rótulo de fluxo, padrão é aleatório"
 
 msgid "use IPv6 node info query, try '-N help', details in ping(8)"
 msgstr "usar consulta de informações de nó IPv6, tente '-N help', detalhes em ping(8)"
+
+msgid "ident"
+msgstr "ID"
+
+msgid "interface"
+msgstr ""
+
+msgid "preload"
+msgstr "pré-carga"
+
+msgid "mark"
+msgstr "marca"
+
+msgid "pattern"
+msgstr "padrão"
+
+msgid "tos"
+msgstr "ToS"
+
+msgid "size"
+msgstr "tamanho"
+
+msgid "deadline"
+msgstr "prazo"
+
+msgid "timestamp"
+msgstr "carimbo"
+
+msgid "nodeinfo"
+msgstr "InfoNo"
 
 
 ### tracepath options
