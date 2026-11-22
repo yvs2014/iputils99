@@ -419,6 +419,9 @@ static void switch_opt(char c, void *data) { // NONNULL(2)
 		/* lingertime will be converted to usec later */
 		RTS_DATA->lingertime = (int)(value * 1000);
 	}	break;
+	case 'Y':
+		itistty = false;
+		break;
 	default:
 		break;
 	}

@@ -24,7 +24,7 @@
 .SH "NAME"
 ping \- send ICMP ECHO_REQUEST to network hosts
 .SH "SYNOPSIS"
-\fBping\fR [\fB\-aAbBcCdDefFhHiIlL\*[om]Mn\*[oN]OpqQrRsStTUvVwW46\fR] [hop\&.\&.\&.] TARGET
+\fBping\fR [\fB\-aAbBcCdDefFhHiIlL\*[om]Mn\*[oN]OpqQrRsStTUvVwWY46\fR] [hop\&.\&.\&.] TARGET
 .SH "DESCRIPTION"
 .PP
 \fBping\fR
@@ -40,6 +40,16 @@ can also send IPv6 Node Information Queries (RFC4620)\&. Intermediate
 \fIhop\fRs may not be allowed, because IPv6 source routing was deprecated (RFC5095)\&.
 .\}
 .SH "OPTIONS"
+.PP
+\fB\-4\fR
+.RS 4
+Use IPv4
+.RE
+.PP
+\fB\-6\fR
+.RS 4
+Use IPv6
+.RE
 .PP
 \fB\-a\fR
 .RS 4
@@ -284,11 +294,6 @@ You may specify up to 16 \(lqpad\(rq bytes to fill out the packet you send\&. Th
 will cause the sent packet to be filled with all ones\&.
 .RE
 .PP
-\fB\-q\fR
-.RS 4
-Quiet output\&. Nothing is displayed except the summary lines at startup time and when finished\&.
-.RE
-.PP
 \fB\-Q\fR \fItos\fR
 .RS 4
 Set Quality of Service \-related bits in ICMP datagrams\&.
@@ -356,16 +361,6 @@ Print full user\-to\-user latency (the old behaviour)\&. Normally
 prints network round trip time, which can be different f\&.e\&. due to DNS failures\&.
 .RE
 .PP
-\fB\-v\fR
-.RS 4
-Verbose output
-.RE
-.PP
-\fB\-V\fR
-.RS 4
-Print program version
-.RE
-.PP
 \fB\-w\fR \fIdeadline\fR
 .RS 4
 Specify a timeout, in seconds, before
@@ -388,14 +383,29 @@ Time to wait for a response, in seconds\&. The option affects only timeout in ab
 waits for two RTTs\&. Real number allowed with dot as a decimal separator (regardless locale setup)\&. 0 means infinite timeout\&.
 .RE
 .PP
-\fB\-4\fR
+\fB\-Y\fR
 .RS 4
-Use IPv4
+disable color output even if supported by TTY (default auto)
 .RE
 .PP
-\fB\-6\fR
+\fB\-q\fR
 .RS 4
-Use IPv6
+Quiet output, nothing is displayed except the summary lines at startup time and when finished
+.RE
+.PP
+\fB\-v\fR
+.RS 4
+Verbose output
+.RE
+.PP
+\fB\-V\fR
+.RS 4
+Print version
+.RE
+.PP
+\fB\-h\fR
+.RS 4
+Print help
 .RE
 .PP
 When using

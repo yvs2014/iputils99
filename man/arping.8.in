@@ -22,7 +22,7 @@
 .SH "NAME"
 arping \- send ARP REQUEST to a neighbour host
 .SH "SYNOPSIS"
-\fBarping\fR [\fB\-AbcDfhiIqsUVw\fR] TARGET
+\fBarping\fR [\fB\-AbcDfhiIqsUVwY\fR] TARGET
 .SH "DESCRIPTION"
 .PP
 ARPing \fIdestination\fR on device \fIinterface\fR by ARP packets\&.
@@ -56,11 +56,6 @@ Duplicate address detection mode (DAD)\&. See RFC2131, 4\&.4\&.1\&. Returns 0, i
 \fB\-f\fR
 .RS 4
 Finish after the first reply confirming that target is alive
-.RE
-.PP
-\fB\-h\fR
-.RS 4
-Print help page
 .RE
 .PP
 \fB\-i \fR\fB\fIinterval\fR\fR
@@ -105,11 +100,6 @@ or
 Unsolicited ARP mode to update neighbours\*(Aq ARP caches\&. No replies are expected
 .RE
 .PP
-\fB\-V\fR
-.RS 4
-Print program version
-.RE
-.PP
 \fB\-w \fR\fB\fIdeadline\fR\fR
 .RS 4
 Specify a timeout, in seconds, before
@@ -119,6 +109,21 @@ exits regardless of how many packets have been sent or received\&. If any replie
 option, exit with status 0 if
 \fIcount\fR
 replies are received before the deadline expiration, otherwise status 1\&.
+.RE
+.PP
+\fB\-Y\fR
+.RS 4
+disable color output even if supported by TTY (default auto)
+.RE
+.PP
+\fB\-V\fR
+.RS 4
+Print version
+.RE
+.PP
+\fB\-h\fR
+.RS 4
+Print help
 .RE
 .PP
 .SH "SEE ALSO"

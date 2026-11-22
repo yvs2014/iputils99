@@ -22,7 +22,7 @@
 .SH "NAME"
 tracepath \- traces path to a network host discovering MTU along this path
 .SH "SYNOPSIS"
-\fBtracepath\fR [\fB\-bhlmnpvV46\fR] TARGET
+\fBtracepath\fR [\fB\-bhlmnpvVY46\fR] TARGET
 .SH "DESCRIPTION"
 .PP
 It traces the network path to
@@ -38,14 +38,19 @@ is a good replacement for
 and classic example of application of Linux error queues\&. The situation with IPv4 is worse, because commercial IP routers do not return enough information in ICMP error messages\&. Probably, it will change, when they are updated\&. For now it uses Van Jacobson\*(Aqs trick, sweeping a range of UDP ports to maintain trace history\&.
 .SH "OPTIONS"
 .PP
+\fB\-4\fR
+.RS 4
+Use IPv4
+.RE
+.PP
+\fB\-6\fR
+.RS 4
+Use IPv6
+.RE
+.PP
 \fB\-b\fR
 .RS 4
 Print host names and IP addresses
-.RE
-.PP
-\fB\-h\fR
-.RS 4
-Print help
 .RE
 .PP
 \fB\-l\fR \fIpktlen\fR
@@ -63,9 +68,15 @@ Set TTL maximum to \fImax_hops\fR (default 30)
 .RS 4
 No reverse DNS resolution
 .RE
+.PP
 \fB\-p\fR \fIport\fR
 .RS 4
 Set initial destination \fIport\fR (default 33433)
+.RE
+.PP
+\fB\-Y\fR
+.RS 4
+disable color output even if supported by TTY (default auto)
 .RE
 .PP
 \fB\-v\fR
@@ -75,17 +86,12 @@ Verbose output
 .PP
 \fB\-V\fR
 .RS 4
-Print program version
+Print version
 .RE
 .PP
-\fB\-4\fR
+\fB\-h\fR
 .RS 4
-Use IPv4
-.RE
-.PP
-\fB\-6\fR
-.RS 4
-Use IPv6
+Print help
 .RE
 .SH "HANDLING ERRORS"
 .PP

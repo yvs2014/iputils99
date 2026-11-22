@@ -132,7 +132,7 @@ NORETURN static inline void list_ai_consts(void) {
 	exit(EXIT_SUCCESS);
 }
 
-static const char *optstr = "hf:F:ilvV46";
+static const char *optstr = "hf:F:ilvVY46";
 
 static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = '4', .desc = {__OPT_4}},
@@ -141,9 +141,10 @@ static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = 'F', .arg  = __MACRO, .desc = {__GAI_OPT_F0, __GAI_OPT_F1}},
 	{.opt = 'i', .desc = {__GAI_OPT_i0, __GAI_OPT_i1}},
 	{.opt = 'l', .desc = {__GAI_OPT_l}},
-	{.opt = 'h', .desc = {__OPT_h}},
+	{.opt = 'Y', .desc = {__OPT_Y}},
 	{.opt = 'v', .desc = {__OPT_v}},
 	{.opt = 'V', .desc = {__OPT_V}},
+	{.opt = 'h', .desc = {__OPT_h}},
 	{0},
 };
 
@@ -191,6 +192,9 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 		list_ai_consts();
 	case 'v':
 		GAI_OPT->verbose = true;
+		break;
+	case 'Y':
+		itistty = false;
 		break;
 	default:
 		break;

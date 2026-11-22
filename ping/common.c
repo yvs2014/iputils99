@@ -100,7 +100,7 @@ const char *optstr =
 #ifdef ENABLE_RFC4620
 	"N:"
 #endif
-	"Op:qQ:rRs:S:t:T:UvVw:W:46";
+	"Op:qQ:rRs:S:t:T:UvVw:W:Y46";
 
 static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = 'a', .desc = {__PING_OPT_a}},
@@ -130,12 +130,12 @@ static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = 't', .arg  = __TTL,       .desc = {__PING_OPT_t}},
 	{.opt = 'U', .desc = {__PING_OPT_U}},
 	{.opt = 'w', .arg  = __DEADLINE,  .desc = {__PING_OPT_w}},
-	{.opt = 'W', .arg  = __TIMEOUT,   .desc = {__PING_OPT_W, ""}},
-	//
-	{.opt = 'h', .desc = {__OPT_h}},
+	{.opt = 'W', .arg  = __TIMEOUT,   .desc = {__PING_OPT_W}},
+	{.opt = 'Y', .desc = {__OPT_Y, ""}},
 	{.opt = 'q', .desc = {__OPT_q}},
 	{.opt = 'v', .desc = {__OPT_v}},
 	{.opt = 'V', .desc = {__OPT_V}},
+	{.opt = 'h', .desc = {__OPT_h}},
 	//
 	{.opt = HDR_OPT, .pre  = __PING_HDR_4},
 	{.opt = '4', .desc = {__OPT_4}},

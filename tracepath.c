@@ -439,7 +439,7 @@ static inline int resolve(const char *target, state_t *rts, const struct addrinf
 
 //
 
-static const char *optstr = "bhl:m:np:vV46";
+static const char *optstr = "bhl:m:np:vVY46";
 
 static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = '4', .desc = {__OPT_4}},
@@ -449,9 +449,10 @@ static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = 'm', .arg  = __HOPS,   .desc = {__TRACEPATH_OPT_m}},
 	{.opt = 'n', .desc = {__TRACEPATH_OPT_n}},
 	{.opt = 'p', .arg  = __PORT,   .desc = {__TRACEPATH_OPT_p}},
-	{.opt = 'h', .desc = {__OPT_h}},
+	{.opt = 'Y', .desc = {__OPT_Y}},
 	{.opt = 'v', .desc = {__OPT_v}},
 	{.opt = 'V', .desc = {__OPT_V}},
+	{.opt = 'h', .desc = {__OPT_h}},
 	{0},
 };
 
@@ -501,6 +502,9 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 		break;
 	case 'v':
 		RTS_DATA->verbose = true;
+		break;
+	case 'Y':
+		itistty = false;
 		break;
 	default:
 		break;

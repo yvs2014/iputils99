@@ -566,7 +566,7 @@ static inline void print_header(const char *name,
 
 //
 
-static const char *optstr = "Abc:Dfhi:I:qs:UVw:";
+static const char *optstr = "Abc:Dfhi:I:qs:UVw:Y";
 
 static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = 'A', .desc = {__ARPING_OPT_A}},
@@ -580,8 +580,9 @@ static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = 's', .arg  = __SOURCE,   .desc = {__ARPING_OPT_s}},
 	{.opt = 'U', .desc = {__ARPING_OPT_U}},
 	{.opt = 'w', .arg  = __TIMEOUT,  .desc = {__ARPING_OPT_w}},
-	{.opt = 'h', .desc = {__OPT_h}},
+	{.opt = 'Y', .desc = {__OPT_Y}},
 	{.opt = 'V', .desc = {__OPT_V}},
+	{.opt = 'h', .desc = {__OPT_h}},
 	{0},
 };
 
@@ -634,6 +635,9 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 		break;
 	case 'w':
 		RTS_DATA->stat.timeout = VALID_INTSTR(0, INT_MAX);
+		break;
+	case 'Y':
+		itistty = false;
 		break;
 	default: break;
 	}

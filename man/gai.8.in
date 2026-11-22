@@ -22,16 +22,21 @@
 .SH "NAME"
 gai \- resolve names using getaddrinfo()
 .SH "SYNOPSIS"
-\fBgai\fR [\fB\-hfFilvV46\fR] HOST \&.\&.\&.
+\fBgai\fR [\fB\-hfFilvVY46\fR] HOST \&.\&.\&.
 .SH "DESCRIPTION"
 .PP
 \fBgai\fR
 resolves names as if with the getaddrinfo(3) routine and prints them to standard output
 .SH "OPTIONS"
 .PP
-\fB\-h\fR
+\fB\-4\fR
 .RS 4
-Print help
+Limit resolver to IPv4 only
+.RE
+.PP
+\fB\-6\fR
+.RS 4
+Limit resolver to IPv6 only
 .RE
 .PP
 \fB\-f\fR \fIvalue\fR
@@ -81,6 +86,12 @@ Convert IDN names using libidn2 (if IDN is not transparently supported)
 List AI_xxx constants
 .RE
 .PP
+\fB\-Y\fR
+.RS 4
+disable color output even if supported by TTY (default auto)
+.RE
+.PP
+.PP
 \fB\-v\fR
 .RS 4
 Verbose output
@@ -91,14 +102,9 @@ Verbose output
 Print version
 .RE
 .PP
-\fB\-4\fR
+\fB\-h\fR
 .RS 4
-Limit resolver to IPv4 only
-.RE
-.PP
-\fB\-6\fR
-.RS 4
-Limit resolver to IPv6 only
+Print help
 .RE
 .SH "USE"
 The \fBgai\fR command is handy to test \fBai_flags\fR on different libc versions

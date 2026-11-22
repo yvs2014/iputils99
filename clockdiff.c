@@ -139,6 +139,7 @@ typedef struct delta_timing {
 	long send, recv, peer1, peer2;
 } delta_timing_t;
 
+static bool cdiff_tty;
 /*
  * All includes, definitions, struct declarations, and global variables are above.  After
  * this comment all you can find is functions.
@@ -296,7 +297,7 @@ static inline timediff_e measure_msg(state_t *rts, measurement_data_t *m) {
 			if (IS_BIT31_SET(dt.peer1))
 				return DT_NONSTD;
 		}
-		if (itistty) {
+		if (cdiff_tty) {
 			putchar('.');
 			fflush(stdout);
 		}
@@ -394,14 +395,15 @@ static timediff_e measure(state_t *rts, const struct sockaddr *sa, socklen_t sal
 
 //
 
-static const char *optstr = "hIV23";
+static const char *optstr = "hIVY23";
 
 static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = '2', .desc = {__CLOCKDIFF_OPT_2},     .pre = __CLOCKDIFF_PRE_2},
 	{.opt = '3', .desc = {__CLOCKDIFF_OPT_3, ""}},
 	{.opt = 'I', .desc = {__CLOCKDIFF_OPT_I, ""}, .pre = __CLOCKDIFF_PRE_I},
-	{.opt = 'h', .desc = {__OPT_h}},
+	{.opt = 'Y', .desc = {__OPT_Y}},
 	{.opt = 'V', .desc = {__OPT_V}},
+	{.opt = 'h', .desc = {__OPT_h}},
 	{0},
 };
 
@@ -428,6 +430,9 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 	}	break;
 	case 'I':
 		RTS_DATA->ts_format = "%FT%T%z"; // ISO
+		break;
+	case 'Y':
+		itistty = false;
 		break;
 	default:
 		break;
@@ -487,6 +492,7 @@ int main(int argc, char **argv) {
 		.rtt = 1000,
 		.ts_format = "%c", // preferred representation for current locale
 	};
+	cdiff_tty = itistty;
 	common_getopt(argc, argv, optstr, FEAT_CAP | FEAT_IDN | FEAT_NLS, usage, switch_opt, &rts);
 	argc -= optind;
 	argv += optind;
@@ -563,7 +569,7 @@ int main(int argc, char **argv) {
 	}
 
 	{ time_t now = time(NULL);
-	  if (itistty) {
+	  if (cdiff_tty) {
 		struct tm tm = {0};
 		localtime_r(&now, &tm);
 		char ts[64];
@@ -571,10 +577,14 @@ int main(int argc, char **argv) {
 			ts[0] = 0;
 		const char *ms = _MSEC;
 		putchar('\n');
-		printf("%s%s=%s ", COLOR_BOLD, _HOST_L, PEERNAME);
+		if (itistty)
+			fputs(COLOR_BOLD, stdout);
+		printf("%s=%s ", _HOST_L, PEERNAME);
 		printf("%s=%ld(%ld)%s/%ld%s ", _RTT, rts.rtt, rts.sigma, ms, rts.min_rtt, ms);
 		printf("%s=%d%s/%d%s ", _DELTA, rts.delta1, ms, rts.delta2, ms);
-		printf("[%s]%s", ts, COLOR_NORMAL);
+		printf("[%s]", ts);
+		if (itistty)
+			fputs(COLOR_NORMAL, stdout);
 	  } else
 		printf("%lld %d %d", (long long)now, rts.delta1, rts.delta2);
 	  putchar('\n');
