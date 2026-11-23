@@ -50,8 +50,8 @@ msgstr "використовувати IPv4"
 msgid "use IPv6"
 msgstr "використовувати IPv6"
 
-msgid "print help"
-msgstr "показати довідку"
+msgid "disable color output"
+msgstr "без кольорового виводу"
 
 msgid "quiet output"
 msgstr "мінімальний вивід"
@@ -61,6 +61,9 @@ msgstr "докладний вивід"
 
 msgid "print version"
 msgstr "показати версію"
+
+msgid "print help"
+msgstr "показати довідку"
 
 
 ### arping options

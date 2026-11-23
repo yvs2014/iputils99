@@ -49,8 +49,8 @@ msgstr "IPv4を使用します"
 msgid "use IPv6"
 msgstr "IPv6を使用します"
 
-msgid "print help"
-msgstr "このヘルプを表示します"
+msgid "disable color output"
+msgstr "カラー出力を無効にする"
 
 msgid "quiet output"
 msgstr "表示を抑制します"
@@ -60,6 +60,9 @@ msgstr "詳細な出力"
 
 msgid "print version"
 msgstr "バージョンを表示"
+
+msgid "print help"
+msgstr "このヘルプを表示します"
 
 
 ### arping options

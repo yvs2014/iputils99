@@ -113,33 +113,38 @@ static void uprintn(uint8_t w, const char *s) {
 
 #define MAXOPTS   50
 #define OPTINDENT "  "
+#define NOTEMPTY(txt) (((txt) && *(txt)) ? _(txt) : txt)
 
 static void usage_options(const usage_opt_t *uopt, uint8_t indent,
 	const char *bold, const char *norm, const char *yell) { // NONNULL(1, 3, 4, 5)
 	printf("\n%s%s%s:\n", bold, _OPTIONS_H, norm);
 	for (uint i = 0; (i < MAXOPTS) && uopt && uopt->opt; i++, uopt++) {
-		const char   opt = uopt->opt;
-		const char * pre = uopt->pre;
-		const char *_pre = _(pre);
-		if (opt == HDR_OPT) {
-			printf("\n%s%s%s:\n", bold, _pre, norm);
+		const char *_pre = NOTEMPTY(uopt->pre);
+		if (uopt->opt == HDR_OPT) {
+			putchar('\n');
+			if (_pre)
+				printf("%s%s%s:\n", bold, _pre, norm);
 			continue;
 		}
-		if (pre)
+		if (_pre)
 			printf(OPTINDENT "   %-*s %s\n", indent, "", _pre);
 		printf(OPTINDENT "-%s%c ", yell, uopt->opt);
-		if (uopt->arg)
-			uprintn(indent, _(uopt->arg));
+		const char *_arg = NOTEMPTY(uopt->arg);
+		if (_arg)
+			uprintn(indent, _arg);
 		else
 			printf("%*s", indent, "");
 		fputs(norm, stdout);
-		const char *desc = uopt->desc[0];
-		if (desc)
-			printf(" %s", _(desc));
+		const char *_dsc0 = NOTEMPTY(uopt->desc[0]);
+		if (_dsc0)
+			printf(" %s", _dsc0);
 		putchar('\n');
-		if (desc) for (uint j = 1;
-		   (j < ARRAY_LEN(uopt->desc)) && uopt->desc[j]; j++)
-			printf(OPTINDENT "   %-*s %s\n", indent, "", _(uopt->desc[j]));
+		if (_dsc0) for (uint j = 1; (j < ARRAY_LEN(uopt->desc)) && uopt->desc[j]; j++) {
+			const char *_desc = NOTEMPTY(uopt->desc[j]);
+			if (_desc)
+				printf(OPTINDENT "   %-*s %s", indent, "", _desc);
+			putchar('\n');
+		}
 	}
 }
 

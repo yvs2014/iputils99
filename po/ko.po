@@ -47,8 +47,8 @@ msgstr "IPv4를 사용합니다"
 msgid "use IPv6"
 msgstr "IPv6를 사용합니다"
 
-msgid "print help"
-msgstr "도움말을 표시합니다"
+msgid "disable color output"
+msgstr "컬러 출력 비활성화"
 
 msgid "quiet output"
 msgstr "조용한 출력"
@@ -58,6 +58,9 @@ msgstr "많이 출력"
 
 msgid "print version"
 msgstr "버전을 출력하"
+
+msgid "print help"
+msgstr "도움말을 표시합니다"
 
 
 ### arping options

@@ -49,8 +49,8 @@ msgstr "použije IPv4"
 msgid "use IPv6"
 msgstr "použije IPv6"
 
-msgid "print help"
-msgstr "vypíše nápovědu"
+msgid "disable color output"
+msgstr "vypnout barevný výstup"
 
 msgid "quiet output"
 msgstr "potlačený výstup"
@@ -60,6 +60,9 @@ msgstr "podrobný výstup"
 
 msgid "print version"
 msgstr "vypíše verzi"
+
+msgid "print help"
+msgstr "vypíše nápovědu"
 
 
 ### arping options

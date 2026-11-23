@@ -47,8 +47,8 @@ msgstr "IPv4-ის გამოყენება"
 msgid "use IPv6"
 msgstr "IPv6-ის გამოყენება"
 
-msgid "print help"
-msgstr "დახმარების გამოტანა"
+msgid "disable color output"
+msgstr "ფერადი გამოტანის გამორთვა"
 
 msgid "quiet output"
 msgstr "ნაკლები გამოტანა"
@@ -58,6 +58,9 @@ msgstr "მეტი შეტყობინების გამოტან�
 
 msgid "print version"
 msgstr "ვერსიის ჩვენება"
+
+msgid "print help"
+msgstr "დახმარების გამოტანა"
 
 
 ### arping options

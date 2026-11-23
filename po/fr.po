@@ -47,8 +47,8 @@ msgstr "utiliser IPv4"
 msgid "use IPv6"
 msgstr "utiliser IPv6"
 
-msgid "print help"
-msgstr "imprimer l'aide"
+msgid "disable color output"
+msgstr "désactiver la sortie couleur"
 
 msgid "quiet output"
 msgstr "sortie silencieuse"
@@ -58,6 +58,9 @@ msgstr "sortie verbeuse"
 
 msgid "print version"
 msgstr "imprimer la version"
+
+msgid "print help"
+msgstr "imprimer l'aide"
 
 
 ### arping options

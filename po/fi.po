@@ -46,8 +46,8 @@ msgstr "käyttää IPv4:ta"
 msgid "use IPv6"
 msgstr "käyttää IPv6:ta"
 
-msgid "print help"
-msgstr "tulosta ohje"
+msgid "disable color output"
+msgstr "poista väritulostus käytöstä"
 
 msgid "quiet output"
 msgstr "hiljennä tulosteet"
@@ -57,6 +57,9 @@ msgstr "monisanainen tulos"
 
 msgid "print version"
 msgstr "tulosta versio"
+
+msgid "print help"
+msgstr "tulosta ohje"
 
 
 ### arping options

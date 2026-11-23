@@ -281,7 +281,7 @@
 #define __OPT_q "quiet output"
 #define __OPT_v "verbose output"
 #define __OPT_V "print version"
-#define __OPT_Y "disable color output even if supported by TTY"
+#define __OPT_Y "disable color output"
 
 // ping
 #define __PING_OPT_a  "use audible ping"

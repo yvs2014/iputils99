@@ -47,7 +47,7 @@ msgstr ""
 msgid "use IPv6"
 msgstr ""
 
-msgid "print help"
+msgid "disable color output"
 msgstr ""
 
 msgid "quiet output"
@@ -57,6 +57,9 @@ msgid "verbose output"
 msgstr ""
 
 msgid "print version"
+msgstr ""
+
+msgid "print help"
 msgstr ""
 
 

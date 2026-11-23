@@ -131,7 +131,8 @@ static const usage_opt_t uopts[] = { // null-terminated
 	{.opt = 'U', .desc = {__PING_OPT_U}},
 	{.opt = 'w', .arg  = __DEADLINE,  .desc = {__PING_OPT_w}},
 	{.opt = 'W', .arg  = __TIMEOUT,   .desc = {__PING_OPT_W}},
-	{.opt = 'Y', .desc = {__OPT_Y, ""}},
+	//
+	{.opt = 'Y', .desc = {__OPT_Y}, .pre = ""},
 	{.opt = 'q', .desc = {__OPT_q}},
 	{.opt = 'v', .desc = {__OPT_v}},
 	{.opt = 'V', .desc = {__OPT_V}},
