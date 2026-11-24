@@ -20,6 +20,7 @@
 
 #include "processing.h"
 #include "iputils.h"
+#include "warnerr.h"
 
 #ifndef AX25_P_IP
 #define AX25_P_IP	0xcc	// ARPA Internet Protocol
@@ -85,7 +86,9 @@ static void print_packet_info(const struct arphdr *ar, const uint8_t *data,
 			double ms = sub.tv_sec * 1000 + sub.tv_nsec / 1000000.;
 			printf(" " TMMS, ms, _MSEC);
 		}
-	} else
+	} else if (itistty)
+		printf(" %s%s?%s", COLOR_YELLOW, _UNSOLICITED, COLOR_NORMAL);
+	else
 		printf(" %s?", _UNSOLICITED);
 	putchar('\n');
 	fflush(stdout);

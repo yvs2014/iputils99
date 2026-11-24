@@ -68,35 +68,62 @@ static inline void print_hops_away(uint8_t min, uint8_t max) {
 	}
 }
 
+static void printf_lds(long l, const char *s) {
+	if (itistty)
+		printf(", %s+%ld %s%s", COLOR_YELLOW, l,  s, COLOR_NORMAL);
+	else
+		printf(", +%ld %s", l, s);
+}
+
 // Called once at resume
 static inline void stat_header(const state_t *rts) {
 	printf("--- %s %s ---\n", rts->hostname, _PINGSTAT);
 	printf("%ld %s", rts->ntransmitted, _N_PKT_TRANSMIT(rts->ntransmitted));
 	printf(", %ld %s",  rts->nreceived, _RECV);
 	if (rts->nrepeats)
-		printf(", +%ld %s", rts->nrepeats,  _DUPLICAT);
+		printf_lds(rts->nrepeats,  _DUPLICAT);
 	if (rts->nchecksum)
-		printf(", +%ld %s", rts->nchecksum, _CORRUPT);
+		printf_lds(rts->nchecksum, _CORRUPT);
 	if (rts->nerrors)
-		printf(", +%ld %s", rts->nerrors,   _ERRORS);
+		printf_lds(rts->nerrors,   _ERRORS);
 	{ long gone = rts->ntransmitted;
 	  if (gone) {
 		int inflight = in_flight(rts);
 		if (inflight > 0)
 			gone -= inflight;
-		if (gone > 0)
-			printf(", %g%% %s", (gone - rts->nreceived) * 100. / gone, _LOST);
+		if (gone > 0) {
+			long dg = gone - rts->nreceived;
+			if (dg > 0) {
+				double g = dg * 100. / gone;
+				const char *s = _LOST;
+				if (itistty)
+					printf(", %s%g%% %s%s",
+						g < 100 ? COLOR_YELLOW : COLOR_RED,
+						g, s, COLOR_NORMAL);
+				else
+					printf(", %g%% %s", g, s);
+			}
+		}
 	}}
-	if (rts->opt.verbose && rts->unidentified)
-		printf(", %u %s", rts->unidentified, _UNINDENT);
+	if (rts->opt.verbose && rts->unidentified) {
+		uint u = rts->unidentified;
+		const char *s = _UNINDENT;
+		if (itistty)
+			printf(", %s%u %s%s", COLOR_YELLOW, u, s, COLOR_NORMAL);
+		else
+			printf(", %u %s", u, s);
+	}
 	if (!rts->opt.broadcast && (rts->min_away >= 0))
 		print_hops_away(rts->min_away, rts->max_away);
 	putchar('\n');
 }
 
+
+#define COMMAUP do { if (printed) fputs(", ", stdout); else printed = true; } while (0)
+
 // Called once at resume
 static inline void stat_timing(const state_t *rts) {
-	char comma = 0;
+	bool printed = false;
 	if (rts->nreceived && rts->timing) {
 		long total = rts->nreceived + rts->nrepeats;
 		long tmavg = rts->tsum / total;
@@ -109,37 +136,34 @@ static inline void stat_timing(const state_t *rts) {
 			rts->tmin / 1000., tmavg / 1000., rts->tmax / 1000.,
 			sqrt((tmvar < 0) ? -tmvar : tmvar) / 1000.,
 			_MSEC);
-		comma = ',';
+		printed = true;
 	}
 	//
 	if (rts->pipesize > 1) {
-		if (comma)
-			printf("%c ", comma);
+		COMMAUP;
 		printf("%s %d", _PIPE, rts->pipesize);
-		comma = ',';
 	}
 	//
 	{ int inflight = in_flight(rts);
 	  if (inflight > 0) {
-		if (comma)
-			printf("%c ", comma);
-		printf("%s %d", _INFLIGHT, inflight);
-		comma = ',';
+		COMMAUP;
+		if (itistty)
+			printf("%s%s %d%s", COLOR_YELLOW, _INFLIGHT, inflight, COLOR_NORMAL);
+		else
+			printf("%s %d", _INFLIGHT, inflight);
 	}}
 	//
 	if ((!rts->interval || rts->opt.flood || rts->opt.adaptive)
 			&& rts->nreceived && (rts->ntransmitted > 1)) {
-		if (comma)
-			printf("%c ", comma);
+		COMMAUP;
 		struct timespec tv = {0};
 		timespecsub(&rts->cur_time, &rts->start_time, &tv);
 		double ipg = (tv.tv_sec * 1000 + tv.tv_nsec / 1000000.)
 			/ (rts->ntransmitted - 1);
 		printf(ADAPTIVE_MS, _ADAPTSTAT, ipg, rts->rtt / 8000., _MSEC);
-		comma = ',';
 	}
 	//
-	if (comma)
+	if (printed)
 		putchar('\n');
 }
 
@@ -165,7 +189,15 @@ void print_status(const state_t *rts) {
 		: 0;
 	// stderr due to signals
 	fprintf(stderr, "%ld/%ld %s", rts->nreceived, rts->ntransmitted, _PACKETS);
-	fprintf(stderr, ", %d%% %s", lost, _LOST);
+	if (lost) {
+		const char *s = _LOST;
+		if (itistty)
+			fprintf(stderr, ", %s%d%% %s%s",
+				lost < 100 ? COLOR_YELLOW : COLOR_RED,
+				lost, s, COLOR_NORMAL);
+		else
+			fprintf(stderr, ", %d%% %s", lost, s);
+	}
 	if (rts->nreceived && rts->timing) {
 		long tavg = rts->tsum / (rts->nreceived + rts->nrepeats);
 		fprintf(stderr, ", " TIMING_MS, _PING_STATUS,
