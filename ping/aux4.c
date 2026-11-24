@@ -58,6 +58,7 @@
 #include "aux4.h"
 #include "opt4.h"
 #include "common.h"
+#include "warnerr.h"
 #include "po.h"
 
 #if BYTE_ORDER == LITTLE_ENDIAN
@@ -108,19 +109,12 @@ void print_ip4hdr(const struct iphdr *ip, bool resolve, bool flood) {
 		print4_ip_opts((uint8_t *)ip + sizeof(struct iphdr), olen, resolve, flood);
 }
 
-
 // Print a descriptive string about an ICMP header
-bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info, uint32_t gateway,
-	bool resolve, uint8_t color)
-{
-	bool print_ip_hdr_too = false;
-	if (color)
-		printf(ESC_STRING "%um", color);
+static inline bool print_icmp4errmsg(uint8_t type, uint8_t code, uint32_t info, uint32_t gateway, bool resolve) {
+	bool rc = false; // flag to print IP header too, or not
+	if (itistty)
+		fputs(COLOR_YELLOW, stdout);
 	switch (type) {
-	case ICMP_ECHOREPLY:
-		fputs(_ECHO_REPLY, stdout);
-		/* XXX ID + Seq + Data */
-		break;
 	case ICMP_DEST_UNREACH:
 		printf("%s: ", _UNREACH_DEST);
 		switch (code) { // TODO: map[code]=mesg
@@ -176,11 +170,11 @@ bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info, uint32_t gateway,
 			printf("%s %u", _UNKN_CODE, code);
 			break;
 		}
-		print_ip_hdr_too = true;
+		rc = true;
 		break;
 	case ICMP_SOURCE_QUENCH:
 		fputs(_SRC_QUENCH, stdout);
-		print_ip_hdr_too = true;
+		rc = true;
 		break;
 	case ICMP_REDIRECT:
 		printf("%s: ", _REDIRECT);
@@ -207,7 +201,7 @@ bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info, uint32_t gateway,
 		  };
 		  printf(", %s %s", _NEW_NEXTHOP, sprint_addr(&sin, sizeof(sin), resolve));
 		}
-		print_ip_hdr_too = true;
+		rc = true;
 		break;
 	case ICMP_ECHO:
 		fputs(_ECHO_REQUEST, stdout);
@@ -226,11 +220,11 @@ bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info, uint32_t gateway,
 			printf("%s %u", _UNKN_CODE, code);
 			break;
 		}
-		print_ip_hdr_too = true;
+		rc = true;
 		break;
 	case ICMP_PARAMETERPROB:
 		printf("%s: %u", _PARAM_PROBLEM, gateway ? (gateway >> 24) : info);
-		print_ip_hdr_too = true;
+		rc = true;
 		break;
 	case ICMP_TIMESTAMP:
 		fputs(_TIMESTAMP, stdout);
@@ -267,11 +261,20 @@ bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info, uint32_t gateway,
 		break;
 #endif
 	default:
+		if (itistty)
+			fputs(COLOR_RED, stdout);
 		printf("%s: %d", _UNKN_ICMP_TYPE, type);
 	}
-	if (color)
-		fputs(ESC_STRING "0m", stdout);
-	return print_ip_hdr_too;
+	if (itistty)
+		fputs(COLOR_NORMAL, stdout);
+	return rc;
 	// note: no \n, no stdout flush
+}
+
+bool print_icmp4msg(uint8_t type, uint8_t code, uint32_t info, uint32_t gateway, bool resolve) {
+	if (type != ICMP_ECHOREPLY)
+		return print_icmp4errmsg(type, code, info, gateway, resolve);
+	fputs(_ECHO_REPLY, stdout);
+	return false;
 }
 

@@ -63,6 +63,7 @@
 
 #include "aux6.h"
 #include "common.h"
+#include "warnerr.h"
 #include "po.h"
 #ifdef ENABLE_RFC4620
 #include "node_info.h"
@@ -99,9 +100,9 @@ ssize_t build_echo_hdr(const state_t *rts, uint8_t *hdr) {
 	return sizeof(struct icmp6_hdr);
 }
 
-void print_icmp6msg(uint8_t type, uint8_t code, uint32_t info, uint8_t color) {
-	if (color)
-		printf(ESC_STRING "%um", color);
+static inline void print_icmp6errmsg(uint8_t type, uint8_t code, uint32_t info) {
+	if (itistty)
+		fputs(COLOR_YELLOW, stdout);
 	switch (type) {
 	case ICMP6_DST_UNREACH:
 		printf("%s: ", _UNREACH_DEST);
@@ -172,9 +173,6 @@ void print_icmp6msg(uint8_t type, uint8_t code, uint32_t info, uint8_t color) {
 	case ICMP6_ECHO_REQUEST:
 		fputs(_ECHO_REQUEST, stdout);
 		break;
-	case ICMP6_ECHO_REPLY:
-		fputs(_ECHO_REPLY, stdout);
-		break;
 	case MLD_LISTENER_QUERY:
 		fputs(_MLQ_QUERY, stdout);
 		break;
@@ -195,11 +193,20 @@ void print_icmp6msg(uint8_t type, uint8_t code, uint32_t info, uint8_t color) {
 		break;
 #endif
 	default:
+		if (itistty)
+			fputs(COLOR_RED, stdout);
 		printf("%s: %u", _UNKN_ICMP_TYPE, type);
 	}
-	if (color)
-		fputs(ESC_STRING "0m", stdout);
+	if (itistty)
+		fputs(COLOR_NORMAL, stdout);
 	// note: no \n, no stdout flush
+}
+
+void print_icmp6msg(uint8_t type, uint8_t code, uint32_t info) {
+	if (type == ICMP6_ECHO_REPLY)
+		fputs(_ECHO_REPLY, stdout);
+	else
+		print_icmp6errmsg(type, code, info);
 }
 
 #ifdef ENABLE_RFC4620

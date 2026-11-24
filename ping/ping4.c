@@ -164,17 +164,15 @@ static int ping4_receive_error(state_t *rts, const sock_t *sock) {
 	return get_errmsg(rts, sock, &msg);
 }
 
-static inline void print_ipicmp4hdr(const struct icmphdr *icmp, const struct iphdr *ip,
-	const bool_opt_t *opt, uint8_t color)
-{
+static inline void print_ipicmp4hdr(const struct icmphdr *icmp, const struct iphdr *ip, const bool_opt_t *opt) {
 	uint32_t gw = ntohl(icmp->un.gateway);
-	if (print_icmp4msg(icmp->type, icmp->code, gw, gw, opt, color) && opt->verbose)
+	if (print_icmp4msg(icmp->type, icmp->code, gw, gw, opt) && opt->verbose)
 		print_ip4hdr(ip, opt->resolve, opt->flood);
 }
 
 static inline bool ping4_icmp_extra_type(state_t *rts,
 	const struct icmphdr *icmp, size_t received,
-	const struct sockaddr_in *from, bool raw, bool bad, uint8_t color)
+	const struct sockaddr_in *from, bool raw, bool bad)
 {
 	const struct iphdr *iph = (struct iphdr *)(icmp + 1);
 	uint8_t ihl = iph->ihl * 4;
@@ -198,7 +196,7 @@ static inline bool ping4_icmp_extra_type(state_t *rts,
 		_SEQ, ntohs(orig->un.echo.sequence));
 	if (bad)
 		EXCLAM_PR(_BAD_CSUM);
-	print_ipicmp4hdr(icmp, iph, &rts->opt, color);
+	print_ipicmp4hdr(icmp, iph, &rts->opt);
 	putchar('\n');
 	return true;
 }
@@ -282,7 +280,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 		case ICMP_DEST_UNREACH:
 		case ICMP_TIME_EXCEEDED:
 		case ICMP_PARAMETERPROB:
-			return ping4_icmp_extra_type(rts, icmp, received, SA4(addr), raw, bad, rts->yellow);
+			return ping4_icmp_extra_type(rts, icmp, received, SA4(addr), raw, bad);
 		default: /* MUST NOT */
 			break;
 		}
@@ -304,7 +302,7 @@ static bool ping4_parse_reply(state_t *rts, bool raw, struct msghdr *msg,
 			putchar('\n');
 			return false;
 		}
-		print_ipicmp4hdr(icmp, (struct iphdr *)(icmp + 1), &rts->opt, rts->red);
+		print_ipicmp4hdr(icmp, (struct iphdr *)(icmp + 1), &rts->opt);
 		putchar('\n');
 		fflush(stdout);
 		return false;

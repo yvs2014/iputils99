@@ -121,10 +121,9 @@ static void print_ee_reply(const state_t *rts, uint16_t seq,
 		printf("%s %s: %s=%u ", _FROM_H,
 			sprint_addr(ee + 1, salen, rts->opt.resolve), _SEQ, seq);
 		if (rts->ip6)
-			print_icmp6msg(ee->ee_type, ee->ee_code, ee->ee_info, rts->red);
+			print_icmp6msg(ee->ee_type, ee->ee_code, ee->ee_info);
 		else
-			print_icmp4msg(ee->ee_type, ee->ee_code, ee->ee_info, 0,
-				rts->opt.resolve, rts->red);
+			print_icmp4msg(ee->ee_type, ee->ee_code, ee->ee_info, 0, rts->opt.resolve);
 		putchar('\n');
 		fflush(stdout);
 	}

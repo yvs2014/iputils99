@@ -151,8 +151,7 @@ static inline void ping6_parse_reply_fin(bool audible, bool flood) {
 
 static inline int ping6_icmp_extra_type(state_t *rts,
 	const struct icmp6_hdr *icmp, size_t received, bool raw,
-	const struct sockaddr_in6 *from, const struct sockaddr_in6 *to,
-	uint8_t color)
+	const struct sockaddr_in6 *from, const struct sockaddr_in6 *to)
 {
 	const struct ip6_hdr   *iph  = (struct ip6_hdr   *)(icmp + 1);
 	const struct icmp6_hdr *orig = (struct icmp6_hdr *)(iph  + 1);
@@ -179,7 +178,7 @@ static inline int ping6_icmp_extra_type(state_t *rts,
 		return true;
 	PRINT_TIMESTAMP;
 	printf("%s %s: ", _FROM_H, sprint_addr(from, sizeof(*from), rts->opt.resolve));
-	print_icmp6msg(icmp->icmp6_type, icmp->icmp6_code, ntohl(icmp->icmp6_mtu), color);
+	print_icmp6msg(icmp->icmp6_type, icmp->icmp6_code, ntohl(icmp->icmp6_mtu));
 	return -1;
 }
 
@@ -260,7 +259,7 @@ static bool ping6_parse_reply(state_t *rts, bool raw,
 		 * however, just to remember what crap we avoided
 		 * using RECVRERR. :-)
 		 */
-		int rc = ping6_icmp_extra_type(rts, icmp, received, raw, SA6(addr), SA6(&rts->whereto), rts->red);
+		int rc = ping6_icmp_extra_type(rts, icmp, received, raw, SA6(addr), SA6(&rts->whereto));
 		if (rc >= 0)
 			return rc;
 	}

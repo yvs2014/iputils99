@@ -260,15 +260,7 @@ static void switch_opt(char c, void *data) { // NONNULL(2)
 		RTS_HINT->ai_family = ip4 ? AF_INET : AF_INET6;
 	}	break;
 	case 'a':
-	// 'a' -> audible, 'aa' -> colored, 'aaa' -> audible and colored
-		if (RTS_DATA->opt.audible) {
-			if (!RTS_DATA->red) {
-				RTS_DATA->red    = RED_COLOR;
-				RTS_DATA->yellow = YELLOW_COLOR;
-				RTS_DATA->opt.audible = false;
-			}
-		} else
-			RTS_DATA->opt.audible = true;
+		RTS_DATA->opt.audible = true;
 		break;
 	case 'A':
 		RTS_DATA->opt.adaptive = true;

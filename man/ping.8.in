@@ -53,7 +53,7 @@ Use IPv6
 .PP
 \fB\-a\fR
 .RS 4
-Audible and/or colored ping: \fB\-a\fR is audible, \fB\-aa\fR is colored, \fB\-aaa\fR is audible and colored\&.
+Audible ping
 .RE
 .PP
 \fB\-A\fR
