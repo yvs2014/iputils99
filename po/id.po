@@ -1051,10 +1051,6 @@ msgid "corrupted payload"
 msgstr "(data korup)"
 
 #
-msgid "pmtu"
-msgstr ""
-
-#
 msgid "reached"
 msgstr "tercapai"
 

@@ -1052,10 +1052,6 @@ msgid "corrupted payload"
 msgstr "(손상된 데이터를)"
 
 #
-msgid "pmtu"
-msgstr ""
-
-#
 msgid "reached"
 msgstr ""
 

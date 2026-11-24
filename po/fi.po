@@ -1054,10 +1054,6 @@ msgid "corrupted payload"
 msgstr "(vioittuneen hyötykuorman)"
 
 #
-msgid "pmtu"
-msgstr ""
-
-#
 msgid "reached"
 msgstr "saavuttanut"
 

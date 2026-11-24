@@ -1051,10 +1051,6 @@ msgid "corrupted payload"
 msgstr "(არასწორი პაკეტი)"
 
 #
-msgid "pmtu"
-msgstr "PMTU"
-
-#
 msgid "reached"
 msgstr "მიღწეულია"
 

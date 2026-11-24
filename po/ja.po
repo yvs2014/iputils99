@@ -1047,10 +1047,6 @@ msgid "corrupted payload"
 msgstr "(破損したデータ)"
 
 #
-msgid "pmtu"
-msgstr ""
-
-#
 msgid "reached"
 msgstr "到達しました"
 

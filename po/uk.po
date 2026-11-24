@@ -1106,10 +1106,6 @@ msgid "corrupted payload"
 msgstr "(пошкоджені дані)"
 
 #
-msgid "pmtu"
-msgstr "PMTU"
-
-#
 msgid "reached"
 msgstr "досягнуто"
 

@@ -1095,10 +1095,6 @@ msgid "corrupted payload"
 msgstr ""
 
 #
-msgid "pmtu"
-msgstr ""
-
-#
 msgid "reached"
 msgstr ""
 

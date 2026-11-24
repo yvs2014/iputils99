@@ -225,8 +225,6 @@
 #define _TTL        _(__TTL)
 #define __HOPS      "hops"
 #define _HOPS       _(__HOPS)
-#define __PMTU      "pmtu"
-#define _PMTU       _(__PMTU)
 #define __PORT      "port"
 #define __SIZE      "size"
 #define __MARK      "mark"
@@ -247,6 +245,9 @@
 #define __NODEINFO  "nodeinfo"
 #define __INTERFACE "interface"
 #define __TIMESTAMP "timestamp"
+
+#define PMTU_L "pmtu" // no trans
+#define PMTU_U "PMTU" // no trans
 
 #define _PKT_LENGTH    _("Packet length")
 #define _NO_REPLY      _("no reply")

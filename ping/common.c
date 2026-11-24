@@ -120,7 +120,7 @@ static const usage_opt_t uopts[] = { // null-terminated
 #ifdef SO_MARK
 	{.opt = 'm', .arg  = __MARK,      .desc = {__PING_OPT_m}},
 #endif
-	{.opt = 'M', .arg  = __PMTU,      .desc = {__PING_OPT_M}},
+	{.opt = 'M', .arg  = PMTU_L,      .desc = {__PING_OPT_M}},
 	{.opt = 'n', .desc = {__PING_OPT_n}},
 	{.opt = 'O', .desc = {__PING_OPT_O}},
 	{.opt = 'p', .arg  = __PATTERN,   .desc = {__PING_OPT_p}},

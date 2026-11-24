@@ -1066,10 +1066,6 @@ msgid "corrupted payload"
 msgstr "(charge utile corrompue)"
 
 #
-msgid "pmtu"
-msgstr ""
-
-#
 msgid "reached"
 msgstr "atteint"
 

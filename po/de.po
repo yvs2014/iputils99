@@ -1074,10 +1074,6 @@ msgid "corrupted payload"
 msgstr "(beschädigte Daten)"
 
 #
-msgid "pmtu"
-msgstr ""
-
-#
 msgid "reached"
 msgstr "erreicht"
 

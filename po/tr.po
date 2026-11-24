@@ -1055,10 +1055,6 @@ msgid "corrupted payload"
 msgstr "(bozuk yük)"
 
 #
-msgid "pmtu"
-msgstr ""
-
-#
 msgid "reached"
 msgstr "ulaştı"
 

@@ -1050,10 +1050,6 @@ msgid "corrupted payload"
 msgstr "（错误的数据）"
 
 #
-msgid "pmtu"
-msgstr "路径MTU"
-
-#
 msgid "reached"
 msgstr "到达"
 

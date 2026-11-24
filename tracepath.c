@@ -106,6 +106,24 @@ static inline void print_host(const char *host, const char *addr) {
 	printf("%*s", HOST_LEN - len, "");
 }
 
+static void print_cmsg_type(char ipv, int type) {
+	const char *what = "cmsg";
+	if (itistty)
+		printf("%s%s%c:%d%s\n ", COLOR_YELLOW, what, ipv, type, COLOR_NORMAL);
+	else
+		printf("%s%c:%d\n ", what, ipv, type);
+}
+
+#define IS_EE_EXCEED(o, t, c) ( \
+	((o) == SO_EE_ORIGIN_ICMP  && (t) == ICMP_TIME_EXCEEDED  && (c) == ICMP_EXC_TTL) || \
+	((o) == SO_EE_ORIGIN_ICMP6 && (t) == ICMP6_TIME_EXCEEDED && (c) == ICMP6_TIME_EXCEED_TRANSIT) \
+)
+
+#define PRINTF_SD_(s, d) do { \
+	if (itistty) printf("%s(%s %d)%s", COLOR_YELLOW, (s), (d), COLOR_NORMAL); \
+	else         printf("(%s %d)", (s), (d)); \
+} while (0)
+
 // return codes: <0 (-1) | 0 | >0 (mtu)
 static int recverr(state_t *rts) {
 	struct sockaddr_storage addr;
@@ -183,7 +201,7 @@ do { // was 'restart:'
 				memcpy(&rethops, CMSG_DATA(cmsg), sizeof(rethops));
 				break;
 			default:
-				printf("cmsg6:%d\n ", cmsg->cmsg_type);
+				print_cmsg_type('6', cmsg->cmsg_type);
 			} break;
 		case IPPROTO_IP:
 			switch (cmsg->cmsg_type) {
@@ -194,8 +212,8 @@ do { // was 'restart:'
 				rethops = *(uint8_t *)CMSG_DATA(cmsg);
 				break;
 			default:
-				printf("cmsg4:%d\n ", cmsg->cmsg_type);
-			} break;
+				print_cmsg_type('4', cmsg->cmsg_type);
+		} break;
 		default: break;
 		}
 	}
@@ -215,6 +233,8 @@ do { // was 'restart:'
 			0;
 		if (sndhops > 0)
 			printf("%2d:  ", sndhops);
+		else if (itistty)
+			printf("%s%2d?%s: ", COLOR_YELLOW, rts->ttl, COLOR_NORMAL);
 		else
 			printf("%2d?: ", rts->ttl);
 		//
@@ -234,8 +254,13 @@ do { // was 'restart:'
 		struct timespec res = {0};
 		timespecsub(&ts, retts, &res);
 		printf(TMMS " ", res.tv_sec * 1000 + res.tv_nsec / 1000000., _MSEC);
-		if (broken_router)
-			printf("(%s) ", _PLD_CORRUPT);
+		if (broken_router) {
+			const char *s = _PLD_CORRUPT;
+			if (itistty)
+				printf("%s(%s)%s ", COLOR_RED, s, COLOR_NORMAL);
+			else
+				printf("(%s) ", s);
+		}
 	}
 
 	if      (rethops <= 64)
@@ -255,7 +280,7 @@ do { // was 'restart:'
 		assert((rts->pkthold >= e->ee_info) && (e->ee_info > rts->hdrsize));
 		rts->pktsize = e->ee_info;
 		progress     = rts->pktsize;
-		printf("%s %u\n", _PMTU, rts->pktsize);
+		printf(PMTU_U " %u\n", progress);
 		break;
 	case ECONNREFUSED:
 		puts(_REACHED);
@@ -268,17 +293,12 @@ do { // was 'restart:'
 		re = true;
 		break;
 	case EHOSTUNREACH:
-		if ((e->ee_origin == SO_EE_ORIGIN_ICMP &&
-		     e->ee_type == ICMP_TIME_EXCEEDED &&
-		     e->ee_code == ICMP_EXC_TTL) ||
-		    (e->ee_origin == SO_EE_ORIGIN_ICMP6 &&
-		     e->ee_type == ICMP6_TIME_EXCEEDED &&
-		     e->ee_code == ICMP6_TIME_EXCEED_TRANSIT)) {
+		if (IS_EE_EXCEED(e->ee_origin, e->ee_type, e->ee_code)) {
 			if (rethops >= 0) {
 				bool sent = (sndhops >= 0);
 				if (( sent && (rethops != sndhops )) ||
 				    (!sent && (rethops != rts->ttl)))
-					printf("(%s %d)", _ASYMM, rethops);
+					PRINTF_SD_(_ASYMM, rethops);
 			}
 			putchar('\n');
 			break;
@@ -299,8 +319,12 @@ do { // was 'restart:'
 		warnxt("%s", _NET_ERROR);
 		re = true;
 	}
-	if (ch)
-		printf("!%c\n", ch);
+	if (ch) {
+		if (itistty)
+			printf("%s!%c%s\n", COLOR_YELLOW, ch, COLOR_NORMAL);
+		else
+			printf("!%c\n", ch);
+	}
 	if (re)
 		return 0;
 } while (true); // was 'goto restart'
@@ -511,10 +535,12 @@ static void switch_opt(char c, void *data) { // NONNULL(1, 2)
 	}
 }
 
+#define INDENT "     "
+
 static void resume(const state_t *rts) {
 	if (itistty)
 		fputs(COLOR_BOLD, stdout);
-	printf("     %s: %s=%d", _RESUME, _PMTU, rts->pktsize);
+	printf(INDENT "%s: " PMTU_L "=%d", _RESUME, rts->pktsize);
 	if (rts->hops_to >= 0)
 		printf(" %s=%d", _HOPS, rts->hops_to);
 	if (rts->hops_from >= 0)
@@ -619,15 +645,18 @@ int main(int argc, char **argv) {
 			}
 		} while (again);
 		if (rc < 0) {
+			const char *s = _NO_REPLY;
 			if (itistty)
-				fputs(COLOR_YELLOW, stdout);
-			printf("%2d:  %s\n", rts.ttl, _NO_REPLY);
-			if (itistty)
-				fputs(COLOR_NORMAL, stdout);
+				printf("%s%2d:  %s%s\n", COLOR_YELLOW, rts.ttl, s, COLOR_NORMAL);
+			else
+				printf("%2d:  %s\n", rts.ttl, s);
 		}
 	}
-	printf("     %s: %s=%d\n", _TOO_MANY_HOPS, _PMTU, rts.pktsize);
-
+	const char *too = _TOO_MANY_HOPS;
+	if (itistty)
+		printf(INDENT "%s%s: " PMTU_L "=%d%s\n", COLOR_YELLOW, too, rts.pktsize, COLOR_NORMAL);
+	else
+		printf(INDENT "%s: " PMTU_L "=%d\n", too, rts.pktsize);
 	resume(&rts);
 	free(rts.pktbuf); // in favor of analysis tools
 	return 0;
