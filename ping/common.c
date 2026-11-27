@@ -318,8 +318,7 @@ static int pinger(state_t *rts, const fnset_t *fnset, const sock_t *sock) {
 		fflush(stdout);
 	}
 
-	int rc;
-	int hard_local_error = 0;
+	int rc, hard_local_error = 0;
 	do {
 		rcvd_clear(rts->ntransmitted + 1, rts->bitmap);
 		rc = fnset->send_probe(rts, sock->fd, rts->outpack);

@@ -9,6 +9,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <sys/types.h>
 #include <stdarg.h>
 
 #include "usage.h"
@@ -113,7 +114,7 @@ static void uprintn(uint8_t w, const char *s) {
 
 #define MAXOPTS   50
 #define OPTINDENT "  "
-#define NOTEMPTY(txt) (((txt) && *(txt)) ? _(txt) : txt)
+#define NOTEMPTY(txt) (((txt) && *(txt)) ? _(txt) : (txt))
 
 static void usage_options(const usage_opt_t *uopt, uint8_t indent,
 	const char *bold, const char *norm, const char *yell) { // NONNULL(1, 3, 4, 5)

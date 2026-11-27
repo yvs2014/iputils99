@@ -654,7 +654,7 @@ int main(int argc, char **argv) {
 	}
 	const char *too = _TOO_MANY_HOPS;
 	if (itistty)
-		printf(INDENT "%s%s: " PMTU_L "=%d%s\n", COLOR_YELLOW, too, rts.pktsize, COLOR_NORMAL);
+		printf(INDENT "%s%s: " PMTU_L "=%d%s\n", COLOR_RED, too, rts.pktsize, COLOR_NORMAL);
 	else
 		printf(INDENT "%s: " PMTU_L "=%d\n", too, rts.pktsize);
 	resume(&rts);
